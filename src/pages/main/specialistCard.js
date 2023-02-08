@@ -1,0 +1,420 @@
+import React, { useState, useContext } from "react";
+import styled from "styled-components";
+import { AiOutlineStar } from "react-icons/ai";
+import { useSelector, useDispatch } from "react-redux";
+import { AuthContext } from "../../context/AuthContext";
+import { setLoadFeed } from "../../redux/main";
+import {
+  ref,
+  uploadBytes,
+  listAll,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
+import { db, storage } from "../../firebase";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  where,
+  collectionGroup,
+  query,
+  getDocs,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
+import { FaUser } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import ContentLoader from "react-content-loader";
+import { BiStar } from "react-icons/bi";
+import Rating from "@mui/material/Rating";
+import { MdOutlineStarPurple500 } from "react-icons/md";
+import { proceduresOptions } from "../../data/registerDatas";
+
+export const SpecialistsCard = (props) => {
+  const { currentUser } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const loadFeed = useSelector((state) => state.storeMain.loadFeed);
+  const rerender = useSelector((state) => state.storeMain.rerender);
+
+  // import filters
+  const cityFilter = useSelector((state) => state.storeFilter.cityFilter);
+  const destrictFilter = useSelector(
+    (state) => state.storeFilter.destrictFilter
+  );
+
+  // define reiting
+  const [reiting, setReiting] = React.useState([]);
+
+  const DefineReiting = () => {
+    let sum = reiting
+      .map((reit) => {
+        if (reit.reiting !== null) {
+          return reit.reiting;
+        } else {
+          return 5;
+        }
+      })
+      .reduce((prev, curr) => prev + curr, 0);
+    return sum / reiting?.length;
+  };
+
+  let definedReiting;
+  if (reiting?.length > 0) {
+    definedReiting = DefineReiting().toFixed(1);
+  } else {
+    definedReiting = 0;
+  }
+
+  const SetReiting = (r) => {
+    if (r !== null) {
+      setDoc(
+        doc(db, "users", `${props?.id}`, "reiting", `${currentUser?.uid}`),
+        {
+          userId: currentUser?.uid,
+          reiting: r,
+        }
+      );
+    } else {
+      deleteDoc(
+        doc(db, "users", `${props?.id}`, "reiting", `${currentUser?.uid}`)
+      );
+    }
+  };
+
+  React.useEffect(() => {
+    var query = onSnapshot(
+      collection(db, "users", `${props.id}`, "reiting"),
+      (snapshot) => {
+        setReiting(snapshot.docs.map((doc) => doc.data()));
+      }
+    );
+  }, [rerender, props?.id]);
+
+  // define who has gived reiting to user
+  let defineGived;
+  if (reiting?.length > 0) {
+    defineGived = reiting?.find((item) => item.userId === currentUser?.uid);
+  }
+
+  // capitalize first letters
+
+  function capitalizeFirstLetter(string) {
+    return string?.charAt(0).toUpperCase() + string?.slice(1);
+  }
+
+  const name = capitalizeFirstLetter(props?.name);
+  const userType = capitalizeFirstLetter(props?.type);
+
+  /// define procedure title
+  var mainCategory = props?.filterCategories[0]?.substring(
+    0,
+    props?.filterCategories[0].indexOf(" -")
+  );
+  var procedures = proceduresOptions?.find((item) => {
+    if (
+      item?.value === mainCategory
+      // ?.toLowerCase()
+      // .includes(props?.filterCategories[0]?.toLowerCase())
+    ) {
+      return item.label;
+    }
+  });
+
+  setTimeout(() => {
+    if (props.index === 0) {
+      dispatch(setLoadFeed(false));
+    }
+  }, 700);
+
+  return (
+    <Card>
+      <Title
+        onClick={
+          currentUser?.uid === props?.id
+            ? () => navigate("/user")
+            : () => navigate(`/user/${props.id}`)
+        }
+      >
+        {name.substring(0, name.indexOf(" "))}
+      </Title>
+      <ImgContainer
+        onClick={
+          currentUser?.uid === props?.id
+            ? () => navigate("/user")
+            : () => navigate(`/user/${props.id}`)
+        }
+      >
+        {props.cover != undefined ? (
+          <Img src={props?.cover} />
+        ) : (
+          <IconCont>
+            <FaUser className="undefinedUserIcon" />
+          </IconCont>
+        )}
+      </ImgContainer>
+      <City>
+        <div>{props?.adress?.city}</div>
+      </City>
+      <City>
+        <div>{props?.adress?.destrict}</div>
+      </City>
+      <Category>{procedures?.label}</Category>
+      <Review>
+        <Rating
+          size="small"
+          name="simple-controlled"
+          value={defineGived?.reiting !== undefined ? defineGived?.reiting : 0}
+          onChange={
+            currentUser != null
+              ? (event, newValue) => SetReiting(newValue)
+              : () => navigate("/login")
+          }
+        />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            marginBottom: "3px",
+          }}
+        >
+          <span>({definedReiting})</span>
+          <MdOutlineStarPurple500
+            size={12}
+            color="#ffa534"
+            style={{ marginTop: "2px" }}
+          />
+        </div>
+      </Review>
+    </Card>
+  );
+};
+
+const Card = styled.div`
+  background: #fff;
+  // border: 1px solid #ccc;
+  box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
+  width: 10vw;
+  border-radius: 0.5vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
+  padding: 0.25vw 0 0.5vw 0;
+  position: relative;
+
+  @media only screen and (max-width: 600px) {
+    width: 40vw;
+    gap: 1.5vw;
+    border-radius: 1.5vw;
+    box-shadow: 0 0.3vw 0.9vw rgba(2, 2, 2, 0.1);
+    padding: 2vw;
+    height: auto;
+  }
+
+  .undefinedUserIcon {
+    font-size: 4vw;
+    color: #ccc;
+
+    @media only screen and (max-width: 600px) {
+      font-size: 20vw;
+    }
+  }
+`;
+
+const Title = styled.h2`
+  font-size: 0.8vw;
+  margin: 0;
+  font-weight: bold;
+  padding: 0.5vw 0 0.3vw 0;
+  transition: ease-in 200ms;
+  cursor: pointer;
+  overflow: hidden;
+
+  @media only screen and (max-width: 600px) {
+    font-size: 3.7vw;
+    padding: 1.25vw;
+  }
+
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+const City = styled.div`
+  width: 85%;
+  display: flex;
+  justify-content: center;
+  @media only screen and (max-width: 600px) {
+  }
+
+  & div {
+    background: #f3f3f3;
+    padding: 0 0 0.1vw 0;
+    border-radius: 50vw;
+    color: #050505;
+    font-size: 0.7vw;
+    z-index: 9;
+    width: 85%;
+    white-space: nowrap;
+    text-align: center;
+
+    @media only screen and (max-width: 600px) {
+      font-size: 3.2vw;
+      padding: 0.5vw 1.5vw;
+      border-radius: 1vw;
+    }
+  }
+`;
+
+const ImgContainer = styled.div`
+  border-radius: 15px;
+  overflow: hidden;
+  border: 2px solid #f3f3f3;
+  margin: 0.5vw 0;
+  height: 6vw;
+  width: 6vw;
+
+  animation: fadeIn 0.5s;
+  -webkit-animation: fadeIn 0.5s;
+  -moz-animation: fadeIn 0.5s;
+  -o-animation: fadeIn 0.5s;
+  -ms-animation: fadeIn 0.5s;
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @-moz-keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @-webkit-keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @-o-keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @-ms-keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  cursor: pointer;
+  :hover {
+    filter: brightness(0.9);
+  }
+
+  @media only screen and (max-width: 600px) {
+    height: 30vw;
+    width: 30vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+`;
+
+const Img = styled.img`
+  height: 6vw;
+  width: 6vw;
+  object-fit: cover;
+  transition: ease-in 200ms;
+
+  @media only screen and (max-width: 600px) {
+    width: 30vw;
+    height: 30vw;
+  }
+`;
+const IconCont = styled.div`
+  height: 6vw;
+  width: 6vw;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @media only screen and (max-width: 600px) {
+    width: 12vw;
+    height: 12vw;
+  }
+
+  :hover {
+    filter: brightness(0.9);
+  }
+`;
+
+const Category = styled.div`
+  margin-top: 0.5vw;
+  width: 85%;
+  height: 1vw;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  justify-content: center;
+  padding: 0 0 0.5vw 0.3vw;
+  font-size: 0.6vw;
+  font-weight: bold;
+  border-bottom: 1px solid #ccc;
+
+  @media only screen and (max-width: 600px) {
+    width: 35vw;
+    height: 6vw;
+    padding: 0 0 0vw 1vw;
+    font-size: 3vw;
+  }
+`;
+
+const Review = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25vw;
+  padding: 0.5vw 0 0.2vw 0;
+
+  @media only screen and (max-width: 600px) {
+    gap: 5px;
+    padding: 1.5vw 0 0vw 0;
+  }
+
+  .likedIcon {
+    color: #bb3394;
+    font-size: 1.2vw;
+    margin-right: 0.25vw;
+    cursor: pointer;
+
+    @media only screen and (max-width: 600px) {
+      font-size: 4vw;
+      margin-right: 1vw;
+    }
+  }
+`;
