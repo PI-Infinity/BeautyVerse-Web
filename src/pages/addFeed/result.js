@@ -25,12 +25,17 @@ import {
 import { TopSection } from "../../pages/main/feedCard/topSection";
 import { FaUser } from "react-icons/fa";
 import useWindowDimensions from "../../functions/dimensions";
+import { IsMobile } from "../../functions/isMobile";
 import { IoMdImages } from "react-icons/io";
+import Resizer from "react-image-file-resizer";
+import { isWebpSupported } from "react-image-webp/dist/utils";
 
 export const Result = (props) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   // capitalize first letters
+
+  const isMobile = IsMobile();
 
   function capitalizeFirstLetter(string) {
     return string?.charAt(0).toUpperCase() + string?.slice(1);
@@ -39,14 +44,71 @@ export const Result = (props) => {
   const name = capitalizeFirstLetter(props?.name);
   const userType = capitalizeFirstLetter(props?.type);
 
-  const DefineUrl = () => {
-    if (props.file) {
-      return URL?.createObjectURL(props?.file);
+  // reize image
+  const resizeFileDekstop = (file) =>
+    new Promise((resolve) => {
+      Resizer.imageFileResizer(
+        file,
+        1080,
+        1080,
+        "JPEG",
+        100,
+        0,
+        (uri) => {
+          resolve(uri);
+        },
+        "file"
+      );
+    });
+  const resizeFileMobileWebp = (file) =>
+    new Promise((resolve) => {
+      Resizer.imageFileResizer(
+        file,
+        640,
+        640,
+        "WEBP",
+        100,
+        0,
+        (uri) => {
+          resolve(uri);
+        },
+        "file"
+      );
+    });
+  const resizeFileMobileJpeg = (file) =>
+    new Promise((resolve) => {
+      Resizer.imageFileResizer(
+        file,
+        640,
+        640,
+        "JPEG",
+        100,
+        0,
+        (uri) => {
+          resolve(uri);
+        },
+        "file"
+      );
+    });
+
+  const DefineUrl = async () => {
+    try {
+      const imageDesktop = await resizeFileDekstop(props?.file);
+      const imageMobile = await resizeFileMobileWebp(props?.file);
+      const imageMobileJPEG = await resizeFileMobileJpeg(props?.file);
+      if (props?.file) {
+        props?.setResizedObj({
+          desktopJPEG: imageDesktop,
+          mobileWEBP: imageMobile,
+          mobileJPEG: imageMobileJPEG,
+        });
+      }
+    } catch (err) {
+      console.log(err);
     }
   };
-  const url = React.useMemo(() => DefineUrl(), [props.file?.name]);
 
-  console.log(props.file);
+  const url = React.useMemo(() => DefineUrl(), [props?.file]);
 
   return (
     <div
@@ -118,7 +180,33 @@ export const Result = (props) => {
                     htmlFor="img"
                     style={{ display: "flex", alignItems: "center" }}
                   >
-                    <Cover src={url} active={props.active} />
+                    {isMobile ? (
+                      isWebpSupported() ? (
+                        <Cover
+                          src={
+                            props?.resizedObj &&
+                            URL?.createObjectURL(props?.resizedObj.mobileWEBP)
+                          }
+                          active={props.active}
+                        />
+                      ) : (
+                        <Cover
+                          src={
+                            props?.resizedObj &&
+                            URL?.createObjectURL(props?.resizedObj.mobileJPEG)
+                          }
+                          active={props.active}
+                        />
+                      )
+                    ) : (
+                      <Cover
+                        src={
+                          props?.resizedObj &&
+                          URL?.createObjectURL(props?.resizedObj.desktopJPEG)
+                        }
+                        active={props.active}
+                      />
+                    )}
                   </label>
                 </>
               )}
@@ -171,7 +259,7 @@ export const Result = (props) => {
           props.file != null
             ? async () => {
                 await props.FileUpload();
-                await dispatch(setRerender());
+                dispatch(setRerender());
               }
             : () => alert("Add File")
         }
@@ -359,7 +447,7 @@ const TextReview = styled.span`
 `;
 
 const Button = styled.div`
-  width: 15vw;
+  width: 32vw;
   height: 2.5vw;
   border-radius: 0.5vw;
   box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);

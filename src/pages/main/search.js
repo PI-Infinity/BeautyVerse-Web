@@ -169,12 +169,13 @@ const Container = styled.div`
     }
   }
   .profileicon {
-    color: ${(props) => (props.changeFeed === "/" ? "#ddd" : "#050505")};
+    color: ${(props) => (props.changeFeed === "/cards" ? "#050505" : "#ddd")};
     font-size: 1.2vw;
     cursor: pointer;
 
     @media only screen and (max-width: 600px) {
       font-size: 6vw;
+      display: none;
     }
   }
 
@@ -294,7 +295,7 @@ const ResultContainer = styled.div`
   overflow-y: scroll;
   position: absolute;
   top: 0.5vw;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 1);
   backdrop-filter: blur(40px);
   border: 1px solid #eee;
   box-sizing: border-box;

@@ -1,17 +1,17 @@
 import React, { useState, useContext } from "react";
 import styled from "styled-components";
-import { CoverSection } from "../../pages/user/coverSection";
+import CoverSection from "../../pages/user/coverSection";
 import { Links } from "../../pages/user/links";
 import { Navigator } from "../../pages/user/navigator";
-import { UserImages } from "../../pages/user/images";
-import { Services } from "../../pages/user/services";
-import { Products } from "../../pages/user/userProducts";
-import { AddProduct } from "../../pages/user/addProduct";
-import { Followers } from "../../pages/user/followers";
-import { Followings } from "../../pages/user/followings";
+// import { UserImages } from "../../pages/user/images";
+// import { Services } from "../../pages/user/services";
+// import { Products } from "../../pages/user/userProducts";
+// import { AddProduct } from "../../pages/user/addProduct";
+// import { Followers } from "../../pages/user/followers";
+// import { Followings } from "../../pages/user/followings";
 import { useSelector, useDispatch } from "react-redux";
 import { setContentChanger } from "../../redux/user";
-import { Info } from "../../pages/user/info";
+import { Contact } from "../../pages/user/contact";
 import { db } from "../../firebase";
 import {
   collection,
@@ -25,103 +25,50 @@ import {
 } from "firebase/firestore";
 import { Spinner } from "../../components/loader";
 import useWindowDimensions from "../../functions/dimensions";
+import { IsMobile } from "../../functions/isMobile";
+import { Outlet, useParams } from "react-router-dom";
 
 const UserProfile = () => {
   const dispatch = useDispatch();
-  const userUnparsed = useSelector((state) => state.storeMain.user);
-  const [loading, setLoading] = useState(true);
+  const { Id } = useParams();
+  // const [loading, setLoading] = useState(true);
 
-  // define content
-  const contentChanger = useSelector((state) => state.storeUser.contentChanger);
+  console.log("user");
 
-  React.useEffect(() => {
-    setLoading(true);
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  }, [contentChanger]);
-
-  // open add product window
-  const [add, setAdd] = useState(false);
-
-  let user;
-  if (userUnparsed?.length > 0) {
-    user = JSON.parse(userUnparsed);
+  const usersList = useSelector((state) => state.storeMain.userList);
+  let users;
+  if (usersList?.length > 0) {
+    users = JSON.parse(usersList);
   }
-
-  // import user gallery images from firestore
-  const [feeds, setFeeds] = useState("");
-
-  React.useEffect(() => {
-    const data = onSnapshot(
-      collection(db, "users", `${user.id}`, "feeds"),
-      (snapshot) => {
-        setFeeds(snapshot.docs.map((doc) => doc.data()));
-      }
-    );
-    return data;
-  }, [contentChanger]);
+  const user = users?.find((item) => item.id === Id);
 
   // define mobile or desktop
-  const isMobile = useWindowDimensions();
+  const isMobile = IsMobile();
 
-  React.useEffect(() => {
-    if (user?.type == "user") {
-      if (isMobile) {
-        dispatch(setContentChanger("contact"));
-      } else {
-        dispatch(setContentChanger("followings"));
-      }
-    } else if (user?.type == "shop") {
-      dispatch(setContentChanger("products"));
-    } else {
-      dispatch(setContentChanger("posts"));
-    }
-  }, []);
-
-  let content;
-  if (contentChanger == "posts") {
-    content = <UserImages feeds={feeds} />;
-  } else if (contentChanger == "services") {
-    content = <Services />;
-  } else if (contentChanger == "products") {
-    content = add ? (
-      <AddProduct setAdd={setAdd} />
-    ) : (
-      <Products setAdd={setAdd} />
-    );
-  } else if (contentChanger == "followers") {
-    content = <Followers />;
-  } else if (contentChanger == "contact") {
-    content = <Info userVisit={false} />;
-  } else {
-    content = <Followings />;
-  }
-
-  setTimeout(() => {
-    setLoading(false);
-  }, 500);
+  // setTimeout(() => {
+  //   setLoading(false);
+  // }, 500);
 
   return (
     <Container>
       <CoverSection
         latitude={user?.adress.latitude}
         longitude={user?.adress.longitude}
+        user={user}
       />
       <ContentSide>
         <div className="links">
           <Links user={user} />
         </div>
         <ContentRightSide>
-          <Navigator type={user?.type} />
-          {loading ? (
+          <Navigator type={user?.type} user={user} />
+          {/* {loading ? (
             <LoadingContainer>
               <Spinner />
             </LoadingContainer>
-          ) : (
-            <>{content}</>
-          )}
+          ) : ( */}
+          <Outlet context={[user]} />
+          {/* )} */}
         </ContentRightSide>
       </ContentSide>
     </Container>

@@ -11,8 +11,10 @@ import { FiEdit } from "react-icons/fi";
 import { MdLocationPin } from "react-icons/md";
 import { collection, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase";
+import { useOutletContext } from "react-router-dom";
 
-export const Info = (props) => {
+export const Contact = () => {
+  const [user] = useOutletContext();
   // get user by params id
   const { Id } = useParams();
   const { height, width } = useWindowDimensions();
@@ -26,16 +28,9 @@ export const Info = (props) => {
   const userVis = users?.find((item) => item.id === Id);
 
   const userUnparsed = useSelector((state) => state.storeMain.user);
-  let parsed;
+  let currentuser;
   if (userUnparsed?.length > 0) {
-    parsed = JSON.parse(userUnparsed);
-  }
-
-  let user;
-  if (props.userVisit) {
-    user = userVis;
-  } else {
-    user = parsed;
+    currentuser = JSON.parse(userUnparsed);
   }
 
   // edit adress
@@ -60,7 +55,7 @@ export const Info = (props) => {
 
   return (
     <Container style={{ padding: "3vw 0" }} height={height}>
-      <Links user={user} userVisit={props.userVisit} />
+      <Links user={user} />
       <span style={{ fontWeight: "bold" }}>მისამართი:</span>
 
       {editAdress ? (

@@ -1,49 +1,72 @@
 import React from "react";
 import styled from "styled-components";
 import { BsListCheck } from "react-icons/bs";
+import { useNavigate, Link } from "react-router-dom";
 import {
   MdOutlinePhotoSizeSelectActual,
   MdContactPhone,
   MdShoppingCart,
 } from "react-icons/md";
 import { BsInfoLg } from "react-icons/bs";
-import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
+import { FaUsers } from "react-icons/fa";
+import { AiFillHeart, AiOutlineTeam } from "react-icons/ai";
 import { useSelector, useDispatch } from "react-redux";
 import { setContentChanger } from "../../redux/user";
+import { IsMobile } from "../../functions/isMobile";
 
 export const Navigator = (props) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const contentChanger = useSelector((state) => state.storeUser.contentChanger);
+  const isMobile = IsMobile();
 
   const type = props?.type;
 
   const Contents = [
     {
+      id: 1,
       value: "posts",
       title: "პოსტები",
-      onClick: () => dispatch(setContentChanger("posts")),
-      className: contentChanger == "posts" ? "active" : "btn",
+      onClick: `/user/${props?.user.id}`,
+      // className:
+      //   window.location.pathname === `/user/${props?.user?.id}`
+      //     ? "active"
+      //     : "btn",
       icon: <MdOutlinePhotoSizeSelectActual className="icon" />,
     },
     {
+      id: 2,
       value: "contact",
       title: "კონტაქტი",
-      onClick: () => dispatch(setContentChanger("contact")),
-      className: contentChanger == "contact" ? "active" : "btn",
+      onClick: `contact`,
+      // className:
+      //   window.location.pathname === `/user/${props?.user?.id}/contact`
+      //     ? "active"
+      //     : "btn",
       id: "contact",
       icon: <MdContactPhone className="icon" />,
     },
     {
+      id: 3,
+      value: "team",
+      title: "გუნდი",
+      onClick: `team`,
+      // className:
+      //   window.location.pathname === `/user/${props?.user?.id}/team`
+      //     ? "active"
+      //     : "btn",
+      id: "team",
+      icon: <AiOutlineTeam className="icon" />,
+    },
+    {
+      id: 4,
       value: type == "shop" ? "products" : "services",
       title: type == "shop" ? "პროდუქტები" : "სერვისები",
-      onClick:
-        type == "shop"
-          ? () => dispatch(setContentChanger("products"))
-          : () => dispatch(setContentChanger("services")),
-      className:
-        contentChanger == "products" || contentChanger == "services"
-          ? "active"
-          : "btn",
+      onClick: `/user/${props?.user?.id}/services`,
+      // className:
+      //   window.location.pathname === `/user/${props?.user?.id}/services`
+      //     ? "active"
+      //     : "btn",
       icon:
         type == "shop" ? (
           <MdShoppingCart className="icon" />
@@ -52,22 +75,19 @@ export const Navigator = (props) => {
         ),
     },
     {
-      value: "followers",
-      title: "ფოლოუერები",
-      onClick: () => dispatch(setContentChanger("followers")),
-      className: contentChanger == "followers" ? "active" : "btn",
-      icon: <AiOutlineHeart className="icon" />,
-    },
-    {
-      value: "followings",
-      title: "ფავორიტები",
-      onClick: () => dispatch(setContentChanger("followings")),
-      className: contentChanger == "followings" ? "active" : "btn",
-      icon: <AiFillHeart className="icon" />,
+      id: 5,
+      value: "audience",
+      title: "აუდიტორია",
+      onClick: `/user/${props?.user?.id}/audience`,
+      // className:
+      //   window.location.pathname === `/user/${props?.user?.id}/audience`
+      //     ? "active"
+      //     : "btn",
+      icon: <FaUsers className="icon" />,
     },
   ];
 
-  const contentsList = Contents;
+  const list = Contents;
 
   /* 
   // DEFINE content categories
@@ -82,15 +102,6 @@ export const Navigator = (props) => {
     a.splice(fromIndex, 1);
     a.splice(toIndex, 0, element);
     return a;
-  }
-
-  // define list
-  let list;
-  if (type == "shop" || type == "beautyCenter") {
-    let changedFirst = array_move(Contents, 0, 2);
-    list = array_move(changedFirst, 1, 0);
-  } else {
-    list = Contents;
   }
 
   // mapping content categories
@@ -108,57 +119,61 @@ export const Navigator = (props) => {
         })
         ?.map((item, index) => {
           return (
-            <Button
+            <Link
               key={index}
               className={item?.className}
-              onClick={item?.onClick}
+              to={item?.onClick}
               id={item?.id}
             >
               {item?.icon}
               {item?.title}
-            </Button>
+            </Link>
           );
         });
     } else if (type == "shop") {
-      content = list?.map((item, index) => {
-        return (
-          <Button
-            key={index}
-            className={item?.className}
-            onClick={item?.onClick}
-            id={item?.id}
-          >
-            {item?.icon}
-            {item?.title}
-          </Button>
-        );
-      });
+      content = list
+        ?.filter((item) => item.value !== "team")
+        .map((item, index) => {
+          return (
+            <Link
+              key={index}
+              className={item?.className}
+              to={item?.onClick}
+              id={item?.id}
+            >
+              {item?.icon}
+              {item?.title}
+            </Link>
+          );
+        });
     } else if (type == "specialist") {
-      content = list?.map((item, index) => {
-        return (
-          <Button
-            key={index}
-            className={item?.className}
-            onClick={item?.onClick}
-            id={item?.id}
-          >
-            {item?.icon}
-            {item?.title}
-          </Button>
-        );
-      });
+      content = list
+        ?.filter((item) => item.value !== "team")
+        ?.map((item, index) => {
+          return (
+            <Link
+              key={index}
+              className={item?.className}
+              to={item?.onClick}
+              id={item?.id}
+            >
+              {item?.icon}
+              {item?.title}
+            </Link>
+          );
+        });
     } else {
       content = list?.map((item, index) => {
         return (
-          <Button
-            key={index}
+          <Link
+            key={item.id}
             className={item?.className}
-            onClick={item?.onClick}
+            to={item?.onClick}
             id={item?.id}
           >
             {item?.icon}
             {item?.title}
-          </Button>
+          </Link>
         );
       });
     }

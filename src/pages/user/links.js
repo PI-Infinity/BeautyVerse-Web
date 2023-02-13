@@ -25,7 +25,7 @@ import {
 import { setRerender, SetCurrentChat } from "../../redux/chat";
 import { useNavigate } from "react-router-dom";
 
-export const Links = (props) => {
+export const Links = ({ user }) => {
   const [edit, setEdit] = React.useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -36,32 +36,31 @@ export const Links = (props) => {
     currentuser = JSON.parse(userUnparsed);
   }
 
-  const [changePhone, setChangePhone] = React.useState("");
+  const [changeEmail, setChangeEmail] = React.useState("");
   const [changeWeb, setChangeWeb] = React.useState("");
   const [changeInstagram, setChangeInstagram] = React.useState("");
   const [changeFacebook, setChangeFacebook] = React.useState("");
   const [changeTiktok, setChangeTiktok] = React.useState("");
   const [changeYoutube, setChangeYoutube] = React.useState("");
-  const [changeEmail, setChangeEmail] = React.useState("");
   const [changeOtherMedia, setChangeOtherMedia] = React.useState("");
 
   const UpdateLink = (newValue) => {
-    const base = doc(db, "users", `${props?.user.id}`);
-    if (changePhone?.length > 0) {
+    const base = doc(db, "users", `${user?.id}`);
+    if (changeEmail?.length > 0) {
       updateDoc(base, {
-        phone: changePhone,
+        email: changeEmail,
       });
-      setChangePhone("");
+      setChangeEmail("");
     }
     if (changeWeb?.length > 0) {
       updateDoc(base, {
         socMedia: {
           web: changeWeb,
-          facebook: props.user?.socMedia?.facebook,
-          instagram: props.user?.socMedia?.instagram,
-          tiktok: props.user?.socMedia?.tiktok,
-          youtube: props.user?.socMedia?.youtube,
-          otherMedia: props.user?.socMedia?.otherMedia,
+          facebook: user?.socMedia?.facebook,
+          instagram: user?.socMedia?.instagram,
+          tiktok: user?.socMedia?.tiktok,
+          youtube: user?.socMedia?.youtube,
+          otherMedia: user?.socMedia?.otherMedia,
         },
       });
       setChangeWeb("");
@@ -69,12 +68,12 @@ export const Links = (props) => {
     if (changeInstagram?.length > 0) {
       updateDoc(base, {
         socMedia: {
-          web: props.user?.socMedia?.web,
-          facebook: props.user?.socMedia?.facebook,
+          web: user?.socMedia?.web,
+          facebook: user?.socMedia?.facebook,
           instagram: changeInstagram,
-          tiktok: props.user?.socMedia?.tiktok,
-          youtube: props.user?.socMedia?.youtube,
-          otherMedia: props.user?.socMedia?.otherMedia,
+          tiktok: user?.socMedia?.tiktok,
+          youtube: user?.socMedia?.youtube,
+          otherMedia: user?.socMedia?.otherMedia,
         },
       });
       setChangeInstagram("");
@@ -82,12 +81,12 @@ export const Links = (props) => {
     if (changeFacebook?.length > 0) {
       updateDoc(base, {
         socMedia: {
-          web: props.user?.socMedia?.web,
+          web: user?.socMedia?.web,
           facebook: changeFacebook,
-          instagram: props.user?.socMedia?.instagram,
-          tiktok: props.user?.socMedia?.tiktok,
-          youtube: props.user?.socMedia?.youtube,
-          otherMedia: props.user?.socMedia?.otherMedia,
+          instagram: user?.socMedia?.instagram,
+          tiktok: user?.socMedia?.tiktok,
+          youtube: user?.socMedia?.youtube,
+          otherMedia: user?.socMedia?.otherMedia,
         },
       });
       setChangeFacebook("");
@@ -95,12 +94,12 @@ export const Links = (props) => {
     if (changeTiktok?.length > 0) {
       updateDoc(base, {
         socMedia: {
-          web: props.user?.socMedia?.web,
-          facebook: props.user?.socMedia?.facebook,
-          instagram: props.user?.socMedia?.instagram,
+          web: user?.socMedia?.web,
+          facebook: user?.socMedia?.facebook,
+          instagram: user?.socMedia?.instagram,
           tiktok: changeTiktok,
-          youtube: props.user?.socMedia?.youtube,
-          otherMedia: props.user?.socMedia?.otherMedia,
+          youtube: user?.socMedia?.youtube,
+          otherMedia: user?.socMedia?.otherMedia,
         },
       });
       setChangeTiktok("");
@@ -108,12 +107,12 @@ export const Links = (props) => {
     if (changeYoutube?.length > 0) {
       updateDoc(base, {
         socMedia: {
-          web: props.user?.socMedia?.web,
-          facebook: props.user?.socMedia?.facebook,
-          instagram: props.user?.socMedia?.instagram,
-          tiktok: props.user?.socMedia?.tiktok,
+          web: user?.socMedia?.web,
+          facebook: user?.socMedia?.facebook,
+          instagram: user?.socMedia?.instagram,
+          tiktok: user?.socMedia?.tiktok,
           youtube: changeYoutube,
-          otherMedia: props.user?.socMedia?.otherMedia,
+          otherMedia: user?.socMedia?.otherMedia,
         },
       });
       setChangeYoutube("");
@@ -121,12 +120,12 @@ export const Links = (props) => {
     if (changeOtherMedia?.length > 0) {
       updateDoc(base, {
         socMedia: {
-          web: props.user?.socMedia?.web,
-          facebook: props.user?.socMedia?.facebook,
-          instagram: props.user?.socMedia?.instagram,
-          tiktok: props.user?.socMedia?.tiktok,
-          youtube: props.user?.socMedia?.youtube,
-          otherMedia: props.user?.socMedia?.changeOtherMedia,
+          web: user?.socMedia?.web,
+          facebook: user?.socMedia?.facebook,
+          instagram: user?.socMedia?.instagram,
+          tiktok: user?.socMedia?.tiktok,
+          youtube: user?.socMedia?.youtube,
+          otherMedia: user?.socMedia?.changeOtherMedia,
         },
       });
       setChangeOtherMedia("");
@@ -136,34 +135,34 @@ export const Links = (props) => {
 
   const LinkList = [
     {
-      id: "email",
-      placeholder: props.user?.email,
-      icon: <AiOutlineMail />,
+      id: "phone",
+      placeholder: user?.phone,
+      icon: <FaPhoneAlt />,
     },
     {
-      id: "phone",
-      placeholder: props.user?.phone,
-      icon: <FaPhoneAlt />,
-      value: changePhone,
-      onChange: (e) => setChangePhone(e.target.value),
+      id: "email",
+      placeholder: user?.email,
+      icon: <AiOutlineMail />,
+      onChange: (e) => setChangeEmail(e.target.value),
+      value: changeEmail,
     },
     {
       id: "web",
-      placeholder: props.user?.socMedia?.web,
+      placeholder: user?.socMedia?.web,
       icon: <FaChrome />,
       value: changeWeb,
       onChange: (e) => setChangeWeb(e.target.value),
     },
     {
       id: "facebook",
-      placeholder: props.user?.socMedia?.facebook,
+      placeholder: user?.socMedia?.facebook,
       icon: <FaFacebook />,
       value: changeFacebook,
       onChange: (e) => setChangeFacebook(e.target.value),
     },
     {
       id: "instagram",
-      placeholder: props.user?.socMedia?.instagram,
+      placeholder: user?.socMedia?.instagram,
       icon: <FaInstagram />,
       value: changeInstagram,
       onChange: (e) => setChangeInstagram(e.target.value),
@@ -171,14 +170,14 @@ export const Links = (props) => {
 
     {
       id: "tiktok",
-      placeholder: props.user?.socMedia?.tiktok,
+      placeholder: user?.socMedia?.tiktok,
       icon: <FaTiktok />,
       value: changeTiktok,
       onChange: (e) => setChangeTiktok(e.target.value),
     },
     {
       id: "youtube",
-      placeholder: props.user?.socMedia?.youtube,
+      placeholder: user?.socMedia?.youtube,
       icon: <FaYoutube />,
       value: changeYoutube,
       onChange: (e) => setChangeYoutube(e.target.value),
@@ -272,7 +271,6 @@ export const Links = (props) => {
         ])
       );
       navigate(`/chat/${combinedId}`);
-      dispatch(setRerender());
     } catch (err) {
       alert(err);
     }
@@ -280,11 +278,11 @@ export const Links = (props) => {
 
   return (
     <LinksContainer>
-      {props.userVisit && (
+      {user?.id !== currentuser?.id && (
         <SendMessage
           onClick={
             currentuser !== undefined
-              ? () => handleSelect(props?.user)
+              ? () => handleSelect(user)
               : () => navigate("/login")
           }
         >
@@ -317,7 +315,7 @@ export const Links = (props) => {
                 )}
               </Link>
             )}
-            {!props.userVisit && item.id != "email" && (
+            {user?.id === currentuser?.id && item.id != "phone" && (
               <>
                 {edit == item.id ? (
                   <ImCheckmark className="confirmIcon" onClick={UpdateLink} />

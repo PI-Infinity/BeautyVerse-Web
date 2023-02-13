@@ -25,6 +25,13 @@ import {
   setScroll,
 } from "../redux/main";
 import { setFilter } from "../redux/marketplace/marketplace";
+import { IsMobile } from "../functions/isMobile";
+import Badge from "@mui/material/Badge";
+import DynamicFeedIcon from "@mui/icons-material/DynamicFeed";
+import SwitchAccountIcon from "@mui/icons-material/SwitchAccount";
+import MapsUgcIcon from "@mui/icons-material/MapsUgc";
+import ForumOutlinedIcon from "@mui/icons-material/ForumOutlined";
+import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 
 export const Navigator = (props) => {
   const navigate = useNavigate();
@@ -41,26 +48,27 @@ export const Navigator = (props) => {
   // open mobile filter
   const filterOpen = useSelector((state) => state.storeMain.mobileFilter);
 
-  const active = useSelector((state) => state.storeMain.navigatorActive);
   // hide filter on scroll
   const scroll = useSelector((state) => state.storeMain.scroll);
 
   // define mobile or desktop
 
-  const [widths, setWidths] = React.useState(window.innerWidth);
+  const isMobile = IsMobile();
 
-  function handleWindowSizeChange() {
-    setWidths(window.innerWidth);
+  let active;
+  if (window.location.pathname == "/") {
+    active = "main";
+  } else if (window.location.pathname == "/cards") {
+    active = "cards";
+  } else if (window.location.pathname == "/add") {
+    active = "add";
+  } else if (window.location.pathname == "/chat") {
+    active = "chat";
+  } else if (window.location.pathname?.startsWith(`/user/${user?.id}`)) {
+    active = "user";
+  } else {
+    active = "main/user";
   }
-  React.useEffect(() => {
-    window.addEventListener("resize", handleWindowSizeChange);
-    return () => {
-      window.removeEventListener("resize", handleWindowSizeChange);
-    };
-  }, []);
-
-  const isMobile = widths <= 768;
-  const mainPage = window.location.pathname == "/";
 
   // referal of feeds wrapper div element to scrolling flexible
   const refDiv = document.getElementById("feed");
@@ -68,28 +76,48 @@ export const Navigator = (props) => {
   //market filter
   const filter = useSelector((state) => state.storeMarket.filter);
 
+  // style chat badge
+
+  const StyledBadge = styled(Badge)(({ theme }) => ({
+    "& .MuiBadge-badge": {
+      right: 15,
+      top: 15,
+      border: `2px solid #fff`,
+      padding: "0 4px",
+    },
+  }));
+
   return (
     <>
       <NavigatorContainer filterOpen={filterOpen}>
-        <FiHome
-          className={active == 0 ? "active" : "feedIcon"}
+        <DynamicFeedIcon
+          className={
+            active === "main" || active === "main/user" ? "active" : "feedIcon"
+          }
           onClick={
-            mainPage
+            active === "main"
               ? () => {
                   localStorage.setItem("BeautyVerse:scrollPosition", 0);
                   dispatch(setRerender());
                 }
               : async () => {
-                  await dispatch(setNavigatorActive(0));
+                  // await dispatch(setNavigatorActive(0));
+                  localStorage.setItem("BeautyVerse:scrollPosition", 0);
                   navigate("/");
                   await dispatch(setLoadFeed(true));
-                  await dispatch(setChangeFeed(true));
+                  // await dispatch(setChangeFeed(true));
                   await dispatch(setRerender());
                 }
           }
         />
-
-        <Market>
+        <SwitchAccountIcon
+          className={active == "cards" ? "active" : "feedIcon"}
+          onClick={() => {
+            dispatch(setRerender());
+            navigate("cards");
+          }}
+        />
+        {/* <Market>
           <ButtonBg>
             <MarketButton
               onClick={() => {
@@ -100,50 +128,57 @@ export const Navigator = (props) => {
               <MdShoppingCart className={active == 1 ? "active" : "feedIcon"} />
             </MarketButton>
           </ButtonBg>
-        </Market>
+        </Market> */}
         {user?.type === "user" ? (
           <CgSearch
-            className={active == 2 ? "active" : "feedIcon"}
+            className={active == "add" ? "active" : "feedIcon"}
             onClick={async () => {
+              await localStorage.setItem("BeautyVerse:scrollPosition", 0);
               await dispatch(setRerender());
-              document.getElementById("search").focus();
+              setTimeout(async () => {
+                document.getElementById("search").focus();
+              }, 500);
             }}
           />
         ) : (
-          <>
-            {window.location.pathname?.startsWith("/marketplace") ? (
-              <MdFilterList
-                className="feedIcon"
-                onClick={() => dispatch(setFilter(true))}
-              />
-            ) : (
-              <BiMessageSquareAdd
-                className={active == 2 ? "active" : "feedIcon"}
-                onClick={() => {
-                  dispatch(setNavigatorActive(2));
-                  navigate("/add");
-                }}
-              />
-            )}
-          </>
+          // <>
+          //   {window.location.pathname?.startsWith("/marketplace") ? (
+          //     <MdFilterList
+          //       className="feedIcon"
+          //       onClick={() => dispatch(setFilter(true))}
+          //     />
+          //   ) : (
+          <MapsUgcIcon
+            className={active == "add" ? "active" : "feedIcon"}
+            onClick={() => {
+              // dispatch(setNavigatorActive(2));
+              navigate("add");
+            }}
+          />
+          // )}
         )}
-
-        <TbMessages
-          className={active == 3 ? "active" : "feedIcon"}
-          onClick={() => {
-            dispatch(setNavigatorActive(3));
-            navigate("/chat");
-          }}
-        />
+        <StyledBadge badgeContent={1} overlap="circular" color="secondary">
+          <ForumOutlinedIcon
+            className={active == "chat" ? "active" : "feedIcon"}
+            onClick={() => {
+              // dispatch(setNavigatorActive(3));
+              navigate("chat");
+            }}
+          />
+        </StyledBadge>
         <Link
-          onClick={() => dispatch(setNavigatorActive(4))}
-          to="/user"
+          // onClick={() => dispatch(setNavigatorActive(4))}
+          to={
+            user?.type === "user"
+              ? `user/${currentUser?.uid}/contact`
+              : `user/${currentUser?.uid}`
+          }
           style={{ color: "inherit", display: "flex", alignItems: "center" }}
         >
-          <Profile active={active == 4}>
+          <Profile active={active?.toString()}>
             {user?.cover == undefined ? (
               <UserProfileEmpty>
-                <FaUser className="user" />
+                <PersonOutlinedIcon className="user" />
               </UserProfileEmpty>
             ) : (
               <Img src={user?.cover} alt="cover" />
@@ -196,7 +231,7 @@ const NavigatorContainer = styled.div`
 
   .feedIcon {
     font-size: 1.1vw;
-    color: #050505;
+    color: #222;
     cursor: pointer;
 
     @media only screen and (max-width: 600px) {
@@ -394,12 +429,13 @@ const Profile = styled.div`
   }
 
   @media only screen and (max-width: 600px) {
-    width: 5.5vw;
-    height: 5.5vw;
+    width: 5vw;
+    height: 5vw;
     margin: 2vw;
     padding: 0;
     border-radius: 50%;
-    border: 2px solid ${(props) => (props.active ? "#2bdfd9" : "white")};
+    border: 2px solid
+      ${(props) => (props.active === "user" ? "#2bdfd9" : "#222")};
   }
 
   :hover {

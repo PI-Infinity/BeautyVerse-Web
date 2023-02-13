@@ -13,7 +13,8 @@ import Chat from "./pages/chat/main";
 import UserProfile from "./pages/user/userProfilePage";
 import { Services } from "./pages/user/services";
 import { UserFeeds } from "./pages/user/feeds";
-import { Audience } from "./pages/user/audience";
+import { Followers } from "./pages/user/followers";
+import { Followings } from "./pages/user/followings";
 import { Contact } from "./pages/user/contact";
 import { Team } from "./pages/user/team";
 import Marketplace from "./src-marketplace/pages/market/marketplace";
@@ -84,17 +85,11 @@ function App() {
    */
   const { currentUser } = useContext(AuthContext);
 
-  console.log(currentUser);
-
   const RequireAuth = ({ children }) => {
     return currentUser ? children : <Navigate to="/login" />;
   };
   const RequireLogout = ({ children }) => {
-    return !currentUser ? (
-      children
-    ) : (
-      <Navigate to={`/user/${currentUser?.uid}`} />
-    );
+    return !currentUser ? children : <Navigate to="/user" />;
   };
 
   const dispatch = useDispatch();
@@ -105,7 +100,6 @@ function App() {
    */
   React.useEffect(() => {
     if (currentUser) {
-      console.log("run");
       const data = onSnapshot(collection(db, "users"), (snapshot) => {
         dispatch(
           setUser(
@@ -241,20 +235,28 @@ function App() {
                 </RequireLogout>
               }
             />
+            {/* <Route
+              path="/add"
+              element={
+                <RequireAuth>
+                  <AddFeed />
+                </RequireAuth>
+              }
+            /> */}
             <Route
-              path="user/:Id"
+              path="/user/:Id"
               element={
                 <RequireAuth>
                   <UserProfile />
                 </RequireAuth>
               }
             >
-              <Route index element={<UserFeeds />} />
               <Route path="services" element={<Services />} />
               <Route path="team" element={<Team />} />
               <Route path="contact" element={<Contact />} />
-              <Route path="audience" element={<Audience />} />
-              {/* <Route path="followings" element={<Followings />} /> */}
+              <Route index element={<UserFeeds />} />
+              <Route path="followers" element={<Followers />} />
+              <Route path="followings" element={<Followings />} />
             </Route>
             {/* <Route path="/marketplace" element={<Marketplace />}>
               <Route index element={<MarketplaceMain />} />

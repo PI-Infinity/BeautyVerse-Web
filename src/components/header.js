@@ -5,7 +5,8 @@ import { BiMessageSquareAdd } from "react-icons/bi";
 import { CgMenuGridO, CgMenuGridR } from "react-icons/cg";
 import { BsStars, BsLayoutTextSidebarReverse } from "react-icons/bs";
 import { setOpenMenu, setOpenMobileMenu } from "../redux/main";
-import { Menu } from "../components/menu";
+import Menu from "../components/menu";
+import { MobileMenu } from "../components/mobileMenu";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { FaUser } from "react-icons/fa";
@@ -15,23 +16,11 @@ import { auth } from "../firebase";
 import { RiShoppingCartFill } from "react-icons/ri";
 import marketIcon from "../assets/market.png";
 import { Filter } from "../pages/main/filter";
+import Badge from "@mui/material/Badge";
+import { IsMobile } from "../functions/isMobile";
 
 export const Header = () => {
-  // define mobile or desktop
-
-  const [width, setWidth] = React.useState(window.innerWidth);
-
-  function handleWindowSizeChange() {
-    setWidth(window.innerWidth);
-  }
-  React.useEffect(() => {
-    window.addEventListener("resize", handleWindowSizeChange);
-    return () => {
-      window.removeEventListener("resize", handleWindowSizeChange);
-    };
-  }, []);
-
-  const isMobile = width <= 768;
+  const isMobile = IsMobile();
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -70,8 +59,7 @@ export const Header = () => {
 
   return (
     <>
-      {openMenu && <Menu desktop={true} />}
-      {openMobileMenu && <Menu />}
+      {openMobileMenu && <MobileMenu />}
       <Container scroll={scroll}>
         <Divider style={{ justifyContent: "start", flex: 2 }} empty={true}>
           <BsStars className="logo" onClick={() => navigate("/")} />
@@ -99,7 +87,7 @@ export const Header = () => {
           {!isMobile && user !== undefined && (
             <div
               style={{
-                marginRight: "10px",
+                marginRight: "20px",
                 display: "flex",
                 alignItems: "center",
                 gap: "10px",
@@ -107,22 +95,26 @@ export const Header = () => {
                 marginTop: "3px",
               }}
             >
-              <BiMessageSquareAdd
-                className="notifIcon"
-                size={24}
-                style={{ cursor: "pointer" }}
-                onClick={() => navigate("/add")}
-              />
-              <TbMessages
-                className="notifIcon"
-                size={24}
-                style={{ cursor: "pointer" }}
-                onClick={() => navigate("/chat")}
-              />
+              {user?.type !== "user" && (
+                <BiMessageSquareAdd
+                  className="notifIcon"
+                  size={24}
+                  style={{ cursor: "pointer" }}
+                  onClick={() => navigate("/add")}
+                />
+              )}
+              <Badge badgeContent={5} color="secondary">
+                <TbMessages
+                  className="notifIcon"
+                  size={24}
+                  style={{ cursor: "pointer" }}
+                  onClick={() => navigate("/chat")}
+                />
+              </Badge>
             </div>
           )}
           <Link
-            to="/user"
+            to={`/user/${currentUser?.uid}`}
             style={{ color: "inherit", display: "flex", alignItems: "center" }}
           >
             <Profile>
@@ -137,29 +129,22 @@ export const Header = () => {
           {isMobile ? (
             <>
               {!openMobileMenu ? (
-                <CgMenuGridO className="menuIcon" onClick={MenuOpening} />
+                <Badge badgeContent={999} overlap="circular" color="secondary">
+                  <CgMenuGridO className="menuIcon" onClick={MenuOpening} />
+                </Badge>
               ) : (
-                <CgMenuGridR
-                  className="ClosemenuIcon"
-                  onClick={() => {
-                    dispatch(setOpenMobileMenu(false));
-                  }}
-                />
+                <Badge badgeContent={999} overlap="circular" color="secondary">
+                  <CgMenuGridR
+                    className="ClosemenuIcon"
+                    onClick={() => {
+                      dispatch(setOpenMobileMenu(false));
+                    }}
+                  />
+                </Badge>
               )}
             </>
           ) : (
-            <>
-              {openMenu ? (
-                <CgMenuGridO className="menuIcon" onClick={MenuOpening} />
-              ) : (
-                <CgMenuGridR
-                  className="ClosemenuIcon"
-                  onClick={() => {
-                    dispatch(setOpenMenu(true));
-                  }}
-                />
-              )}
-            </>
+            <Menu />
           )}
         </Divider>
       </Container>

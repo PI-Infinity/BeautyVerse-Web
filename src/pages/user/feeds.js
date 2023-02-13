@@ -25,7 +25,7 @@ import {
 } from "firebase/storage";
 import { ImgUploader } from "../../components/imgUploader";
 import { db, storage } from "../../firebase";
-import { collection, deleteDoc, doc } from "firebase/firestore";
+import { collection, deleteDoc, doc, onSnapshot } from "firebase/firestore";
 import { AuthContext } from "../../context/AuthContext";
 import {
   setLoading,
@@ -48,29 +48,33 @@ import Loader from "react-js-loader";
 import useWindowDimensions from "../../functions/dimensions";
 import { IsMobile } from "../../functions/isMobile";
 import { useNavigate } from "react-router-dom";
+import { HiOutlineViewGridAdd } from "react-icons/hi";
+import { useOutletContext } from "react-router-dom";
+import { isWebpSupported } from "react-image-webp/dist/utils";
 
-export const UserImages = (props) => {
+export const UserFeeds = () => {
+  const [user] = useOutletContext();
+  const { currentUser } = useContext(AuthContext);
   const isMobile = IsMobile();
   const { height, width } = useWindowDimensions();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  // import user gallery images from firestore
+  const [feeds, setFeeds] = useState("");
+
+  React.useEffect(() => {
+    const data = onSnapshot(
+      collection(db, "users", `${user.id}`, "feeds"),
+      (snapshot) => {
+        setFeeds(snapshot.docs.map((doc) => doc.data()));
+      }
+    );
+    return data;
+  }, []);
+
   // current user info from redux
   const userUnparsed = useSelector((state) => state.storeMain.user);
-
-  let userCurrent;
-  if (userUnparsed?.length > 0) {
-    userCurrent = JSON.parse(userUnparsed);
-  }
-
-  /** Define user - current user or visisted user
-   */
-  let user;
-  if (props?.userVisit) {
-    user = props?.user;
-  } else {
-    user = userCurrent;
-  }
 
   // loading images
   const [loadingImg, setLoadingImg] = useState(true);
@@ -88,7 +92,7 @@ export const UserImages = (props) => {
         .map((item, index) => {
           return (
             <GalleryImg key={index}>
-              {!props.userVisit && (
+              {user?.id === currentUser?.uid && (
                 <div
                   style={{ height: 0, display: "flex", justifyContent: "end" }}
                 >
@@ -104,37 +108,49 @@ export const UserImages = (props) => {
                   width="100%"
                   height="auto"
                   controls
-                  onClick={
-                    user?.id === userCurrent?.id
-                      ? () =>
-                          navigate(
-                            `/user/${user?.id}/feed/${item?.id}/${index}`
-                          )
-                      : () =>
-                          navigate(
-                            `/visit/user/${user?.id}/feed/${item?.id}/${index}`
-                          )
+                  onClick={() =>
+                    navigate(`/user/${user?.id}/feed/${item?.id}/${index}`)
                   }
                 >
                   <source src={item?.url} type="video/mp4" />
                 </Video>
               ) : (
-                <Img
-                  src={item?.url}
-                  alt="item"
-                  style={{ zIndex: 5 }}
-                  onClick={
-                    user?.id === userCurrent?.id
-                      ? () =>
+                <>
+                  {isMobile ? (
+                    isWebpSupported() ? (
+                      <Img
+                        src={item?.mobileWEBPurl}
+                        alt="item"
+                        style={{ zIndex: 5 }}
+                        onClick={() =>
                           navigate(
                             `/user/${user?.id}/feed/${item?.id}/${index}`
                           )
-                      : () =>
+                        }
+                      />
+                    ) : (
+                      <Img
+                        src={item?.mobileJPEGurl}
+                        alt="item"
+                        style={{ zIndex: 5 }}
+                        onClick={() =>
                           navigate(
-                            `/visit/user/${user?.id}/feed/${item?.id}/${index}`
+                            `/user/${user?.id}/feed/${item?.id}/${index}`
                           )
-                  }
-                />
+                        }
+                      />
+                    )
+                  ) : (
+                    <Img
+                      src={item?.desktopJPEGurl}
+                      alt="item"
+                      style={{ zIndex: 5 }}
+                      onClick={() =>
+                        navigate(`/user/${user?.id}/feed/${item?.id}/${index}`)
+                      }
+                    />
+                  )}
+                </>
               )}
             </GalleryImg>
           );
@@ -143,11 +159,11 @@ export const UserImages = (props) => {
     }
   };
 
-  const list = DefineList(props.feeds);
+  const list = DefineList(feeds);
 
   /** delete image from firestore and cloud */
-
   const Deleting = async (deleteItem, itemName) => {
+    const values = [];
     /** delete from firestore
      */
     const coll = collection(db, `users/${user?.id}/feeds/`);
@@ -158,20 +174,44 @@ export const UserImages = (props) => {
     // Create a reference to the file to delete
     let desertRef;
     if (itemName?.endsWith("mp4")) {
-      desertRef = await ref(storage, `videos/${user?.id}/feeds/${deleteItem}`);
+      desertRef = await ref(storage, `videos/${user?.id}/feeds/${deleteItem}/`);
     } else {
-      desertRef = await ref(storage, `images/${user?.id}/feeds/${deleteItem}`);
+      desertRef = await ref(storage, `images/${user?.id}/feeds/${deleteItem}/`);
     }
     // Delete the file
-    if (deleteItem?.length > 0 && deleteItem != undefined) {
-      await deleteObject(desertRef)
-        .then(() => {
-          // File deleted successfully
-        })
-        .catch((error) => {
-          console.log(error);
+    listAll(desertRef)
+      .then((res) => {
+        res.items.forEach((itemRef) => {
+          values?.push(itemRef);
         });
-    }
+        if (values !== "") {
+          values?.map((item) => {
+            console.log(item);
+            if (item?.name.includes(".mp4")) {
+              deleteObject(
+                ref(
+                  storage,
+                  `videos/${user?.id}/feeds/${deleteItem}/${item.name}`
+                )
+              ).then(() => {
+                console.log("storage success");
+              });
+            } else {
+              deleteObject(
+                ref(
+                  storage,
+                  `images/${user?.id}/feeds/${deleteItem}/${item.name}`
+                )
+              ).then(() => {
+                console.log("storage success");
+              });
+            }
+          });
+        }
+      })
+      .catch((error) => {
+        console.log("error : " + error);
+      });
     // window.location.reload();
   };
 
@@ -200,6 +240,18 @@ export const UserImages = (props) => {
       )}
       <Container height={height}>
         <Content listLength={list?.length}>
+          {user?.id === currentUser?.uid && user?.type != "user" && (
+            <GalleryImg
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              onClick={() => navigate("/add")}
+            >
+              <HiOutlineViewGridAdd id="add" />
+            </GalleryImg>
+          )}
           {list?.length > 0 == true ? list : ""}
         </Content>
       </Container>
@@ -474,7 +526,15 @@ const GalleryImg = styled.div`
   }
 
   :hover {
-    filter: brightness(0.97);
+    filter: brightness(0.99);
+  }
+
+  #add {
+    font-size: 3.5vw;
+    color: #ccc;
+    @media only screen and (max-width: 600px) {
+      font-size: 9vw;
+    }
   }
 `;
 

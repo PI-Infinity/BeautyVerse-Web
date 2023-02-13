@@ -4,7 +4,11 @@ import { useSelector, useDispatch } from "react-redux";
 import { FaUser } from "react-icons/fa";
 import { Result } from "../../pages/addFeed/result";
 import { MdOutlineVideoLibrary } from "react-icons/md";
-import { AiOutlineDesktop, AiOutlineMobile } from "react-icons/ai";
+import {
+  AiOutlineDesktop,
+  AiOutlineMobile,
+  AiOutlineCloseSquare,
+} from "react-icons/ai";
 import {
   setDoc,
   getDocs,
@@ -31,14 +35,16 @@ import {
   getDownloadURL,
   deleteObject,
 } from "firebase/storage";
+import { useNavigate } from "react-router-dom";
 import { setRerender } from "../../redux/main";
 import { v4 } from "uuid";
-import Loader from "react-js-loader";
 import useWindowDimensions from "../../functions/dimensions";
+import { Spinner } from "../../components/loader";
 
 const AddFeed = () => {
   const { height, width } = useWindowDimensions();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   // import current user from redux state
   const rerender = useSelector((state) => state.storeMain.user);
   const userUnparsed = useSelector((state) => state.storeMain.user);
@@ -65,54 +71,116 @@ const AddFeed = () => {
 
   const [uploading, setUploading] = React.useState(false);
 
+  // resized image
+  const [resizedObj, setResizedObj] = React.useState("");
+
   // add feed in firebase
   async function FileUpload() {
     await setUploading(true);
     //create id
-    let id = file?.name + v4();
+    let imageId = resizedObj.desktopJPEG?.name + v4();
     // check file
-    if (file !== null) {
+    if (resizedObj !== null) {
       // add in cloud
-      let refs;
-      if (file?.type?.endsWith("mp4")) {
-        refs = ref(storage, `videos/${user?.id}/feeds/${id}/`);
-      } else if (file?.type?.endsWith("jpeg")) {
-        refs = ref(storage, `images/${user?.id}/feeds/${id}/`);
-      } else if (file?.type?.endsWith("png")) {
-        refs = ref(storage, `images/${user?.id}/feeds/${id}/`);
-      } else if (file?.type?.endsWith("webp")) {
-        refs = ref(storage, `images/${user?.id}/feeds/${id}/`);
+      let desktopRefs;
+      if (resizedObj.desktopJPEG?.type?.endsWith("mp4")) {
+        desktopRefs = ref(
+          storage,
+          `videos/${user?.id}/feeds/${imageId}/${imageId}/`
+        );
+      } else if (resizedObj.desktopJPEG?.type?.endsWith("jpeg")) {
+        desktopRefs = ref(
+          storage,
+          `images/${user?.id}/feeds/${imageId}/${imageId}/`
+        );
       } else {
         alert("Unsuported file type");
       }
-      if (refs != undefined) {
-        await uploadBytes(refs, file);
-        const url = await uploadBytes(refs, file).then((snapshot) => {
-          getDownloadURL(snapshot.ref).then((url) => {
-            setDoc(doc(db, `users`, `${user?.id}`, "feeds", `${id}`), {
-              id: id,
-              name: file.name,
-              addTime: serverTimestamp(),
-              post: text,
-              url: url,
+      if (desktopRefs != undefined) {
+        // add desktop version
+        await uploadBytes(desktopRefs, resizedObj.desktopJPEG).then(
+          (snapshot) => {
+            getDownloadURL(snapshot.ref).then((url) => {
+              setDoc(doc(db, `users`, `${user?.id}`, "feeds", `${imageId}`), {
+                id: imageId,
+                name: resizedObj.desktopJPEG.name,
+                addTime: serverTimestamp(),
+                post: text,
+                desktopJPEGurl: url,
+              });
+              updateDoc(doc(db, `users`, `${user?.id}`), {
+                lastPost: serverTimestamp(),
+              });
             });
-            updateDoc(doc(db, `users`, `${user?.id}`), {
-              lastPost: serverTimestamp(),
-            });
-          });
-        });
+          }
+        );
+        // add mobile jpeg
+        let sizedId = resizedObj.mobileJPEG?.name + v4();
+        let mobileJpegRefs;
+        if (resizedObj.desktopJPEG?.type?.endsWith("mp4")) {
+          mobileJpegRefs = ref(
+            storage,
+            `videos/${user?.id}/feeds/${imageId}/${sizedId}/`
+          );
+        } else if (resizedObj.desktopJPEG?.type?.endsWith("jpeg")) {
+          mobileJpegRefs = ref(
+            storage,
+            `images/${user?.id}/feeds/${imageId}/${sizedId}/`
+          );
+        } else {
+          alert("Unsuported file type");
+        }
+        // add mobile jpeg for webp unspuported devices
+        if (mobileJpegRefs != undefined) {
+          await uploadBytes(mobileJpegRefs, resizedObj.mobileJPEG).then(
+            (snapshot) => {
+              getDownloadURL(snapshot.ref).then((url) => {
+                updateDoc(
+                  doc(db, `users`, `${user?.id}`, "feeds", `${imageId}`),
+                  {
+                    mobileJPEGurl: url,
+                  }
+                );
+                updateDoc(doc(db, `users`, `${user?.id}`), {
+                  lastPost: serverTimestamp(),
+                });
+              });
+            }
+          );
+        }
+        let sizedIdWebp = resizedObj.mobileWEBP?.name + v4();
+        let mobileWebpRefs;
+        if (resizedObj.mobileWEBP?.type?.endsWith("mp4")) {
+          mobileWebpRefs = ref(
+            storage,
+            `videos/${user?.id}/feeds/${imageId}/${sizedIdWebp}/`
+          );
+        } else if (resizedObj.mobileWEBP?.type?.endsWith("webp")) {
+          mobileWebpRefs = ref(
+            storage,
+            `images/${user?.id}/feeds/${imageId}/${sizedIdWebp}/`
+          );
+        } else {
+          alert("Unsuported file type");
+        }
+        if (mobileWebpRefs != undefined) {
+          await uploadBytes(mobileWebpRefs, resizedObj.mobileWEBP).then(
+            (snapshot) => {
+              getDownloadURL(snapshot.ref).then((url) => {
+                updateDoc(
+                  doc(db, `users`, `${user?.id}`, "feeds", `${imageId}`),
+                  {
+                    mobileWEBPurl: url,
+                  }
+                );
+                updateDoc(doc(db, `users`, `${user?.id}`), {
+                  lastPost: serverTimestamp(),
+                });
+              });
+            }
+          );
+        }
       }
-    } else {
-      setDoc(doc(db, `users`, `${user?.id}`, "feeds", `${id}`), {
-        id: id,
-        name: "",
-        addTime: serverTimestamp(),
-        post: text,
-        url: "",
-      });
-      updateDoc(doc(db, `users`, `${user?.id}`), {
-        lastPost: serverTimestamp(),
-      });
     }
     await dispatch(setRerender());
     setUploading(false);
@@ -121,29 +189,14 @@ const AddFeed = () => {
   return (
     <Container height={height}>
       {uploading && (
-        <div
-          style={{
-            position: "absolute",
-            width: "100%",
-            height: "100%",
-            zIndex: 900,
-            top: 0,
-            left: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "rgba(0,0,0,0.1)",
-          }}
-        >
-          <Loader
-            type="rectangular-ping"
-            bgColor={"#222"}
-            color={"#222"}
-            size={100}
-          />
-        </div>
+        <Loader>
+          <Spinner />
+        </Loader>
       )}
       <SecondLevelContainer>
+        <div style={{ marginLeft: "auto" }} onClick={() => navigate("/")}>
+          <AiOutlineCloseSquare className="icon" />
+        </div>
         <Wrapper>
           <Title>Add Feed</Title>
           <Info>
@@ -166,6 +219,8 @@ const AddFeed = () => {
           onImageChange={onImageChange}
           setRerender={setRerender}
           FileUpload={FileUpload}
+          resizedObj={resizedObj}
+          setResizedObj={setResizedObj}
         />
       </SecondLevelContainer>
     </Container>
@@ -174,14 +229,30 @@ const AddFeed = () => {
 
 export default AddFeed;
 
+const Loader = styled.div`
+  position: absolute;
+  width: 50vw;
+  height: 100%;
+  z-index: 900;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.1);
+
+  @media only screen and (max-width: 600px) {
+    width: 100vw;
+  }
+`;
+
 const Container = styled.div`
   width: 100%;
   height: calc(100vh - 2vw);
   min-height: auto;
-  padding-top: 5vw;
-  padding-bottom: 2vw;
+  padding-top: 1.5vw;
+  padding-bottom: 10vw;
   box-sizing: border-box;
-  background: #f3f3f3;
   display: flex;
   align-items: start;
   justify-content: center;
@@ -191,27 +262,56 @@ const Container = styled.div`
   @media only screen and (max-width: 600px) {
     height: calc(${(props) => props.height}px - 10vw);
     max-hiehgt: calc(${(props) => props.height}px - 10vw);
+    width: 100vw;
     align-items: start;
     margin-top: 11vw;
     padding-top: 0;
     padding-bottom: 60px;
     box-sizing: border-box;
   }
+
+  ::-webkit-scrollbar {
+    width: 0.3vw;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background-color: white;
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background-color: #e5e5e5;
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #1e1e1e;
+  }
 `;
 
 const SecondLevelContainer = styled.div`
   display: flex;
+  flex-direction: column;
   gap: 15px;
 
   @media only screen and (max-width: 600px) {
-    flex-direction: column;
+  }
+
+  .icon {
+    font-size: 1.75vw;
+    cursor: pointer;
+    color: #ccc;
+
+    @media only screen and (max-width: 600px) {
+      display: none;
+    }
   }
 `;
 
 const Wrapper = styled.div`
-  width: 40vw;
-  height: 50vh;
-  vmin-height: 65vh;
+  width: 32vw;
+  height: 30vh;
   border-radius: 0.5vw;
   box-shadow: 0 0.1vw 0.3vw rgba(0, 0, 0, 0.1);
   background: ${(props) => props.theme.background};
@@ -219,7 +319,7 @@ const Wrapper = styled.div`
   box-sizing: border-box;
 
   @media only screen and (max-width: 600px) {
-    width: 100vw;
+    width: 100%;
     margin-top: 30px;
     height: auto;
     padding-bottom: 5vw;
@@ -237,8 +337,8 @@ const Info = styled.div`
 `;
 
 const Profile = styled.div`
-  width2vw;
-  height2vw;
+  width: 2vw;
+  height: 2vw;
   border-radius: 50%;
   overflow: hidden;
   cursor: pointer;
@@ -250,8 +350,6 @@ const Profile = styled.div`
   justify-content: center;
   filter: brightness(0.9);
   transition: ease-in-out 200ms;
-
-
 
   animation: fadeIn 0.5s;
   -webkit-animation: fadeIn 0.5s;
@@ -305,6 +403,8 @@ const Profile = styled.div`
   }
 
   @media only screen and (max-width: 600px) {
+    width: 6vw;
+    height: 6vw;
     // display: none;
   }
 

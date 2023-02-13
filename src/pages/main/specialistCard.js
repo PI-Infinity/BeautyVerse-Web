@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import styled from "styled-components";
 import { AiOutlineStar } from "react-icons/ai";
 import { useSelector, useDispatch } from "react-redux";
@@ -31,6 +31,10 @@ import { BiStar } from "react-icons/bi";
 import Rating from "@mui/material/Rating";
 import { MdOutlineStarPurple500 } from "react-icons/md";
 import { proceduresOptions } from "../../data/registerDatas";
+import { FaUserEdit } from "react-icons/fa";
+import { ImProfile } from "react-icons/im";
+import { MdAddBusiness } from "react-icons/md";
+import { BsBrush } from "react-icons/bs";
 
 export const SpecialistsCard = (props) => {
   const { currentUser } = useContext(AuthContext);
@@ -46,59 +50,76 @@ export const SpecialistsCard = (props) => {
     (state) => state.storeFilter.destrictFilter
   );
 
-  // define reiting
-  const [reiting, setReiting] = React.useState([]);
-
-  const DefineReiting = () => {
-    let sum = reiting
-      .map((reit) => {
-        if (reit.reiting !== null) {
-          return reit.reiting;
-        } else {
-          return 5;
-        }
-      })
-      .reduce((prev, curr) => prev + curr, 0);
-    return sum / reiting?.length;
-  };
-
-  let definedReiting;
-  if (reiting?.length > 0) {
-    definedReiting = DefineReiting().toFixed(1);
-  } else {
-    definedReiting = 0;
-  }
-
-  const SetReiting = (r) => {
-    if (r !== null) {
-      setDoc(
-        doc(db, "users", `${props?.id}`, "reiting", `${currentUser?.uid}`),
-        {
-          userId: currentUser?.uid,
-          reiting: r,
-        }
-      );
-    } else {
-      deleteDoc(
-        doc(db, "users", `${props?.id}`, "reiting", `${currentUser?.uid}`)
-      );
-    }
-  };
-
-  React.useEffect(() => {
-    var query = onSnapshot(
-      collection(db, "users", `${props.id}`, "reiting"),
+  /**
+   * Define start total
+   */
+  const [stars, setStars] = useState([]);
+  const DefineStars = () => {
+    const starsGroupRef = onSnapshot(
+      collectionGroup(db, `${props?.id + "+stars"}`),
       (snapshot) => {
-        setReiting(snapshot.docs.map((doc) => doc.data()));
+        setStars(snapshot.docs.map((doc) => doc.data())?.length);
       }
     );
-  }, [rerender, props?.id]);
+  };
 
-  // define who has gived reiting to user
-  let defineGived;
-  if (reiting?.length > 0) {
-    defineGived = reiting?.find((item) => item.userId === currentUser?.uid);
-  }
+  useEffect(() => {
+    DefineStars();
+  }, []);
+
+  // // define reiting
+  // const [reiting, setReiting] = React.useState([]);
+
+  // const DefineReiting = () => {
+  //   let sum = reiting
+  //     .map((reit) => {
+  //       if (reit.reiting !== null) {
+  //         return reit.reiting;
+  //       } else {
+  //         return 5;
+  //       }
+  //     })
+  //     .reduce((prev, curr) => prev + curr, 0);
+  //   return sum / reiting?.length;
+  // };
+
+  // let definedReiting;
+  // if (reiting?.length > 0) {
+  //   definedReiting = DefineReiting().toFixed(1);
+  // } else {
+  //   definedReiting = 0;
+  // }
+
+  // const SetReiting = (r) => {
+  //   if (r !== null) {
+  //     setDoc(
+  //       doc(db, "users", `${props?.id}`, "reiting", `${currentUser?.uid}`),
+  //       {
+  //         userId: currentUser?.uid,
+  //         reiting: r,
+  //       }
+  //     );
+  //   } else {
+  //     deleteDoc(
+  //       doc(db, "users", `${props?.id}`, "reiting", `${currentUser?.uid}`)
+  //     );
+  //   }
+  // };
+
+  // React.useEffect(() => {
+  //   var query = onSnapshot(
+  //     collection(db, "users", `${props.id}`, "reiting"),
+  //     (snapshot) => {
+  //       setReiting(snapshot.docs.map((doc) => doc.data()));
+  //     }
+  //   );
+  // }, [rerender, props?.id]);
+
+  // // define who has gived reiting to user
+  // let defineGived;
+  // if (reiting?.length > 0) {
+  //   defineGived = reiting?.find((item) => item.userId === currentUser?.uid);
+  // }
 
   // capitalize first letters
 
@@ -124,6 +145,18 @@ export const SpecialistsCard = (props) => {
     }
   });
 
+  /**
+   * define user type icon
+   */
+  let icon;
+  if (props?.type === "user") {
+    icon = <FaUserEdit />;
+  } else if (props?.type === "specialist") {
+    icon = <BsBrush />;
+  } else if (props?.type === "beautyCenter") {
+    icon = <MdAddBusiness />;
+  }
+
   setTimeout(() => {
     if (props.index === 0) {
       dispatch(setLoadFeed(false));
@@ -132,22 +165,13 @@ export const SpecialistsCard = (props) => {
 
   return (
     <Card>
-      <Title
-        onClick={
-          currentUser?.uid === props?.id
-            ? () => navigate("/user")
-            : () => navigate(`/user/${props.id}`)
-        }
-      >
-        {name.substring(0, name.indexOf(" "))}
+      <Title onClick={() => navigate(`/user/${props.id}`)}>
+        {icon}
+        {name.substring(0, name.indexOf(" "))?.length > 0
+          ? name.substring(0, name.indexOf(" "))
+          : name}
       </Title>
-      <ImgContainer
-        onClick={
-          currentUser?.uid === props?.id
-            ? () => navigate("/user")
-            : () => navigate(`/user/${props.id}`)
-        }
-      >
+      <ImgContainer onClick={() => navigate(`/user/${props.id}`)}>
         {props.cover != undefined ? (
           <Img src={props?.cover} />
         ) : (
@@ -160,11 +184,15 @@ export const SpecialistsCard = (props) => {
         <div>{props?.adress?.city}</div>
       </City>
       <City>
-        <div>{props?.adress?.destrict}</div>
+        <div>
+          {props?.adress?.destrict?.length > 0
+            ? props?.adress?.destrict
+            : props?.adress?.adress}
+        </div>
       </City>
       <Category>{procedures?.label}</Category>
       <Review>
-        <Rating
+        {/* <Rating
           size="small"
           name="simple-controlled"
           value={defineGived?.reiting !== undefined ? defineGived?.reiting : 0}
@@ -173,7 +201,7 @@ export const SpecialistsCard = (props) => {
               ? (event, newValue) => SetReiting(newValue)
               : () => navigate("/login")
           }
-        />
+        /> */}
         <div
           style={{
             display: "flex",
@@ -181,12 +209,13 @@ export const SpecialistsCard = (props) => {
             marginBottom: "3px",
           }}
         >
-          <span>({definedReiting})</span>
-          <MdOutlineStarPurple500
+          <BiStar className="likedIcon" />
+          <span>({stars})</span>
+          {/* <MdOutlineStarPurple500
             size={12}
             color="#ffa534"
             style={{ marginTop: "2px" }}
-          />
+          /> */}
         </div>
       </Review>
     </Card>
@@ -233,6 +262,9 @@ const Title = styled.h2`
   transition: ease-in 200ms;
   cursor: pointer;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 
   @media only screen and (max-width: 600px) {
     font-size: 3.7vw;
@@ -248,7 +280,9 @@ const City = styled.div`
   width: 85%;
   display: flex;
   justify-content: center;
+  min-height: 1.1vw;
   @media only screen and (max-width: 600px) {
+    min-height: 5.2vw;
   }
 
   & div {

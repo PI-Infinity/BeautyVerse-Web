@@ -11,15 +11,17 @@ import { FcGoogle } from "react-icons/fc";
 import { Link } from "react-router-dom/";
 import { AuthContext } from "../context/AuthContext";
 import { doc, setDoc, serverTimestamp, updateDoc } from "firebase/firestore";
-import { Button } from "../components/button";
 import { db, DetectLanguage, auth } from "../firebase";
 import { setCover, setRerender, setLoading } from "../redux/main";
 import { setRegisterPage } from "../redux/register";
 import { useDispatch, useSelector } from "react-redux";
 import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import PhoneCode from "react-phone-code";
+import { Button } from "../components/button";
+import useWindowDimensions from "../functions/dimensions";
 
 export default function Login() {
+  const { height, width } = useWindowDimensions();
   const mainDispatch = useDispatch();
 
   // import users
@@ -48,23 +50,6 @@ export default function Login() {
       behavior: "smooth",
     });
   }, []);
-
-  // const handleLogin = (e) => {
-  //   e.preventDefault();
-  //   signInWithEmailAndPassword(auth, email, password)
-  //     .then(async (userCredential) => {
-  //       // Signed in
-  //       const user = userCredential.user;
-  //       await defaultDeispatch(setLoading(true));
-  //       await dispatch({ type: "LOGIN", payload: user });
-  //       await defaultDeispatch(setRerender());
-  //       await navigate("/");
-  //       window.location.reload();
-  //     })
-  //     .catch((error) => {
-  //       setError(true);
-  //     });
-  // };
 
   // send recaptcha
   const SetupRecaptcha = (number) => {
@@ -130,53 +115,59 @@ export default function Login() {
   };
 
   return (
-    <Container>
-      <Title>Log In</Title>
-      <Form
-        onSubmit={handleLogin}
+    <>
+      <Container
         style={{ display: !flag ? "visible" : "none" }}
+        height={height}
       >
-        <InputWrapper>
-          <PhoneCode
-            onSelect={(code) => setCode(code)} // required
-            showFirst={["GE"]}
-            defaultValue="GE"
-            id="codes"
-            name="codes"
-            className="codes"
-            optionClassName="codesOption"
-          />
-          <Input
-            type="text"
-            placeholder="Phone Number"
-            onChange={(e) => setPhoneNumber(e.target.value)}
-          />
-        </InputWrapper>
-        <InputWrapper>
-          <Input
-            type="password"
-            placeholder="Password"
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </InputWrapper>
-        <Button type="submit" title="Log In" function={handleLogin} />
-        <div id="recaptcha-container"></div>
-        <ForgottPass>Forgott Password?</ForgottPass>
-        {error && (
-          <span style={{ color: "red" }}>Wrong email or password!</span>
-        )}
-        <SignupText>
-          Don't have a Account?{" "}
-          <Link
-            to="/register"
-            id="signup"
-            style={{ color: "orange", textDecoration: "none" }}
-          >
-            Register
-          </Link>
-        </SignupText>
-      </Form>
-      <form
+        <Title>Log In</Title>
+        <Form onSubmit={handleLogin}>
+          <InputWrapper>
+            <PhoneCode
+              onSelect={(code) => {
+                setCode(code);
+                console.log(code);
+              }} // required
+              showFirst={["GE"]}
+              defaultValue="GE"
+              id="codes"
+              name="codes"
+              className="codes"
+              optionClassName="codesOption"
+            />
+            <Input
+              type="text"
+              placeholder="Phone Number"
+              onChange={(e) => setPhoneNumber(e.target.value)}
+            />
+          </InputWrapper>
+          <InputWrapper>
+            <Input
+              type="password"
+              placeholder="Password"
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </InputWrapper>
+          <Button type="submit" title="Log In" function={handleLogin} />
+          <div id="recaptcha-container"></div>
+          <ForgottPass>Forgott Password?</ForgottPass>
+          {error && (
+            <span style={{ color: "red" }}>Wrong email or password!</span>
+          )}
+          <SignupText>
+            Don't have a Account?{" "}
+            <Link
+              to="/register"
+              id="signup"
+              style={{ color: "orange", textDecoration: "none" }}
+            >
+              Register
+            </Link>
+          </SignupText>
+        </Form>
+      </Container>
+      <Confirm
+        height={height}
         onSubmit={VerifyOTP}
         className="verify"
         style={{
@@ -193,38 +184,50 @@ export default function Login() {
             value={otp}
           />
         </InputWrapper>
-        <button type="submit">Verify</button>
-      </form>
-    </Container>
+        <SubmitButton type="submit">დადასტურება</SubmitButton>
+      </Confirm>
+    </>
   );
 }
 
 const Container = styled.div`
+  width: 100%;
+  height: ${(props) => props.height}px;
+  box-sizing: border-box;
+  padding-top: 3vw;
+  padding-bottom: 5vw;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 8.5vw;
-  padding-top: 3vw;
-  gap: 2.5vw;
+  justify-content: center;
+  gap: 2vw;
 
   @media only screen and (max-width: 600px) {
-    margin-top: 30vw;
-    padding: 10vw;
-    gap: 8vw;
-    overflow-y: hidden;
-  }
-
-  .verify {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    overflow: hidden;
-    z-index: 10010;
-    background: rgba(0, 0, 0, 0.2);
+    font-size: 3vw;
+    padding-top: 14vw;
+    padding-bottom: 5vw;
   }
 `;
+
+const Confirm = styled.form`
+  width: 100%;
+  height: ${(props) => props.height}px;
+  box-sizing: border-box;
+  padding-top: 3vw;
+  padding-bottom: 5vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2vw;
+
+  @media only screen and (max-width: 600px) {
+    font-size: 3vw;
+    padding-top: 14vw;
+    padding-bottom: 3vw;
+  }
+`;
+
 const Title = styled.h4`
   font-size: 1.7vw;
   letter-spacing: 0.05vw;
@@ -246,7 +249,7 @@ const Form = styled.form`
 `;
 const InputWrapper = styled.div`
   width: 25vw;
-  height: 1.5vw;
+  height: 2.5vw;
   border-radius: 0.5vw;
   box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
   border: none;
@@ -255,12 +258,12 @@ const InputWrapper = styled.div`
   align-items: center;
   justify-content: center;
   gap: 0.5vw;
-  padding: 0.5vw;
   transition: ease-in 200ms;
+  box-sizing: border-box;
 
   @media only screen and (max-width: 600px) {
     box-shadow: 0 0.2vw 0.6vw rgba(2, 2, 2, 0.1);
-    width: 65vw;
+    width: 75vw;
     height: 10vw;
     border-radius: 1.5vw;
     padding-left: 2vw;
@@ -271,10 +274,14 @@ const InputWrapper = styled.div`
     width: 5vw;
     height: 2vw;
     border-radius: 0.5vw;
-    box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
     border: none;
     padding: 0.5vw;
     cursor: pointer;
+
+    @media only screen and (max-width: 600px) {
+      width: 15vw;
+      height: 8vw;
+    }
 
     :focus {
       outline: none;
@@ -292,8 +299,9 @@ const Input = styled.input`
   align-items: center;
   justify-content: center;
   gap: 0.5vw;
-  padding: 0.5vw;
+  padding-left: 0.5vw;
   transition: ease-in 200ms;
+  box-sizing: border-box;
 
   @media only screen and (max-width: 600px) {
     border-radius: 1.5vw;
@@ -303,6 +311,10 @@ const Input = styled.input`
 
   :focus {
     outline: none;
+  }
+
+  ::placeholder {
+    font-size: 12px;
   }
 `;
 
@@ -340,5 +352,32 @@ const SignupText = styled.p`
   @media only screen and (max-width: 600px) {
     font-size: 3vw;
     letter-spacing: 0.2vw;
+  }
+`;
+
+const SubmitButton = styled.button`
+  width: 15vw;
+  height: 2.5vw;
+  border-radius: 0.5vw;
+  box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: ease-in 200ms;
+  color: ${(props) => (props.back ? "#ccc" : "green")};
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.7);
+
+  @media only screen and (max-width: 600px) {
+    width: 45vw;
+    height: 8vw;
+    border-radius: 1.5vw;
+    box-shadow: 0 0.3vw 0.6vw rgba(2, 2, 2, 0.2);
+    font-size: 3.8vw;
+  }
+
+  :hover {
+    box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.2);
   }
 `;

@@ -1,6 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
 import styled from "styled-components";
-import { Button } from "../../components/button";
 import { useSelector, useDispatch } from "react-redux";
 import {
   setRegisterPage,
@@ -26,9 +25,12 @@ import { RiShoppingCartFill } from "react-icons/ri";
 import ReactGoogleMapLoader from "react-google-maps-loader";
 import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import PhoneCode from "react-phone-code";
+import useWindowDimensions from "../../functions/dimensions";
+import { Button } from "../../components/button";
 // loading google map
 
 export const Identify = (props) => {
+  const { height, width } = useWindowDimensions();
   // import users
   const usersList = useSelector((state) => state.storeMain.userList);
   let users;
@@ -183,114 +185,123 @@ export const Identify = (props) => {
   }
 
   return (
-    <Container>
-      {icon}
-      <Title>{props.title}</Title>
-      <WrapperContainer
-        onSubmit={HandleSubmit}
+    <>
+      <Container
+        height={height}
         style={{ display: !flag ? "visible" : "none" }}
       >
-        <Button
-          title="Back"
-          back={true}
-          function={() => navigate("/register")}
-        />
-        <Fields>
-          <>
-            <TitleWrapper>
-              <InputTitle>
-                {type == "beautyCenter" || type == "shop"
-                  ? "დასახელება"
-                  : "სახელი, გვარი"}
-                *
-              </InputTitle>
-              <InputTitle>მისამართი</InputTitle>
-            </TitleWrapper>
-            <Wrapper>
-              <InputWrapper>
-                <Input
-                  requred
-                  type="text"
-                  placeholder={
-                    type == "beautyCenter" || type == "shop"
-                      ? "დასახელება"
-                      : "სახელი, გვარი"
-                  }
-                  onChange={(e) => mainDispatch(setName(e.target.value))}
-                  value={registerFields?.name}
-                />
-              </InputWrapper>
-              <MapAutocomplete />
-            </Wrapper>
-          </>
-          <>
-            <TitleWrapper>
-              <InputTitle>ელ-ფოსტა*</InputTitle>
-              <InputTitle>მობილურის ნომერი*</InputTitle>
-            </TitleWrapper>
-            <Wrapper>
-              <InputWrapper>
-                <Input
-                  required
-                  type="text"
-                  placeholder="ელ-ფოსტა"
-                  onChange={(e) => mainDispatch(setEmail(e.target.value))}
-                  value={registerFields?.email}
-                />
-              </InputWrapper>
-              <InputWrapper style={{ display: "flex", flexDirection: "row" }}>
-                <PhoneCode
-                  onSelect={(code) => mainDispatch(setCountryCode(code))} // required
-                  showFirst={["GE"]}
-                  defaultValue="GE"
-                  id="codes"
-                  name="codes"
-                  className="codes"
-                  optionClassName="codesOption"
-                />
-                <Input
-                  required
-                  type="text"
-                  placeholder="მობილურის-ნომერი"
-                  onChange={(e) => mainDispatch(setPhoneNumber(e.target.value))}
-                  value={registerFields?.phoneNumber}
-                />
-              </InputWrapper>
-            </Wrapper>
-          </>
-          <>
-            <TitleWrapper>
-              <InputTitle>პაროლი*</InputTitle>
-              <InputTitle>დაადასტურე პაროლი*</InputTitle>
-            </TitleWrapper>
-            <Wrapper>
-              <InputWrapper>
-                <Input
-                  required
-                  type="password"
-                  placeholder="პაროლი"
-                  onChange={(e) => mainDispatch(setPassword(e.target.value))}
-                  value={registerFields?.password}
-                />
-              </InputWrapper>
-              <InputWrapper>
-                <Input
-                  required
-                  type="password"
-                  placeholder="დაადასტურე პაროლი"
-                  value={registerFields?.confirmPassowrd}
-                  onChange={(e) =>
-                    mainDispatch(setConfirmPassowrd(e.target.value))
-                  }
-                />
-              </InputWrapper>
-            </Wrapper>
-            <div id="recaptcha-container"></div>
-          </>
-        </Fields>
-        <Button title="შემდეგი" type="Submit" function={HandleSubmit} />
-      </WrapperContainer>
-      <form
+        <Title>
+          {icon}
+          <span>იდენტიფიკაცია</span>
+        </Title>
+        <WrapperContainer onSubmit={HandleSubmit}>
+          <Button
+            title="Back"
+            back={true}
+            function={() => navigate("/register")}
+          />
+          <Fields>
+            <>
+              <TitleWrapper>
+                <InputTitle>
+                  {type == "beautyCenter" || type == "shop"
+                    ? "დასახელება"
+                    : "სახელი, გვარი"}
+                  *
+                </InputTitle>
+                <InputTitle>მისამართი</InputTitle>
+              </TitleWrapper>
+              <Wrapper>
+                <InputWrapper>
+                  <Input
+                    requred
+                    type="text"
+                    placeholder={
+                      type == "beautyCenter" || type == "shop"
+                        ? "დასახელება"
+                        : "სახელი, გვარი"
+                    }
+                    onChange={(e) => mainDispatch(setName(e.target.value))}
+                    value={registerFields?.name}
+                  />
+                </InputWrapper>
+                {/* <InputWrapper> */}
+                <MapAutocomplete />
+                {/* </InputWrapper> */}
+              </Wrapper>
+            </>
+            <>
+              <TitleWrapper>
+                <InputTitle>ელ-ფოსტა*</InputTitle>
+                <InputTitle>მობილურის ნომერი*</InputTitle>
+              </TitleWrapper>
+              <Wrapper>
+                <InputWrapper>
+                  <Input
+                    required
+                    type="text"
+                    placeholder="ელ-ფოსტა"
+                    onChange={(e) => mainDispatch(setEmail(e.target.value))}
+                    value={registerFields?.email}
+                  />
+                </InputWrapper>
+                <InputWrapper style={{ display: "flex", flexDirection: "row" }}>
+                  <PhoneCode
+                    onSelect={(code) => mainDispatch(setCountryCode(code))} // required
+                    showFirst={["GE"]}
+                    defaultValue="GE"
+                    id="codes"
+                    name="codes"
+                    className="codes"
+                    optionClassName="codesOption"
+                  />
+                  <Input
+                    required
+                    type="text"
+                    placeholder="მობილურის-ნომერი"
+                    onChange={(e) =>
+                      mainDispatch(setPhoneNumber(e.target.value))
+                    }
+                    value={registerFields?.phoneNumber}
+                  />
+                </InputWrapper>
+              </Wrapper>
+            </>
+            <>
+              <TitleWrapper>
+                <InputTitle>პაროლი*</InputTitle>
+                <InputTitle>დაადასტურე პაროლი*</InputTitle>
+              </TitleWrapper>
+              <Wrapper>
+                <InputWrapper>
+                  <Input
+                    required
+                    type="password"
+                    placeholder="პაროლი"
+                    onChange={(e) => mainDispatch(setPassword(e.target.value))}
+                    value={registerFields?.password}
+                  />
+                </InputWrapper>
+                <InputWrapper>
+                  <Input
+                    required
+                    type="password"
+                    placeholder="დაადასტურე პაროლი"
+                    value={registerFields?.confirmPassowrd}
+                    onChange={(e) =>
+                      mainDispatch(setConfirmPassowrd(e.target.value))
+                    }
+                  />
+                </InputWrapper>
+              </Wrapper>
+              <div id="recaptcha-container"></div>
+            </>
+          </Fields>
+          <Button title="შემდეგი" type="Submit" function={HandleSubmit} />
+        </WrapperContainer>
+      </Container>
+      <Confirm
+        height={height}
         onSubmit={VerifyOTP}
         className="verify"
         style={{
@@ -299,6 +310,7 @@ export const Identify = (props) => {
           justifyContent: "center",
         }}
       >
+        <Title>Verify Phone Number</Title>
         <InputWrapper>
           <Input
             type="text"
@@ -307,23 +319,28 @@ export const Identify = (props) => {
             value={otp}
           />
         </InputWrapper>
-        <button type="submit">Verify</button>
-      </form>
-    </Container>
+        <SubmitButton type="submit">დადასტურება</SubmitButton>
+      </Confirm>
+    </>
   );
 };
 
 const Container = styled.div`
   width: 100%;
+  height: ${(props) => props.height}px;
+  box-sizing: border-box;
+  padding-top: 3vw;
+  padding-bottom: 5vw;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2vw;
-  margin-top: 10vw;
 
   @media only screen and (max-width: 600px) {
-    margin-top: 30vw;
+    font-size: 3vw;
+    padding-top: 14vw;
+    padding-bottom: 5vw;
   }
 
   .userIcon {
@@ -337,8 +354,6 @@ const Container = styled.div`
 
   .specIcon {
     font-size: 2vw;
-    margin-bottom: -1.5vw;
-
     @media only screen and (max-width: 600px) {
       font-size: 7vw;
     }
@@ -352,21 +367,32 @@ const Container = styled.div`
       font-size: 7vw;
     }
   }
+`;
 
-  .verify {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    overflow: hidden;
-    z-index: 10010;
-    background: rgba(0, 0, 0, 0.2);
+const Confirm = styled.form`
+  width: 100%;
+  height: ${(props) => props.height}px;
+  box-sizing: border-box;
+  padding-top: 3vw;
+  padding-bottom: 5vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2vw;
+
+  @media only screen and (max-width: 600px) {
+    font-size: 3vw;
+    padding-top: 14vw;
+    padding-bottom: 3vw;
   }
 `;
 
-const Title = styled.h3`
+const Title = styled.h2`
   margin-bottom: 1vw;
+  display: flex;
+  align-items: center;
+  gap: 15px;
 
   @media only screen and (max-width: 600px) {
     margin-bottom: 7vw;
@@ -382,6 +408,9 @@ const Fields = styled.div`
 const Wrapper = styled.div`
   display: flex;
   gap: 1vw;
+  @media only screen and (max-width: 600px) {
+    gap: 3vw;
+  }
 `;
 
 const TitleWrapper = styled.div`
@@ -413,34 +442,37 @@ const WrapperContainer = styled.form`
 
 const InputWrapper = styled.div`
   width: 18.5vw;
-  height: 1.5vw;
+  height: 2.5vw;
   border-radius: 0.5vw;
   box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
   border: none;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: start;
   gap: 0.5vw;
-  padding: 0.5vw;
   transition: ease-in 200ms;
+  box-sizing: border-box;
 
   @media only screen and (max-width: 600px) {
-    width: 42vw;
-    height: 7vw;
+    box-shadow: 0 0.2vw 0.6vw rgba(2, 2, 2, 0.1);
+    width: 45vw;
+    height: 10vw;
     border-radius: 1.5vw;
-    padding-left: 2vw;
     font-size: 16px;
   }
 
   .codes {
     width: 5vw;
-    height: 2vw;
+    height: 2.5vw;
     border-radius: 0.5vw;
-    box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
     border: none;
     padding: 0.5vw;
     cursor: pointer;
+
+    @media only screen and (max-width: 600px) {
+      width: 15vw;
+      height: 8vw;
+    }
 
     :focus {
       outline: none;
@@ -465,12 +497,11 @@ const Input = styled.input`
   align-items: center;
   justify-content: center;
   gap: 0.5vw;
-  padding: 0.5vw;
   transition: ease-in 200ms;
+  padding-left: 0.5vw;
+  box-sizing: border-box;
 
   @media only screen and (max-width: 600px) {
-    width: 42vw;
-    height: 7vw;
     border-radius: 1.5vw;
     padding-left: 2vw;
     font-size: 16px;
@@ -478,6 +509,10 @@ const Input = styled.input`
 
   :focus {
     outline: none;
+  }
+
+  ::placeholder {
+    font-size: 12px;
   }
 `;
 
@@ -488,5 +523,33 @@ const InputTitle = styled.div`
   @media only screen and (max-width: 600px) {
     font-size: 3vw;
     color: #888;
+  }
+`;
+
+const SubmitButton = styled.button`
+  width: 15vw;
+  height: 2.5vw;
+  border-radius: 0.5vw;
+  box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: ease-in 200ms;
+  color: ${(props) => (props.back ? "#ccc" : "green")};
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.7);
+  border: none;
+
+  @media only screen and (max-width: 600px) {
+    width: 45vw;
+    height: 8vw;
+    border-radius: 1.5vw;
+    box-shadow: 0 0.3vw 0.6vw rgba(2, 2, 2, 0.2);
+    font-size: 3.8vw;
+  }
+
+  :hover {
+    box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.2);
   }
 `;

@@ -21,6 +21,7 @@ import { setFilterOpen } from "../../redux/main";
 import { Button } from "../../components/button";
 import { MdOutlineStarPurple500, MdOutlineStarOutline } from "react-icons/md";
 import useWindowDimensions from "../../functions/dimensions";
+import CheckBox from "@mui/material/Checkbox";
 
 export const FilterMobile = () => {
   const { height, width } = useWindowDimensions();
@@ -59,7 +60,7 @@ const Container = styled.div`
   @media only screen and (max-width: 600px) {
     opacity: ${(props) => (props.loading === "true" ? "0" : "1")};
     transition: ease-in-out 300ms;
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(40px);
     display: flex;
     flex-direction: column;
@@ -73,7 +74,7 @@ const Container = styled.div`
     padding-bottom: 15vw;
     width: 100%;
     height: ${(props) => props.height}px;
-    z-index: 9999;
+    z-index: 99999;
     overflow-x: hidden;
     overflow-y: scroll;
     -webkit-animation: slide 0.2s forwards;
@@ -210,31 +211,35 @@ export const Filter = () => {
           })}
         />
       )}
-      <CheckBoxContainer>
-        <CheckBox
-          type="checkbox"
-          name="Specialists"
-          checked={specialist}
-          onChange={() => {
-            dispatch(setRerender());
-            dispatch(setSpecialist(!specialist));
-          }}
-        />
-        <span>სპეციალისტები</span>
-      </CheckBoxContainer>
-      <CheckBoxContainer>
-        <CheckBox
-          type="checkbox"
-          name="physical"
-          checked={physicalObject}
-          onChange={() => {
-            dispatch(setRerender());
-            dispatch(setObject(!physicalObject));
-          }}
-        />
-        <span>ბიუთი ცენტრები</span>
-      </CheckBoxContainer>
-      <CheckBoxContainer>
+      <div style={{ marginTop: "3vw" }}>
+        <CheckBoxContainer>
+          <CheckBox
+            id="specialists"
+            type="checkbox"
+            name="Specialists"
+            checked={specialist}
+            onChange={() => {
+              dispatch(setRerender());
+              dispatch(setSpecialist(!specialist));
+            }}
+          />
+          <label htmlFor="specialists">სპეციალისტები</label>
+        </CheckBoxContainer>
+        <CheckBoxContainer>
+          <CheckBox
+            id="beautyCenters"
+            type="checkbox"
+            name="physical"
+            checked={physicalObject}
+            onChange={() => {
+              dispatch(setRerender());
+              dispatch(setObject(!physicalObject));
+            }}
+          />
+          <label htmlFor="beautyCenters">ბიუთი ცენტრები</label>
+        </CheckBoxContainer>
+      </div>
+      {/* <CheckBoxContainer>
         <CheckBox
           type="checkbox"
           id="shop"
@@ -248,7 +253,7 @@ export const Filter = () => {
         <label htmlFor="shop" style={{ cursor: "pointer" }}>
           მაღაზიები
         </label>
-      </CheckBoxContainer>
+      </CheckBoxContainer> */}
     </FilterContainer>
   );
 };
@@ -259,7 +264,7 @@ const FilterContainer = styled.div`
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
-    gap: 3vw;
+    gap: 0vw;
     margin-top: 4vw;
     z-index: 10000;
   }
@@ -267,14 +272,13 @@ const FilterContainer = styled.div`
 
 const CheckBoxContainer = styled.div`
   display: flex;
-  gap: 0.2vw;
+  align-items: center;
   font-size: 0.8vw;
 
   @media only screen and (max-width: 600px) {
-    gap: 1vw;
     font-size: 3vw;
   }
 `;
-const CheckBox = styled.input`
-  cursor: pointer;
-`;
+// const CheckBox = styled.input`
+//   cursor: pointer;
+// `;

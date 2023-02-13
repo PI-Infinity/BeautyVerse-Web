@@ -7,12 +7,14 @@ import { FaUserEdit } from "react-icons/fa";
 import { ImProfile } from "react-icons/im";
 import { MdAddBusiness } from "react-icons/md";
 import { RiShoppingCartFill } from "react-icons/ri";
+import useWindowDimensions from "../../functions/dimensions";
 
 const Register = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { height, width } = useWindowDimensions();
   return (
-    <FirstPageContainer>
+    <FirstPageContainer height={height}>
       <Title>აირჩიე რეგისტრაციის ტიპი:</Title>
       <ChoiseContainer>
         <Card
@@ -34,7 +36,7 @@ const Register = () => {
           }}
         >
           <ImProfile className="specIcon" />
-          <h2>სპეციალიტი</h2>
+          <h2>სპეციალისტი</h2>
           <span style={{ textAlign: "center" }}>
             შექმენი სპეციალისტის ანგარიში
           </span>
@@ -51,7 +53,7 @@ const Register = () => {
             შექმენი სილამაზის ცენტრი: სალონი, სტუდია, კლინიკა ან სხვა..
           </span>
         </Card>
-        <Card
+        {/* <Card
           onClick={async () => {
             await dispatch(setUserType("shop"));
             navigate("identify");
@@ -62,7 +64,7 @@ const Register = () => {
           <span style={{ textAlign: "center" }}>
             შექმენი მაღაზია ბიუთი ბაზარზე
           </span>
-        </Card>
+        </Card> */}
       </ChoiseContainer>
     </FirstPageContainer>
   );
@@ -72,16 +74,20 @@ export default Register;
 
 const FirstPageContainer = styled.div`
   width: 100%;
+  height: ${(props) => props.height}px;
+  padding-top: 3vw;
+  padding-bottom: 5vw;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 1.5vw;
-  margin-top: -2vw;
-  margin-top: 15vw;
 
   @media only screen and (max-width: 600px) {
-    margin-top: 30vw;
+    font-size: 3vw;
+    padding-top: 14vw;
+    padding-bottom: 3vw;
   }
 `;
 
@@ -89,7 +95,7 @@ const Title = styled.h2`
   margin-bottom: 1vw;
 
   @media only screen and (max-width: 600px) {
-    margin-bottom: 10vw;
+    margin-bottom: 7vw;
   }
 `;
 
@@ -98,7 +104,7 @@ const ChoiseContainer = styled.div`
   gap: 1.5vw;
 
   @media only screen and (max-width: 600px) {
-    flex-wrap: wrap;
+    flex-direction: column;
     justify-content: center;
     gap: 3vw;
   }
@@ -122,8 +128,8 @@ const Card = styled.div`
   box-sizing: border-box;
 
   @media only screen and (max-width: 600px) {
-    width: 40vw;
-    height: 40vw;
+    width: 80vw;
+    height: 35vw;
     border-radius: 3vw;
     box-shadow: 0 0.2vw 0.6vw rgba(2, 2, 2, 0.1);
     gap: 1.5vw;

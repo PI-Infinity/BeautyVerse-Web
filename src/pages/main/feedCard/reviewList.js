@@ -51,13 +51,7 @@ export const ReviewList = (props) => {
                   </UserProfileEmpty>
                 )}
 
-                <Reviewer
-                  onClick={
-                    currentUser?.uid === item?.reviewerId
-                      ? () => navigate("/user")
-                      : () => navigate(`/user/${item?.reviewerId}`)
-                  }
-                >
+                <Reviewer onClick={() => navigate(`/user/${item?.reviewerId}`)}>
                   {item.reviewer}
                 </Reviewer>
                 <span style={{ fontSize: "12px", color: "#ccc" }}>

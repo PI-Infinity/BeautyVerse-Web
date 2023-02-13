@@ -167,27 +167,36 @@ const MapAutocomplete = () => {
 export default MapAutocomplete;
 
 const Container = styled.div`
+  width: 18.5vw;
+  height: 2.5vw;
+  border-radius: 0.5vw;
   font-size: 0.8vw;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
+  box-sizing: border-box;
+  box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
+  overflow: hidden;
 
   @media only screen and (max-width: 600px) {
+    width: 45vw;
+    height: 10vw;
+    border-radius: 1.5vw;
     font-size: 16px;
   }
 
   .autocomplete-dropdown-container {
     z-index: 1000;
     position: absolute;
-    width: 20vw;
+    width: 18.5vw;
     max-height: 10vw;
     overflow-y: scroll;
-    margin-top: 3vw;
+    margin-top: 2vw;
     font-size: 14px;
-    text-align: center;
-    padding: 0 0.25vw;
-    border-radius: 0.5vw;
+    text-align: start;
+    box-sizing: border-box;
+    border-radius: 0 0.5vw;
     box-shadow: 0 0.1vw 0.3vw rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
@@ -195,32 +204,39 @@ const Container = styled.div`
     background: #fff;
 
     @media only screen and (max-width: 600px) {
-      position: relative;
-      width: 80vw;
+      box-shadow: 0 0.2vw 0.6vw rgba(2, 2, 2, 0.1);
+      width: 45vw;
       height: auto;
+      margin-top: 8vw;
       border-radius: 1vw;
       max-height: 40vw;
     }
   }
+
+  .suggestion-item {
+    margin: 0.25vw 0.5vw;
+    border-bottom: 1px solid #050505;
+  }
+  .suggestion-item--active {
+    margin: 0.25vw 0.5vw;
+    border-bottom: 1px solid #050505;
+  }
 `;
 
 const Input = styled.input`
-  width: 18.5vw;
-  height: 1.5vw;
-  border-radius: 0.5vw;
-  box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
+  width: 100%;
+  height: 100%;
   border: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 0.5vw;
-  padding: 0.5vw;
+  padding-left: 0.5vw;
   transition: ease-in 200ms;
+  box-sizing: border-box;
 
   @media only screen and (max-width: 600px) {
-    width: 72vw;
-    height: 7vw;
     border-radius: 1.5vw;
     padding-left: 2vw;
     font-size: 16px;
@@ -232,5 +248,9 @@ const Input = styled.input`
 
   :hover {
     box-shadow: 0 0.2vw 0.5vw rgba(2, 2, 2, 0.2);
+  }
+
+  ::placeholder {
+    font-size: 12px;
   }
 `;

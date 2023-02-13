@@ -228,7 +228,7 @@ const Container = styled.div`
   z-index: 800;
   height: 85vh;
   width: 100%;
-  margin-left: 2px;
+  margin-left: 5px;
   background: ${(props) => props.theme.background};
 
   @media only screen and (max-width: 600px) {
@@ -240,11 +240,12 @@ const Container = styled.div`
 `;
 
 const Wrapper = styled.div`
-  height: 100%;
+  height: auto;
   width: 100%;
   display: flex;
   justify-content: start;
   align-items: start;
+  flex-wrap: wrap;
   overflow-y: scroll;
   overflow-x: hidden;
   box-sizing: border-box;

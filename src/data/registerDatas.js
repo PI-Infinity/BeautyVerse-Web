@@ -191,20 +191,6 @@ export const proceduresOptions = [
     label: "მაკიაჟი",
   },
 ];
-export const categoriesOptions = [
-  { value: "Make Up", label: "მაკიაჟი", rus: "" },
-  { value: "Care", label: "მოვლა", rus: "" },
-  { value: "Brow", label: "წარბები", rus: "" },
-  { value: "Eyelash", label: "წამწამები", rus: "" },
-  { value: "Hair", label: "თმა", rus: "" },
-  { value: "Lips", label: "ტუჩები", rus: "" },
-  { value: "Nails", label: "ფრჩხილები", rus: "" },
-  { value: "Beard", label: "წვერი", rus: "" },
-  { value: "Skin", label: "კანი", rus: "" },
-  { value: "Face", label: "სახე", rus: "" },
-  { value: "Accessories", label: "აქსესუარები", rus: "" },
-  { value: "Tools", label: "ინსტრუმენტები", rus: "" },
-];
 
 // working places
 export const workingPlacesOptions = [
@@ -216,6 +202,11 @@ export const workingPlacesOptions = [
 
 // working days
 export const workingDaysOptions = [
+  {
+    id: 0,
+    label: "ორშაბათი-პარასკევი",
+    value: "wotkingDays",
+  },
   {
     label: "ორშაბათი",
     value: "monday",
@@ -251,4 +242,11 @@ export const workingDaysOptions = [
     value: "sunday",
     id: 7,
   },
+  {
+    label: "ყოველდღე",
+    value: "everyDay",
+    id: 8,
+  },
 ];
+
+export const categoriesOptions = [];

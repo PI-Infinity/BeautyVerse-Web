@@ -47,6 +47,7 @@ import { BsFillArrowUpCircleFill } from "react-icons/bs";
 import { IsMobile } from "../../../functions/isMobile";
 import { AuthContext } from "../../../context/AuthContext";
 import { Spinner } from "../../../components/loader";
+import { isWebpSupported } from "react-image-webp/dist/utils";
 
 export const OpenedFeed = (props) => {
   const { currentUser } = useContext(AuthContext);
@@ -56,11 +57,15 @@ export const OpenedFeed = (props) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const rerender = useSelector((state) => state.storeMain.rerender);
-
   const path = window.location.pathname;
 
   const [state, setState] = useState("");
+
+  const rerender = useSelector((state) => state.storeMain.rerender);
+  useEffect(() => {
+    DefineState();
+  }, [rerender, state?.userId, state?.imgNumber, path]);
+
   /**
    * define variables from link
    *  */
@@ -110,9 +115,6 @@ export const OpenedFeed = (props) => {
       imgNumber: parseInt(imgNumber),
     });
   };
-  useEffect(() => {
-    DefineState();
-  }, [rerender, state?.userId, state?.imgNumber, path]);
 
   /*
   /import current user & parse it
@@ -124,10 +126,6 @@ export const OpenedFeed = (props) => {
     currentuser = JSON.parse(userUnparsed);
   }
 
-  React.useEffect(() => {
-    setLoading(true);
-  }, [rerender, state?.imgNumber, state?.userId]);
-
   const [feed, setFeed] = useState([]);
   const [stars, setStars] = useState([]);
   const [reviews, setReviews] = useState([]);
@@ -136,6 +134,7 @@ export const OpenedFeed = (props) => {
   const [reviewText, setReviewText] = React.useState("");
 
   const fnc = async (num) => {
+    setLoading(true);
     const coll = collection(db, "users", `${state?.userId}`, "feeds");
     //get coll length
     const snapshot = await getCountFromServer(coll);
@@ -162,7 +161,7 @@ export const OpenedFeed = (props) => {
         `${state?.userId}`,
         "feeds",
         `${currentFeed?.id}`,
-        "stars"
+        `${state?.userId}+stars`
       ),
       (snapshot) => {
         setStars(snapshot.docs.map((doc) => doc.data()));
@@ -189,6 +188,10 @@ export const OpenedFeed = (props) => {
       nextFeedId: nextFeedId,
       prevFeedId: prevFeedId,
     });
+
+    setTimeout(() => {
+      setLoading(false);
+    }, 500);
   };
 
   // give heart to user
@@ -200,7 +203,7 @@ export const OpenedFeed = (props) => {
         `${state?.userId}`,
         "feeds",
         `${feed?.currentFeed?.id}`,
-        "stars",
+        `${state?.userId}+stars`,
         currentuser?.id
       ),
       {
@@ -220,7 +223,7 @@ export const OpenedFeed = (props) => {
         `${state?.userId}`,
         "feeds",
         `${feed?.currentFeed?.id}`,
-        "stars",
+        `${state?.userId}+stars`,
         currentuser?.id
       )
     );
@@ -305,8 +308,6 @@ export const OpenedFeed = (props) => {
   const Closing = () => {
     let navigatePath;
     if (path.startsWith("/user")) {
-      navigatePath = () => navigate("/user");
-    } else if (path.startsWith("/visit")) {
       navigatePath = () => navigate(`/user/${state.userId}`);
     } else {
       navigatePath = () => navigate("/");
@@ -315,11 +316,6 @@ export const OpenedFeed = (props) => {
   };
 
   const closeOpenedFeed = Closing();
-
-  setTimeout(() => {
-    setLoading(false);
-    dispatch(setFromReviews(false));
-  }, 700);
 
   return (
     <Container height={height}>
@@ -331,7 +327,7 @@ export const OpenedFeed = (props) => {
         )}
         <ImgContainer>
           {state?.imgNumber > 0 && (
-            <Arrow right={true} onClick={prevLink}>
+            <Arrow right="true" onClick={prevLink}>
               <IoMdArrowDropleft size={40} color="rgba(255,255,255,0.5)" />
             </Arrow>
           )}
@@ -340,28 +336,37 @@ export const OpenedFeed = (props) => {
               <source src={feed?.currentFeed?.url} type="video/mp4" />
             </Video>
           ) : (
-            <MainImg src={feed?.currentFeed?.url} alt="beautyverse" />
+            <>
+              {isMobile ? (
+                isWebpSupported() ? (
+                  <MainImg
+                    src={feed?.currentFeed?.mobileWEBPurl}
+                    active={props.active}
+                  />
+                ) : (
+                  <MainImg
+                    src={feed?.currentFeed?.mobileJPEGurl}
+                    active={props.active}
+                  />
+                )
+              ) : (
+                <MainImg
+                  src={feed?.currentFeed?.desktopJPEGurl}
+                  active={props.active}
+                />
+              )}
+            </>
           )}
           {state?.imgNumber < feed?.feedsLength - 1 && (
-            <Arrow left={true} onClick={nextLink}>
+            <Arrow left="true" onClick={nextLink}>
               <IoMdArrowDropright size={40} color="rgba(255,255,255,0.5)" />
             </Arrow>
           )}
         </ImgContainer>
 
-        <PostSide loading={loading}>
+        <PostSide loading={loading.toString()}>
           <UserInfo>
-            <CoverContainer
-              onClick={
-                currentUser?.uid === state?.userId
-                  ? () => {
-                      navigate("/user");
-                    }
-                  : () => {
-                      navigate(`/user/${state?.userId}`);
-                    }
-              }
-            >
+            <CoverContainer onClick={() => navigate(`/user/${state?.userId}`)}>
               {state?.userCover ? (
                 <CoverImg src={state?.userCover} />
               ) : (
@@ -370,28 +375,10 @@ export const OpenedFeed = (props) => {
                 </UserProfileEmpty>
               )}
             </CoverContainer>
-            <UserName
-              onClick={
-                currentUser?.uid === state?.userId
-                  ? () => {
-                      navigate("/user");
-                    }
-                  : () => {
-                      navigate(`/user/${state?.userId}`);
-                    }
-              }
-            >
+            <UserName onClick={() => navigate(`/user/${state?.userId}`)}>
               {state?.userName}
             </UserName>
-            <div
-              style={{
-                marginLeft: "30%",
-                color: "#ccc",
-                fontSize: "12px",
-              }}
-            >
-              {currentPostTime}
-            </div>
+            <PostTime>{currentPostTime}</PostTime>
 
             <ClosePost onClick={closeOpenedFeed}>
               <MdOutlineCloseFullscreen className="closeIcon" />
@@ -582,7 +569,7 @@ const PostSide = styled.div`
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: ${(props) => (props.loading ? "100%" : "auto")};
+    height: ${(props) => (props.loading === "true" ? "100%" : "auto")};
     align-items: center;
     padding: 0 5vw;
   }
@@ -598,7 +585,7 @@ const UserInfo = styled.div`
 
   @media only screen and (max-width: 600px) {
     margin: 4vw 0 0 0;
-    width: 100%;
+    width: 90vw;
     padding: 0;
   }
 `;
@@ -631,7 +618,8 @@ const CoverImg = styled.img`
 `;
 
 const UserName = styled.h3`
-  font-size: 1.2vw;
+  width: 40%;
+  font-size: 1vw;
   margin: 0;
   cursor: pointer;
 
@@ -640,7 +628,17 @@ const UserName = styled.h3`
   }
 
   @media only screen and (max-width: 600px) {
-    font-size: 3.8vw;
+    font-size: 3vw;
+  }
+`;
+
+const PostTime = styled.div`
+  width: 5vw;
+  color: #ccc;
+  font-size: 12px;
+
+  @media only screen and (max-width: 600px) {
+    width: 30vw;
   }
 `;
 
@@ -732,8 +730,8 @@ const Post = styled.div`
 
 const Arrow = styled.div`
   position: absolute;
-  margin-right: ${(props) => (props.right ? "43%" : "auto")};
-  margin-left: ${(props) => (props.left ? "43%" : "auto")};
+  margin-right: ${(props) => (props.right === "true" ? "43%" : "auto")};
+  margin-left: ${(props) => (props.left === "true" ? "43%" : "auto")};
   // opacity: ${(props) => (props.off ? "0" : "0.2")};
   width: 2.5vw;
   height: 2.5vw;
@@ -762,8 +760,8 @@ const Arrow = styled.div`
     margin-right: 0;
     margin-left: 0;
     top: calc(50% - 4.5vw);
-    left: ${(props) => (props.right ? "5vw" : "auto")};
-    right: ${(props) => (props.left ? "5vw" : "auto")};
+    left: ${(props) => (props.right === "true" ? "5vw" : "auto")};
+    right: ${(props) => (props.left === "true" ? "5vw" : "auto")};
   }
 
   :hover {

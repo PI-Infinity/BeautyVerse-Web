@@ -49,36 +49,15 @@ import { AuthContext } from "../../../context/AuthContext";
 import { OpenedFeed } from "../../../pages/main/feedCard/openedFeed";
 import useWindowDimensions from "../../../functions/dimensions";
 import { ImgLoader, TextLoader, LineLoader } from "../../../components/loader";
-
-// const LazyImage = ({ src, alt, width, height }) => {
-//   const [imageLoaded, setImageLoaded] = useState(false);
-
-//   useEffect(() => {
-//     const img = new Image();
-//     img.src = src;
-//     img.onload = () => {
-//       setImageLoaded(true);
-//     };
-//   }, [src]);
-
-//   return (
-//     <LazyLoad once={true} height={height}>
-//       {imageLoaded ? (
-//         <img src={src} alt={alt} width={width} height={height} />
-//       ) : (
-//         <div style={{ width, height }} />
-//       )}
-//     </LazyLoad>
-//   );
-// };
-
-// export default LazyImage;
+import { IsMobile } from "../../../functions/isMobile";
+import { isWebpSupported } from "react-image-webp/dist/utils";
 
 export const FeedCard = (props) => {
   const { currentUser } = useContext(AuthContext);
   const { height, width } = useWindowDimensions();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const isMobile = IsMobile();
   // loading feeds
   const [loading, setLoading] = React.useState(true);
 
@@ -113,6 +92,7 @@ export const FeedCard = (props) => {
   const [stars, setStars] = React.useState([]);
 
   //get user feeds from storage
+  const userList = useSelector((state) => state.storeMain.userList);
   const fnc = async () => {
     // define feeds collection
     const feedsRef = collection(db, "users", `${props?.id}`, "feeds");
@@ -134,7 +114,14 @@ export const FeedCard = (props) => {
 
     // get stars
     onSnapshot(
-      collection(db, "users", `${props?.id}`, "feeds", `${feed?.id}`, "stars"),
+      collection(
+        db,
+        "users",
+        `${props?.id}`,
+        "feeds",
+        `${feed?.id}`,
+        `${props.id}+stars`
+      ),
       (snapshot) => {
         setStars(snapshot.docs.map((doc) => doc.data()));
       }
@@ -152,10 +139,11 @@ export const FeedCard = (props) => {
 
   React.useEffect(() => {
     fnc();
-  }, [rerender, props?.id, currentUser]);
+  }, [rerender, props?.id, currentUser, userList]);
 
   // give heart to user
   const SetStar = async () => {
+    console.log("click");
     await setDoc(
       doc(
         db,
@@ -163,7 +151,7 @@ export const FeedCard = (props) => {
         `${props.id}`,
         "feeds",
         `${feed?.feed?.id}`,
-        "stars",
+        `${props.id}+stars`,
         currentUser?.uid
       ),
       {
@@ -186,7 +174,7 @@ export const FeedCard = (props) => {
         `${props.id}`,
         "feeds",
         `${feed?.feed?.id}`,
-        "stars",
+        `${props.id}+stars`,
         currentUser?.uid
       )
     );
@@ -253,7 +241,7 @@ export const FeedCard = (props) => {
   }, 600);
 
   return (
-    <Main feed={feed?.feed?.url}>
+    <Main feed={feed?.feed?.desktopJPEGurl}>
       {/* {loading ? (
         <Loader />
       ) : ( */}
@@ -284,34 +272,53 @@ export const FeedCard = (props) => {
             </p>
           </PostContainer>
         )}
-        <div
-          style={{
-            width: "100%",
-            height: "100%",
-            minHeight: "300px",
-            display: "flex",
-            alingItems: "center",
-            justifyContent: "center",
-          }}
-          onClick={() => navigate(`${props?.id}/feed/${feed?.feed?.id}/0`)}
-        >
-          {loading ? (
-            <ImgLoader />
-          ) : (
-            <div>
-              {reports && <Reports />}
-              {feed?.feed?.url?.length > 0 && (
-                <>
-                  {feed?.feed?.name?.endsWith("mp4") ? (
-                    <Video width="100%" height="auto" controls autoplay muted>
-                      <source src={feed?.feed?.url} type="video/mp4" />
-                    </Video>
+        <div>
+          {reports && <Reports />}
+          {feed?.feed?.desktopJPEGurl?.length > 0 && (
+            <>
+              {feed?.feed?.name?.endsWith("mp4") ? (
+                <FileContainer>
+                  {loading ? (
+                    <ImgLoader />
                   ) : (
-                    <Cover src={feed?.feed?.url} />
+                    <Video width="100%" height="auto" controls autoplay muted>
+                      <source src="" type="video/mp4" />
+                    </Video>
                   )}
-                </>
+                </FileContainer>
+              ) : (
+                <FileContainer
+                  onClick={() =>
+                    navigate(`${props?.id}/feed/${feed?.feed?.id}/0`)
+                  }
+                >
+                  {loading ? (
+                    <ImgLoader />
+                  ) : (
+                    <>
+                      {isMobile ? (
+                        isWebpSupported() ? (
+                          <Cover
+                            src={feed?.feed?.mobileWEBPurl}
+                            active={props.active}
+                          />
+                        ) : (
+                          <Cover
+                            src={feed?.feed?.mobileJPEGurl}
+                            active={props.active}
+                          />
+                        )
+                      ) : (
+                        <Cover
+                          src={feed?.feed?.desktopJPEGurl}
+                          active={props.active}
+                        />
+                      )}
+                    </>
+                  )}
+                </FileContainer>
               )}
-            </div>
+            </>
           )}
         </div>
         {/* )} */}
@@ -419,6 +426,19 @@ const PostContainer = styled.div`
 
   & > p {
     background: ${(props) => props.theme.background};
+  }
+`;
+
+const FileContainer = styled.div`
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  display: flex;
+  aling-items: center;
+  justify-content: center;
+
+  @media only screen and (max-width: 600px) {
+    min-height: 300px;
   }
 `;
 

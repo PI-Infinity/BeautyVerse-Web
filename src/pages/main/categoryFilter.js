@@ -110,73 +110,72 @@ const CategoryItem = (props) => {
     users = JSON.parse(usersList);
   }
 
-  const DefineLength = (serviceProps) => {
-    // let data = [];
-    var filtered = users?.filter((item) => item.type !== "user");
-    // ?.filter(async (item) => {
-    //   // const feedsRef = collection(db, "users", `${item?.id}`, "feeds");
-    //   // const feedsLengthRef = await getCountFromServer(feedsRef);
-    //   // const feedsLength = feedsLengthRef.data().count;
-    //   // if (feedsLength > 0) {
-    //   return item.;
-    //   // } else {
-    //   //   return;
-    //   // }
-    // });
-    // console.log(data);
-    var proceduresLength = filtered?.filter((item) => {
-      return item?.filterCategories?.some((it) => {
-        return it?.toLowerCase()?.includes(serviceProps?.toLowerCase());
-      });
-    });
-    return proceduresLength?.length;
-    // let filtered = listItems?.filter((item) => item.id != currentUser?.uid);
-    // let data = filtered?.map(async (item, index) => {
-    //   // get reviews length
-    //   const feedsRef = collection(db, "users", `${item?.id}`, "feeds");
-    //   const feedsLengthRef = await getCountFromServer(feedsRef);
-    //   const feedsLength = feedsLengthRef.data().count;
-    //   console.log(feedsLength);
-    //   if (feedsLength > 0) {
-    //     console.log("more");
-    //     if (
-    //       item?.filterCategories?.some((it) =>
-    //         it?.toLowerCase()?.includes(serviceProps?.toLowerCase())
-    //       )
-    //     ) {
-    //       return item;
-    //       data.push(item);
-    //     }
-    //   }
-    // });
-    // console.log(data);
-    // return data?.length;
-  };
+  // const DefineLength = (serviceProps) => {
+  //   // let data = [];
+  //   var filtered = users?.filter((item) => item.type !== "user");
+  //   // ?.filter(async (item) => {
+  //   //   // const feedsRef = collection(db, "users", `${item?.id}`, "feeds");
+  //   //   // const feedsLengthRef = await getCountFromServer(feedsRef);
+  //   //   // const feedsLength = feedsLengthRef.data().count;
+  //   //   // if (feedsLength > 0) {
+  //   //   return item.;
+  //   //   // } else {
+  //   //   //   return;
+  //   //   // }
+  //   // });
+  //   // console.log(data);
+  //   var proceduresLength = filtered?.filter((item) => {
+  //     return item?.filterCategories?.some((it) => {
+  //       return it?.toLowerCase()?.includes(serviceProps?.toLowerCase());
+  //     });
+  //   });
+  //   return proceduresLength?.length;
+  // let filtered = listItems?.filter((item) => item.id != currentUser?.uid);
+  // let data = filtered?.map(async (item, index) => {
+  //   // get reviews length
+  //   const feedsRef = collection(db, "users", `${item?.id}`, "feeds");
+  //   const feedsLengthRef = await getCountFromServer(feedsRef);
+  //   const feedsLength = feedsLengthRef.data().count;
+  //   console.log(feedsLength);
+  //   if (feedsLength > 0) {
+  //     console.log("more");
+  //     if (
+  //       item?.filterCategories?.some((it) =>
+  //         it?.toLowerCase()?.includes(serviceProps?.toLowerCase())
+  //       )
+  //     ) {
+  //       return item;
+  //       data.push(item);
+  //     }
+  //   }
+  // });
+  // console.log(data);
+  // return data?.length;
+  // };
 
-  const ListLength = DefineLength(props?.value);
+  // const ListLength = DefineLength(props?.value);
 
   return (
     <Wrapper color={props.color}>
       <CategoryItemContainer
-        className={filter === props.value ? "active" : undefined}
+        className={filter === props.value ? "active" : ""}
         onClick={() => {
           dispatch(setFilter(props.value));
           dispatch(setRerender());
         }}
-        color={props.color}
+        color={filter === props.value ? "active" : "none"}
       >
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "0.25vw",
-            color: "#050505",
+            gap: "0.5vw",
           }}
         >
-          {props.icon}
+          <div>{props.icon}</div>
           {props.geo}
         </div>
-        <div style={{ color: "#ccc" }}>({ListLength})</div>
+        {/* <div style={{ color: "#ccc" }}>({ListLength})</div> */}
       </CategoryItemContainer>
     </Wrapper>
   );
@@ -187,11 +186,12 @@ const Wrapper = styled.div`
     width: 70%;
     // padding-left: 10%;
     background: #fff;
-    box-shadow: inset 0 0 0.15vw ${(props) => props.color};
+    box-shadow: inset 0 0 0.15vw green;
+    color: #050505;
 
     @media only screen and (max-width: 600px) {
       width: 100%;
-      box-shadow: inset 0 0 0.5vw ${(props) => props.color};
+      box-shadow: inset 0 0 0.5vw green;
     }
   }
 `;
@@ -205,9 +205,16 @@ const CategoryItemContainer = styled.div`
   border-radius: 50vw;
   transition: ease-in 200ms;
   cursor: pointer;
-  gap: 0.5vw;
+  gap: 1vw;
   box-shadow: 0 0.1vw 0.2vw rgba(2, 2, 2, 0.1);
   font-size: 0.8vw;
+  color: #050505;
+
+  & div > div {
+    display: flex;
+    align-items: center;
+    color: ${(props) => (props.color === "active" ? "green" : "#ccc")};
+  }
 
   @media only screen and (max-width: 600px) {
     font-size: 3vw;
@@ -220,7 +227,7 @@ const CategoryItemContainer = styled.div`
 
   .icon {
     font-size: 1vw;
-    color: ${(props) => props.color};
+    color: #ccc;
 
     @media only screen and (max-width: 600px) {
       font-size: 3vw;
@@ -230,7 +237,6 @@ const CategoryItemContainer = styled.div`
     font-size: 1.1vw;
     position: relative;
     top: 0.1vw;
-    color: ${(props) => props.color};
 
     @media only screen and (max-width: 600px) {
       font-size: 3vw;

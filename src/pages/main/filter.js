@@ -16,6 +16,7 @@ import { setRerender } from "../../redux/main";
 import Select from "react-select";
 import { useNavigate } from "react-router-dom";
 import { MdOutlineStarPurple500, MdOutlineStarOutline } from "react-icons/md";
+import CheckBox from "@mui/material/Checkbox";
 
 export const Filter = (props) => {
   const dispatch = useDispatch();
@@ -150,6 +151,7 @@ export const Filter = (props) => {
       )}
       <CheckBoxContainer>
         <CheckBox
+          sx={{ "& .MuiSvgIcon-root": { fontSize: 20 } }}
           type="checkbox"
           name="Specialists"
           id="specialists"
@@ -165,6 +167,7 @@ export const Filter = (props) => {
       </CheckBoxContainer>
       <CheckBoxContainer>
         <CheckBox
+          sx={{ "& .MuiSvgIcon-root": { fontSize: 20 } }}
           type="checkbox"
           id="beautyCenter"
           name="physical"
@@ -178,7 +181,7 @@ export const Filter = (props) => {
           ბიუთი ცენტრები
         </label>
       </CheckBoxContainer>
-      <CheckBoxContainer>
+      {/* <CheckBoxContainer>
         <CheckBox
           type="checkbox"
           id="shop"
@@ -192,12 +195,12 @@ export const Filter = (props) => {
         <label htmlFor="shop" style={{ cursor: "pointer" }}>
           მაღაზიები
         </label>
-      </CheckBoxContainer>
-      <Market>
+      </CheckBoxContainer> */}
+      {/* <Market>
         <ButtonBg onClick={() => navigate("/marketplace")}>
           <MarketButton>Marketplace</MarketButton>
         </ButtonBg>
-      </Market>
+      </Market> */}
     </FilterContainer>
   );
 };
@@ -234,96 +237,96 @@ const FilterContainer = styled.div`
 
 const CheckBoxContainer = styled.div`
   display: flex;
-  gap: 0.2vw;
+  align-items: center;
   font-size: 0.8vw;
 
   @media only screen and (max-width: 600px) {
     display: none;
   }
 `;
-const CheckBox = styled.input`
-  cursor: pointer;
-`;
+// const CheckBox = styled.input`
+//   cursor: pointer;
+// `;
 
-const Market = styled.div`
-  flex: 1;
-  display: flex;
-  justify-content: flex-end;
+// const Market = styled.div`
+//   flex: 1;
+//   display: flex;
+//   justify-content: flex-end;
 
-  @media only screen and (max-width: 600px) {
-    display: none;
-  }
-`;
+//   @media only screen and (max-width: 600px) {
+//     display: none;
+//   }
+// `;
 
-const MarketButton = styled.div`
-  height: 1.5vw;
-  width: 7vw;
-  padding-bottom: 0.05vw;
-  border-radius: 0.2vw;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.3vw;
-  color: white;
-  font-size: 0.8vw;
-  font-weight: bold;
-  cursor: pointer;
-  background: white;
-  color: #222;
-`;
+// const MarketButton = styled.div`
+//   height: 1.5vw;
+//   width: 7vw;
+//   padding-bottom: 0.05vw;
+//   border-radius: 0.2vw;
+//   display: flex;
+//   justify-content: center;
+//   align-items: center;
+//   gap: 0.3vw;
+//   color: white;
+//   font-size: 0.8vw;
+//   font-weight: bold;
+//   cursor: pointer;
+//   background: white;
+//   color: #222;
+// `;
 
-const ButtonBg = styled.div`
-  height: 1.8vw;
-  width: 7.2vw;
-  border-radius: 0.3vw;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  cursor: pointer;
+// const ButtonBg = styled.div`
+//   height: 1.8vw;
+//   width: 7.2vw;
+//   border-radius: 0.3vw;
+//   display: flex;
+//   justify-content: center;
+//   align-items: center;
+//   color: white;
+//   cursor: pointer;
 
-  :hover {
-    filter: brightness(1.1);
-  }
+//   :hover {
+//     filter: brightness(1.1);
+//   }
 
-  background: linear-gradient(323deg, #438ee4, #c743e4, #e4b643, #43e457);
-  background-size: 800% 800%;
+//   background: linear-gradient(323deg, #438ee4, #c743e4, #e4b643, #43e457);
+//   background-size: 800% 800%;
 
-  -webkit-animation: AnimationName 5s ease infinite;
-  -moz-animation: AnimationName 5s ease infinite;
-  animation: AnimationName 5s ease infinite;
+//   -webkit-animation: AnimationName 5s ease infinite;
+//   -moz-animation: AnimationName 5s ease infinite;
+//   animation: AnimationName 5s ease infinite;
 
-  @-webkit-keyframes AnimationName {
-    0% {
-      background-position: 7% 0%;
-    }
-    50% {
-      background-position: 94% 100%;
-    }
-    100% {
-      background-position: 7% 0%;
-    }
-  }
-  @-moz-keyframes AnimationName {
-    0% {
-      background-position: 7% 0%;
-    }
-    50% {
-      background-position: 94% 100%;
-    }
-    100% {
-      background-position: 7% 0%;
-    }
-  }
-  @keyframes AnimationName {
-    0% {
-      background-position: 7% 0%;
-    }
-    50% {
-      background-position: 94% 100%;
-    }
-    100% {
-      background-position: 7% 0%;
-    }
-  }
-`;
+//   @-webkit-keyframes AnimationName {
+//     0% {
+//       background-position: 7% 0%;
+//     }
+//     50% {
+//       background-position: 94% 100%;
+//     }
+//     100% {
+//       background-position: 7% 0%;
+//     }
+//   }
+//   @-moz-keyframes AnimationName {
+//     0% {
+//       background-position: 7% 0%;
+//     }
+//     50% {
+//       background-position: 94% 100%;
+//     }
+//     100% {
+//       background-position: 7% 0%;
+//     }
+//   }
+//   @keyframes AnimationName {
+//     0% {
+//       background-position: 7% 0%;
+//     }
+//     50% {
+//       background-position: 94% 100%;
+//     }
+//     100% {
+//       background-position: 7% 0%;
+//     }
+//   }
+// `;

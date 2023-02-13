@@ -68,22 +68,14 @@ export const Reviews = () => {
                 </div>
                 <ReviewItem>
                   <Reviewer
-                    onClick={
-                      currentUser?.uid === item?.reviewerId
-                        ? () => navigate("/user")
-                        : () => navigate(`/user/${item?.reviewerId}`)
-                    }
+                    onClick={() => navigate(`/user/${item?.reviewerId}`)}
                   >
                     {item.reviewer}:
                   </Reviewer>
                   <span>{item.text}</span>{" "}
                   <MdOutlineArrowRight className="arrowIcon" />
                   <Reviewer
-                    onClick={
-                      currentUser?.uid === item?.reviewerId
-                        ? () => navigate("/user")
-                        : () => navigate(`/user/${item?.reviewerId}`)
-                    }
+                    onClick={() => navigate(`/user/${item?.reviewerId}`)}
                     style={{ color: "#46BCFF" }}
                   >
                     {item.reciever}

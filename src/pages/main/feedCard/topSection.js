@@ -32,40 +32,23 @@ export const TopSection = (props) => {
   return (
     <TopSectionContainer following={followingLength?.toString()}>
       <Profile
-        onClick={
-          currentUser?.uid === props?.id
-            ? () => {
-                AddScrollPositionToLocalStorage();
-                navigate("/user");
-              }
-            : () => {
-                AddScrollPositionToLocalStorage();
-                navigate(`/user/${props?.id}`);
-              }
-        }
+        onClick={() => {
+          AddScrollPositionToLocalStorage();
+          navigate(`/user/${props?.id}`);
+        }}
       >
         {props.loading ? (
           <CoverLoader />
         ) : (
           <>
             {props.cover?.length < 1 || props?.cover == undefined ? (
-              <UserProfileEmpty
-                onClick={
-                  currentUser?.uid === props?.id
-                    ? () => navigate("/user")
-                    : () => navigate(`/user/${props?.id}`)
-                }
-              >
+              <UserProfileEmpty onClick={() => navigate(`/user/${props?.id}`)}>
                 <FaUser className="user" />
               </UserProfileEmpty>
             ) : (
               <Img
                 src={props?.cover}
-                onClick={
-                  currentUser?.uid === props?.id
-                    ? () => navigate("/user")
-                    : () => navigate(`/user/${props?.id}`)
-                }
+                onClick={() => navigate(`/user/${props?.id}`)}
               />
             )}
           </>
@@ -74,7 +57,7 @@ export const TopSection = (props) => {
       <div className="link">
         <div style={{ display: "flex", alignItems: "center" }}>
           <Link
-            to={currentUser?.uid === props?.id ? "/user" : `/user/${props?.id}`}
+            to={`/user/${props?.id}`}
             style={{ color: "inherit", textDecoration: "none" }}
           >
             {props.loading ? <TitleLoader /> : <Name>{props.name}</Name>}

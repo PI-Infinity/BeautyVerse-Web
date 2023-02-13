@@ -1,23 +1,33 @@
 import React, { useState, useContext } from "react";
-import styled from "styled-components";
-import { useSelector, useDispatch } from "react-redux";
-import { setOpenMenu, setRerender, setOpenMobileMenu } from "../redux/main";
-import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { GiExitDoor, GiShop } from "react-icons/gi";
+import styled from "styled-components";
+import Box from "@mui/material/Box";
+import Drawer from "@mui/material/Drawer";
+import Button from "@mui/material/Button";
+import List from "@mui/material/List";
+import Divider from "@mui/material/Divider";
+import ListItem from "@mui/material/ListItem";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import InboxIcon from "@mui/icons-material/MoveToInbox";
+import MailIcon from "@mui/icons-material/Mail";
+import { CgMenuGridO, CgMenuGridR } from "react-icons/cg";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate, Link } from "react-router-dom";
 import { FaUser } from "react-icons/fa";
-import { MdSecurity, MdAttachMoney } from "react-icons/md";
+import Badge from "@mui/material/Badge";
+import {
+  MdSecurity,
+  MdAttachMoney,
+  MdCircleNotifications,
+} from "react-icons/md";
 import { TbMessages } from "react-icons/tb";
-import { RiShoppingCartFill } from "react-icons/ri";
 import { FcAdvertising, FcRules, FcWorkflow } from "react-icons/fc";
 import { BsQuestionLg } from "react-icons/bs";
-import { Footer } from "../components/footer";
 import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
-import Flag from "react-world-flags";
-import useWindowDimensions from "../functions/dimensions";
 
-export const Menu = (props) => {
-  const { height, width } = useWindowDimensions();
+export default function Menu() {
   const { currentUser } = useContext(AuthContext);
   // import current user & parse it
   const userUnparsed = useSelector((state) => state.storeMain.user);
@@ -34,55 +44,66 @@ export const Menu = (props) => {
   const { dispatch } = useContext(AuthContext);
 
   const Logout = async () => {
-    await mainDispatch(setOpenMenu("-25vw"));
-    await mainDispatch(setOpenMobileMenu(false));
     await dispatch({ type: "LOGOUT" });
     navigate("/login");
   };
 
-  return (
-    <Container desktop={props.desktop}>
-      <Bg
-        onClick={() => {
-          mainDispatch(setOpenMenu(false));
-        }}
-        openMenu={openMenu}
-      ></Bg>
-      <MenuContainer openMenu={openMenu} height={height}>
-        <Items>
-          <div
-            onClick={
-              currentUser != undefined
-                ? async () => {
-                    await mainDispatch(setOpenMobileMenu(false));
-                    await mainDispatch(setOpenMenu("-25vw"));
-                    navigate("/user");
-                  }
-                : async () => {
-                    await mainDispatch(setOpenMobileMenu(false));
-                    await mainDispatch(setOpenMenu("-25vw"));
-                    navigate("/login");
-                  }
-            }
-            style={{
-              color: "inherit",
-              display: "flex",
-              alignItems: "center",
-              textDecoration: "none",
-            }}
-          >
-            <Item>
-              <Profile>
-                {currentuser?.cover === undefined ? (
-                  <FaUser className="user" />
-                ) : (
-                  <Img src={currentuser?.cover} alt="cover" />
-                )}
-              </Profile>
-              <span>პირადი გვერდი</span>
-            </Item>
-          </div>
-          <Item
+  // define material menu state
+  const [state, setState] = React.useState({
+    top: false,
+    left: false,
+    bottom: false,
+    right: false,
+  });
+
+  const toggleDrawer = (anchor, open) => (event) => {
+    if (
+      event.type === "keydown" &&
+      (event.key === "Tab" || event.key === "Shift")
+    ) {
+      return;
+    }
+
+    setState({ ...state, [anchor]: open });
+  };
+
+  const list = (anchor) => (
+    <Box
+      sx={{ width: anchor === "top" || anchor === "bottom" ? "auto" : 500 }}
+      role="presentation"
+      onClick={toggleDrawer(anchor, false)}
+      onKeyDown={toggleDrawer(anchor, false)}
+    >
+      <Items>
+        <div
+          onClick={
+            currentUser != undefined
+              ? async () => {
+                  navigate(`/user/${currentUser?.uid}`);
+                }
+              : async () => {
+                  navigate("/login");
+                }
+          }
+          style={{
+            color: "inherit",
+            display: "flex",
+            alignItems: "center",
+            textDecoration: "none",
+          }}
+        >
+          <Item>
+            <Profile>
+              {currentuser?.cover === undefined ? (
+                <FaUser className="user" />
+              ) : (
+                <Img src={currentuser?.cover} alt="cover" />
+              )}
+            </Profile>
+            <span>პირადი გვერდი</span>
+          </Item>
+        </div>
+        {/* <Item
             onClick={async () => {
               await mainDispatch(setOpenMobileMenu(false));
               await mainDispatch(setOpenMenu("-25vw"));
@@ -90,33 +111,44 @@ export const Menu = (props) => {
             }}
           >
             <RiShoppingCartFill className="icon" /> <span>მარკეტი</span>
-          </Item>
+          </Item> */}
+        <Item
+          onClick={async () => {
+            // await mainDispatch(setOpenMobileMenu(false));
+            // await mainDispatch(setOpenMenu("-25vw"));
+            // navigate("/chat");
+          }}
+        >
+          <Badge badgeContent={999} overlap="circular" color="secondary">
+            <MdCircleNotifications className="icon" />{" "}
+          </Badge>
+          <span>შეტყობინებები</span>
+        </Item>
+        <Item
+          onClick={async () => {
+            navigate("/chat");
+          }}
+        >
+          <Badge badgeContent={999} overlap="circular" color="secondary">
+            <TbMessages className="icon" />
+          </Badge>
+          <span>ჩატი</span>
+        </Item>
+        {currentuser?.type != "user" && (
           <Item
             onClick={async () => {
-              await mainDispatch(setOpenMobileMenu(false));
-              await mainDispatch(setOpenMenu("-25vw"));
-              navigate("/chat");
+              navigate("/advertisments");
             }}
           >
-            <TbMessages className="icon" /> <span>ჩატი</span>
+            <FcAdvertising className="icon" />
+            რეკლამა
           </Item>
-          {currentuser?.type != "user" && (
-            <Item
-              onClick={async () => {
-                await mainDispatch(setOpenMobileMenu(false));
-                await mainDispatch(setOpenMenu("-25vw"));
-                navigate("/advertisments");
-              }}
-            >
-              <FcAdvertising className="icon" />
-              რეკლამა
-            </Item>
-          )}
-          {/* <Item>
+        )}
+        {/* <Item>
             <GiShop className="icon" />
             მაღაზიის დამატება
           </Item> */}
-          <Item
+        {/* <Item
             onClick={async () => {
               await mainDispatch(setOpenMobileMenu(false));
               await mainDispatch(setOpenMenu("-25vw"));
@@ -125,142 +157,63 @@ export const Menu = (props) => {
           >
             <MdAttachMoney className="icon" />
             ფასები
-          </Item>
-          <Item
-            onClick={async () => {
-              await mainDispatch(setOpenMobileMenu(false));
-              await mainDispatch(setOpenMenu("-25vw"));
-              navigate("/rules");
-            }}
-          >
-            <FcRules className="icon" />
-            წესები და პირობები
-          </Item>
-          <Item
-            onClick={async () => {
-              await mainDispatch(setOpenMobileMenu(false));
-              await mainDispatch(setOpenMenu("-25vw"));
-              navigate("/privacy");
-            }}
-          >
-            <MdSecurity className="icon" />
-            კონფიდენცი- ალურობა
-          </Item>
-          <Item
-            onClick={async () => {
-              await mainDispatch(setOpenMobileMenu(false));
-              await mainDispatch(setOpenMenu("-25vw"));
-              navigate("/howwokrs");
-            }}
-          >
-            <FcWorkflow className="icon" />
-            როგორ მუშაობს?
-          </Item>
-          <Item
-            onClick={async () => {
-              await mainDispatch(setOpenMobileMenu(false));
-              await mainDispatch(setOpenMenu("-25vw"));
-              navigate("/questions");
-            }}
-          >
-            <BsQuestionLg className="icon" />
-            კითხვებზე პასუხები
-          </Item>
-        </Items>
-
-        <FooterContainer>
-          <FooterContent>
-            <Icons>
-              <FaFacebook />
-              <FaInstagram />
-              <FaYoutube />
-            </Icons>
-            <Languages>
-              <Flag code="geo" className="lang" />
-              <Flag code="usa" className="lang" />
-              <Flag code="rus" className="langR" />
-            </Languages>
-          </FooterContent>
-          {currentUser != undefined ? (
-            <LogoutBtn onClick={Logout}>
-              <GiExitDoor />
-              გასვლა
-            </LogoutBtn>
-          ) : (
-            <LogoutBtn
-              onClick={async () => {
-                await mainDispatch(setOpenMobileMenu(false));
-                await mainDispatch(setOpenMenu("-25vw"));
-                navigate("/login");
-              }}
-            >
-              <GiExitDoor />
-              შესვლა
-            </LogoutBtn>
-          )}
-          {/* <Copyright>&#169; beautyverse</Copyright>{" "} */}
-        </FooterContainer>
-      </MenuContainer>
-    </Container>
+          </Item> */}
+        <Item
+          onClick={async () => {
+            navigate("/rules");
+          }}
+        >
+          <FcRules className="icon" />
+          წესები და პირობები
+        </Item>
+        <Item
+          onClick={async () => {
+            navigate("/privacy");
+          }}
+        >
+          <MdSecurity className="icon" />
+          კონფიდენცი- ალურობა
+        </Item>
+        <Item
+          onClick={async () => {
+            navigate("/howwokrs");
+          }}
+        >
+          <FcWorkflow className="icon" />
+          როგორ მუშაობს?
+        </Item>
+        <Item
+          onClick={async () => {
+            navigate("/questions");
+          }}
+        >
+          <BsQuestionLg className="icon" />
+          კითხვებზე პასუხები
+        </Item>
+      </Items>
+    </Box>
   );
-};
 
-const Container = styled.div`
-  @media only screen and (max-width: 600px) {
-    display: ${(props) => props.desktop && "none"};
-  }
-`;
-
-const Bg = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  height: 100vh;
-  background: rgba(2, 2, 2, 0.5);
-  transition: ease-in 150ms;
-  display: ${(props) => (props.openMenu == "-25vw" ? "none" : "flex")};
-  opacity: ${(props) => (props.openMenu == "-25vw" ? "0" : "1")};
-  z-index: 1001;
-  cursor: pointer;
-
-  @media only screen and (max-width: 600px) {
-    display: none;
-  }
-`;
-
-const MenuContainer = styled.div`
-  width: 26vw;
-  height: 80vh;
-  position: fixed;
-  top: 3.7vw;
-  box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
-  border-radius: 0.5vw;
-  right: 0;
-  z-index: 1002;
-  transition: ease-in-out 200ms;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(40px);
-  // -webkit-animation: slide 0.2s forwards;
-  // animation: slide 0.2s forwards;
-
-  @media only screen and (max-width: 600px) {
-    width: 100vw;
-    height: calc(${(props) => props.height}px - 15vw);
-    top: 15vw;
-    padding-top: 1vw;
-    box-sizing: border-box;
-    right: 0;
-    left: 0;
-    z-index: 1001;
-    overflow: hidden;
-  }
-`;
+  return (
+    <div>
+      <React.Fragment>
+        <Button
+          onClick={toggleDrawer("right", true)}
+          style={{ color: "#05050" }}
+        >
+          <CgMenuGridO className="menuIcon" color="#222" />
+        </Button>
+        <Drawer
+          anchor={"right"}
+          open={state["right"]}
+          onClose={toggleDrawer("right", false)}
+        >
+          {list("right")}
+        </Drawer>
+      </React.Fragment>
+    </div>
+  );
+}
 
 const Items = styled.div`
   display: grid;
@@ -366,113 +319,5 @@ const Img = styled.img`
   @media only screen and (max-width: 600px) {
     width: 7vw;
     height: 7vw;
-  }
-`;
-
-const LogoutBtn = styled.div`
-  // box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  height: 2.5vw;
-  cursor: pointer;
-  // background: #fff;
-  transition: ease-in-out 200ms;
-
-  @media only screen and (max-width: 600px) {
-    height: 10vh;
-  }
-
-  :hover {
-    background: #f7faff;
-  }
-`;
-
-const FooterContainer = styled.div`
-  // display: none;
-
-  @media only screen and (max-width: 600px) {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2vw;
-  }
-`;
-
-const FooterContent = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-evenly;
-  // padding: 0 3vw;
-  box-sizing: border-box;
-  width: 100%;
-`;
-
-const Languages = styled.div`
-  flex 2;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 1vw;
-  border-radius: 0.2vw;
-  padding: 0.2vw 0.5vw;
-
-  @media only screen and (max-width: 600px) {
-    gap: 3vw;
-    border-radius: 0.8vw;
-    padding: 0.8vw 2vw;
-    justify-content: center;
-  }
-
-  .lang {
-    width: 1vw;
-    height: 0.7vw;
-    cursor: pointer;
-
-    @media only screen and (max-width: 600px) {
-      width: 4vw;
-      height: 2.8vw;
-    }
-  }
-  .langR {
-    width: 1vw;
-    height: 0.7vw;
-    cursor: pointer;
-
-    @media only screen and (max-width: 600px) {
-      width: 4vw;
-      height: 2.8vw;
-      position: relative;
-      bottom: 0.5vw;
-    }
-  }
-`;
-const Icons = styled.div`
-  flex: 2;
-  display: flex;
-  align-items: center;
-  justify-content: start;
-  gap: 0.5vw;
-  font-size: 1vw;
-  color: #222;
-
-  @media only screen and (max-width: 600px) {
-    gap: 2vw;
-    font-size: 4vw;
-    justify-content: center;
-  }
-`;
-
-const Copyright = styled.div`
-  flex: 2,
-  display: flex;
-  justify-content: center;
-  font-size: 1vw;
-
-  @media only screen and (max-width: 600px) {
-    font-size: 3.5vw;
-    color: #ccc;
-    letter-spacing: 0.2vw;
   }
 `;

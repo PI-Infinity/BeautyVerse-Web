@@ -20,20 +20,12 @@ import { GiConfirmed } from "react-icons/gi";
 import { FiEdit } from "react-icons/fi";
 import MapAutocomplete from "../../components/mapAutocomplete";
 
-export const CoverSection = (props) => {
+const CoverSection = React.memo(function ({ user, latitude, longitude }) {
   const dispatch = useDispatch();
   const currentUser = auth.currentUser;
 
   // define user type
   const rerender = useSelector((state) => state.storeMain.rerender);
-
-  // import current user from redux state
-  const userUnparsed = useSelector((state) => state.storeMain.user);
-
-  let user;
-  if (userUnparsed?.length > 0) {
-    user = JSON.parse(userUnparsed);
-  }
 
   // edit name
   const [edit, setEdit] = React.useState(false);
@@ -50,6 +42,8 @@ export const CoverSection = (props) => {
     }
     setEdit(false);
   };
+
+  console.log("rerender");
 
   // capitilize firs letter
   function capitalizeFirstLetter(string) {
@@ -96,12 +90,8 @@ export const CoverSection = (props) => {
     <InfoSide>
       <ProfileImg>
         <div style={{ width: 0 }}>
-          {currentUser?.photoURL?.length > 0 ? (
-            <CoverImg
-              type={user?.type}
-              src={currentUser?.photoURL}
-              alt="photo"
-            />
+          {user?.cover?.length > 0 ? (
+            <CoverImg src={user?.cover} alt="photo" />
           ) : (
             <>
               {user?.type == "shop" ? (
@@ -134,7 +124,12 @@ export const CoverSection = (props) => {
               <div>
                 <span>{name}</span>
               </div>
-              <RiEdit2Fill className="editIcon" onClick={() => setEdit(true)} />
+              {currentUser?.uid === user?.id && (
+                <RiEdit2Fill
+                  className="editIcon"
+                  onClick={() => setEdit(true)}
+                />
+              )}
             </>
           )}
         </Title>
@@ -142,7 +137,7 @@ export const CoverSection = (props) => {
       <WorkingInfo>
         <div style={{ zIndex: 4 }}>
           <div style={{ position: "relative", top: "8vw" }}>
-            <Map latitude={props.latitude} longitude={props.longitude} />
+            <Map latitude={latitude} longitude={longitude} />
           </div>
         </div>
         <StaticInfo>
@@ -183,7 +178,9 @@ export const CoverSection = (props) => {
       </WorkingInfo>
     </InfoSide>
   );
-};
+});
+
+export default CoverSection;
 
 const InfoSide = styled.div`
   width: 70%;
@@ -247,7 +244,7 @@ const ProfileImg = styled.div`
 `;
 
 const CoverImg = styled.img`
-  object-fit: ${(props) => (props.type == "shop" ? "contain" : "cover")};
+  object-fit: cover;
   width: 9vw;
   height: 9vw;
   z-index: 5;

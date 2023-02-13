@@ -31,16 +31,12 @@ export const Reports = () => {
         justifyContent: "flex-end",
       }}
     >
-      <Container>
-        <div onClick={() => SavePost(!openList)} className="title">
+      <Container onClick={() => setOpenList(!openList)}>
+        {/* <div onClick={() => SavePost(!openList)} className="title">
           <b>Save Feed</b>
           <BsSave2 id="save" />
-        </div>
-        <div
-          onClick={() => setOpenList(!openList)}
-          style={{ marginTop: "5px" }}
-          className="title"
-        >
+        </div> */}
+        <div className="title">
           <b>Report</b>
         </div>
         {openList && (
@@ -79,7 +75,7 @@ const Container = styled.div`
   }
 
   @media only screen and (max-width: 600px) {
-    width: 35vw;
+    width: 45vw;
     border-radius: 1vw;
     padding: 1.5vw 0 1.5vw 3vw;
     margin-right: 1vw;

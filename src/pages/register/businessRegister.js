@@ -32,10 +32,12 @@ import {
 import { db, auth } from "../../firebase";
 import { doc, setDoc, serverTimestamp, collection } from "firebase/firestore";
 import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
+import useWindowDimensions from "../../functions/dimensions";
 
 const animatedComponents = makeAnimated();
 
 export const BusinessRegister = (props) => {
+  const { height, width } = useWindowDimensions();
   const mainDispatch = useDispatch();
   const navigate = useNavigate();
   const { dispatch } = useContext(AuthContext);
@@ -120,12 +122,20 @@ export const BusinessRegister = (props) => {
           latitude: map.latitude,
           longitude: map.longitude,
         },
+        workingPlace:
+          registerFields?.workingPlace?.length > 0
+            ? registerFields?.workingPlace
+            : "",
+        workingDays:
+          registerFields?.workingDays?.length > 0
+            ? registerFields?.workingDays
+            : "",
         lastPost: serverTimestamp(),
         filterCategories: categories,
       });
       let subcat;
       if (type === "specialist" || type === "beautyCenter") {
-        registerFields?.categories?.map((item, index) => {
+        await registerFields?.categories?.map((item, index) => {
           setDoc(doc(db, `users`, user.uid, "procedures", item.value), {
             value: item.value,
           });
@@ -149,101 +159,39 @@ export const BusinessRegister = (props) => {
   });
 
   return (
-    <Container>
-      <AiOutlineProfile className="icon" />
-      <Title>
-        {type == "shop"
-          ? "ინფორმაცია მაღაზიის შესახებ"
-          : "ინფორმაცია სამუშაოს შესახებ"}
-      </Title>
-      <WrapperContainer
-        onSubmit={HandleSubmit}
+    <>
+      <Container
+        height={height}
         style={{ display: !flag ? "visible" : "none" }}
       >
-        <Button
-          title="Back"
-          function={() => navigate("/register/identify")}
-          back={true}
-        />
-        <Fields>
-          <>
-            <TitleWrapper>
-              <InputTitle>
-                {type == "shop" ? "აირჩიე კატეგორიები" : "სერვისები"}*
-              </InputTitle>
-            </TitleWrapper>
-            <Wrapper>
-              <Select
-                placeholder={
-                  type == "shop" ? "დაამატე კატეგორიები" : "დაამატე სერვისი"
-                }
-                isMulti
-                components={animatedComponents}
-                onChange={(value) => {
-                  mainDispatch(setCategories(value));
-                }}
-                styles={{
-                  control: (baseStyles, state) => ({
-                    ...baseStyles,
-                    borderColor: state.isFocused
-                      ? "rgba(0,0,0,0)"
-                      : "rgba(0,0,0,0.1)",
-                    width: "33vw",
-                    minHeight: "2vw",
-                    cursor: "pointer",
-                    "@media only screen and (max-width: 1200px)": {
-                      width: "85vw",
-                    },
-                  }),
-                }}
-                options={type == "shop" ? categoriesOptions : option}
-              />
-            </Wrapper>
-            {type != "shop" && (
-              <>
-                <TitleWrapper>
-                  <InputTitle>სამუშაო დღეები (სურვილისამებრ)</InputTitle>
-                </TitleWrapper>
-                <Wrapper>
-                  <Select
-                    placeholder="სამუშაო დღეები"
-                    isMulti
-                    components={animatedComponents}
-                    onChange={(value) => {
-                      mainDispatch(setWorkingDays(value));
-                    }}
-                    styles={{
-                      control: (baseStyles, state) => ({
-                        ...baseStyles,
-                        borderColor: state.isFocused
-                          ? "rgba(0,0,0,0)"
-                          : "rgba(0,0,0,0.1)",
-                        width: "33vw",
-                        minHeight: "2vw",
-                        cursor: "pointer",
-                        "@media only screen and (max-width: 1200px)": {
-                          width: "85vw",
-                        },
-                      }),
-                    }}
-                    options={workingDaysOptions}
-                  />
-                </Wrapper>
-              </>
-            )}
-          </>
-          {type != "shop" && (
+        <Title>
+          <AiOutlineProfile className="icon" />
+          {type == "shop"
+            ? "ინფორმაცია მაღაზიის შესახებ"
+            : "ინფორმაცია სამუშაოს შესახებ"}
+        </Title>
+        <WrapperContainer onSubmit={HandleSubmit}>
+          <Button
+            title="Back"
+            function={() => navigate("/register/identify")}
+            back={true}
+          />
+          <Fields>
             <>
               <TitleWrapper>
-                <InputTitle>სამუშაო სივრცე (სურვილისამებრ)</InputTitle>
+                <InputTitle>
+                  {type == "shop" ? "აირჩიე კატეგორიები" : "სერვისები"}*
+                </InputTitle>
               </TitleWrapper>
               <Wrapper>
                 <Select
-                  placeholder="სამუშაო სივრცე"
+                  placeholder={
+                    type == "shop" ? "დაამატე კატეგორიები" : "დაამატე სერვისი"
+                  }
                   isMulti
                   components={animatedComponents}
                   onChange={(value) => {
-                    mainDispatch(setWorkingPlace(value));
+                    mainDispatch(setCategories(value));
                   }}
                   styles={{
                     control: (baseStyles, state) => ({
@@ -251,25 +199,93 @@ export const BusinessRegister = (props) => {
                       borderColor: state.isFocused
                         ? "rgba(0,0,0,0)"
                         : "rgba(0,0,0,0.1)",
-                      width: "33vw",
+                      width: "38vw",
                       minHeight: "2vw",
                       cursor: "pointer",
                       "@media only screen and (max-width: 1200px)": {
                         width: "85vw",
+                        fontSize: "16px",
                       },
                     }),
                   }}
-                  options={workingPlacesOptions}
+                  options={type == "shop" ? categoriesOptions : option}
                 />
               </Wrapper>
-              <div id="recaptcha-container"></div>
+              {type != "shop" && (
+                <>
+                  <TitleWrapper>
+                    <InputTitle>სამუშაო დღეები (სურვილისამებრ)</InputTitle>
+                  </TitleWrapper>
+                  <Wrapper>
+                    <Select
+                      placeholder="სამუშაო დღეები"
+                      isMulti
+                      components={animatedComponents}
+                      onChange={(value) => {
+                        mainDispatch(setWorkingDays(value));
+                      }}
+                      styles={{
+                        control: (baseStyles, state) => ({
+                          ...baseStyles,
+                          borderColor: state.isFocused
+                            ? "rgba(0,0,0,0)"
+                            : "rgba(0,0,0,0.1)",
+                          width: "38vw",
+                          minHeight: "2vw",
+                          cursor: "pointer",
+                          "@media only screen and (max-width: 1200px)": {
+                            width: "85vw",
+                            fontSize: "16px",
+                          },
+                        }),
+                      }}
+                      options={workingDaysOptions}
+                    />
+                  </Wrapper>
+                </>
+              )}
             </>
-          )}
-          <></>
-        </Fields>
-        <Button title="Next" type="Submit" function={HandleSubmit} />
-      </WrapperContainer>
-      <form
+            {type != "shop" && (
+              <>
+                <TitleWrapper>
+                  <InputTitle>სამუშაო სივრცე (სურვილისამებრ)</InputTitle>
+                </TitleWrapper>
+                <Wrapper>
+                  <Select
+                    placeholder="სამუშაო სივრცე"
+                    isMulti
+                    components={animatedComponents}
+                    onChange={(value) => {
+                      mainDispatch(setWorkingPlace(value));
+                    }}
+                    styles={{
+                      control: (baseStyles, state) => ({
+                        ...baseStyles,
+                        borderColor: state.isFocused
+                          ? "rgba(0,0,0,0)"
+                          : "rgba(0,0,0,0.1)",
+                        width: "38vw",
+                        minHeight: "2vw",
+                        cursor: "pointer",
+                        "@media only screen and (max-width: 1200px)": {
+                          width: "85vw",
+                          fontSize: "16px",
+                        },
+                      }),
+                    }}
+                    options={workingPlacesOptions}
+                  />
+                </Wrapper>
+                <div id="recaptcha-container"></div>
+              </>
+            )}
+            <></>
+          </Fields>
+          <Button title="Next" type="Submit" function={HandleSubmit} />
+        </WrapperContainer>
+      </Container>
+      <Confirm
+        height={height}
         onSubmit={VerifyOTP}
         className="verify"
         style={{
@@ -278,6 +294,7 @@ export const BusinessRegister = (props) => {
           justifyContent: "center",
         }}
       >
+        <Title>Verify Phone Number</Title>
         <InputWrapper>
           <Input
             type="text"
@@ -286,54 +303,75 @@ export const BusinessRegister = (props) => {
             value={otp}
           />
         </InputWrapper>
-        <button type="submit">Verify</button>
-      </form>
-    </Container>
+        <SubmitButton type="submit">დადასტურება</SubmitButton>
+      </Confirm>
+    </>
   );
 };
 
 const Container = styled.div`
   width: 100%;
+  height: ${(props) => props.height}px;
+  box-sizing: border-box;
+  padding-top: 3vw;
+  padding-bottom: 5vw;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2vw;
-  margin-top: 10vw;
+  overflow-y: scroll;
+
+  @media only screen and (max-width: 600px) {
+    justify-content: start;
+    font-size: 3vw;
+    padding-top: 30vw;
+    padding-bottom: 15vw;
+  }
 
   .icon {
     font-size: 2vw;
-    margin-bottom: -1.5vw;
 
     @media only screen and (max-width: 600px) {
       font-size: 6vw;
     }
   }
+`;
 
-  .verify {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    overflow: hidden;
-    z-index: 10010;
-    background: rgba(0, 0, 0, 0.2);
-  }
+const Confirm = styled.form`
+  width: 100%;
+  height: ${(props) => props.height}px;
+  box-sizing: border-box;
+  padding-top: 3vw;
+  padding-bottom: 5vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2vw;
 
   @media only screen and (max-width: 600px) {
-    justify-content: start;
-    margin-top: 25vw;
-    padding-bottom: 20vw;
-    overflow-y: scroll;
+    font-size: 3vw;
+    padding-top: 14vw;
+    padding-bottom: 3vw;
   }
 `;
 
-const Title = styled.h3`
+const Title = styled.h2`
   margin-bottom: 1vw;
+  display: flex;
+  align-items: center;
+  gap: 15px;
 
   @media only screen and (max-width: 600px) {
     margin-bottom: 7vw;
+  }
+
+  .icon {
+    font-size: 2vw;
+    @media only screen and (max-width: 600px) {
+      font-size: 7vw;
+    }
   }
 `;
 
@@ -376,7 +414,7 @@ const WrapperContainer = styled.form`
 
   @media only screen and (max-width: 600px) {
     flex-direction: column;
-    padding-left: 5vw;
+    padding-left: 0vw;
     gap: 15vw;
   }
 `;
@@ -397,44 +435,41 @@ const Selected = styled.select`
 
 const InputWrapper = styled.div`
   width: 18.5vw;
-  height: 1.5vw;
+  height: 2.5vw;
   border-radius: 0.5vw;
   box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
   border: none;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: start;
   gap: 0.5vw;
-  padding: 0.5vw;
   transition: ease-in 200ms;
+  box-sizing: border-box;
 
   @media only screen and (max-width: 600px) {
-    width: 42vw;
-    height: 7vw;
+    box-shadow: 0 0.2vw 0.6vw rgba(2, 2, 2, 0.1);
+    width: 45vw;
+    height: 10vw;
     border-radius: 1.5vw;
-    padding-left: 2vw;
     font-size: 16px;
   }
 `;
 
 const Input = styled.input`
-  width: 15vw;
-  height: 1.5vw;
+  width: 100%;
+  height: 100%;
   border-radius: 0.5vw;
-  box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
   border: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 0.5vw;
-  padding: 0.5vw;
   transition: ease-in 200ms;
+  padding-left: 0.5vw;
+  box-sizing: border-box;
 
   @media only screen and (max-width: 600px) {
-    width: 42vw;
-    height: 7vw;
     border-radius: 1.5vw;
     padding-left: 2vw;
     font-size: 16px;
@@ -444,17 +479,44 @@ const Input = styled.input`
     outline: none;
   }
 
-  :hover {
-    box-shadow: 0 0.2vw 0.5vw rgba(2, 2, 2, 0.2);
+  ::placeholder {
+    font-size: 12px;
   }
 `;
 
 const InputTitle = styled.span`
   flex: 1;
-  margin-bottom: -0.5vw;
 
   @media only screen and (max-width: 600px) {
     text-align: start;
     font-size: 3vw;
+  }
+`;
+
+const SubmitButton = styled.button`
+  width: 15vw;
+  height: 2.5vw;
+  border-radius: 0.5vw;
+  box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: ease-in 200ms;
+  color: ${(props) => (props.back ? "#ccc" : "green")};
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.7);
+  border: none;
+
+  @media only screen and (max-width: 600px) {
+    width: 45vw;
+    height: 8vw;
+    border-radius: 1.5vw;
+    box-shadow: 0 0.3vw 0.6vw rgba(2, 2, 2, 0.2);
+    font-size: 3.8vw;
+  }
+
+  :hover {
+    box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.2);
   }
 `;

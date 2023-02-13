@@ -48,6 +48,7 @@ export const Feeds = (props) => {
   if (userUnparsed?.length > 0) {
     user = JSON.parse(userUnparsed);
   }
+  console.log(userUnparsed);
   const DefineUserList = () => {
     let data;
     // if (user != undefined) {

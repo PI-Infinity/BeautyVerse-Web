@@ -17,30 +17,29 @@ import { ImCheckmark } from "react-icons/im";
 import { GiConfirmed } from "react-icons/gi";
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
-import { proceduresOptions } from "../../data/registerDatas";
+import {
+  proceduresOptions,
+  workingPlacesOptions,
+  workingDaysOptions,
+} from "../../data/registerDatas";
 import useWindowDimensions from "../../functions/dimensions";
 import { IsMobile } from "../../functions/isMobile";
+import { useOutletContext } from "react-router-dom";
+import { RiEdit2Fill } from "react-icons/ri";
+
 const animatedComponents = makeAnimated();
 
-export const Services = (props) => {
+export const Services = () => {
+  const [user] = useOutletContext();
   const isMobile = IsMobile();
   const [loading, setLoading] = React.useState(true);
   const { height, width } = useWindowDimensions();
 
   // import current user from redux state
   const userUnparsed = useSelector((state) => state.storeMain.user);
-  let us;
+  let currentuser;
   if (userUnparsed?.length > 0) {
-    us = JSON.parse(userUnparsed);
-  }
-
-  // define current or visit user
-
-  let user;
-  if (props.userVisit) {
-    user = props.user;
-  } else {
-    user = us;
+    currentuser = JSON.parse(userUnparsed);
   }
 
   // import services
@@ -51,32 +50,6 @@ export const Services = (props) => {
       collection(db, "users", `${user?.id}`, "procedures"),
       (snapshot) => {
         setServices(snapshot.docs.map((doc) => doc.data()));
-      }
-    );
-    return data;
-  }, []);
-
-  // import working days
-  const [workingDays, setWorkingDays] = React.useState([]);
-
-  React.useEffect(() => {
-    const data = onSnapshot(
-      collection(db, "users", `${user?.id}`, "working days"),
-      (snapshot) => {
-        setWorkingDays(snapshot.docs.map((doc) => doc.data()));
-      }
-    );
-    return data;
-  }, []);
-
-  // import working places
-  const [workingPlaces, setWorkingPlaces] = React.useState([]);
-
-  React.useEffect(() => {
-    const data = onSnapshot(
-      collection(db, "users", `${user?.id}`, "working places"),
-      (snapshot) => {
-        setWorkingPlaces(snapshot.docs.map((doc) => doc.data()));
       }
     );
     return data;
@@ -134,6 +107,35 @@ export const Services = (props) => {
     }
   };
 
+  const [editWorkingPlace, setEditWorkingPlace] = React.useState("");
+  const [editWorkingDays, setEditWorkingDays] = React.useState("");
+  const [editWorkingHours, setEditWorkingHours] = React.useState("");
+  const [edit, setEdit] = React.useState(false);
+
+  // update working places
+  const UpdateWorkingPlace = (newValue) => {
+    const base = doc(db, "users", `${user?.id}`);
+    if (editWorkingPlace?.length > 0) {
+      updateDoc(base, {
+        workingPlace: editWorkingPlace,
+      });
+      setEditWorkingPlace("");
+    }
+    setEditWorkingPlace("");
+    setEdit(false);
+  };
+  // update working days
+  const UpdateWorkingDays = (newValue) => {
+    const base = doc(db, "users", `${user?.id}`);
+    if (editWorkingDays?.length > 0) {
+      updateDoc(base, {
+        workingDays: editWorkingDays,
+      });
+    }
+    setEditWorkingDays("");
+    setEdit(false);
+  };
+
   setTimeout(() => {
     setLoading(false);
   }, 300);
@@ -143,26 +145,154 @@ export const Services = (props) => {
       <WrapperOne>
         <WorkingDays>
           <span style={{ fontWeight: "bold" }}>სამუშაო დღეები:</span>
-
-          {workingDays
-            ?.sort(function (a, b) {
-              return a.id - b.id;
-            })
-            ?.map((item, index) => {
-              return <div key={item.id}>{item.label}</div>;
-            })}
+          <div>
+            {user?.workingDays
+              ?.sort(function (a, b) {
+                return a.id - b.id;
+              })
+              ?.map((item, index) => {
+                return <div key={item.id}>{item.label}</div>;
+              })}
+          </div>
+          {edit === "days" && (
+            <Select
+              placeholder="დაამატე სამუშაო დღეები"
+              components={animatedComponents}
+              onChange={(value) => {
+                setEditWorkingDays(value);
+              }}
+              placeholder="სამუშაო დღეები"
+              isMulti
+              components={animatedComponents}
+              styles={{
+                control: (baseStyles, state) => ({
+                  ...baseStyles,
+                  borderColor: state.isFocused
+                    ? "rgba(0,0,0,0)"
+                    : "rgba(0,0,0,0.1)",
+                  width: "15vw",
+                  minHeight: "2vw",
+                  cursor: "pointer",
+                  "@media only screen and (max-width: 1200px)": {
+                    width: "50vw",
+                    fontSize: "16px",
+                  },
+                }),
+              }}
+              options={workingDaysOptions}
+            />
+          )}
+          {edit === "days" ? (
+            <ImCheckmark
+              className="confirmIcon"
+              onClick={() => setEdit(false)}
+              onClick={UpdateWorkingDays}
+            />
+          ) : (
+            <RiEdit2Fill className="editIcon" onClick={() => setEdit("days")} />
+          )}
         </WorkingDays>
         <WorkingDays>
+          <span style={{ fontWeight: "bold" }}>სამუშაო გარემო:</span>
+          <div>
+            {user?.workingPlace
+              ?.sort(function (a, b) {
+                return a.id - b.id;
+              })
+              ?.map((item, index) => {
+                return <div key={item.id}>{item.label}</div>;
+              })}
+          </div>
+          {edit === "place" && (
+            <Select
+              placeholder="დაამატე სამუშაო დღეები"
+              components={animatedComponents}
+              onChange={(value) => {
+                setEditWorkingPlace(value);
+              }}
+              placeholder="სამუშაო დღეები"
+              isMulti
+              components={animatedComponents}
+              styles={{
+                control: (baseStyles, state) => ({
+                  ...baseStyles,
+                  borderColor: state.isFocused
+                    ? "rgba(0,0,0,0)"
+                    : "rgba(0,0,0,0.1)",
+                  width: "15vw",
+                  minHeight: "2vw",
+                  cursor: "pointer",
+                  "@media only screen and (max-width: 1200px)": {
+                    width: "50vw",
+                    fontSize: "16px",
+                  },
+                }),
+              }}
+              options={workingPlacesOptions}
+            />
+          )}
+          {edit === "place" ? (
+            <ImCheckmark
+              className="confirmIcon"
+              onClick={() => setEdit(false)}
+              onClick={UpdateWorkingPlace}
+            />
+          ) : (
+            <RiEdit2Fill
+              className="editIcon"
+              onClick={() => setEdit("place")}
+            />
+          )}
+        </WorkingDays>
+        {/* <WorkingDays>
           <span style={{ fontWeight: "bold" }}>სამუშაო ადგილი:</span>
-          {workingPlaces?.map((item, index) => {
+          {user?.workingPlace?.map((item, index) => {
+            return (
+              <div key={index}>
+                {item.label}
+                {index != user.workingPlace?.length - 1 && ","}
+              </div>
+            );
+          })}
+          {user?.id === currentuser?.id && (
+            <>
+              {edit == "place" ? (
+                <ImCheckmark className="confirmIcon" onClick={UpdateLink} />
+              ) : (
+                <RiEdit2Fill
+                  className="editIcon"
+                  onClick={() => setEditWorkingPlace(item.id)}
+                />
+              )}
+            </>
+          )}
+        </WorkingDays>
+        <WorkingDays>
+          <span style={{ fontWeight: "bold" }}>სამუშაო საათები:</span>
+          {user?.workingHours?.map((item, index) => {
             return <div key={index}>{item.label}</div>;
           })}
-        </WorkingDays>
+          {user?.id === currentuser?.id && (
+            <>
+              {edit == "place" ? (
+                <ImCheckmark
+                  className="confirmIcon"
+                  onClick={UpdateWorkingHours}
+                />
+              ) : (
+                <RiEdit2Fill
+                  className="editIcon"
+                  onClick={() => setEditWorkingHours(item.id)}
+                />
+              )}
+            </>
+          )}
+        </WorkingDays> */}
       </WrapperOne>
       <ServicesContainer>
         <span style={{ fontWeight: "bold", marginTop: "1vw" }}>სერვისები:</span>
         <Servs>
-          {!props.userVisit && (
+          {user?.id === currentuser?.id && (
             <>
               {!addService ? (
                 <MdLibraryAdd
@@ -212,7 +342,7 @@ export const Services = (props) => {
               <ServiceItemContainer key={index}>
                 <ServiceItem>
                   <span>{item?.label}</span>
-                  {props.userVisit ? (
+                  {user?.id !== currentuser?.id ? (
                     <>
                       {cat?.price != undefined ? (
                         <Price>
@@ -252,7 +382,7 @@ export const Services = (props) => {
                     </>
                   )}
                 </ServiceItem>
-                {!props.userVisit && (
+                {user?.id === currentuser?.id && (
                   <TiDeleteOutline
                     className="remove"
                     onClick={() => Deleting(item.value)}
@@ -372,11 +502,10 @@ const ContentContainer = styled.div`
 const WrapperOne = styled.div`
   width: 100%;
   display: flex;
-  flex-direction: column;
   gap: 1vw;
 
   @media only screen and (max-width: 600px) {
-    flex-direction: row;
+    flex-direction: column;
   }
 `;
 
@@ -390,19 +519,21 @@ const SelectContainer = styled.div`
 const WorkingDays = styled.div`
   width: 100%;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: start;
   justify-content: start;
   gap: 0.5vw;
+  min-height: 2vw;
 
   @media only screen and (max-width: 600px) {
-    flex-direction: column;
+    min-height: 8vw;
     align-items: start;
-    gap: 1.5vw;
+    gap: 3vw;
   }
 
   & span {
     @media only screen and (max-width: 600px) {
-      font-size: 4vw;
+      font-size: 3.5vw;
     }
   }
 
@@ -440,7 +571,7 @@ const ServicesContainer = styled.div`
     flex-direction: column;
     gap: 3vw;
     margin-top: 3vw;
-    font-size: 4vw;
+    font-size: 3.5vw;
   }
 `;
 
@@ -504,7 +635,7 @@ const ServiceItemContainer = styled.div`
 
 const ServiceItem = styled.div`
   padding: 0.2vw 0.5vw 0.2vw 1vw;
-  border: 1px solid #ccc;
+  border: 1px solid #f3f3f3;
   border-radius: 0.25vw;
   display: flex;
   align-items: center;
