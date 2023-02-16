@@ -125,17 +125,27 @@ export const Result = (props) => {
           name={name}
           userType={userType}
           testFeed={true}
+          id={props?.id}
         />
         <div
           style={{
-            padding: "0px 15px",
-            margin: "0 0 25px 0",
+            width: "100%",
+            heght: "100%",
+            // padding: "0px 15px",
+            // margin: "0 0 25px 0",
             overflowY: "scroll",
-            maxHeight: "15vw",
+            // maxHeight: "15vw",
           }}
         >
           {props.text?.length > 0 && (
-            <p style={{ whiteSpace: "pre-line", margin: "0 5px 10px 5px" }}>
+            <p
+              style={{
+                whiteSpace: "pre-line",
+                margin: "0",
+                padding: "10px 25px 20px 25px",
+                boxSizing: "border-box",
+              }}
+            >
               {props.text}
             </p>
           )}
@@ -281,26 +291,82 @@ const Divider = styled.div`
 `;
 
 const Container = styled.div`
-  width: 32vw;
+  width: 35vw;
   height: auto;
-  max-height: 48vw;
-  max-width: 32vw;
+  max-height: auto;
+  max-width: 35vw;
   border-radius: 0.5vw;
   display: flex;
   flex-direction: column;
   justify-content: start;
-  box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
-  background: white;
+  box-shadow: 0 0.1vw 0.3vw ${(props) => props.theme.shadowColor};
+  background: rgba(0, 0, 0, 0.9);
   transition: ease 250ms;
-  opacity: ${(props) => (props.loading ? 0 : 1)};
+  margin-bottom: 1vw;
 
   @media only screen and (max-width: 600px) {
     width: 100vw;
     height: auto;
-    max-height: 200vw;
+    max-height: auto;
     max-width: 100vw;
     border-radius: 0;
     box-sizing: border-box;
+    margin-bottom: 0;
+    background: #f7e6ff;
+  }
+
+  & > div {
+    /* width */
+    ::-webkit-scrollbar {
+      width: 0vw;
+    }
+
+    /* Track */
+    ::-webkit-scrollbar-track {
+      background-color: white;
+    }
+
+    /* Handle */
+    ::-webkit-scrollbar-thumb {
+      background-color: #222;
+    }
+
+    /* Handle on hover */
+    ::-webkit-scrollbar-thumb:hover {
+      background-color: #1e1e1e;
+    }
+  }
+
+  & > div > p {
+    background: ${(props) => props.theme.background};
+    color: ${(props) => props.theme.font};
+  }
+`;
+
+const PostContainer = styled.div`
+  padding: 0 20px 10px 20px;
+  margin: 0;
+  max-height: ${(props) => (props.openPost ? "100%" : "55px")};
+  height: auto,
+  overflow: ${(props) => (props.openPost ? "visible" : "hidden")};
+  cursor: pointer;
+  background: ${(props) => props.theme.background};
+
+  & > p {
+    background: ${(props) => props.theme.background};
+  }
+`;
+
+const FileContainer = styled.div`
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  display: flex;
+  aling-items: center;
+  justify-content: center;
+
+  @media only screen and (max-width: 600px) {
+    min-height: 300px;
   }
 `;
 
@@ -312,6 +378,56 @@ const Cover = styled.img`
   margin-right: auto;
   object-fit: cover;
   cursor: pointer;
+  animation: fadeIn ease 0.3s;
+  -webkit-animation: fadeIn ease 0.3s;
+  -moz-animation: fadeIn ease 0.3s;
+  -o-animation: fadeIn ease 0.3s;
+  -ms-animation: fadeIn ease 0.3s;
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @-moz-keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @-webkit-keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @-o-keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @-ms-keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
 
   @media only screen and (max-width: 600px) {
     max-width: 100%;
@@ -325,7 +441,56 @@ const Video = styled.video`
   display: block;
   margin-left: auto;
   margin-right: auto;
-  cursor: pointer;
+  animation: fadeIn ease 0.5s;
+  -webkit-animation: fadeIn ease 0.5s;
+  -moz-animation: fadeIn ease 0.5s;
+  -o-animation: fadeIn ease 0.5s;
+  -ms-animation: fadeIn ease 0.5s;
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @-moz-keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @-webkit-keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @-o-keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @-ms-keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
 
   @media only screen and (max-width: 600px) {
     max-width: 100%;
@@ -335,7 +500,7 @@ const Video = styled.video`
 
 const UserCont = styled.div`
   width: 24vw;
-  height: ${(props) => (props.active === "Desktop" ? "24vw" : "100%")}
+  height: 24vw;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -365,6 +530,8 @@ const Review = styled.div`
   padding-left: 1vw;
   padding-right: 1vw;
   box-sizing: border-box;
+  background: ${(props) => props.theme.background};
+  color: ${(props) => props.theme.font};
 
   @media only screen and (max-width: 600px) {
     height: 10vw;
@@ -429,7 +596,7 @@ const PostTime = styled.div`
 
 const TextReview = styled.span`
   cursor: pointer;
-  color: ${(props) => props.theme.secondLevel};
+  color: ${(props) => props.theme.font};
   transition: ease-in-out 200ms;
   font-size: 0.8vw;
   letter-spacing: 0;

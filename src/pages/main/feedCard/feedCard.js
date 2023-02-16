@@ -51,6 +51,7 @@ import useWindowDimensions from "../../../functions/dimensions";
 import { ImgLoader, TextLoader, LineLoader } from "../../../components/loader";
 import { IsMobile } from "../../../functions/isMobile";
 import { isWebpSupported } from "react-image-webp/dist/utils";
+import { v4 } from "uuid";
 
 export const FeedCard = (props) => {
   const { currentUser } = useContext(AuthContext);
@@ -143,7 +144,7 @@ export const FeedCard = (props) => {
 
   // give heart to user
   const SetStar = async () => {
-    console.log("click");
+    var actionId = v4();
     await setDoc(
       doc(
         db,
@@ -160,6 +161,19 @@ export const FeedCard = (props) => {
         cover: props?.cover ? props?.cover : "",
       }
     );
+    if (props?.id !== currentUser?.uid) {
+      setDoc(doc(db, `users`, `${props?.id}`, "notifications", `${actionId}`), {
+        id: actionId,
+        senderId: currentUser?.uid,
+        senderName: currentuser?.name,
+        senderCover: currentuser?.cover?.length > 0 ? currentuser?.cover : "",
+        text: `მიანიჭა ვარსკვლავი თქვენ პოსტს!`,
+        date: serverTimestamp(),
+        type: "star",
+        status: "unread",
+        feed: `${props?.id}/feed/${feed?.feed?.id}/0`,
+      });
+    }
   };
 
   // define star already given to user or not
@@ -211,6 +225,7 @@ export const FeedCard = (props) => {
 
   // function to follow user
   const FollowToUser = async () => {
+    var actionId = v4();
     await setDoc(
       doc(db, `users`, `${currentUser?.uid}`, "followings", `${props?.id}`),
       {
@@ -223,14 +238,26 @@ export const FeedCard = (props) => {
         ...currentuser,
       }
     );
-    // handleSelect();
+    if (props?.id !== currentUser?.uid) {
+      setDoc(doc(db, `users`, `${props?.id}`, "notifications", `${actionId}`), {
+        id: actionId,
+        senderId: currentUser?.uid,
+        senderName: currentuser?.name,
+        senderCover: currentuser?.cover?.length > 0 ? currentuser?.cover : "",
+        text: `ჩაინიშნა თქვენი პერსონალური გვერდი!`,
+        date: serverTimestamp(),
+        type: "following",
+        status: "unread",
+        feed: `${props?.id}/feed/${feed?.feed?.id}/0`,
+      });
+    }
   };
 
   // function to unfollow user
   const UnFollowToUser = async () => {
-    const coll = collection(db, `users`, `${currentUser?.uid}`, "followings");
-
-    deleteDoc(doc(coll, `${props?.id}`));
+    await deleteDoc(
+      doc(db, `users`, `${currentUser?.uid}`, "followings", `${props?.id}`)
+    );
   };
 
   // open post
@@ -273,7 +300,9 @@ export const FeedCard = (props) => {
           </PostContainer>
         )}
         <div>
-          {reports && <Reports />}
+          {reports && (
+            <Reports path={`${props?.id}/feed/${feed?.feed?.id}/0`} />
+          )}
           {feed?.feed?.desktopJPEGurl?.length > 0 && (
             <>
               {feed?.feed?.name?.endsWith("mp4") ? (
@@ -384,7 +413,10 @@ const Divider = styled.div`
   @media only screen and (max-width: 600px) {
     display: flex;
     height: 1.5vw;
-    background: ${(props) => (props.loading === "true" ? "#f3f3f3" : "#ccc")};
+    background: ${(props) =>
+      props.loading === "true"
+        ? props.theme.divider
+        : props?.theme.loadingDivider};
     width: 100%;
   }
 `;
@@ -395,11 +427,12 @@ const Container = styled.div`
   max-height: auto;
   max-width: 35vw;
   border-radius: 0.5vw;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: start;
-  box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
-  background: rgba(0, 0, 0, 0.9);
+  box-shadow: 0 0.1vw 0.3vw ${(props) => props.theme.shadowColor};
+  background: ${(props) => props.theme.background}
   transition: ease 250ms;
   margin-bottom: 1vw;
 
@@ -423,8 +456,9 @@ const PostContainer = styled.div`
   overflow: ${(props) => (props.openPost ? "visible" : "hidden")};
   cursor: pointer;
   background: ${(props) => props.theme.background};
-
+  
   & > p {
+    color: ${(props) => props.theme.font};
     background: ${(props) => props.theme.background};
   }
 `;
@@ -643,6 +677,7 @@ const Likes = styled.div`
   display: flex;
   align-items: center;
   font-size: 0.8vw;
+  color: ${(props) => props.theme.font};
 
   @media only screen and (max-width: 600px) {
     font-size: 3vw;
@@ -667,7 +702,7 @@ const PostTime = styled.div`
 
 const TextReview = styled.span`
   cursor: pointer;
-  color: ${(props) => props.theme.secondLevel};
+  color: ${(props) => props.theme.font};
   transition: ease-in-out 200ms;
   font-size: 0.8vw;
   letter-spacing: 0;

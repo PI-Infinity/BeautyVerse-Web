@@ -7,13 +7,13 @@ export const Ads = () => {
       <Ad>
         <img
           src="https://res.cloudinary.com/dmmumy2b1/image/upload/v1668849735/Beautyverse/shop_ggr6lu.jpg"
-          style={{ width: "8vw", height: "8vw", objectFit: "cover" }}
+          style={{ width: "10vw", height: "8vw", objectFit: "cover" }}
         />
       </Ad>
       <Ad>
         <img
           src="https://res.cloudinary.com/dmmumy2b1/image/upload/v1668849826/Beautyverse/konkurspost_fn7zqk.png"
-          style={{ width: "8vw", height: "8vw", objectFit: "cover" }}
+          style={{ width: "10vw", height: "8vw", objectFit: "cover" }}
         />
       </Ad>
     </Container>
@@ -29,13 +29,13 @@ const Container = styled.div`
   gap: 0.7vw;
   align-items: center;
   padding: 0 0.7vw;
-  justify-content: space-evenly;
-  background: rgba(255, 255, 255, 0.7);
+  justify-content: start;
+  background: none;
 `;
 
 const Ad = styled.div`
   //   padding: 1vw;
-  width: 8vw;
+  width: 10vw;
   height: 8vw;
   box-shadow: 0 0.1vw 0.1vw rgba(2, 2, 2, 0.1);
   border-radius: 0.5vw;
@@ -45,5 +45,9 @@ const Ad = styled.div`
 
   :hover {
     filter: brightness(0.96);
+  }
+
+  & > img {
+    object-fit: cover;
   }
 `;

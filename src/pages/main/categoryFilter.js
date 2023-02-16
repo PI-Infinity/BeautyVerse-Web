@@ -185,9 +185,9 @@ const Wrapper = styled.div`
   .active {
     width: 70%;
     // padding-left: 10%;
-    background: #fff;
+    background: ${(props) => props.theme.categoryItem};
     box-shadow: inset 0 0 0.15vw green;
-    color: #050505;
+    color: ${(props) => props.theme.font};
 
     @media only screen and (max-width: 600px) {
       width: 100%;
@@ -201,14 +201,14 @@ const CategoryItemContainer = styled.div`
   justify-content: space-between;
   padding: 0.3vw 1vw 0.4vw 1vw;
   width: 65%;
-  background: rgba(255, 255, 255, 0.9);
+  background: ${(props) => props.theme.categoryItem};
   border-radius: 50vw;
   transition: ease-in 200ms;
   cursor: pointer;
   gap: 1vw;
   box-shadow: 0 0.1vw 0.2vw rgba(2, 2, 2, 0.1);
   font-size: 0.8vw;
-  color: #050505;
+  color: ${(props) => props.theme.font};
 
   & div > div {
     display: flex;

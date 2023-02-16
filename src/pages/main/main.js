@@ -20,6 +20,7 @@ import { setLoadFeed, setNavigatorActive } from "../../redux/main";
 import { setScroll } from "../../redux/scroll";
 import useWindowDimensions from "../../functions/dimensions";
 import { IsMobile } from "../../functions/isMobile";
+import Notifications from "../../pages/main/notifications";
 
 const Main = (props) => {
   const dispatch = useDispatch();
@@ -77,11 +78,7 @@ const Main = (props) => {
           <FilterContainer>
             <CategoryFilter />
 
-            <div
-              style={{ color: "#050505", margin: "1vw", fontWeight: "bold" }}
-            >
-              რეკლამა
-            </div>
+            <div style={{ margin: "1vw", fontWeight: "bold" }}>რეკლამა</div>
             <Ads />
           </FilterContainer>
           <CenterContainer height={height}>
@@ -147,12 +144,16 @@ const MainSection = styled.div`
 `;
 const FilterContainer = styled.div`
   flex: 2;
-  border-right: 1px solid #ddd;
+  border-right: 1px solid ${(props) => props.theme.lineColor};
   position: fixed;
   left: 0;
   width: 25vw;
   padding-left: 2vw;
   height: 100%;
+
+  & > div {
+    color: ${(props) => props.theme.font};
+  }
 
   @media only screen and (max-width: 600px) {
     display: none;
@@ -186,7 +187,7 @@ const MobileFilter = styled.div`
   left: 0;
   width: 100%;
   z-index: 10001;
-  background: rgba(255, 255, 255, 0.85);
+  background: ${(props) => props.theme.background};
   backdrop-filter: blur(40px);
 `;
 
@@ -198,7 +199,7 @@ const FavoritesContainer = styled.div`
 const RightSide = styled.div`
   position: fixed;
   right: 0;
-  border-left: 1px solid #ddd;
+  border-left: 1px solid ${(props) => props.theme.lineColor};
   width: 25vw;
   height: 100vh;
   z-index: 9;

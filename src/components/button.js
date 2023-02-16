@@ -23,7 +23,7 @@ const Container = styled.div`
   transition: ease-in 200ms;
   color: ${(props) => (props.back ? "#ccc" : "green")};
   font-weight: bold;
-  background: rgba(255, 255, 255, 0.7);
+  background: ${(props) => props.theme.categoryItem};
 
   @media only screen and (max-width: 600px) {
     width: 45vw;

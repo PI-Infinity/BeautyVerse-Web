@@ -43,14 +43,13 @@ export const SideBar = (props) => {
 
 const Container = styled.div`
   flex: 1;
-  background: #fff;
-  border-right: 1px solid #ddd;
+  background: ${(props) => props.theme.background};
+  border-right: 1px solid ${(props) => props.theme.lineColor};
   display: flex;
   flex-direction: column;
   align-items: center;
 
   @media only screen and (max-width: 600px) {
-    background: #fff;
     border: none;
   }
 `;
@@ -59,6 +58,7 @@ const Navigator = styled.div`
   width: 100%;
   display: flex;
   gap: 0;
+  background: ${(props) => props.theme.background};
 
   @media only screen and (max-width: 600px) {
     box-sizing: border-box;
@@ -72,14 +72,14 @@ const Navigator = styled.div`
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    background: #fff;
-    color: #ddd;
+    background: ${(props) => props.theme.background};
+    color: ${(props) => props.theme.font};
     cursor: pointer;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid ${(props) => props.theme.secondLevel};
     gap: 0;
 
     @media only screen and (max-width: 600px) {
-      padding: 2vw 0;
+      padding: 4vw 0;
       box-sizing: border-box;
       gap: 1.5vw;
     }
@@ -95,7 +95,7 @@ const Navigator = styled.div`
   .active {
     // background: #fff;
     font-weight: bold;
-    color: ${(props) => props.theme.mainFont};
-    border-bottom: 1px solid #aaa;
+    color: ${(props) => props.theme.font};
+    border-bottom: 1px solid ${(props) => props.theme.font};
   }
 `;

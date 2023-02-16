@@ -111,6 +111,7 @@ const Container = styled.div`
     overflow-x: hidden;
     overflow-y: scroll;
     height: calc(${(props) => props.height}px - 70vw);
+    color: ${(props) => props.theme.font};
   }
 
   .location {

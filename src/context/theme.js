@@ -2,18 +2,34 @@ import React from "react";
 import { createGlobalStyle } from "styled-components";
 
 export const darkTheme = {
-  background: "#FCFDFF",
-  icon: "#292846",
-  mainFont: "#050505",
+  background: "#222",
+  icon: "#f3f3f3",
+  font: "#f3f3f3",
   disabled: "#ddd",
-  secondLevel: "",
+  secondLevel: "#333",
+  logo: "#f3f3f3",
+  logo2: "#f7f7f7",
+  divider: "#333",
+  loadingDivider: "#333",
+  categoryItem: "#333",
+  shadowColor: "rgba(0,0,0,0.5)",
+  lineColor: "rgba(0,0,0,0.5)",
+  frameColor: "rgba(0,0,0,0.2)",
 };
 export const lightTheme = {
   background: "#FCFDFF",
-  icon: "blue",
-  mainFont: "#050505",
+  icon: "#050505",
+  font: "#050505",
   disabled: "#ddd",
-  secondLevel: "#65676b",
+  secondLevel: "#f3f3f3",
+  logo: "-webkit-linear-gradient(90deg, #222, #111, #111, #222)",
+  logo2: "#333",
+  divider: "#f3f3f3",
+  loadingDivider: "#ccc",
+  categoryItem: "#fff",
+  shadowColor: "rgba(0,0,0,0.1)",
+  lineColor: "#e5e5e5",
+  frameColor: "#fff",
 };
 
 export const GlobalStyles = createGlobalStyle`

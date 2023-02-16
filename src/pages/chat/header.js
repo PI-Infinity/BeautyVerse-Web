@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { FaUser } from "react-icons/fa";
+import Avatar from "@mui/material/Avatar";
 
 export const Header = () => {
   const navigate = useNavigate();
@@ -16,19 +17,18 @@ export const Header = () => {
   return (
     <Container>
       <div>
-        {currentuser?.cover === undefined ? (
-          <UserProfileEmpty>
-            <FaUser className="user" />
-          </UserProfileEmpty>
-        ) : (
-          <Img
-            src={currentuser?.cover}
-            alt=""
-            onClick={() => navigate("/user")}
-          />
-        )}
-        <h4 onClick={() => navigate("/user")}>{currentuser?.name}</h4>
+        <Avatar
+          onClick={() => navigate(`/user/${currentuser?.id}`)}
+          alt={currentuser?.name}
+          src={currentuser?.cover !== undefined ? currentuser?.cover : ""}
+          sx={{ width: 36, height: 36 }}
+        />
+
+        <h4 onClick={() => navigate(`/user/${currentuser?.id}`)}>
+          {currentuser?.name}
+        </h4>
       </div>
+
       <h3>Chat</h3>
     </Container>
   );
@@ -39,7 +39,8 @@ const Container = styled.div`
   box-sizing: border-box;
   height: 70px;
   width: 100%;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid ${(props) => props.theme.lineColor};
+  color: ${(props) => props.theme.font};
   display: flex;
   align-items: center;
   justify-content: space-between;

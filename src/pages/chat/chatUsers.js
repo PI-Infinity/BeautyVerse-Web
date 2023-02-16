@@ -28,6 +28,8 @@ import { TiUserDelete } from "react-icons/ti";
 import Loader from "react-js-loader";
 import { FaUser } from "react-icons/fa";
 import { Spinner } from "../../components/loader";
+import Avatar from "@mui/material/Avatar";
+import AlertDialog from "../../components/dialog";
 
 export const ChatUsers = (props) => {
   const [loading, setLoading] = React.useState(true);
@@ -59,6 +61,33 @@ export const ChatUsers = (props) => {
     currentuser?.id && getChats();
   }, [currentuser?.id]);
 
+  // define userList
+  const list = useSelector((state) => state.storeMain.userList);
+  let userList;
+  if (list?.length > 0) {
+    userList = JSON.parse(list);
+  }
+
+  let definedChatUsers;
+  if (chats?.length > 0) {
+    definedChatUsers = chats?.map((item, index) => {
+      let us = userList?.find((it) => it.id === item.userInfo.id);
+      return {
+        chatId: item?.chatId,
+        date: item?.date,
+        lastMessage: item?.lastMessage,
+        opened: item?.opened,
+        senderId: item?.senderId,
+        chatId: item?.chatId,
+        userInfo: {
+          id: item?.userInfo?.id,
+          name: us?.name,
+          cover: us?.cover,
+        },
+      };
+    });
+  }
+
   // open message
   const Opening = async (chatid) => {
     await updateDoc(doc(db, "users", currentuser?.id, "chats", chatid), {
@@ -80,7 +109,8 @@ export const ChatUsers = (props) => {
         </LoadingContainer>
       ) : (
         <Container>
-          {chats
+          {definedChatUsers
+            ?.filter((item, index) => item?.lastMessage !== undefined)
             ?.filter((item, index) => {
               if (
                 item?.userInfo?.name
@@ -104,8 +134,6 @@ export const ChatUsers = (props) => {
                     SetCurrentChat([
                       {
                         chatId: chat.chatId,
-                        cover: chat.userInfo?.cover,
-                        name: chat.userInfo?.name,
                         userId: chat.userInfo?.id,
                       },
                     ])
@@ -153,6 +181,8 @@ const FoundedUser = (props) => {
     (item) => item == props.chat?.userInfo?.id
   );
 
+  const [open, setOpen] = React.useState(false);
+
   const DeleteChat = async () => {
     const chatDoc = doc(
       db,
@@ -164,62 +194,44 @@ const FoundedUser = (props) => {
     await deleteDoc(chatDoc);
   };
 
-  // define last sender
-  const [lastSender, setLastSender] = React.useState("");
-  const currentChat = useSelector((state) => state.storeChat.currentChat);
-
-  React.useEffect(() => {
-    if (currentChat?.length > 0) {
-      const unSub = onSnapshot(
-        doc(db, "chats", currentChat[0]?.chatId),
-        (doc) => {
-          doc.exists() &&
-            setLastSender(
-              doc.data()?.messages[doc.data()?.messages?.length - 1]
-            );
-        }
-      );
-
-      return () => {
-        unSub();
-      };
-    }
-  }, [currentChat[0]?.chatId]);
-
   // define BOLD
   let bold;
   if (
-    props.chat?.opened == true ||
-    props.currentuser?.id == lastSender?.senderId
+    props?.chat?.opened === false &&
+    props?.chat?.senderId !== props?.currentuser?.id
+    // props.currentuser?.id == lastSender?.senderId
   ) {
     bold = true;
-  } else if (
-    props.chat?.opened == false &&
-    props.currentuser?.id !== lastSender?.senderId
-  ) {
+  } else {
     bold = false;
   }
 
   return (
     <UserContainer style={{ display: "flex", alignItems: "center" }}>
-      <FoundedUserContainer onClick={props.onClick} opened={bold}>
-        {props.chat?.userInfo?.cover != undefined ? (
-          <Img src={props.chat?.userInfo?.cover} alt="" />
-        ) : (
-          <UserProfileEmpty>
-            <FaUser className="user" />
-          </UserProfileEmpty>
-        )}
+      <FoundedUserContainer onClick={props.onClick} bold={bold?.toString()}>
+        <Avatar
+          alt={props?.chat?.userInfo?.name}
+          src={props?.chat?.userInfo?.cover}
+          sx={{ width: 36, height: 36 }}
+        />
 
-        <span>{props.chat?.userInfo?.name}</span>
+        <span>{props?.chat?.userInfo?.name}</span>
         <p>{props.chat?.lastMessage}</p>
       </FoundedUserContainer>
-      <TiUserDelete id="removeIcon" onClick={DeleteChat} />
+      <TiUserDelete id="removeIcon" onClick={() => setOpen(true)} />
+      <AlertDialog
+        title="დაადასტურეთ!"
+        text="ნამდვილად გსურთ ჩატის წაშლა?"
+        open={open}
+        setOpen={setOpen}
+        function={() => DeleteChat()}
+      />
     </UserContainer>
   );
 };
 
 const UserContainer = styled.div`
+  color: ${(props) => props.theme.font};
   #removeIcon {
     font-size: 1.2vw;
 
@@ -236,11 +248,11 @@ const FoundedUserContainer = styled.div`
   cursor: pointer;
   width: 100%;
   padding: 0 20px;
-  font-weight: ${(props) => (props.opened ? "normal" : "bold")};
+  font-weight: ${(props) => (props.bold === "true" ? "bold" : "normal")};
 
   p {
     font-size: 0.7vw;
-    color: #ccc;
+    color: ${(props) => props.theme.secondLevel};
 
     @media only screen and (max-width: 600px) {
       font-size: 2.5vw;

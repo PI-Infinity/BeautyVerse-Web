@@ -1,14 +1,8 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import styled from "styled-components";
 import CoverSection from "../../pages/user/coverSection";
 import { Links } from "../../pages/user/links";
 import { Navigator } from "../../pages/user/navigator";
-// import { UserImages } from "../../pages/user/images";
-// import { Services } from "../../pages/user/services";
-// import { Products } from "../../pages/user/userProducts";
-// import { AddProduct } from "../../pages/user/addProduct";
-// import { Followers } from "../../pages/user/followers";
-// import { Followings } from "../../pages/user/followings";
 import { useSelector, useDispatch } from "react-redux";
 import { setContentChanger } from "../../redux/user";
 import { Contact } from "../../pages/user/contact";
@@ -27,13 +21,12 @@ import { Spinner } from "../../components/loader";
 import useWindowDimensions from "../../functions/dimensions";
 import { IsMobile } from "../../functions/isMobile";
 import { Outlet, useParams } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
 
 const UserProfile = () => {
+  const { currentUser } = useContext(AuthContext);
   const dispatch = useDispatch();
   const { Id } = useParams();
-  // const [loading, setLoading] = useState(true);
-
-  console.log("user");
 
   const usersList = useSelector((state) => state.storeMain.userList);
   let users;
@@ -44,10 +37,6 @@ const UserProfile = () => {
 
   // define mobile or desktop
   const isMobile = IsMobile();
-
-  // setTimeout(() => {
-  //   setLoading(false);
-  // }, 500);
 
   return (
     <Container>
@@ -86,7 +75,7 @@ const LoadingContainer = styled.div`
 
 const Container = styled.div`
   width: 100%;
-  min-height: auto;
+  min-height: 90vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -94,10 +83,31 @@ const Container = styled.div`
   z-index: 5;
   overflow-x: hidden;
   overflow-y: scroll;
+  background: ${(props) => props.theme.background};
 
   @media only screen and (max-width: 600px) {
     padding-top: 14vw;
     box-sizing: border-box;
+  }
+
+  /* width */
+  ::-webkit-scrollbar {
+    width: 0vw;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background-color: white;
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background-color: #222;
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #1e1e1e;
   }
 `;
 
@@ -124,7 +134,7 @@ const ContentRightSide = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  border-left: 1px solid #e5e5e5;
+  border-left: 1px solid ${(props) => props.theme.lineColor};
 
   @media only screen and (max-width: 600px) {
     box-sizing: border-box;

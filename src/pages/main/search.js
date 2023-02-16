@@ -3,9 +3,10 @@ import styled from "styled-components";
 import { useDispatch, useSelector } from "react-redux";
 import { CgSearch } from "react-icons/cg";
 import { MdClear } from "react-icons/md";
+import { BsListCheck } from "react-icons/bs";
 import { setRerender, setEnterSearch, setFilterOpen } from "../../redux/main";
 import { setSearch } from "../../redux/filter";
-import { proceduresOptions } from "../../data/registerDatas";
+import { ProceduresOptions } from "../../data/registerDatas";
 import Select from "react-select";
 import { GrList } from "react-icons/gr";
 import { MdOutlinePersonPin } from "react-icons/md";
@@ -15,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 export const Search = (props) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
+  const proceduresOptions = ProceduresOptions();
   // import current user & parse it
   const loadFeed = useSelector((state) => state.storeMain.loadFeed);
   const changeFeed = useSelector((state) => state.storeMain.changeFeed);
@@ -85,7 +86,7 @@ export const Search = (props) => {
             dispatch(setFilterOpen(true));
           }}
         >
-          <GrList className="feedicon" />
+          <BsListCheck className="feedicon" />
         </div>
         <SearchContainer>
           <CgSearch className="icon" />
@@ -152,7 +153,7 @@ const Container = styled.div`
   width: 36%;
   padding: 0;
   height: 2vw;
-  background: none;
+  background: ${(props) => props.theme.background};
 
   @media only screen and (max-width: 600px) {
     width: 100%;
@@ -160,16 +161,9 @@ const Container = styled.div`
     height: 8vw;
   }
 
-  .feedicon {
-    display: none;
-    @media only screen and (max-width: 600px) {
-      display: flex;
-      font-size: 5vw;
-      color: #010101;
-    }
-  }
   .profileicon {
-    color: ${(props) => (props.changeFeed === "/cards" ? "#050505" : "#ddd")};
+    color: ${(props) =>
+      props.changeFeed === "/cards" ? props.theme.logo2 : "#ddd"};
     font-size: 1.2vw;
     cursor: pointer;
 
@@ -182,7 +176,7 @@ const Container = styled.div`
   .icon {
     font-size: 1.4vw;
     margin-right: 0.5vw;
-    color: #010101;
+    color: ${(props) => props.theme.icon};
     min-width: 1.5vw;
 
     @media only screen and (max-width: 600px) {
@@ -209,6 +203,15 @@ const SearchWrapper = styled.div`
       display: flex;
       min-width: 6vw;
     }
+
+    .feedicon {
+      display: none;
+      @media only screen and (max-width: 600px) {
+        display: flex;
+        font-size: 5vw;
+        color: ${(props) => props.theme.icon};
+      }
+    }
   }
 
   .clearicon {
@@ -228,7 +231,7 @@ const SearchContainer = styled.div`
   height: 100%;
   align-items: center;
   padding: 0 1vw;
-  background: #f3f3f3;
+  background: ${(props) => props.theme.secondLevel};
   border-radius: 50vw;
   box-sizing: border-box;
   
@@ -295,9 +298,9 @@ const ResultContainer = styled.div`
   overflow-y: scroll;
   position: absolute;
   top: 0.5vw;
-  background: rgba(255, 255, 255, 1);
+  background: ${(props) => props.theme.background};
   backdrop-filter: blur(40px);
-  border: 1px solid #eee;
+  border: 1px solid ${(props) => props.theme.lineColor};
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -306,7 +309,7 @@ const ResultContainer = styled.div`
   border-radius: 0.5vw;
 
   @media only screen and (max-width: 600px) {
-    height: calc(100vh - 38vw);
+    height: calc(100vh - 35vw);
     width: 100vw;
     border-radius: 0;
     top: 2vw;
@@ -371,11 +374,12 @@ const Item = styled.div`
   padding: 5px;
   border-radius: 5px;
   box-sizing: border-box;
-  border-bottom: 1px solid #fff;
+  border-bottom: 1px solid ${(props) => props.theme.lineColor};
   width: 100%;
   text-align: start;
   padding: 7px;
   font-size: 14px;
+  color: ${(props) => props.theme.font};
 
   :hover {
     background: #f5f5f5;

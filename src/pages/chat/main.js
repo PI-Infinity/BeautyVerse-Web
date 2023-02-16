@@ -21,13 +21,11 @@ const Bg = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-
+  background: ${(props) => props.theme.background};
   @media only screen and (max-width: 600px) {
     align-items: start;
-    // overflow: hidden;
-    // height: calc(100vh - 17vw);
     height: 100%;
-    margin-top: 17vw;
+    margin-top: 14vw;
   }
 `;
 
@@ -36,10 +34,11 @@ const Container = styled.div`
   height: 80vh;
   border-radius: 0.5vw;
   overflow: hidden;
-  border: 1px solid #ddd;
+  border: 1px solid ${(props) => props.theme.lineColor};
   display: flex;
   position: fixed;
   box-sizing: border-box;
+  background: ${(props) => props.theme.background};
 
   @media only screen and (max-width: 600px) {
     width: 100%;
@@ -48,5 +47,6 @@ const Container = styled.div`
     box-sizing: border-box;
     flex-direction: column;
     border: none;
+    border-radius: 0;
   }
 `;

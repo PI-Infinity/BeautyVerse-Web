@@ -11,6 +11,9 @@ import {
   FaTiktok,
   FaPhoneAlt,
   FaChrome,
+  FaWhatsapp,
+  FaTelegram,
+  FaViber,
 } from "react-icons/fa";
 import { AiOutlineMail, AiOutlineDelete } from "react-icons/ai";
 import { useSelector, useDispatch } from "react-redux";
@@ -56,11 +59,26 @@ export const Links = ({ user }) => {
       updateDoc(base, {
         socMedia: {
           web: changeWeb,
-          facebook: user?.socMedia?.facebook,
-          instagram: user?.socMedia?.instagram,
-          tiktok: user?.socMedia?.tiktok,
-          youtube: user?.socMedia?.youtube,
-          otherMedia: user?.socMedia?.otherMedia,
+          facebook:
+            user?.socMedia?.facebook?.length > 0
+              ? user?.socMedia?.facebook
+              : "",
+          instagram:
+            user?.socMedia?.instagram?.length > 0
+              ? user?.socMedia?.instagram
+              : "",
+          tiktok:
+            user?.socMedia?.tiktok?.length > 0 ? user?.socMedia?.tiktok : "",
+          youtube:
+            user?.socMedia?.youtube?.length > 0 ? user?.socMedia?.youtube : "",
+          telegram:
+            user?.socMedia?.telegram === true
+              ? user?.socMedia?.telegram
+              : false,
+          whatsapp:
+            user?.socMedia?.whatsapp === true
+              ? user?.socMedia?.whatsapp
+              : false,
         },
       });
       setChangeWeb("");
@@ -68,12 +86,24 @@ export const Links = ({ user }) => {
     if (changeInstagram?.length > 0) {
       updateDoc(base, {
         socMedia: {
-          web: user?.socMedia?.web,
-          facebook: user?.socMedia?.facebook,
+          web: user?.socMedia?.web?.length > 0 ? user?.socMedia?.web : "",
+          facebook:
+            user?.socMedia?.facebook?.length > 0
+              ? user?.socMedia?.facebook
+              : "",
           instagram: changeInstagram,
-          tiktok: user?.socMedia?.tiktok,
-          youtube: user?.socMedia?.youtube,
-          otherMedia: user?.socMedia?.otherMedia,
+          tiktok:
+            user?.socMedia?.tiktok?.length > 0 ? user?.socMedia?.tiktok : "",
+          youtube:
+            user?.socMedia?.youtube?.length > 0 ? user?.socMedia?.youtube : "",
+          telegram:
+            user?.socMedia?.telegram === true
+              ? user?.socMedia?.telegram
+              : false,
+          whatsapp:
+            user?.socMedia?.whatsapp === true
+              ? user?.socMedia?.whatsapp
+              : false,
         },
       });
       setChangeInstagram("");
@@ -81,12 +111,24 @@ export const Links = ({ user }) => {
     if (changeFacebook?.length > 0) {
       updateDoc(base, {
         socMedia: {
-          web: user?.socMedia?.web,
+          web: user?.socMedia?.web?.length > 0 ? user?.socMedia?.web : "",
           facebook: changeFacebook,
-          instagram: user?.socMedia?.instagram,
-          tiktok: user?.socMedia?.tiktok,
-          youtube: user?.socMedia?.youtube,
-          otherMedia: user?.socMedia?.otherMedia,
+          instagram:
+            user?.socMedia?.instagram?.length > 0
+              ? user?.socMedia?.instagram
+              : "",
+          tiktok:
+            user?.socMedia?.tiktok?.length > 0 ? user?.socMedia?.tiktok : "",
+          youtube:
+            user?.socMedia?.youtube?.length > 0 ? user?.socMedia?.youtube : "",
+          telegram:
+            user?.socMedia?.telegram === true
+              ? user?.socMedia?.telegram
+              : false,
+          whatsapp:
+            user?.socMedia?.whatsapp === true
+              ? user?.socMedia?.whatsapp
+              : false,
         },
       });
       setChangeFacebook("");
@@ -94,12 +136,26 @@ export const Links = ({ user }) => {
     if (changeTiktok?.length > 0) {
       updateDoc(base, {
         socMedia: {
-          web: user?.socMedia?.web,
-          facebook: user?.socMedia?.facebook,
-          instagram: user?.socMedia?.instagram,
+          web: user?.socMedia?.web?.length > 0 ? user?.socMedia?.web : "",
+          facebook:
+            user?.socMedia?.facebook?.length > 0
+              ? user?.socMedia?.facebook
+              : "",
+          instagram:
+            user?.socMedia?.instagram?.length > 0
+              ? user?.socMedia?.instagram
+              : "",
           tiktok: changeTiktok,
-          youtube: user?.socMedia?.youtube,
-          otherMedia: user?.socMedia?.otherMedia,
+          youtube:
+            user?.socMedia?.youtube?.length > 0 ? user?.socMedia?.youtube : "",
+          telegram:
+            user?.socMedia?.telegram === true
+              ? user?.socMedia?.telegram
+              : false,
+          whatsapp:
+            user?.socMedia?.whatsapp === true
+              ? user?.socMedia?.whatsapp
+              : false,
         },
       });
       setChangeTiktok("");
@@ -107,12 +163,27 @@ export const Links = ({ user }) => {
     if (changeYoutube?.length > 0) {
       updateDoc(base, {
         socMedia: {
-          web: user?.socMedia?.web,
-          facebook: user?.socMedia?.facebook,
-          instagram: user?.socMedia?.instagram,
-          tiktok: user?.socMedia?.tiktok,
-          youtube: changeYoutube,
-          otherMedia: user?.socMedia?.otherMedia,
+          web: user?.socMedia?.web?.length > 0 ? user?.socMedia?.web : "",
+          facebook:
+            user?.socMedia?.facebook?.length > 0
+              ? user?.socMedia?.facebook
+              : "",
+          instagram:
+            user?.socMedia?.instagram?.length > 0
+              ? user?.socMedia?.instagram
+              : "",
+          tiktok:
+            user?.socMedia?.tiktok?.length > 0 ? user?.socMedia?.tiktok : "",
+          youtube:
+            user?.socMedia?.youtube?.length > 0 ? user?.socMedia?.youtube : "",
+          telegram:
+            user?.socMedia?.telegram === true
+              ? user?.socMedia?.telegram
+              : false,
+          whatsapp:
+            user?.socMedia?.whatsapp === true
+              ? user?.socMedia?.whatsapp
+              : false,
         },
       });
       setChangeYoutube("");
@@ -120,11 +191,19 @@ export const Links = ({ user }) => {
     if (changeOtherMedia?.length > 0) {
       updateDoc(base, {
         socMedia: {
-          web: user?.socMedia?.web,
-          facebook: user?.socMedia?.facebook,
-          instagram: user?.socMedia?.instagram,
-          tiktok: user?.socMedia?.tiktok,
-          youtube: user?.socMedia?.youtube,
+          web: user?.socMedia?.web?.length > 0 ? user?.socMedia?.web : "",
+          facebook:
+            user?.socMedia?.facebook?.length > 0
+              ? user?.socMedia?.facebook
+              : "",
+          instagram:
+            user?.socMedia?.instagram?.length > 0
+              ? user?.socMedia?.instagram
+              : "",
+          tiktok:
+            user?.socMedia?.tiktok?.length > 0 ? user?.socMedia?.tiktok : "",
+          youtube:
+            user?.socMedia?.youtube?.length > 0 ? user?.socMedia?.youtube : "",
           otherMedia: user?.socMedia?.changeOtherMedia,
         },
       });
@@ -155,7 +234,8 @@ export const Links = ({ user }) => {
     },
     {
       id: "facebook",
-      placeholder: user?.socMedia?.facebook,
+      placeholder:
+        user?.socMedia?.facebook?.length > 0 ? user?.socMedia?.facebook : "",
       icon: <FaFacebook />,
       value: changeFacebook,
       onChange: (e) => setChangeFacebook(e.target.value),
@@ -276,6 +356,132 @@ export const Links = ({ user }) => {
     }
   };
 
+  /// add whatsapp and telegram
+
+  const AddWhatsapp = () => {
+    const base = doc(db, "users", `${user?.id}`);
+    if (user?.socMedia?.whatsapp === true) {
+      updateDoc(base, {
+        socMedia: {
+          web: user?.socMedia?.web?.length > 0 ? user?.socMedia?.web : "",
+          facebook:
+            user?.socMedia?.facebook?.length > 0
+              ? user?.socMedia?.facebook
+              : "",
+          instagram:
+            user?.socMedia?.instagram?.length > 0
+              ? user?.socMedia?.instagram
+              : "",
+          tiktok:
+            user?.socMedia?.tiktok?.length > 0 ? user?.socMedia?.tiktok : "",
+          youtube:
+            user?.socMedia?.youtube?.length > 0 ? user?.socMedia?.youtube : "",
+          telegram:
+            user?.socMedia?.telegram === true
+              ? user?.socMedia?.telegram
+              : false,
+          whatsapp: false,
+        },
+      });
+    } else {
+      updateDoc(base, {
+        socMedia: {
+          web: user?.socMedia?.web?.length > 0 ? user?.socMedia?.web : "",
+          facebook:
+            user?.socMedia?.facebook?.length > 0
+              ? user?.socMedia?.facebook
+              : "",
+          instagram:
+            user?.socMedia?.instagram?.length > 0
+              ? user?.socMedia?.instagram
+              : "",
+          tiktok:
+            user?.socMedia?.tiktok?.length > 0 ? user?.socMedia?.tiktok : "",
+          youtube:
+            user?.socMedia?.youtube?.length > 0 ? user?.socMedia?.youtube : "",
+          telegram:
+            user?.socMedia?.telegram === true
+              ? user?.socMedia?.telegram
+              : false,
+          whatsapp: true,
+        },
+      });
+    }
+  };
+  const AddTelegram = () => {
+    const base = doc(db, "users", `${user?.id}`);
+    if (user?.socMedia?.telegram === true) {
+      updateDoc(base, {
+        socMedia: {
+          web: user?.socMedia?.web?.length > 0 ? user?.socMedia?.web : "",
+          facebook:
+            user?.socMedia?.facebook?.length > 0
+              ? user?.socMedia?.facebook
+              : "",
+          instagram:
+            user?.socMedia?.instagram?.length > 0
+              ? user?.socMedia?.instagram
+              : "",
+          tiktok:
+            user?.socMedia?.tiktok?.length > 0 ? user?.socMedia?.tiktok : "",
+          youtube:
+            user?.socMedia?.youtube?.length > 0 ? user?.socMedia?.youtube : "",
+          telegram: false,
+          whatsapp:
+            user?.socMedia?.whatsapp == true ? user?.socMedia?.whatsapp : false,
+        },
+      });
+    } else {
+      updateDoc(base, {
+        socMedia: {
+          web: user?.socMedia?.web?.length > 0 ? user?.socMedia?.web : "",
+          facebook:
+            user?.socMedia?.facebook?.length > 0
+              ? user?.socMedia?.facebook
+              : "",
+          instagram:
+            user?.socMedia?.instagram?.length > 0
+              ? user?.socMedia?.instagram
+              : "",
+          tiktok:
+            user?.socMedia?.tiktok?.length > 0 ? user?.socMedia?.tiktok : "",
+          youtube:
+            user?.socMedia?.youtube?.length > 0 ? user?.socMedia?.youtube : "",
+          telegram: true,
+          whatsapp:
+            user?.socMedia?.whatsapp === true
+              ? user?.socMedia?.whatsapp
+              : false,
+        },
+      });
+    }
+  };
+
+  // define who can see whatsapp
+  let whatsapp;
+  if (user?.socMedia?.whatsapp) {
+    whatsapp = true;
+  } else if (
+    user?.socMedia?.whatsapp !== true &&
+    user?.id === currentuser?.id
+  ) {
+    whatsapp = true;
+  } else {
+    whatsapp = false;
+  }
+  // define who can see telegram
+  let telegram;
+  if (user?.socMedia?.telegram) {
+    telegram = true;
+  } else if (
+    user?.socMedia?.telegram !== true &&
+    user?.id === currentuser?.id
+  ) {
+    telegram = true;
+  } else {
+    telegram = false;
+  }
+
   return (
     <LinksContainer>
       {user?.id !== currentuser?.id && (
@@ -290,45 +496,106 @@ export const Links = ({ user }) => {
         </SendMessage>
       )}
       {LinkList?.map((item, index) => {
-        return (
-          <LinkContainer key={index} edit={edit}>
-            {item.icon}
-            {edit == item.id ? (
-              <LinkInput
-                placeholder={
-                  item.placeholder?.length > 0 ? item.placeholder : item.id
-                }
-                value={item.value}
-                onChange={item.onChange}
-              />
-            ) : (
+        if (item.id === "phone") {
+          return (
+            <LinkContainer>
+              {item.icon}
+
               <Link>
-                {item.id == "phone" ? (
-                  <a
-                    style={{ color: "inherit", textDecoration: "none" }}
-                    href={`tel://+995${item.placeholder}`}
+                <a
+                  style={{ color: "inherit", textDecoration: "none" }}
+                  href={`tel://${item.placeholder}`}
+                >
+                  {item.placeholder}
+                </a>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "15px",
+                  }}
+                >
+                  {whatsapp && (
+                    <a
+                      style={{
+                        color: user?.socMedia?.whatsapp ? "inherit" : "#ccc",
+                        textDecoration: "none",
+                      }}
+                      onClick={
+                        user?.id === currentuser?.id
+                          ? () => AddWhatsapp()
+                          : false
+                      }
+                      href={
+                        user?.id !== currentuser?.id &&
+                        `https://wa.me/${item.placeholder}`
+                      }
+                    >
+                      <FaWhatsapp className="icons" />
+                    </a>
+                  )}
+                  {telegram && (
+                    <a
+                      style={{
+                        color: user?.socMedia?.telegram ? "inherit" : "#ccc",
+                        textDecoration: "none",
+                      }}
+                      onClick={
+                        user?.id === currentuser?.id
+                          ? () => AddTelegram()
+                          : false
+                      }
+                      href={
+                        user?.id !== currentuser?.id &&
+                        ` https://t.me/${item.placeholder}`
+                      }
+                    >
+                      <FaTelegram className="icons" />
+                    </a>
+                  )}
+                  {/* <a
+                  style={{
+                      color: "inherit",
+                      textDecoration: "none",
+                    }}
+                    href={`https://wa.me/${item.placeholder}`}
                   >
-                    {item.placeholder}
-                  </a>
-                ) : (
-                  item.placeholder
-                )}
+                    <FaViber className="icons" />
+                  </a> */}
+                </div>
               </Link>
-            )}
-            {user?.id === currentuser?.id && item.id != "phone" && (
-              <>
-                {edit == item.id ? (
-                  <ImCheckmark className="confirmIcon" onClick={UpdateLink} />
-                ) : (
-                  <RiEdit2Fill
-                    className="editIcon"
-                    onClick={() => setEdit(item.id)}
-                  />
-                )}
-              </>
-            )}
-          </LinkContainer>
-        );
+            </LinkContainer>
+          );
+        } else {
+          return (
+            <LinkContainer key={index} edit={edit}>
+              {item.icon}
+              {edit == item.id ? (
+                <LinkInput
+                  placeholder={
+                    item.placeholder?.length > 0 ? item.placeholder : item.id
+                  }
+                  value={item.value}
+                  onChange={item.onChange}
+                />
+              ) : (
+                <Link>{item?.placeholder}</Link>
+              )}
+              {user?.id === currentuser?.id && item.id != "phone" && (
+                <>
+                  {edit == item.id ? (
+                    <ImCheckmark className="confirmIcon" onClick={UpdateLink} />
+                  ) : (
+                    <RiEdit2Fill
+                      className="editIcon"
+                      onClick={() => setEdit(item.id)}
+                    />
+                  )}
+                </>
+              )}
+            </LinkContainer>
+          );
+        }
       })}
     </LinksContainer>
   );
@@ -344,6 +611,7 @@ const LinksContainer = styled.div`
   justify-content: start;
   padding-top: 1vw;
   padding-left: 1vw;
+  color: ${(props) => props.theme.font};
 
   @media only screen and (max-width: 600px) {
     width: 90vw;
@@ -384,6 +652,7 @@ const SendMessage = styled.div`
   border-radius: 0.5vw;
   cursor: pointer;
   font-weight: bold;
+  color: ${(props) => props.theme.background};
 
   @media only screen and (max-width: 600px) {
     margin: 0 0 15px 0;
@@ -406,7 +675,7 @@ const LinkContainer = styled.div`
   color: ${(props) => props.theme.filterFontActive};
   width: auto;
   max-width: 18vw;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid ${(props) => props.theme.lineColor};
 
   @media only screen and (max-width: 600px) {
     width: 100vw;
@@ -451,10 +720,13 @@ const Link = styled.span`
   background: none;
   width: auto;
   max-width: 15vw;
-  height: 1.5vw;
+  height: 100%;
   margin: 0;
   overflow: hidden;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 1vw;
 
   @media only screen and (max-width: 600px) {
     font-size: 3vw;
@@ -463,5 +735,14 @@ const Link = styled.span`
     position: relative;
     left: 3vw;
     margin-right: 3vw;
+    gap: 7vw;
+  }
+
+  .icons {
+    font-size: 1.2vw;
+    margin-top: 0.25vw;
+    @media only screen and (max-width: 600px) {
+      font-size: 4vw;
+    }
   }
 `;

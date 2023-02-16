@@ -2,8 +2,11 @@ import React from "react";
 import ContentLoader from "react-content-loader";
 import { IsMobile } from "../functions/isMobile";
 import { TailSpin } from "react-loader-spinner";
+import styled from "styled-components";
+import { useSelector, useDispatch } from "react-redux";
 
 export const Spinner = () => {
+  const theme = useSelector((state) => state.storeMain.theme);
   return (
     <TailSpin
       height="80"
@@ -19,14 +22,15 @@ export const Spinner = () => {
 };
 
 export const LineLoader = (props) => {
+  const theme = useSelector((state) => state.storeMain.theme);
   const isMobile = IsMobile();
   return (
     <ContentLoader
       speed={1}
       width={isMobile ? 700 : 700}
       height={isMobile ? 15 : 15}
-      backgroundColor="#f3f3f3"
-      foregroundColor="#F7E6FF"
+      backgroundColor={theme ? "#333" : "#f3f3f3"}
+      foregroundColor={theme ? "#222" : "#F7E6FF"}
       {...props}
     >
       <rect
@@ -41,14 +45,15 @@ export const LineLoader = (props) => {
   );
 };
 export const IconLoader = (props) => {
+  const theme = useSelector((state) => state.storeMain.theme);
   const isMobile = IsMobile();
   return (
     <ContentLoader
       speed={1}
       width={isMobile ? 25 : 50}
       height={isMobile ? 15 : 15}
-      backgroundColor="#f3f3f3"
-      foregroundColor="#F7E6FF"
+      backgroundColor={theme ? "#333" : "#f3f3f3"}
+      foregroundColor={theme ? "#222" : "#F7E6FF"}
       {...props}
     >
       <rect
@@ -64,13 +69,14 @@ export const IconLoader = (props) => {
 };
 export const TextLoader = (props) => {
   const isMobile = IsMobile();
+  const theme = useSelector((state) => state.storeMain.theme);
   return (
     <ContentLoader
       speed={1}
       width={isMobile ? 300 : 300}
       height={isMobile ? 15 : 18}
-      backgroundColor="#f3f3f3"
-      foregroundColor="#F7E6FF"
+      backgroundColor={theme ? "#333" : "#f3f3f3"}
+      foregroundColor={theme ? "#222" : "#F7E6FF"}
       {...props}
     >
       <rect
@@ -86,13 +92,14 @@ export const TextLoader = (props) => {
 };
 export const TitleLoader = (props) => {
   const isMobile = IsMobile();
+  const theme = useSelector((state) => state.storeMain.theme);
   return (
     <ContentLoader
       speed={1}
       width={isMobile ? 150 : 150}
       height={isMobile ? 15 : 18}
-      backgroundColor="#f3f3f3"
-      foregroundColor="#F7E6FF"
+      backgroundColor={theme ? "#333" : "#f3f3f3"}
+      foregroundColor={theme ? "#222" : "#F7E6FF"}
       {...props}
     >
       <rect
@@ -107,14 +114,15 @@ export const TitleLoader = (props) => {
   );
 };
 export const TypeLoader = (props) => {
+  const theme = useSelector((state) => state.storeMain.theme);
   const isMobile = IsMobile();
   return (
     <ContentLoader
       speed={1}
       width={isMobile ? 100 : 100}
       height={isMobile ? 12 : 15}
-      backgroundColor="#f3f3f3"
-      foregroundColor="#F7E6FF"
+      backgroundColor={theme ? "#333" : "#f3f3f3"}
+      foregroundColor={theme ? "#222" : "#F7E6FF"}
       {...props}
     >
       <rect
@@ -130,17 +138,18 @@ export const TypeLoader = (props) => {
 };
 export const CoverLoader = (props) => {
   const isMobile = IsMobile();
+  const theme = useSelector((state) => state.storeMain.theme);
   return (
     <ContentLoader
       speed={1}
-      width={isMobile ? 80 : 80}
-      height={isMobile ? 80 : 80}
-      backgroundColor="#f3f3f3"
-      foregroundColor="#F7E6FF"
+      width={isMobile ? 80 : 150}
+      height={isMobile ? 80 : 150}
+      backgroundColor={theme ? "#333" : "#f3f3f3"}
+      foregroundColor={theme ? "#222" : "#F7E6FF"}
       {...props}
     >
       <circle
-        cx={isMobile ? 0 : 0}
+        cx={isMobile ? 15 : 10}
         cy={isMobile ? 0 : 0}
         r={isMobile ? 50 : 50}
       />
@@ -149,13 +158,14 @@ export const CoverLoader = (props) => {
 };
 export const ImgLoader = (props) => {
   const isMobile = IsMobile();
+  const theme = useSelector((state) => state.storeMain.theme);
   return (
     <ContentLoader
       speed={1}
       width={isMobile ? 800 : 800}
       height={isMobile ? 300 : 400}
-      backgroundColor="#f3f3f3"
-      foregroundColor="#F7E6FF"
+      backgroundColor={theme ? "#333" : "#f3f3f3"}
+      foregroundColor={theme ? "#222" : "#F7E6FF"}
       {...props}
     >
       <rect

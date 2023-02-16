@@ -12,6 +12,7 @@ import {
   TypeLoader,
   IconLoader,
 } from "../../../components/loader";
+import Avatar from "@mui/material/Avatar";
 
 export const TopSection = (props) => {
   const { currentUser } = useContext(AuthContext);
@@ -38,20 +39,29 @@ export const TopSection = (props) => {
         }}
       >
         {props.loading ? (
-          <CoverLoader />
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+            }}
+          >
+            <CoverLoader />
+          </div>
         ) : (
-          <>
-            {props.cover?.length < 1 || props?.cover == undefined ? (
-              <UserProfileEmpty onClick={() => navigate(`/user/${props?.id}`)}>
-                <FaUser className="user" />
-              </UserProfileEmpty>
-            ) : (
-              <Img
-                src={props?.cover}
-                onClick={() => navigate(`/user/${props?.id}`)}
-              />
-            )}
-          </>
+          <Avatar
+            onClick={() => navigate(`/user/${props?.id}`)}
+            alt={props?.name}
+            src={props?.cover !== undefined ? props?.cover : ""}
+            sx={{
+              width: 42,
+              height: 42,
+              cursor: "pointer",
+              "@media only screen and (max-width: 1200px)": {
+                width: 40,
+                height: 40,
+              },
+            }}
+          />
         )}
       </Profile>
       <div className="link">
@@ -157,7 +167,7 @@ const TopRightSection = styled.div`
 
   .edit {
     font-size: 1.5vw;
-    color: ${(props) => props.theme.secondLevel};
+    color: ${(props) => props.theme.icon};
     cursor: pointer;
 
     @media only screen and (max-width: 600px) {
@@ -171,10 +181,13 @@ const Profile = styled.div`
   height: 2.2vw;
   border-radius: 50%;
   overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
   @media only screen and (max-width: 600px) {
-    width: 9vw;
-    height: 9vw;
+    width: 10vw;
+    height: 10vw;
   }
 `;
 
@@ -221,7 +234,7 @@ const Name = styled.h2`
   font-weight: bold;
   letter-spacing: 0.01vw;
   cursor: pointer;
-  color: ${(props) => props.theme.mainFont};
+  color: ${(props) => props.theme.font};
   display: flex;
   align-items: center;
   gap: 0.25vw;
@@ -241,8 +254,9 @@ const Name = styled.h2`
 const Category = styled.span`
   flex: 6;
   font-size: 0.6vw;
-  color: ${(props) => props.theme.secondLevel};
+  color: ${(props) => props.theme.logo2};
   letter-spacing: 0.003w;
+  margin-top: 3px;
 
   @media only screen and (max-width: 600px) {
     color: #aaa;

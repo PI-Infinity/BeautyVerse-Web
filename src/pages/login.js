@@ -96,7 +96,6 @@ export default function Login() {
     const definedUser = users?.find(
       (item) => item.phone === code + phoneNumber
     );
-    console.log(definedUser);
     if (phoneNumber?.length > 3 || password?.length > 7) {
       if (definedUser !== undefined) {
         /**
@@ -126,7 +125,6 @@ export default function Login() {
             <PhoneCode
               onSelect={(code) => {
                 setCode(code);
-                console.log(code);
               }} // required
               showFirst={["GE"]}
               defaultValue="GE"
@@ -176,6 +174,7 @@ export default function Login() {
           justifyContent: "center",
         }}
       >
+        <Title>Verify Phone Number</Title>
         <InputWrapper>
           <Input
             type="text"
@@ -329,21 +328,6 @@ const ForgottPass = styled.p`
     letter-spacing: 0.2vw;
   }
 `;
-const GoogleBtn = styled.button`
-  border: none;
-  width: 25vw;
-  height: 3vw;
-  border-radius: 0.2vw;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5vw;
-
-  &:hover {
-    filter: brightness(0.9);
-  }
-`;
 const SignupText = styled.p`
   text-decoration: none;
   font-size: 0.9vw;
@@ -368,6 +352,7 @@ const SubmitButton = styled.button`
   color: ${(props) => (props.back ? "#ccc" : "green")};
   font-weight: bold;
   background: rgba(255, 255, 255, 0.7);
+  border: none;
 
   @media only screen and (max-width: 600px) {
     width: 45vw;

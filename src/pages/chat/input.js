@@ -16,6 +16,7 @@ import { v4 as uuid } from "uuid";
 import { ImFilePicture } from "react-icons/im";
 import { setRerender } from "../../redux/main";
 import { FiSend } from "react-icons/fi";
+import { setBackdropOpen } from "../../redux/main";
 
 export const Input = () => {
   const dispatch = useDispatch();
@@ -35,35 +36,46 @@ export const Input = () => {
 
   const handleSend = async (e) => {
     if (img != null) {
-      const storageRef = ref(
-        storage,
-        `images/chats/${chatUser?.chatId}/${img?.name}`
-      );
+      if (
+        img?.type?.endsWith("jpeg") ||
+        img?.type?.endsWith("png") ||
+        img?.type?.endsWith("jpg")
+      ) {
+        await dispatch(setBackdropOpen(true));
+        const storageRef = ref(
+          storage,
+          `images/chats/${chatUser[0]?.chatId}/${img?.name}`
+        );
 
-      const url = await uploadBytes(storageRef, img).then((snapshot) => {
-        getDownloadURL(snapshot.ref).then((downloadURL) => {
-          updateDoc(doc(db, "chats", chatUser[0]?.chatId), {
-            messages: arrayUnion({
-              id: uuid(),
-              text,
-              senderId: currentUser.uid,
-              date: Timestamp.now(),
-              img: downloadURL,
-            }),
-          })
-            .then(() => {
-              // Profile updated!
-              // dispatch(setRerender());
-              // ...
-              setImg(null);
-              setText("");
+        const url = await uploadBytes(storageRef, img).then((snapshot) => {
+          getDownloadURL(snapshot.ref).then((downloadURL) => {
+            updateDoc(doc(db, "chats", chatUser[0]?.chatId), {
+              messages: arrayUnion({
+                id: uuid(),
+                text: text,
+                senderId: currentUser.uid,
+                date: Timestamp.now(),
+                img: downloadURL,
+                imgName: img?.name,
+              }),
             })
-            .catch((error) => {
-              // An error occurred
-              // ...
-            });
+              .then(() => {
+                // Profile updated!
+                // dispatch(setRerender());
+                // ...
+                setImg(null);
+                setText("");
+              })
+              .catch((error) => {
+                // An error occurred
+                // ...
+              });
+          });
         });
-      });
+        dispatch(setBackdropOpen(false));
+      } else {
+        alert("Unsuported File Format");
+      }
     } else {
       setImg(null);
       setText("");
@@ -82,6 +94,10 @@ export const Input = () => {
           lastMessage: text,
           date: serverTimestamp(),
           opened: false,
+          senderId: currentUser?.uid,
+          userInfo: {
+            id: chatUser[0]?.userId,
+          },
         }
       );
       await updateDoc(
@@ -90,6 +106,10 @@ export const Input = () => {
           lastMessage: text,
           date: serverTimestamp(),
           opened: false,
+          senderId: currentUser?.uid,
+          userInfo: {
+            id: currentUser?.uid,
+          },
         }
       );
     }
@@ -152,10 +172,10 @@ const InputContainer = styled.div`
   width: 100%;
   display: flex;
   align-items: center;
-  background: #fff;
+  background: ${(props) => props.theme.secondLevel};
   box-sizing: border-box;
   padding: 10px 20px 10px 10px;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid ${(props) => props.theme.lineColor};
 
   @media only screen and (max-width: 600px) {
     width: 100%;
@@ -173,6 +193,7 @@ const InputField = styled.input`
   outline: none;
   background: none;
   font-size: 16px;
+  color: ${(props) => props.theme.font};
 
   @media only screen and (max-width: 600px) {
     padding-left: 3vw;
@@ -201,10 +222,10 @@ const File = styled.div`
   #label {
     font-size: 1.2vw;
     cursor: pointer;
+    color: ${(props) => props.theme.font};
 
     @media only screen and (max-width: 600px) {
       font-size: 4vw;
-      color: #333;
     }
 
     :hover {

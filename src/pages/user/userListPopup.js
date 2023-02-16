@@ -43,9 +43,9 @@ function UserListDialog(props) {
   return (
     <Dialog onClose={handleClose} open={open}>
       <DialogTitle>{props?.title}</DialogTitle>
-      <List sx={{ p: 1 }}>
+      <List sx={{ pt: 0 }}>
         {props?.users?.map((item) => (
-          <ListItem disableGutters sx={{ p: 1 }}>
+          <ListItem disableGutters sx={{ pr: 3, pl: 3 }}>
             <ListItemButton
               onClick={() => navigate(`/user/${item.id}`)}
               key={item.name}
@@ -98,7 +98,12 @@ export default function UserListDialogMain(props) {
 
   return (
     <div>
-      <Button variant="outlined" color="secondary" onClick={handleClickOpen}>
+      <Button
+        variant="outlined"
+        color="secondary"
+        onClick={handleClickOpen}
+        sx={{ width: "150px", color: "purple" }}
+      >
         {props.title}
       </Button>
       <UserListDialog

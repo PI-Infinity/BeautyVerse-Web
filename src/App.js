@@ -55,6 +55,7 @@ import { Navigator } from "./components/navigator";
 import { IsMobile } from "./functions/isMobile";
 import useWindowDimensions from "./functions/dimensions";
 import { setCartList } from "./redux/marketplace/shoppingCart";
+import SimpleBackdrop from "./components/backDrop";
 
 function App() {
   /**
@@ -65,7 +66,7 @@ function App() {
   const location = useLocation();
 
   // color mode
-  const [theme, setTheme] = useState(() => true);
+  const theme = useSelector((state) => state.storeMain.theme);
 
   // redux imports
   const loading = useSelector((state) => state.storeMain.loading);
@@ -84,8 +85,6 @@ function App() {
    */
   const { currentUser } = useContext(AuthContext);
 
-  console.log(currentUser);
-
   const RequireAuth = ({ children }) => {
     return currentUser ? children : <Navigate to="/login" />;
   };
@@ -99,13 +98,24 @@ function App() {
 
   const dispatch = useDispatch();
 
+  useEffect(() => {
+    let activeTheme;
+    if (theme) {
+      activeTheme = "#222";
+    } else {
+      activeTheme = "#FCFDFF";
+    }
+    document
+      .querySelector("meta[name='theme-color']")
+      .setAttribute("content", activeTheme);
+  }, [currentUser, theme]);
+
   /**
    * import current user from firebase
    * find by id, defined from conetext / authentication
    */
   React.useEffect(() => {
     if (currentUser) {
-      console.log("run");
       const data = onSnapshot(collection(db, "users"), (snapshot) => {
         dispatch(
           setUser(
@@ -208,7 +218,8 @@ function App() {
       {loading ? (
         <Loading />
       ) : (
-        <>
+        <Container>
+          <SimpleBackdrop />
           <Header />
           {isMobile &&
             (window.location.pathname === "/" ||
@@ -241,14 +252,7 @@ function App() {
                 </RequireLogout>
               }
             />
-            <Route
-              path="user/:Id"
-              element={
-                <RequireAuth>
-                  <UserProfile />
-                </RequireAuth>
-              }
-            >
+            <Route path="user/:Id" element={<UserProfile />}>
               <Route index element={<UserFeeds />} />
               <Route path="services" element={<Services />} />
               <Route path="team" element={<Team />} />
@@ -311,13 +315,17 @@ function App() {
           </Routes>
           <Footer />
           {nav}
-        </>
+        </Container>
       )}
     </ThemeProvider>
   );
 }
 
 export default App;
+
+const Container = styled.div`
+  background: ${(props) => props.theme.background};
+`;
 
 const TopLine = styled.div`
   position: fixed;

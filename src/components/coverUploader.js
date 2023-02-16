@@ -16,10 +16,14 @@ import { AuthContext } from "../context/AuthContext";
 import { setRerender } from "../redux/main";
 import { FaUser } from "react-icons/fa";
 import { BsStars, BsLayoutTextSidebarReverse } from "react-icons/bs";
+import Avatar from "@mui/material/Avatar";
+import { useNavigate } from "react-router-dom";
+import { setBackdropOpen } from "../redux/main";
 
 export const CoverUploader = (props) => {
   const currentUser = auth.currentUser;
 
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   // State to store uploaded file
   const [file, setFile] = React.useState(null);
@@ -42,32 +46,34 @@ export const CoverUploader = (props) => {
   async function FileUpload() {
     /* after delete last cover, add new cover
      */
-
     if (file == null) return;
-    // add in storage
-    const imageRef = ref(storage, `images/${currentUser?.uid}/cover`);
-    // const snapshot = await uploadBytes(imageRef, file);
-    const url = await uploadBytes(imageRef, file).then((snapshot) => {
-      getDownloadURL(snapshot.ref).then((url) => {
-        updateDoc(doc(db, `users`, currentUser.uid), {
-          cover: url,
-        });
-        updateProfile(auth.currentUser, {
-          photoURL: url,
-        })
-          .then(() => {
-            // Profile updated!
-            dispatch(setRerender());
-            // ...
-          })
-          .catch((error) => {
-            // An error occurred
-            // ...
+    if (file != null) {
+      dispatch(setBackdropOpen(true));
+      // add in storage
+      const imageRef = ref(storage, `images/${props?.currentUser?.id}/cover`);
+      // const snapshot = await uploadBytes(imageRef, file);
+      const url = await uploadBytes(imageRef, file).then((snapshot) => {
+        getDownloadURL(snapshot.ref).then((url) => {
+          updateDoc(doc(db, `users`, props?.currentUser.id), {
+            cover: url,
           });
+          updateProfile(auth.currentUser, {
+            photoURL: url,
+          })
+            .then(() => {
+              // Profile updated!
+              dispatch(setRerender());
+              // ...
+            })
+            .catch((error) => {
+              // An error occurred
+              // ...
+            });
+        });
       });
-    });
-    dispatch(setRerender());
-    // window.location.reload();
+      await dispatch(setRerender());
+      dispatch(setBackdropOpen(false));
+    }
   }
 
   React.useEffect(() => {
@@ -76,11 +82,29 @@ export const CoverUploader = (props) => {
 
   return (
     <Container>
-      <Uploader
-        type="file"
-        onChange={(event) => setFile(event.target.files[0])}
-        title=""
-      />
+      {user?.id === props?.user?.id && (
+        <Uploader
+          id="cover"
+          type="file"
+          onChange={(event) => setFile(event.target.files[0])}
+          title=""
+        />
+      )}
+      <label htmlFor="cover">
+        <Avatar
+          alt={user?.name}
+          src={props?.user?.cover !== undefined ? props?.user?.cover : ""}
+          sx={{
+            width: 155,
+            height: 155,
+            cursor: "pointer",
+            "@media only screen and (max-width: 1200px)": {
+              width: 100,
+              height: 100,
+            },
+          }}
+        />
+      </label>
       {props.loadingCover ? (
         <Loader>
           <BsStars className="logo" />
@@ -95,6 +119,9 @@ const Container = styled.div`
   height: 10vw;
   width: 10vw;
   border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   @media only screen and (max-width: 600px) {
     height: 20vw;
@@ -103,6 +130,7 @@ const Container = styled.div`
 `;
 
 const Uploader = styled.input`
+  display: none;
   cursor: pointer;
   height: 10vw;
   width: 10vw;
@@ -118,7 +146,6 @@ const Uploader = styled.input`
   @media only screen and (max-width: 600px) {
     height: 20vw;
     width: 20vw;
-    bottom: 0.5vw;
   }
 
   ::-webkit-file-upload-button {

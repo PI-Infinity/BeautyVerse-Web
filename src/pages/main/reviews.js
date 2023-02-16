@@ -52,6 +52,7 @@ export const Reviews = () => {
                     width: "92%",
                     display: "flex",
                     justifyContent: "flex-end",
+                    gap: "5px",
                   }}
                 >
                   <span
@@ -61,6 +62,7 @@ export const Reviews = () => {
                       // fontWeight: "bold",
                       fontStyle: "italic",
                       marginLeft: "1vw",
+                      marginBottom: "0.5vw",
                     }}
                   >
                     {currentPostTime}
@@ -70,9 +72,8 @@ export const Reviews = () => {
                   <Reviewer
                     onClick={() => navigate(`/user/${item?.reviewerId}`)}
                   >
-                    {item.reviewer}:
+                    {item.reviewer}
                   </Reviewer>
-                  <span>{item.text}</span>{" "}
                   <MdOutlineArrowRight className="arrowIcon" />
                   <Reviewer
                     onClick={() => navigate(`/user/${item?.reviewerId}`)}
@@ -80,6 +81,9 @@ export const Reviews = () => {
                   >
                     {item.reciever}
                   </Reviewer>
+                  <span id="text" style={{ fontSize: "0.7vw" }}>
+                    {item.text}
+                  </span>{" "}
                 </ReviewItem>
               </div>
             );
@@ -97,13 +101,12 @@ const Container = styled.div`
   align-items: center;
   padding-right: 2vw;
   padding-bottom: 0.5vw;
-  border-bottom: 1px solid #ddd;
-  background: rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid ${(props) => props.theme.lineColor};
 `;
 
 const Title = styled.div`
   width: 100%;
-  color: ${(props) => props.theme.mainFont};
+  color: ${(props) => props.theme.font};
   display: flex;
   gap: 0.25vw;
   align-items: center;
@@ -120,7 +123,7 @@ const Title = styled.div`
 `;
 
 const List = styled.div`
-  padding-top: 1vw;
+  padding-top: 0.5vw;
   width: 92%;
   display: flex;
   flex-direction: column;
@@ -151,18 +154,23 @@ const List = styled.div`
 const ReviewItem = styled.div`
   width: 90%;
   margin-left: 5%;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 2vw 2vw 2vw 0;
-  padding: 0.5vw 1vw 0.5vw 1.5vw;
+  background: ${(props) => props.theme.categoryItem};
+  border-radius: 0 2vw 2vw 2vw;
+  padding: 0.25vw 1vw 0.5vw 1.5vw;
   box-sizing: border-box;
   margin-bottom: 0.3vw;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   box-shadow: 0 0.1vw 0.2vw rgba(2, 2, 2, 0.1);
+  gap: 5px;
 
   .arrowIcon {
     font-size: 1.5vw;
+  }
+
+  #text {
+    color: ${(props) => props.theme.font};
   }
 `;
 

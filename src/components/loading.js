@@ -38,8 +38,8 @@ export const Loading = (props) => {
       }}
     >
       <BsStars className="logo" />
-      <Title style={{ color: "#222" }}>Beauty</Title>
-      <Title style={{ color: "#222", fontWeight: "normal" }}>verse</Title>
+      <Title>Beauty</Title>
+      <Title2 style={{ fontWeight: "normal" }}>verse</Title2>
     </Container>
   );
 };
@@ -51,10 +51,10 @@ const Container = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-
+  background: ${(props) => props.theme.background};
   .logo {
     font-size: 2.7vw;
-
+    color: ${(props) => props.theme.logo};
     @media only screen and (max-width: 600px) {
       font-size: 7vw;
       position: relative;
@@ -66,7 +66,16 @@ const Container = styled.div`
 
 const Title = styled.h2`
   font-size: 1.7vw;
-
+  color: ${(props) => props.theme.logo};
+  @media only screen and (max-width: 600px) {
+    font-size: 7vw;
+    position: relative;
+    bottom: 3vw;
+  }
+`;
+const Title2 = styled.h2`
+  font-size: 1.7vw;
+  color: ${(props) => props.theme.logo2};
   @media only screen and (max-width: 600px) {
     font-size: 7vw;
     position: relative;

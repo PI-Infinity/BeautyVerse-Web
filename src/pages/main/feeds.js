@@ -7,7 +7,7 @@ import { setScroll } from "../../redux/scroll";
 import useWindowDimensions from "../../functions/dimensions";
 import { IsMobile } from "../../functions/isMobile";
 import {
-  proceduresOptions,
+  ProceduresOptions,
   categoriesOptions,
   workingPlacesOptions,
   workingDaysOptions,
@@ -15,6 +15,8 @@ import {
 
 export const Feeds = (props) => {
   const rerender = useSelector((state) => state.storeMain.rerender);
+
+  const proceduresOptions = ProceduresOptions();
 
   const { height, width } = useWindowDimensions();
   const isMobile = IsMobile();
@@ -48,7 +50,7 @@ export const Feeds = (props) => {
   if (userUnparsed?.length > 0) {
     user = JSON.parse(userUnparsed);
   }
-  console.log(userUnparsed);
+
   const DefineUserList = () => {
     let data;
     // if (user != undefined) {
@@ -200,7 +202,7 @@ export const Feeds = (props) => {
 
 const Container = styled.div`
   z-index: 800;
-  height: 85vh;
+  height: 83vh;
   width: 100%;
 
   @media only screen and (max-width: 600px) {

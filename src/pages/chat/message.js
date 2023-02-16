@@ -7,11 +7,23 @@ import {
   uploadBytesResumable,
   listAll,
   getDownloadURL,
+  deleteObject,
 } from "firebase/storage";
 import { storage, db } from "../../firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+  doc,
+  arrayRemove,
+} from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { FaUser } from "react-icons/fa";
+import Avatar from "@mui/material/Avatar";
+import { MdRemove } from "react-icons/md";
+import AlertDialog from "../../components/dialog";
 
 export const Message = ({ message }) => {
   const navigate = useNavigate();
@@ -22,6 +34,13 @@ export const Message = ({ message }) => {
   let currentuser;
   if (unparsedUser?.length > 0) {
     currentuser = JSON.parse(unparsedUser);
+  }
+
+  /// define user list
+  const list = useSelector((state) => state.storeMain.userList);
+  let userList;
+  if (list?.length > 0) {
+    userList = JSON.parse(list);
   }
 
   const messageref = useRef();
@@ -57,93 +76,39 @@ export const Message = ({ message }) => {
     .slice(4, 21);
   const currentTime = new Date().getTime() / 1000;
 
-  // define user cover
-  const DefineCurrentUserCover = () => {
-    let currentUserCover;
-    if (currentuser?.cover !== undefined) {
-      currentUserCover = currentuser?.cover;
-    } else
-      currentUserCover = (
-        <UserProfileEmpty>
-          <FaUser className="user" />
-        </UserProfileEmpty>
-      );
-    return currentUserCover;
-  };
-  const DefineUserCover = () => {
-    let userCover;
-    if (user?.cover !== undefined) {
-      userCover = user?.cover;
-    } else
-      userCover = (
-        <UserProfileEmpty>
-          <FaUser className="user" />
-        </UserProfileEmpty>
-      );
-
-    return userCover;
-  };
-
-  const currentUserCover = DefineCurrentUserCover();
-  const userCover = DefineUserCover();
-
-  let coverImg;
-  if (
-    message?.senderId === currentuser.id &&
-    currentuser?.cover !== undefined
-  ) {
-    coverImg = (
-      <Img
+  let cover;
+  if (message?.senderId === currentuser?.id) {
+    cover = (
+      <Avatar
+        alt={currentuser?.name}
         src={currentuser?.cover}
-        onClick={
-          message?.senderId === currentuser.id
-            ? () => navigate("/user")
-            : () => navigate(`/user/${message?.senderId}`)
-        }
-      />
-    );
-  } else if (
-    message?.senderId === currentuser.id &&
-    currentuser?.cover === undefined
-  ) {
-    coverImg = (
-      <UserProfileEmpty
-        onClick={
-          message?.senderId === currentuser.id
-            ? () => navigate("/user")
-            : () => navigate(`/user/${message?.senderId}`)
-        }
-      >
-        <FaUser className="user" />
-      </UserProfileEmpty>
-    );
-  } else if (
-    message?.senderId !== currentuser.id &&
-    user?.cover !== undefined
-  ) {
-    coverImg = (
-      <Img
-        src={user?.cover}
-        onClick={
-          message?.senderId === currentuser.id
-            ? () => navigate("/user")
-            : () => navigate(`/user/${message?.senderId}`)
-        }
+        sx={{ width: 36, height: 36 }}
       />
     );
   } else {
-    coverImg = (
-      <UserProfileEmpty
-        onClick={
-          message?.senderId === currentuser.id
-            ? () => navigate("/user")
-            : () => navigate(`/user/${message?.senderId}`)
-        }
-      >
-        <FaUser className="user" />
-      </UserProfileEmpty>
+    let us = userList?.find((item) => item?.id === message?.senderId);
+    cover = (
+      <Avatar alt={us?.name} src={us?.cover} sx={{ width: 36, height: 36 }} />
     );
   }
+
+  // delete message
+  const chatUser = useSelector((state) => state.storeChat.currentChat);
+  const DeleteMessage = async (obj) => {
+    if (obj?.img !== undefined) {
+      await deleteObject(
+        ref(storage, `images/chats/${chatUser[0]?.chatId}/${obj?.imgName}`)
+      ).then(() => {
+        console.log("storage success");
+      });
+    }
+    updateDoc(doc(db, "chats", chatUser[0]?.chatId), {
+      messages: arrayRemove(obj),
+    });
+  };
+
+  // open dialog
+  const [open, setOpen] = React.useState(false);
 
   return (
     <MainContainer prop={message?.senderId === currentuser.id}>
@@ -151,7 +116,7 @@ export const Message = ({ message }) => {
         ref={messageref}
         prop={message?.senderId === currentuser.id}
       >
-        {coverImg}
+        {cover}
         <div
           style={{
             display: "flex",
@@ -169,10 +134,22 @@ export const Message = ({ message }) => {
             {message?.text}
           </MessageContent>
         </div>
+        <MdRemove
+          color="#ccc"
+          onClick={() => setOpen(true)}
+          style={{ cursor: "pointer" }}
+        />
       </MessageContainer>
-      <span style={{ color: "#ddd" }}>
+      <span style={{ color: "#ddd", marginTop: "10px" }} className="time">
         {currentTime > message?.date?.seconds + 70 ? sendDate : "Just Now"}
       </span>
+      <AlertDialog
+        open={open}
+        setOpen={setOpen}
+        function={() => DeleteMessage(message)}
+        title="დაადასტურება!"
+        text="ნამდვილად გსურთ წერილის წაშლა?"
+      />
     </MainContainer>
   );
 };
@@ -184,13 +161,13 @@ const MainContainer = styled.div`
   align-items: ${(props) => (props.prop ? "flex-end" : "start")};
 
   @media only screen and (max-width: 600px) {
-    gap: 2vw;
+    gap: 0vw;
   }
 
   & > span {
-    font-size: 0.8vw;
+    font-size: 0.5vw;
     @media only screen and (max-width: 600px) {
-      font-size: 2.7vw;
+      font-size: 2vw;
     }
   }
 `;
@@ -213,13 +190,17 @@ const MessageContainer = styled.div`
   }
 
   #img {
-    width: 50vw;
+    max-width: 25vw;
     @media only screen and (max-width: 600px) {
-      width: 35vw;
+      max-width: 60vw;
       // height: 30vw;
       object-fit: cover;
       border-radius: 2vw;
     }
+  }
+
+  .time {
+    font-size: 12px;
   }
 `;
 

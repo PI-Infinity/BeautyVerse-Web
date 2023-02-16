@@ -36,10 +36,13 @@ import {
   deleteObject,
 } from "firebase/storage";
 import { useNavigate } from "react-router-dom";
-import { setRerender } from "../../redux/main";
+import { setRerender, setBackdropOpen } from "../../redux/main";
 import { v4 } from "uuid";
 import useWindowDimensions from "../../functions/dimensions";
 import { Spinner } from "../../components/loader";
+import Success from "../../snackBars/success";
+import SimpleBackdrop from "../../components/backDrop";
+import Avatar from "@mui/material/Avatar";
 
 const AddFeed = () => {
   const { height, width } = useWindowDimensions();
@@ -71,12 +74,14 @@ const AddFeed = () => {
 
   const [uploading, setUploading] = React.useState(false);
 
+  const [openSuccess, setOpenSuccess] = React.useState(false);
+
   // resized image
   const [resizedObj, setResizedObj] = React.useState("");
 
   // add feed in firebase
   async function FileUpload() {
-    await setUploading(true);
+    await dispatch(setBackdropOpen(true));
     //create id
     let imageId = resizedObj.desktopJPEG?.name + v4();
     // check file
@@ -182,17 +187,16 @@ const AddFeed = () => {
         }
       }
     }
+    await setOpenSuccess(true);
     await dispatch(setRerender());
-    setUploading(false);
+    await setFile(null);
+    await setResizedObj("");
+    await setText("");
+    dispatch(setBackdropOpen(false));
   }
 
   return (
     <Container height={height}>
-      {uploading && (
-        <Loader>
-          <Spinner />
-        </Loader>
-      )}
       <SecondLevelContainer>
         <div style={{ marginLeft: "auto" }} onClick={() => navigate("/")}>
           <AiOutlineCloseSquare className="icon" />
@@ -201,19 +205,29 @@ const AddFeed = () => {
           <Title>Add Feed</Title>
           <Info>
             <Profile>
-              {user?.cover == undefined ? (
-                <FaUser className="user" />
-              ) : (
-                <Img src={user?.cover} alt="cover" />
-              )}
+              <Avatar
+                onClick={() => navigate(`/user/${user?.id}`)}
+                alt={user?.name}
+                src={user?.cover !== undefined ? user?.cover : ""}
+                sx={{
+                  width: 42,
+                  height: 42,
+                  cursor: "pointer",
+                  "@media only screen and (max-width: 1200px)": {
+                    width: 40,
+                    height: 40,
+                  },
+                }}
+              />
             </Profile>
             <Name>{user?.name}</Name>
           </Info>
-          <Text onChange={(e) => setText(e.target.value)} />
+          <Text value={text} onChange={(e) => setText(e.target.value)} />
         </Wrapper>
         <Result
           file={file}
           {...user}
+          id={user?.id}
           active={active}
           text={text}
           onImageChange={onImageChange}
@@ -223,35 +237,24 @@ const AddFeed = () => {
           setResizedObj={setResizedObj}
         />
       </SecondLevelContainer>
+      <Success
+        open={openSuccess}
+        setOpen={setOpenSuccess}
+        title="პოსტი წარმატებით აიტვირთა"
+        type="success"
+      />
     </Container>
   );
 };
 
 export default AddFeed;
 
-const Loader = styled.div`
-  position: absolute;
-  width: 50vw;
-  height: 100%;
-  z-index: 900;
-  top: 0;
-  left: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.1);
-
-  @media only screen and (max-width: 600px) {
-    width: 100vw;
-  }
-`;
-
 const Container = styled.div`
   width: 100%;
-  height: calc(100vh - 2vw);
+  height: calc(${(props) => props.height}px - 9vw);
   min-height: auto;
   padding-top: 1.5vw;
-  padding-bottom: 10vw;
+  padding-bottom: 3vw;
   box-sizing: border-box;
   display: flex;
   align-items: start;
@@ -264,7 +267,7 @@ const Container = styled.div`
     max-hiehgt: calc(${(props) => props.height}px - 10vw);
     width: 100vw;
     align-items: start;
-    margin-top: 11vw;
+    margin-top: 5vw;
     padding-top: 0;
     padding-bottom: 60px;
     box-sizing: border-box;
@@ -313,7 +316,7 @@ const Wrapper = styled.div`
   width: 32vw;
   height: 30vh;
   border-radius: 0.5vw;
-  box-shadow: 0 0.1vw 0.3vw rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0.1vw 0.3vw ${(props) => props.theme.shadowColor};
   background: ${(props) => props.theme.background};
   padding: 10px 30px;
   box-sizing: border-box;
@@ -327,7 +330,7 @@ const Wrapper = styled.div`
 `;
 
 const Title = styled.h3`
-  color: #333;
+  color: ${(props) => props.theme.font};
 `;
 
 const Info = styled.div`
@@ -440,6 +443,7 @@ const Img = styled.img`
 `;
 
 const Name = styled.div`
+  color: ${(props) => props.theme.font};
   font-weight: bold;
 `;
 const Text = styled.textarea`

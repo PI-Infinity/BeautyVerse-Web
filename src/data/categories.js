@@ -115,14 +115,6 @@ export const VerseCategories = [
   },
   {
     id: 13,
-    value: "Podology",
-    eng: "Podology",
-    geo: "პოდოლოგია",
-    color: "#de8787",
-    icon: <BsCheckAll />,
-  },
-  {
-    id: 14,
     value: "Beard Procedures",
     eng: "Beard Procedures",
     geo: "წვერის პროცედურები",

@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { BsListCheck } from "react-icons/bs";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   MdOutlinePhotoSizeSelectActual,
   MdContactPhone,
@@ -27,22 +27,22 @@ export const Navigator = (props) => {
       id: 1,
       value: "posts",
       title: "პოსტები",
-      onClick: `/user/${props?.user.id}`,
-      // className:
-      //   window.location.pathname === `/user/${props?.user?.id}`
-      //     ? "active"
-      //     : "btn",
+      onClick: () => navigate(`/user/${props?.user.id}`),
+      className:
+        window.location.pathname === `/user/${props?.user?.id}`
+          ? "active"
+          : "btn",
       icon: <MdOutlinePhotoSizeSelectActual className="icon" />,
     },
     {
       id: 2,
       value: "contact",
       title: "კონტაქტი",
-      onClick: `contact`,
-      // className:
-      //   window.location.pathname === `/user/${props?.user?.id}/contact`
-      //     ? "active"
-      //     : "btn",
+      onClick: () => navigate(`contact`),
+      className:
+        window.location.pathname === `/user/${props?.user?.id}/contact`
+          ? "active"
+          : "btn",
       id: "contact",
       icon: <MdContactPhone className="icon" />,
     },
@@ -50,11 +50,11 @@ export const Navigator = (props) => {
       id: 3,
       value: "team",
       title: "გუნდი",
-      onClick: `team`,
-      // className:
-      //   window.location.pathname === `/user/${props?.user?.id}/team`
-      //     ? "active"
-      //     : "btn",
+      onClick: () => navigate(`team`),
+      className:
+        window.location.pathname === `/user/${props?.user?.id}/team`
+          ? "active"
+          : "btn",
       id: "team",
       icon: <AiOutlineTeam className="icon" />,
     },
@@ -62,11 +62,11 @@ export const Navigator = (props) => {
       id: 4,
       value: type == "shop" ? "products" : "services",
       title: type == "shop" ? "პროდუქტები" : "სერვისები",
-      onClick: `/user/${props?.user?.id}/services`,
-      // className:
-      //   window.location.pathname === `/user/${props?.user?.id}/services`
-      //     ? "active"
-      //     : "btn",
+      onClick: () => navigate(`/user/${props?.user?.id}/services`),
+      className:
+        window.location.pathname === `/user/${props?.user?.id}/services`
+          ? "active"
+          : "btn",
       icon:
         type == "shop" ? (
           <MdShoppingCart className="icon" />
@@ -78,11 +78,11 @@ export const Navigator = (props) => {
       id: 5,
       value: "audience",
       title: "აუდიტორია",
-      onClick: `/user/${props?.user?.id}/audience`,
-      // className:
-      //   window.location.pathname === `/user/${props?.user?.id}/audience`
-      //     ? "active"
-      //     : "btn",
+      onClick: () => navigate(`/user/${props?.user?.id}/audience`),
+      className:
+        window.location.pathname === `/user/${props?.user?.id}/audience`
+          ? "active"
+          : "btn",
       icon: <FaUsers className="icon" />,
     },
   ];
@@ -119,15 +119,15 @@ export const Navigator = (props) => {
         })
         ?.map((item, index) => {
           return (
-            <Link
+            <Button
               key={index}
               className={item?.className}
-              to={item?.onClick}
+              onClick={item?.onClick}
               id={item?.id}
             >
               {item?.icon}
               {item?.title}
-            </Link>
+            </Button>
           );
         });
     } else if (type == "shop") {
@@ -135,15 +135,15 @@ export const Navigator = (props) => {
         ?.filter((item) => item.value !== "team")
         .map((item, index) => {
           return (
-            <Link
+            <Button
               key={index}
               className={item?.className}
-              to={item?.onClick}
+              onClick={item?.onClick}
               id={item?.id}
             >
               {item?.icon}
               {item?.title}
-            </Link>
+            </Button>
           );
         });
     } else if (type == "specialist") {
@@ -151,29 +151,29 @@ export const Navigator = (props) => {
         ?.filter((item) => item.value !== "team")
         ?.map((item, index) => {
           return (
-            <Link
+            <Button
               key={index}
               className={item?.className}
-              to={item?.onClick}
+              onClick={item?.onClick}
               id={item?.id}
             >
               {item?.icon}
               {item?.title}
-            </Link>
+            </Button>
           );
         });
     } else {
       content = list?.map((item, index) => {
         return (
-          <Link
+          <Button
             key={item.id}
             className={item?.className}
-            to={item?.onClick}
+            onClick={item?.onClick}
             id={item?.id}
           >
             {item?.icon}
             {item?.title}
-          </Link>
+          </Button>
         );
       });
     }
@@ -189,7 +189,7 @@ const Container = styled.div`
   width: 97%;
   padding-left: 3%;
   height: 3.5vw;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid ${(props) => props.theme.lineColor};
   display: flex;
   align-items: center;
   gap: 1vw;
@@ -232,8 +232,7 @@ const Container = styled.div`
   }
 
   .active {
-    border: 1px solid #e5e5e5;
-    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid ${(props) => props.theme.secondLevel};
     border-radius: 0.2vw;
     height: 1.8vw;
     padding: 0 0.5vw;
@@ -274,6 +273,7 @@ const Button = styled.div`
   justify-content: start;
   gap: 0.5vw;
   cursor: pointer;
+  color: ${(props) => props.theme.font};
 
   @media only screen and (max-width: 600px) {
     height: 6vw;

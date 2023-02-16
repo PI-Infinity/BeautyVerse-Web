@@ -51,6 +51,7 @@ import { useNavigate } from "react-router-dom";
 import { HiOutlineViewGridAdd } from "react-icons/hi";
 import { useOutletContext } from "react-router-dom";
 import { isWebpSupported } from "react-image-webp/dist/utils";
+import AlertDialog from "../../components/dialog";
 
 export const UserFeeds = () => {
   const [user] = useOutletContext();
@@ -59,6 +60,10 @@ export const UserFeeds = () => {
   const { height, width } = useWindowDimensions();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  // alert dialog
+  const [openDialog, setOpenDialog] = useState(false);
+  const [feedData, setFeedData] = useState("");
 
   // import user gallery images from firestore
   const [feeds, setFeeds] = useState("");
@@ -97,10 +102,20 @@ export const UserFeeds = () => {
                   style={{ height: 0, display: "flex", justifyContent: "end" }}
                 >
                   <RemoveIconContainer
-                    onClick={() => setConfirm(item.id, item.name)}
+                    onClick={() => {
+                      setOpenDialog(true);
+                      setFeedData({ id: item.id, name: item.name });
+                    }}
                   >
                     <AiOutlineDelete className="removeIcon" />
                   </RemoveIconContainer>
+                  <AlertDialog
+                    title="დაადასტურეთ აქტივობა"
+                    open={openDialog}
+                    setOpen={setOpenDialog}
+                    text="ნამდვილად გსურთ პოსტის წაშლა?"
+                    function={() => Deleting(feedData?.id, feedData?.name)}
+                  />
                 </div>
               )}
               {item?.name?.endsWith("mp4") ? (
@@ -186,7 +201,6 @@ export const UserFeeds = () => {
         });
         if (values !== "") {
           values?.map((item) => {
-            console.log(item);
             if (item?.name.includes(".mp4")) {
               deleteObject(
                 ref(
@@ -222,40 +236,23 @@ export const UserFeeds = () => {
   }, []);
 
   return (
-    <>
-      {confirm?.length > 0 && (
-        <Confirm>
-          <ConfirmCont>
-            <ConfirmText>Are you sure to delete this file?</ConfirmText>
-            <Answers>
-              <Answer name="no" onClick={() => setConfirm("")}>
-                Cancel
-              </Answer>
-              <Answer name="yes" onClick={() => Deleting(confirm)}>
-                Delete
-              </Answer>
-            </Answers>
-          </ConfirmCont>
-        </Confirm>
-      )}
-      <Container height={height}>
-        <Content listLength={list?.length}>
-          {user?.id === currentUser?.uid && user?.type != "user" && (
-            <GalleryImg
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-              onClick={() => navigate("/add")}
-            >
-              <HiOutlineViewGridAdd id="add" />
-            </GalleryImg>
-          )}
-          {list?.length > 0 == true ? list : ""}
-        </Content>
-      </Container>
-    </>
+    <Container height={height}>
+      <Content listLength={list?.length}>
+        {user?.id === currentUser?.uid && user?.type != "user" && (
+          <GalleryImg
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            onClick={() => navigate("/add")}
+          >
+            <HiOutlineViewGridAdd id="add" />
+          </GalleryImg>
+        )}
+        {list?.length > 0 == true ? list : ""}
+      </Content>
+    </Container>
   );
 };
 
@@ -402,6 +399,26 @@ const Container = styled.div`
     box-sizing: border-box;
     padding: 2vw 4vw;
   }
+
+  /* width */
+  ::-webkit-scrollbar {
+    width: 0.3vw;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background-color: white;
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background-color: ${(props) => props.theme.secondLevel};
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #1e1e1e;
+  }
 `;
 
 // const AddImg = styled.div`
@@ -464,7 +481,7 @@ const GalleryImg = styled.div`
   border-radius: 0.5vw;
   box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
   overflow: hidden;
-  border: 0.25vw solid #fff;
+  border: 0.15vw solid ${(props) => props.theme.frameColor};
   cursor: pointer;
 
   animation: fadeIn 1s;
@@ -522,7 +539,7 @@ const GalleryImg = styled.div`
     width: 28vw;
     height: 28vw;
     border-radius: 1.5vw;
-    border: 0.25vw solid #fff;
+    border: 0.25vw solid ${(props) => props.theme.frameColor};
   }
 
   :hover {

@@ -18,7 +18,7 @@ import { GiConfirmed } from "react-icons/gi";
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
 import {
-  proceduresOptions,
+  ProceduresOptions,
   workingPlacesOptions,
   workingDaysOptions,
 } from "../../data/registerDatas";
@@ -26,10 +26,13 @@ import useWindowDimensions from "../../functions/dimensions";
 import { IsMobile } from "../../functions/isMobile";
 import { useOutletContext } from "react-router-dom";
 import { RiEdit2Fill } from "react-icons/ri";
+import AlertDialog from "../../components/dialog";
 
 const animatedComponents = makeAnimated();
 
 export const Services = () => {
+  const proceduresOptions = ProceduresOptions();
+
   const [user] = useOutletContext();
   const isMobile = IsMobile();
   const [loading, setLoading] = React.useState(true);
@@ -136,6 +139,11 @@ export const Services = () => {
     setEdit(false);
   };
 
+  // confirm remove service
+  const [confirmRemove, setConfirmRemove] = React.useState(false);
+  // import user gallery images from firestore
+  const [removeData, setRemoveData] = useState("");
+
   setTimeout(() => {
     setLoading(false);
   }, 300);
@@ -205,12 +213,12 @@ export const Services = () => {
           </div>
           {edit === "place" && (
             <Select
-              placeholder="დაამატე სამუშაო დღეები"
+              placeholder="დაამატე სამუშაო გარემო"
               components={animatedComponents}
               onChange={(value) => {
                 setEditWorkingPlace(value);
               }}
-              placeholder="სამუშაო დღეები"
+              placeholder="სამუშაო გარემო"
               isMulti
               components={animatedComponents}
               styles={{
@@ -244,50 +252,6 @@ export const Services = () => {
             />
           )}
         </WorkingDays>
-        {/* <WorkingDays>
-          <span style={{ fontWeight: "bold" }}>სამუშაო ადგილი:</span>
-          {user?.workingPlace?.map((item, index) => {
-            return (
-              <div key={index}>
-                {item.label}
-                {index != user.workingPlace?.length - 1 && ","}
-              </div>
-            );
-          })}
-          {user?.id === currentuser?.id && (
-            <>
-              {edit == "place" ? (
-                <ImCheckmark className="confirmIcon" onClick={UpdateLink} />
-              ) : (
-                <RiEdit2Fill
-                  className="editIcon"
-                  onClick={() => setEditWorkingPlace(item.id)}
-                />
-              )}
-            </>
-          )}
-        </WorkingDays>
-        <WorkingDays>
-          <span style={{ fontWeight: "bold" }}>სამუშაო საათები:</span>
-          {user?.workingHours?.map((item, index) => {
-            return <div key={index}>{item.label}</div>;
-          })}
-          {user?.id === currentuser?.id && (
-            <>
-              {edit == "place" ? (
-                <ImCheckmark
-                  className="confirmIcon"
-                  onClick={UpdateWorkingHours}
-                />
-              ) : (
-                <RiEdit2Fill
-                  className="editIcon"
-                  onClick={() => setEditWorkingHours(item.id)}
-                />
-              )}
-            </>
-          )}
-        </WorkingDays> */}
       </WrapperOne>
       <ServicesContainer>
         <span style={{ fontWeight: "bold", marginTop: "1vw" }}>სერვისები:</span>
@@ -334,63 +298,77 @@ export const Services = () => {
               />
             </SelectContainer>
           )}
-          {services?.map((cat, index) => {
-            var item = proceduresOptions?.find(
-              (item) => item.value === cat.value
-            );
-            return (
-              <ServiceItemContainer key={index}>
-                <ServiceItem>
-                  <span>{item?.label}</span>
-                  {user?.id !== currentuser?.id ? (
-                    <>
-                      {cat?.price != undefined ? (
-                        <Price>
-                          <h4>
-                            {cat.price}
+          <ServicesList>
+            {services?.map((cat, index) => {
+              var item = proceduresOptions?.find(
+                (item) => item.value === cat.value
+              );
+              return (
+                <ServiceItemContainer key={index}>
+                  <ServiceItem>
+                    <span>{item?.label}</span>
+                    {user?.id !== currentuser?.id ? (
+                      <>
+                        {cat?.price != undefined ? (
+                          <Price>
+                            <h4>
+                              {cat.price}
+                              {`\u20BE`}
+                            </h4>
+                          </Price>
+                        ) : undefined}
+                      </>
+                    ) : (
+                      <>
+                        {cat?.price != undefined ? (
+                          <Price>
+                            <h4>
+                              {cat.price}
+                              {`\u20BE`}
+                            </h4>
+                          </Price>
+                        ) : (
+                          <InputContainer>
+                            <Input
+                              type="text"
+                              placeholder="ფასი"
+                              onChange={(e) => setAddPrice(e.target.value)}
+                            />
                             {`\u20BE`}
-                          </h4>
-                        </Price>
-                      ) : undefined}
-                    </>
-                  ) : (
-                    <>
-                      {cat?.price != undefined ? (
-                        <Price>
-                          <h4>
-                            {cat.price}
-                            {`\u20BE`}
-                          </h4>
-                        </Price>
-                      ) : (
-                        <InputContainer>
-                          <Input
-                            type="text"
-                            placeholder="ფასი"
-                            onChange={(e) => setAddPrice(e.target.value)}
-                          />
-                          {`\u20BE`}
 
-                          <GiConfirmed
-                            // className="remove"
-                            onClick={() => AddPrice(item.value)}
-                            style={{ color: "green", cursor: "pointer" }}
-                            // onClick={() => Deleting(item.value)}
-                          />
-                        </InputContainer>
-                      )}
+                            <GiConfirmed
+                              // className="remove"
+                              onClick={() => AddPrice(item.value)}
+                              style={{ color: "green", cursor: "pointer" }}
+                              // onClick={() => Deleting(item.value)}
+                            />
+                          </InputContainer>
+                        )}
+                      </>
+                    )}
+                  </ServiceItem>
+                  {user?.id === currentuser?.id && (
+                    <>
+                      <TiDeleteOutline
+                        className="remove"
+                        onClick={() => {
+                          setConfirmRemove(true);
+                          setRemoveData(item.value);
+                        }}
+                      />
+                      <AlertDialog
+                        title="დადასტურება!"
+                        text="ნამდივალდ გსურთ პრიცედურის წაშლა?"
+                        open={confirmRemove}
+                        setOpen={setConfirmRemove}
+                        function={() => Deleting(removeData)}
+                      />
                     </>
                   )}
-                </ServiceItem>
-                {user?.id === currentuser?.id && (
-                  <TiDeleteOutline
-                    className="remove"
-                    onClick={() => Deleting(item.value)}
-                  />
-                )}
-              </ServiceItemContainer>
-            );
-          })}
+                </ServiceItemContainer>
+              );
+            })}
+          </ServicesList>
         </Servs>
       </ServicesContainer>
     </ContentContainer>
@@ -405,7 +383,6 @@ const Content = styled.div`
   padding-left: 1.5vw;
   width: 100%;
   height: 100%;
-
   flex-wrap: wrap;
   gap: 0.5vw;
   margin-bottom: 5vw;
@@ -426,18 +403,18 @@ const ContentContainer = styled.div`
   align-items: start;
   justify-content: start;
   padding-top: 1vw;
-  padding-left: 2vw;
+  padding-left: 4vw;
   width: 100%;
-  min-height: 57vh;
+  // min-height: 57vh;
+  height: 52vh;
   gap: 1vw;
-  margin-bottom: 5vw;
-  box-sizing: border-box;
+  padding-bottom: 3vw;
   overflow-y: scroll;
   overflow-x: hidden;
 
   @media only screen and (max-width: 600px) {
     width: 90vw;
-    height: calc(${(props) => props.height}px - 65vw);
+    height: calc(${(props) => props.height}px - 68vw);
     padding-top: 5vw;
     padding-left: 2vw;
     gap: 5vw;
@@ -502,10 +479,10 @@ const ContentContainer = styled.div`
 const WrapperOne = styled.div`
   width: 100%;
   display: flex;
+  flex-direction: column;
   gap: 1vw;
 
   @media only screen and (max-width: 600px) {
-    flex-direction: column;
   }
 `;
 
@@ -524,6 +501,7 @@ const WorkingDays = styled.div`
   justify-content: start;
   gap: 0.5vw;
   min-height: 2vw;
+  color: ${(props) => props.theme.font};
 
   @media only screen and (max-width: 600px) {
     min-height: 8vw;
@@ -544,17 +522,26 @@ const WorkingDays = styled.div`
   }
 `;
 
+const ServicesList = styled.div`
+  width: 100%;
+  margin-top: 1vw;
+  border-radius: 5px;
+  box-shadow: 0 0.1vw 0.2vw rgba(0, 0, 0, 0.2);
+  background: ${(props) => props.theme.secondLevel};
+`;
+
 const ServicesContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1vw;
+  color: ${(props) => props.theme.font};
 
   .remove {
     font-size: 1.5vw;
     color: #555;
     cursor: pointer;
     position: relative;
-    left: 1vw;
+    left: 0.2vw;
 
     @media only screen and (max-width: 600px) {
       font-size: 6vw;
@@ -562,7 +549,7 @@ const ServicesContainer = styled.div`
     }
 
     :hover {
-      color: #aaa;
+      color: ${(props) => props.theme.secondLevel};
     }
   }
 
@@ -594,7 +581,7 @@ const Servs = styled.div`
 
   .open {
     font-size: 1.5vw;
-    color: #555;
+    color: ${(props) => props.theme.icon};
     cursor: pointer;
 
     @media only screen and (max-width: 600px) {
@@ -623,34 +610,45 @@ const Servs = styled.div`
 `;
 
 const ServiceItemContainer = styled.div`
+  width: 42vw;
+  border-bottom: 1px solid #ccc;
+  padding: 10px;
   display: flex;
   align-items: center;
-  gap: 0.3vw;
-  margin-top: 10px;
+  font-size: 0.8vw;
+  transition: ease 200;
+  color: ${(props) => props.theme.font};
+
+  :hover {
+    background: ${(props) => props.theme.background};
+  }
 
   @media only screen and (max-width: 600px) {
+    width: 87vw;
+    padding-right: 3vw;
     gap: 1vw;
   }
 `;
 
 const ServiceItem = styled.div`
   padding: 0.2vw 0.5vw 0.2vw 1vw;
-  border: 1px solid #f3f3f3;
+  border: 1px solid ${(props) => props.theme.lineColor};
   border-radius: 0.25vw;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.5vw;
-  background: white;
+  background: ${(props) => props.theme.background};
   box-sizing: border-box;
-  width: 40vw;
+  width: 100%;
+  color: ${(props) => props.theme.font};
   height: 2.5vw;
 
   @media only screen and (max-width: 600px) {
     width: 81vw;
     height: 8vw;
     border-radius: 1vw;
-    padding: 0 0 0 3vw;
+    padding: 0 0 0 2vw;
     font-size: 3vw;
   }
 
@@ -672,6 +670,7 @@ const Price = styled.div`
   width: 2vw;
   position: relative;
   right: 0;
+  background: ${(props) => props.theme.secondLevel};
 
   @media only screen and (max-width: 600px) {
     gap: 2vw;

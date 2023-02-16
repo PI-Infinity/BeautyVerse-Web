@@ -24,7 +24,7 @@ import Select from "react-select";
 import makeAnimated from "react-select/animated";
 import { AuthContext } from "../../context/AuthContext";
 import {
-  proceduresOptions,
+  ProceduresOptions,
   categoriesOptions,
   workingPlacesOptions,
   workingDaysOptions,
@@ -33,6 +33,7 @@ import { db, auth } from "../../firebase";
 import { doc, setDoc, serverTimestamp, collection } from "firebase/firestore";
 import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import useWindowDimensions from "../../functions/dimensions";
+import { v4 } from "uuid";
 
 const animatedComponents = makeAnimated();
 
@@ -42,6 +43,7 @@ export const BusinessRegister = (props) => {
   const navigate = useNavigate();
   const { dispatch } = useContext(AuthContext);
   const page = useSelector((state) => state.storeRegister.page);
+  const proceduresOptions = ProceduresOptions();
   // define user type
   const type = useSelector((state) => state.storeRegister.userType);
   const registerFields = useSelector((state) => state.storeRegister);
@@ -141,7 +143,22 @@ export const BusinessRegister = (props) => {
           });
         });
       }
-      navigate("/user");
+      var actionId = v4();
+      await setDoc(
+        doc(db, `users`, `${user.uid}`, "notifications", `${actionId}`),
+        {
+          id: actionId,
+          senderId: "beautyVerse",
+          senderName: "Beautyverse",
+          senderCover: "",
+          text: `თქვენ წარმატებით დარეგისტრირდით!`,
+          date: serverTimestamp(),
+          type: "welcome",
+          status: "unread",
+          feed: ``,
+        }
+      );
+      navigate(`/user/${user?.uid}`);
     } catch (err) {
       alert(err);
     }

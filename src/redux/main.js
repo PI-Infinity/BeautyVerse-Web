@@ -19,6 +19,8 @@ const initialState = {
   loadFeed: true,
   changeFeed: true,
   navigatorActive: 0,
+  backdrop: false,
+  theme: false,
 };
 
 export const main = createSlice({
@@ -79,6 +81,12 @@ export const main = createSlice({
     setNavigatorActive: (state, action) => {
       state.navigatorActive = action.payload;
     },
+    setBackdropOpen: (state, action) => {
+      state.backdrop = action.payload;
+    },
+    setTheme: (state, action) => {
+      state.theme = !state.theme;
+    },
   },
 });
 
@@ -101,5 +109,7 @@ export const {
   setLoadFeed,
   setChangeFeed,
   setNavigatorActive,
+  setBackdropOpen,
+  setTheme,
 } = main.actions;
 export default main.reducer;

@@ -10,7 +10,7 @@ import { setScroll } from "../../redux/scroll";
 import { IsMobile } from "../../functions/isMobile";
 import { Spinner } from "../../components/loader";
 import {
-  proceduresOptions,
+  ProceduresOptions,
   categoriesOptions,
   workingPlacesOptions,
   workingDaysOptions,
@@ -21,7 +21,7 @@ export const Specialists = (props) => {
   const { height, width } = useWindowDimensions();
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
-
+  const proceduresOptions = ProceduresOptions();
   // import users
   const usersList = useSelector((state) => state.storeMain.userList);
   let users;

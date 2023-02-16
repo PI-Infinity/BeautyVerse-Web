@@ -36,9 +36,9 @@ const Container = styled.div`
   flex-direction: row;
   align-items: center;
   padding-left: 30px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid ${(props) => props.theme.lineColor};
   box-sizing: border-box;
-  background: #f3f3f3;
+  background: ${(props) => props.theme.secondLevel};
   margin: 1vw 0;
   border-radius: 50vw;
 
@@ -69,13 +69,14 @@ const SearchInput = styled.input`
   padding: 0 15px;
   width: 100%;
   height: 40px;
+  color: ${(props) => props.theme.font};
 
   ::placeholder {
     font-size: 14px;
-    color: #050505;
+    color: ${(props) => props.theme.font};
   }
   @media only screen and (max-width: 600px) {
-    color: #050505;
+    color: ${(props) => props.theme.font};
     font-size: 16px;
   }
 `;

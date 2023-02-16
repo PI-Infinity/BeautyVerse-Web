@@ -48,6 +48,7 @@ import { IsMobile } from "../../../functions/isMobile";
 import { AuthContext } from "../../../context/AuthContext";
 import { Spinner } from "../../../components/loader";
 import { isWebpSupported } from "react-image-webp/dist/utils";
+import Avatar from "@mui/material/Avatar";
 
 export const OpenedFeed = (props) => {
   const { currentUser } = useContext(AuthContext);
@@ -167,8 +168,8 @@ export const OpenedFeed = (props) => {
         setStars(snapshot.docs.map((doc) => doc.data()));
       }
     );
-    // get reviews
-    onSnapshot(
+    // get review sorderBy("name", "desc"),
+    const revRef = query(
       collection(
         db,
         "users",
@@ -177,10 +178,11 @@ export const OpenedFeed = (props) => {
         `${currentFeed?.id}`,
         "reviews"
       ),
-      (snapshot) => {
-        setReviews(snapshot.docs.map((doc) => doc.data()));
-      }
+      orderBy("time", "desc")
     );
+    onSnapshot(revRef, (snapshot) => {
+      setReviews(snapshot.docs.map((doc) => doc.data()));
+    });
 
     setFeed({
       feedsLength: feedsLength,
@@ -210,6 +212,23 @@ export const OpenedFeed = (props) => {
         id: currentuser?.id,
       }
     );
+    var actionId = v4();
+    if (state?.userId !== currentUser?.uid) {
+      setDoc(
+        doc(db, `users`, `${state?.userId}`, "notifications", `${actionId}`),
+        {
+          id: actionId,
+          senderId: currentUser?.uid,
+          senderName: currentuser?.name,
+          senderCover: currentuser?.cover?.length > 0 ? currentuser?.cover : "",
+          text: `მიანიჭა ვარსკვლავი თქვენ პოსტს!`,
+          date: serverTimestamp(),
+          type: "star",
+          status: "unread",
+          feed: `${window.location.pathname}`,
+        }
+      );
+    }
   };
 
   const isStarGiven = stars?.find((item) => item.id === currentuser?.id);
@@ -366,15 +385,13 @@ export const OpenedFeed = (props) => {
 
         <PostSide loading={loading.toString()}>
           <UserInfo>
-            <CoverContainer onClick={() => navigate(`/user/${state?.userId}`)}>
-              {state?.userCover ? (
-                <CoverImg src={state?.userCover} />
-              ) : (
-                <UserProfileEmpty>
-                  <FaUser className="user" />
-                </UserProfileEmpty>
-              )}
-            </CoverContainer>
+            <Avatar
+              onClick={() => navigate(`/user/${state?.userId}`)}
+              alt={state?.userName}
+              src={state?.userCover !== undefined ? state?.userCover : ""}
+              sx={{ width: 42, height: 42, cursor: "pointer" }}
+            />
+
             <UserName onClick={() => navigate(`/user/${state?.userId}`)}>
               {state?.userName}
             </UserName>
@@ -461,13 +478,13 @@ const Container = styled.div`
     padding: 0;
     height: auto;
     min-height: ${(props) => props.height}px;
-    background: rgba(255, 255, 255, 1);
+    background: ${(props) => props.theme.background};
     backdrop-filter: blur(40px);
   }
 `;
 
 const Wrapper = styled.div`
-  background: rgba(255, 255, 255, 0.95);
+  background: ${(props) => props.theme.background};
   backdrop-filter: blur(40px);
   width: 80%;
   // padding: 0.5vw;
@@ -495,7 +512,7 @@ const LoaderContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #050505;
+  background: ${(props) => props.theme.background};
   position: absolute;
   z-index: 10005;
 
@@ -503,7 +520,6 @@ const LoaderContainer = styled.div`
     width: 100vw;
     height: 100vh;
     align-items: center;
-    background: #fff;
     padding-bottom: 10vh;
     box-sizing: border-box;
   }
@@ -622,6 +638,7 @@ const UserName = styled.h3`
   font-size: 1vw;
   margin: 0;
   cursor: pointer;
+  color: ${(props) => props.theme.font};
 
   :hover {
     text-decoration: underline;
@@ -699,6 +716,7 @@ const Post = styled.div`
   padding: 30px 20px;
   box-sizing: border-box;
   font-size: 14px;
+  color: ${(props) => props.theme.font};
 
   /* width */
   ::-webkit-scrollbar {

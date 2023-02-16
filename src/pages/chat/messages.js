@@ -7,6 +7,7 @@ import { Message } from "../../pages/chat/message";
 import { useSelector, useDispatch } from "react-redux";
 import { setScrollY, setCounter } from "../../redux/chat";
 import { Spinner } from "../../components/loader";
+import SimpleBackdrop from "../../components/backDrop";
 
 export const Messages = (props) => {
   const [loading, setLoading] = React.useState(true);
@@ -16,6 +17,8 @@ export const Messages = (props) => {
   const currentChat = useSelector((state) => state.storeChat.currentChat);
   const counter = useSelector((state) => state.storeChat.counter);
   const scrollY = useSelector((state) => state.storeChat.scrollY);
+
+  console.log(currentChat);
 
   useEffect(() => {
     if (currentChat?.length > 0) {
@@ -60,8 +63,9 @@ export const Messages = (props) => {
       ) : (
         <Container height={props?.height}>
           {messages?.map((m) => (
-            <Message message={m} key={m.id} cover={currentChat[0]?.cover} />
+            <Message message={m} key={m.id} />
           ))}
+          <SimpleBackdrop />
         </Container>
       )}
     </>
@@ -69,10 +73,15 @@ export const Messages = (props) => {
 };
 
 const LoadingContainer = styled.div`
-  height: 60vh;
+  height: 65vh;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: ${(props) => props.theme.background};
+
+  @media only screen and (max-width: 600px) {
+    height: 80vh;
+  }
 `;
 
 const Container = styled.div`
@@ -84,6 +93,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   gap: 10px;
+  background: ${(props) => props.theme.background};
 
   @media only screen and (max-width: 600px) {
     width: 100%;

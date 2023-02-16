@@ -76,7 +76,13 @@ export const Audience = () => {
           0 User
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "15px",
+          }}
+        >
           <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
             {followers?.length > 0 && (
               <UserListDialogMain

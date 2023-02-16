@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import styled from "styled-components";
 import {
   MdOutlineDynamicFeed,
@@ -16,6 +16,7 @@ import { CgSearch } from "react-icons/cg";
 import { useNavigate, Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { auth } from "../firebase";
+import { AuthContext } from "../context/AuthContext";
 import {
   setFilterOpen,
   setChangeFeed,
@@ -32,11 +33,14 @@ import SwitchAccountIcon from "@mui/icons-material/SwitchAccount";
 import MapsUgcIcon from "@mui/icons-material/MapsUgc";
 import ForumOutlinedIcon from "@mui/icons-material/ForumOutlined";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
+import { db } from "../firebase";
+import { collection, doc, onSnapshot } from "firebase/firestore";
+import Avatar from "@mui/material/Avatar";
 
 export const Navigator = (props) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const currentUser = auth.currentUser;
+  const { currentUser } = useContext(AuthContext);
   // import current user from redux state
   const userUnparsed = useSelector((state) => state.storeMain.user);
 
@@ -87,10 +91,34 @@ export const Navigator = (props) => {
     },
   }));
 
+  // define unread messages length
+  const [chats, setChats] = React.useState("");
+
+  React.useEffect(() => {
+    const getChats = () => {
+      const unsub = onSnapshot(
+        collection(db, "users", currentUser?.uid, "chats"),
+        (snapshot) => {
+          let result = snapshot.docs.map((doc) => doc.data());
+          const filtered = result?.filter(
+            (item) =>
+              item?.opened === false && item?.senderId !== currentUser?.uid
+          );
+          setChats(filtered?.length);
+        }
+      );
+      return () => {
+        unsub();
+      };
+    };
+    currentUser?.uid && getChats();
+  }, [currentUser]);
+
   return (
     <>
       <NavigatorContainer filterOpen={filterOpen}>
         <DynamicFeedIcon
+          style={{ fontSize: "6vw" }}
           className={
             active === "main" || active === "main/user" ? "active" : "feedIcon"
           }
@@ -149,6 +177,7 @@ export const Navigator = (props) => {
           //     />
           //   ) : (
           <MapsUgcIcon
+            style={{ fontSize: "5.6vw" }}
             className={active == "add" ? "active" : "feedIcon"}
             onClick={() => {
               // dispatch(setNavigatorActive(2));
@@ -157,7 +186,21 @@ export const Navigator = (props) => {
           />
           // )}
         )}
-        <StyledBadge badgeContent={1} overlap="circular" color="secondary">
+        {chats > 0 ? (
+          <StyledBadge
+            badgeContent={chats}
+            overlap="circular"
+            color="secondary"
+          >
+            <ForumOutlinedIcon
+              className={active == "chat" ? "active" : "feedIcon"}
+              onClick={() => {
+                // dispatch(setNavigatorActive(3));
+                navigate("chat");
+              }}
+            />
+          </StyledBadge>
+        ) : (
           <ForumOutlinedIcon
             className={active == "chat" ? "active" : "feedIcon"}
             onClick={() => {
@@ -165,24 +208,29 @@ export const Navigator = (props) => {
               navigate("chat");
             }}
           />
-        </StyledBadge>
+        )}
         <Link
           // onClick={() => dispatch(setNavigatorActive(4))}
-          to={
-            user?.type === "user"
-              ? `user/${currentUser?.uid}/contact`
-              : `user/${currentUser?.uid}`
-          }
+          to={(() => {
+            if (currentUser === null) {
+              return "/login";
+            } else if (user?.type === "user") {
+              return `user/${currentUser?.uid}/contact`;
+            } else {
+              return `user/${currentUser?.uid}`;
+            }
+          })()}
           style={{ color: "inherit", display: "flex", alignItems: "center" }}
         >
           <Profile active={active?.toString()}>
-            {user?.cover == undefined ? (
-              <UserProfileEmpty>
-                <PersonOutlinedIcon className="user" />
-              </UserProfileEmpty>
-            ) : (
-              <Img src={user?.cover} alt="cover" />
-            )}
+            <Avatar
+              alt={user?.name}
+              src={user?.cover !== undefined ? user?.cover : ""}
+              sx={{
+                width: 45,
+                height: 45,
+              }}
+            />
           </Profile>
         </Link>
       </NavigatorContainer>
@@ -197,7 +245,7 @@ const NavigatorContainer = styled.div`
     display: flex;
     width: 100vw;
     padding: 0 3vw 0 2vw;
-    border-top: 1px solid #f1f1f1;
+    border-top: 1px solid ${(props) => props.theme.secondLevel};
     height: 11vw;
     overflow: hidden;
     position: fixed;
@@ -205,8 +253,8 @@ const NavigatorContainer = styled.div`
     box-sizing: border-box;
     bottom: 0;
     align-items: start;
-    z-index: 900;
-    background: rgba(255, 255, 255, 0.9);
+    z-index: 90;
+    background: ${(props) => props.theme.background};
     backdrop-filter: blur(30px);
   }
 
@@ -231,7 +279,7 @@ const NavigatorContainer = styled.div`
 
   .feedIcon {
     font-size: 1.1vw;
-    color: #222;
+    color: ${(props) => props.theme.icon};
     cursor: pointer;
 
     @media only screen and (max-width: 600px) {
@@ -435,7 +483,7 @@ const Profile = styled.div`
     padding: 0;
     border-radius: 50%;
     border: 2px solid
-      ${(props) => (props.active === "user" ? "#2bdfd9" : "#222")};
+      ${(props) => (props.active === "user" ? "#2bdfd9" : props.theme.font)};
   }
 
   :hover {

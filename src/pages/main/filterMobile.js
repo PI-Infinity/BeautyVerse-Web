@@ -60,7 +60,8 @@ const Container = styled.div`
   @media only screen and (max-width: 600px) {
     opacity: ${(props) => (props.loading === "true" ? "0" : "1")};
     transition: ease-in-out 300ms;
-    background: rgba(255, 255, 255, 0.9);
+    background: ${(props) => props.theme.background};
+    color: ${(props) => props.theme.font};
     backdrop-filter: blur(40px);
     display: flex;
     flex-direction: column;
@@ -154,7 +155,6 @@ export const Filter = () => {
   return (
     <FilterContainer>
       <Select
-        className="basic-single"
         classNamePrefix="select"
         defaultValue={cities[0]}
         placeholder="ქალაქი"
@@ -186,7 +186,7 @@ export const Filter = () => {
       />
       {cityFilter.includes("bilisi") && (
         <Select
-          className="basic-single"
+          className="react-select-container"
           classNamePrefix="select"
           defaultValue={destricts[0]}
           placeholder="უბანი"
@@ -196,7 +196,6 @@ export const Filter = () => {
             dispatch(setDestrictFilter(value.value));
             dispatch(setRerender());
           }}
-          className="react-select-container"
           styles={{
             control: (baseStyles, state) => ({
               ...baseStyles,
@@ -267,6 +266,10 @@ const FilterContainer = styled.div`
     gap: 0vw;
     margin-top: 4vw;
     z-index: 10000;
+  }
+
+  .react-select-container {
+    background: ${(props) => props.theme.secondLevel};
   }
 `;
 

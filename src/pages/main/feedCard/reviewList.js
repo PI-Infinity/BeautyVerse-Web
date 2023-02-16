@@ -30,74 +30,59 @@ export const ReviewList = (props) => {
 
   return (
     <ReviewListContainer>
-      {props?.reviews
-        ?.sort((a, b) => b?.time?.seconds - a?.time?.seconds)
-        .map((item, index) => {
-          return (
-            <ReviewItem key={index}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  width: "100%",
-                }}
-              >
-                {item.reviewerCover != null ? (
-                  <Img src={item.reviewerCover} alt="beautyverse" />
-                ) : (
-                  <UserProfileEmpty>
-                    <FaUser className="user" />
-                  </UserProfileEmpty>
-                )}
+      {props?.reviews?.map((item, index) => {
+        return (
+          <ReviewItem key={index}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                width: "100%",
+              }}
+            >
+              {item.reviewerCover != null ? (
+                <Img src={item.reviewerCover} alt="beautyverse" />
+              ) : (
+                <UserProfileEmpty>
+                  <FaUser className="user" />
+                </UserProfileEmpty>
+              )}
 
-                <Reviewer onClick={() => navigate(`/user/${item?.reviewerId}`)}>
-                  {item.reviewer}
-                </Reviewer>
-                <span style={{ fontSize: "12px", color: "#ccc" }}>
-                  {new Date(item.time?.seconds * 1000).toString().slice(4, 24)}
-                </span>
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "5px",
-                  width: "100%",
-                }}
-              >
-                <div
-                  style={{
-                    wordWrap: "break-word",
-                    width: "90%",
-                    maxWidth: "100%",
-                    overflow: "hidden",
-                    textAlign: "start",
-                    background: "#f3f3f3",
-                    borderRadius: "0 15px 15px 15px",
-                    padding: "5px 15px",
-                    // marginLeft: "5px",
-                  }}
-                >
-                  {item.text}
-                </div>
-                {props.currentuser?.id !== undefined &&
-                  (item?.reviewerId === props.currentuser?.id ||
-                    item.recieverId === props.currentuser?.id) && (
-                    <MdOutlineRemove
-                      onClick={() => RemoveReview(item.reviewerId, item.id)}
-                      style={{
-                        minWidth: "5%",
-                        textAlign: "center",
-                        fontSize: "16px",
-                        cursor: "pointer",
-                      }}
-                    />
-                  )}
-              </div>
-            </ReviewItem>
-          );
-        })}
+              <Reviewer onClick={() => navigate(`/user/${item?.reviewerId}`)}>
+                {item.reviewer}
+              </Reviewer>
+              <span style={{ fontSize: "12px", color: "#ccc" }}>
+                {new Date(item.time?.seconds * 1000).toString().slice(4, 24)}
+              </span>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                width: "100%",
+              }}
+            >
+              <Text>{item.text}</Text>
+              {props.currentuser?.id !== undefined &&
+                (item?.reviewerId === props.currentuser?.id ||
+                  item.recieverId === props.currentuser?.id) && (
+                  <MdOutlineRemove
+                    onClick={() => RemoveReview(item.reviewerId, item.id)}
+                    style={{
+                      minWidth: "5%",
+                      textAlign: "center",
+                      fontSize: "16px",
+                      cursor: "pointer",
+                    }}
+                    className="remove"
+                  />
+                )}
+            </div>
+          </ReviewItem>
+        );
+      })}
     </ReviewListContainer>
   );
 };
@@ -106,7 +91,7 @@ const ReviewListContainer = styled.div`
   overflow-y: scroll;
   width: 100%;
   height: auto;
-  max-height: 50%;
+  max-height: 70%;
   margin-top: 0.5vw;
   margin-bottom: 1vw;
   padding: 0.5vw;
@@ -156,6 +141,7 @@ const ReviewItem = styled.div`
   align-items: center;
   gap: 0.5vw;
   font-size: 0.8vw;
+  color: ${(props) => props.theme.font};
 
   @media only screen and (max-width: 600px) {
     // box-shadow: 0 0.2vw 0.6vw rgba(0, 0, 0, 0.1);
@@ -165,7 +151,24 @@ const ReviewItem = styled.div`
     font-size: 3vw;
     gap: 2.5vw;
   }
+
+  .remove {
+    color: ${(props) => props.theme.secondLevel};
+  }
 `;
+
+const Text = styled.div`
+  word-wrap: break-word;
+  width: 90%;
+  max-width: 100%;
+  overflow: hidden;
+  text-align: start;
+  background: ${(props) => props.theme.secondLevel};
+  border-radius: 0 15px 15px 15px;
+  padding: 5px 15px;
+  // marginLeft: 5px;
+`;
+
 const Img = styled.img`
   width: 1.5vw;
   height: 1.5vw;

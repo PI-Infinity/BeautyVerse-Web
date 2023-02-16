@@ -27,6 +27,7 @@ import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import PhoneCode from "react-phone-code";
 import useWindowDimensions from "../../functions/dimensions";
 import { Button } from "../../components/button";
+import { v4 } from "uuid";
 // loading google map
 
 export const Identify = (props) => {
@@ -115,7 +116,22 @@ export const Identify = (props) => {
         },
         lastPost: serverTimestamp(),
       });
-      navigate("/user");
+      var actionId = v4();
+      await setDoc(
+        doc(db, `users`, `${user.uid}`, "notifications", `${actionId}`),
+        {
+          id: actionId,
+          senderId: "beautyVerse",
+          senderName: "Beautyverse",
+          senderCover: "",
+          text: `თქვენ წარმატებით დარეგისტრირდით!`,
+          date: serverTimestamp(),
+          type: "welcome",
+          status: "unread",
+          feed: ``,
+        }
+      );
+      navigate(`/user/${user?.uid}`);
     } catch (err) {
       alert(err);
     }

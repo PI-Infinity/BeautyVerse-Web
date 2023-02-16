@@ -19,10 +19,18 @@ import { FaUser } from "react-icons/fa";
 import { GiConfirmed } from "react-icons/gi";
 import { FiEdit } from "react-icons/fi";
 import MapAutocomplete from "../../components/mapAutocomplete";
+import Avatar from "@mui/material/Avatar";
+import { useNavigate } from "react-router-dom";
 
 const CoverSection = React.memo(function ({ user, latitude, longitude }) {
   const dispatch = useDispatch();
-  const currentUser = auth.currentUser;
+  const navigate = useNavigate();
+  // import current user from redux state
+  const userUnparsed = useSelector((state) => state.storeMain.user);
+  let currentUser;
+  if (userUnparsed?.length > 0) {
+    currentUser = JSON.parse(userUnparsed);
+  }
 
   // define user type
   const rerender = useSelector((state) => state.storeMain.rerender);
@@ -42,8 +50,6 @@ const CoverSection = React.memo(function ({ user, latitude, longitude }) {
     }
     setEdit(false);
   };
-
-  console.log("rerender");
 
   // capitilize firs letter
   function capitalizeFirstLetter(string) {
@@ -89,20 +95,7 @@ const CoverSection = React.memo(function ({ user, latitude, longitude }) {
   return (
     <InfoSide>
       <ProfileImg>
-        <div style={{ width: 0 }}>
-          {user?.cover?.length > 0 ? (
-            <CoverImg src={user?.cover} alt="photo" />
-          ) : (
-            <>
-              {user?.type == "shop" ? (
-                <span className="undefinedLogo">LOGO</span>
-              ) : (
-                <FaUser className="undefinedUserIcon" />
-              )}
-            </>
-          )}
-        </div>
-        <CoverUploader cover="cover" />
+        <CoverUploader cover="cover" user={user} />
       </ProfileImg>
       <TitleContainer>
         <Type>{userType}</Type>
@@ -124,7 +117,7 @@ const CoverSection = React.memo(function ({ user, latitude, longitude }) {
               <div>
                 <span>{name}</span>
               </div>
-              {currentUser?.uid === user?.id && (
+              {currentUser?.id === user?.id && (
                 <RiEdit2Fill
                   className="editIcon"
                   onClick={() => setEdit(true)}
@@ -184,7 +177,8 @@ export default CoverSection;
 
 const InfoSide = styled.div`
   width: 70%;
-  box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
+  box-shadow: 0 0.1vw 0.3vw ${(props) => props.theme.shadowColor};
+  border-radius: 0 0 5px 5px;
   padding: 1.5vw;
   display: flex;
   align-items: center;
@@ -310,6 +304,7 @@ const Title = styled.span`
   justify-content: start;
   gap: 0.5vw;
   width: 100%;
+  color: ${(props) => props.theme.font};
 
   @media only screen and (max-width: 600px) {
     font-size: 4vw;
@@ -389,7 +384,7 @@ const Name = styled.span`
 `;
 
 const Type = styled.span`
-  color: ${(props) => props.theme.disabled};
+  color: ${(props) => props.theme.secondLevel};
   font-size: 1.1vw;
   font-weight: bold;
   letter-spacing: 0.03vw;

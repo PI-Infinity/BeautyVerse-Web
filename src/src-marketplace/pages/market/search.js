@@ -10,11 +10,13 @@ import {
   setFilterOpen,
 } from "../../../redux/main";
 import { setSearch } from "../../../redux/filter";
-import { proceduresOptions } from "../../../data/registerDatas";
+import { ProceduresOptions } from "../../../data/registerDatas";
 import Select from "react-select";
 import { GrList } from "react-icons/gr";
 import { MdOutlinePersonPin } from "react-icons/md";
 import { setChangeFeed, setLoadFeed } from "../../../redux/main";
+
+const proceduresOptions = ProceduresOptions();
 
 export const Search = (props) => {
   const dispatch = useDispatch();

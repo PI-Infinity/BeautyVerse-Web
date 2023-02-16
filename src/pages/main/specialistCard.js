@@ -30,17 +30,18 @@ import ContentLoader from "react-content-loader";
 import { BiStar } from "react-icons/bi";
 import Rating from "@mui/material/Rating";
 import { MdOutlineStarPurple500 } from "react-icons/md";
-import { proceduresOptions } from "../../data/registerDatas";
+import { ProceduresOptions } from "../../data/registerDatas";
 import { FaUserEdit } from "react-icons/fa";
 import { ImProfile } from "react-icons/im";
 import { MdAddBusiness } from "react-icons/md";
 import { BsBrush } from "react-icons/bs";
+import Tooltip from "@mui/material/Tooltip";
 
 export const SpecialistsCard = (props) => {
   const { currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
+  const proceduresOptions = ProceduresOptions();
   const loadFeed = useSelector((state) => state.storeMain.loadFeed);
   const rerender = useSelector((state) => state.storeMain.rerender);
 
@@ -66,60 +67,6 @@ export const SpecialistsCard = (props) => {
   useEffect(() => {
     DefineStars();
   }, []);
-
-  // // define reiting
-  // const [reiting, setReiting] = React.useState([]);
-
-  // const DefineReiting = () => {
-  //   let sum = reiting
-  //     .map((reit) => {
-  //       if (reit.reiting !== null) {
-  //         return reit.reiting;
-  //       } else {
-  //         return 5;
-  //       }
-  //     })
-  //     .reduce((prev, curr) => prev + curr, 0);
-  //   return sum / reiting?.length;
-  // };
-
-  // let definedReiting;
-  // if (reiting?.length > 0) {
-  //   definedReiting = DefineReiting().toFixed(1);
-  // } else {
-  //   definedReiting = 0;
-  // }
-
-  // const SetReiting = (r) => {
-  //   if (r !== null) {
-  //     setDoc(
-  //       doc(db, "users", `${props?.id}`, "reiting", `${currentUser?.uid}`),
-  //       {
-  //         userId: currentUser?.uid,
-  //         reiting: r,
-  //       }
-  //     );
-  //   } else {
-  //     deleteDoc(
-  //       doc(db, "users", `${props?.id}`, "reiting", `${currentUser?.uid}`)
-  //     );
-  //   }
-  // };
-
-  // React.useEffect(() => {
-  //   var query = onSnapshot(
-  //     collection(db, "users", `${props.id}`, "reiting"),
-  //     (snapshot) => {
-  //       setReiting(snapshot.docs.map((doc) => doc.data()));
-  //     }
-  //   );
-  // }, [rerender, props?.id]);
-
-  // // define who has gived reiting to user
-  // let defineGived;
-  // if (reiting?.length > 0) {
-  //   defineGived = reiting?.find((item) => item.userId === currentUser?.uid);
-  // }
 
   // capitalize first letters
 
@@ -157,6 +104,22 @@ export const SpecialistsCard = (props) => {
     icon = <MdAddBusiness />;
   }
 
+  // define full adress
+  const fullAdress = props?.adress?.adress + ", " + props?.adress?.streetNumber;
+
+  // define all procedures
+  const allProcedures = props?.filterCategories
+    ?.map((u) => {
+      let lab = proceduresOptions?.find((item) => {
+        if (item.value === u) {
+          console.log(item.label);
+          return item.label;
+        }
+      });
+      return lab.label;
+    })
+    .join(", ");
+
   setTimeout(() => {
     if (props.index === 0) {
       dispatch(setLoadFeed(false));
@@ -180,17 +143,23 @@ export const SpecialistsCard = (props) => {
           </IconCont>
         )}
       </ImgContainer>
-      <City>
-        <div>{props?.adress?.city}</div>
-      </City>
-      <City>
-        <div>
-          {props?.adress?.destrict?.length > 0
-            ? props?.adress?.destrict
-            : props?.adress?.adress}
-        </div>
-      </City>
-      <Category>{procedures?.label}</Category>
+      <Tooltip title={fullAdress}>
+        <City>
+          <div>{props?.adress?.city}</div>
+        </City>
+      </Tooltip>
+      <Tooltip title={fullAdress}>
+        <City>
+          <div>
+            {props?.adress?.destrict?.length > 0
+              ? props?.adress?.destrict
+              : props?.adress?.adress}
+          </div>
+        </City>
+      </Tooltip>
+      <Tooltip title={allProcedures}>
+        <Category>{procedures?.label}</Category>
+      </Tooltip>
       <Review>
         {/* <Rating
           size="small"
@@ -223,7 +192,7 @@ export const SpecialistsCard = (props) => {
 };
 
 const Card = styled.div`
-  background: #fff;
+  background: ${(props) => props.theme.categoryItem};
   // border: 1px solid #ccc;
   box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
   width: 10vw;
@@ -265,6 +234,7 @@ const Title = styled.h2`
   display: flex;
   align-items: center;
   gap: 5px;
+  color: ${(props) => props.theme.font};
 
   @media only screen and (max-width: 600px) {
     font-size: 3.7vw;
@@ -281,6 +251,7 @@ const City = styled.div`
   display: flex;
   justify-content: center;
   min-height: 1.1vw;
+  margin-top: 0.25vw;
   @media only screen and (max-width: 600px) {
     min-height: 5.2vw;
   }
@@ -414,11 +385,12 @@ const Category = styled.div`
   display: flex;
   align-items: center;
   white-space: nowrap;
-  justify-content: center;
+  justify-content: start;
   padding: 0 0 0.5vw 0.3vw;
   font-size: 0.6vw;
   font-weight: bold;
   border-bottom: 1px solid #ccc;
+  color: ${(props) => props.theme.font};
 
   @media only screen and (max-width: 600px) {
     width: 35vw;
@@ -434,6 +406,7 @@ const Review = styled.div`
   justify-content: center;
   gap: 0.25vw;
   padding: 0.5vw 0 0.2vw 0;
+  color: ${(props) => props.theme.font};
 
   @media only screen and (max-width: 600px) {
     gap: 5px;

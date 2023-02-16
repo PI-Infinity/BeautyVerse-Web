@@ -26,14 +26,21 @@ export const AddReview = (props) => {
   const navigate = useNavigate();
   const rerender = useSelector((state) => state.storeMain.rerender);
 
+  // import current user & parse it
+  const userUnparsed = useSelector((state) => state.storeMain.user);
+  let currentuser;
+  if (userUnparsed?.length > 0) {
+    currentuser = JSON.parse(userUnparsed);
+  }
+
   /**
    * add review to firebase
    *  */
-  const AddingReview = () => {
-    var id = props?.reviews.length + 1;
+  const AddingReview = async () => {
+    var id = new Date().toString();
     var addTime = serverTimestamp();
     // add review to target user
-    setDoc(
+    await setDoc(
       doc(
         db,
         `users`,
@@ -58,7 +65,23 @@ export const AddReview = (props) => {
         recieverCover: props?.cover != undefined ? props?.cover : null,
       }
     );
-    props.setReviewText("");
+
+    var actionId = v4();
+    if (props?.id !== currentUser?.uid) {
+      setDoc(doc(db, `users`, `${props?.id}`, "notifications", `${actionId}`), {
+        id: actionId,
+        senderId: currentUser?.uid,
+        senderName: currentuser?.name,
+        senderCover: currentuser?.cover?.length > 0 ? currentuser?.cover : "",
+        review: props.reviewText,
+        text: `დაგიტოვათ კომენტარი პოსტზე!`,
+        date: serverTimestamp(),
+        type: "review",
+        status: "unread",
+        feed: `${window.location.pathname}`,
+      });
+      props.setReviewText("");
+    }
   };
 
   return (
@@ -113,7 +136,7 @@ const ReviewContainer = styled.div`
   margin-top: auto;
 
   .send {
-    color: #050505;
+    color: ${(props) => props.theme.icon};
     font-size: 1.8vw;
     margin-left: 0.2vw;
     cursor: pointer;
@@ -132,9 +155,9 @@ const ReviewContainer = styled.div`
     width: 100%;
     height: auto;
     margin-left: auto;
-    padding: 4vw 3vw 1vw 3vw;
+    padding: 3vw 3vw 0vw 3vw;
     box-shadow: 0 -0.3vw 0.9vw rgba(0, 0, 0, 0.1);
-    background: rgba(255, 255, 255, 1);
+    background: ${(props) => props.theme.secondLevel};
     backdrop-filter: blur(40px);
     z-index: 10006;
   }
@@ -195,6 +218,7 @@ const Likes = styled.div`
   align-items: center;
   font-size: 1.2vw;
   width: 15%;
+  color: ${(props) => props.theme.font};
 
   @media only screen and (max-width: 600px) {
     font-size: 3vw;

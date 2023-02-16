@@ -161,12 +161,17 @@ export const Filter = (props) => {
             dispatch(setSpecialist(!specialist));
           }}
         />
-        <label htmlFor="specialists" style={{ cursor: "pointer" }}>
+        <label
+          className="checkbox"
+          htmlFor="specialists"
+          style={{ cursor: "pointer" }}
+        >
           სპეციალისტები
         </label>
       </CheckBoxContainer>
       <CheckBoxContainer>
         <CheckBox
+          className="checkbox"
           sx={{ "& .MuiSvgIcon-root": { fontSize: 20 } }}
           type="checkbox"
           id="beautyCenter"
@@ -177,7 +182,11 @@ export const Filter = (props) => {
             dispatch(setObject(!physicalObject));
           }}
         />
-        <label htmlFor="beautyCenter" style={{ cursor: "pointer" }}>
+        <label
+          className="checkbox"
+          htmlFor="beautyCenter"
+          style={{ cursor: "pointer" }}
+        >
           ბიუთი ცენტრები
         </label>
       </CheckBoxContainer>
@@ -213,7 +222,7 @@ const FilterContainer = styled.div`
   align-items: center;
   justify-content: start;
   gap: 2vw;
-  box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
+  box-shadow: 0 0.1vw 0.3vw ${(props) => props.theme.shadowColor};
   background: ${(props) => props.theme.background};
   z-index: 15;
 
@@ -226,8 +235,7 @@ const FilterContainer = styled.div`
     padding: 5px 0 10px 0;
     box-sizing: border-box;
     justify-content: center;
-    background: ${(props) =>
-      props.scroll === "true" ? "white" : "rgba(255, 255, 255, 0.9)"};
+    background: ${(props) => props.theme.background};
 
     backdrop-filter: blur(30px);
     box-shadow: none;
@@ -242,6 +250,9 @@ const CheckBoxContainer = styled.div`
 
   @media only screen and (max-width: 600px) {
     display: none;
+  }
+  .checkbox {
+    color: ${(props) => props.theme.logo};
   }
 `;
 // const CheckBox = styled.input`

@@ -13,6 +13,7 @@ import { setRerender, SetCurrentChat } from "../../redux/chat";
 import { useNavigate } from "react-router-dom";
 import { Spinner } from "../../components/loader";
 import { FaUser } from "react-icons/fa";
+import Avatar from "@mui/material/Avatar";
 
 export const Favourites = (props) => {
   const navigate = useNavigate();
@@ -28,10 +29,13 @@ export const Favourites = (props) => {
   const followings = useSelector((state) => state.storeMain.followings);
 
   const handleSelect = async (user) => {
+    console.log(user);
     const combinedId =
       currentuser?.id > user?.id
         ? currentuser?.id + user?.id
         : user?.id + currentuser?.id;
+
+    console.log(combinedId);
 
     try {
       const res = await getDoc(doc(db, "chats", combinedId));
@@ -48,8 +52,8 @@ export const Favourites = (props) => {
           chatId: combinedId,
           ["userInfo"]: {
             id: user?.id,
-            name: user?.name,
-            cover: user?.cover != undefined ? user?.cover : null,
+            // name: user?.name,
+            // cover: user?.cover != undefined ? user?.cover : "",
           },
           ["date"]: serverTimestamp(),
         });
@@ -57,8 +61,8 @@ export const Favourites = (props) => {
           chatId: combinedId,
           ["userInfo"]: {
             id: currentuser?.id,
-            name: currentuser?.name,
-            cover: currentuser?.cover != undefined ? currentuser?.cover : null,
+            // name: currentuser?.name,
+            // cover: currentuser?.cover != undefined ? currentuser?.cover : "",
           },
           ["date"]: serverTimestamp(),
         });
@@ -68,8 +72,8 @@ export const Favourites = (props) => {
           chatId: combinedId,
           ["userInfo"]: {
             id: user?.id,
-            name: user?.name,
-            cover: user?.cover != undefined ? user?.cover : null,
+            // name: user?.name,
+            // cover: user?.cover != undefined ? user?.cover : "",
           },
           ["date"]: serverTimestamp(),
         });
@@ -77,8 +81,8 @@ export const Favourites = (props) => {
           chatId: combinedId,
           ["userInfo"]: {
             id: currentuser?.id,
-            name: currentuser?.name,
-            cover: currentuser?.cover != undefined ? currentuser?.cover : null,
+            // name: currentuser?.name,
+            // cover: currentuser?.cover != undefined ? currentuser?.cover : "",
           },
           ["date"]: serverTimestamp(),
         });
@@ -87,8 +91,8 @@ export const Favourites = (props) => {
           chatId: combinedId,
           ["userInfo"]: {
             id: user?.id,
-            name: user?.name,
-            cover: user?.cover != undefined ? user?.cover : null,
+            // name: user?.name,
+            // cover: user?.cover != undefined ? user?.cover : "",
           },
           ["date"]: serverTimestamp(),
         });
@@ -96,8 +100,8 @@ export const Favourites = (props) => {
           chatId: combinedId,
           ["userInfo"]: {
             id: currentuser?.id,
-            name: currentuser?.name,
-            cover: currentuser?.cover != undefined ? currentuser?.cover : null,
+            // name: currentuser?.name,
+            // cover: currentuser?.cover != undefined ? currentuser?.cover : "",
           },
           ["date"]: serverTimestamp(),
         });
@@ -106,8 +110,8 @@ export const Favourites = (props) => {
         SetCurrentChat([
           {
             chatId: combinedId,
-            cover: user?.cover != undefined ? user?.cover : null,
-            name: user?.name,
+            // cover: user?.cover != undefined ? user?.cover : "",
+            // name: user?.name,
             userId: user?.id,
           },
         ])
@@ -118,6 +122,13 @@ export const Favourites = (props) => {
       alert(err);
     }
   };
+
+  /// define user list
+  const list = useSelector((state) => state.storeMain.userList);
+  let userList;
+  if (list?.length > 0) {
+    userList = JSON.parse(list);
+  }
 
   React.useEffect(() => {
     setTimeout(() => {
@@ -142,16 +153,17 @@ export const Favourites = (props) => {
               }
             })
             ?.map((item, index) => {
+              const targetUser = userList?.find((us) => us.id === item.id);
+
               return (
                 <UserItem onClick={() => handleSelect(item)} key={index}>
-                  {item?.cover != undefined ? (
-                    <Img src={item?.cover} alt="" />
-                  ) : (
-                    <UserProfileEmpty>
-                      <FaUser className="user" />
-                    </UserProfileEmpty>
-                  )}
-                  <span>{item?.name}</span>
+                  <Avatar
+                    alt={targetUser?.name}
+                    src={targetUser?.cover}
+                    sx={{ width: 36, height: 36 }}
+                  />
+
+                  <span>{targetUser?.name}</span>
                 </UserItem>
               );
             })}
@@ -181,7 +193,7 @@ const Container = styled.div`
     height: 70vh;
     overflow-y: scroll;
     overflow-x: hidden;
-    gap: 3vw;
+    gap: 4vw;
     width: 100%;
     padding: 0 5%;
   }
@@ -206,11 +218,11 @@ const UserItem = styled.div`
   cursor: pointer;
   width: 100%;
   padding: 0 20px;
+  color: ${(props) => props.theme.font};
 
   p {
     font-size: 0.7vw;
-    color: #ccc;
-
+    color: ${(props) => props.theme.font};
     @media only screen and (max-width: 600px) {
       font-size: 2.5vw;
     }

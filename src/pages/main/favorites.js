@@ -59,11 +59,10 @@ const Container = styled.div`
   padding-right: 2vw;
   padding-bottom: 0.5vw;
   overflow-y: scroll;
-  background: rgba(255, 255, 255, 0.3);
 `;
 
 const Title = styled.div`
-  color: ${(props) => props.theme.mainFont};
+  color: ${(props) => props.theme.font};
   display: flex;
   gap: 0.25vw;
   align-items: center;
@@ -97,8 +96,8 @@ const Item = styled.div`
   border-radius: 50vw;
   transition: ease-in 200ms;
   cursor: pointer;
-  color: ${(props) => props.theme.mainFont};
-  background: rgba(255, 255, 255, 0.7);
+  color: ${(props) => props.theme.font};
+  background: ${(props) => props.theme.categoryItem};
   box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.05);
 
   &:hover {

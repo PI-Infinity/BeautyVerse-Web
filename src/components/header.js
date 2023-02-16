@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
 import { MdCircleNotifications, MdPersonPin } from "react-icons/md";
 import { BiMessageSquareAdd } from "react-icons/bi";
@@ -6,7 +6,6 @@ import { CgMenuGridO, CgMenuGridR } from "react-icons/cg";
 import { BsStars, BsLayoutTextSidebarReverse } from "react-icons/bs";
 import { setOpenMenu, setOpenMobileMenu } from "../redux/main";
 import Menu from "../components/menu";
-import { MobileMenu } from "../components/mobileMenu";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { FaUser } from "react-icons/fa";
@@ -18,9 +17,22 @@ import marketIcon from "../assets/market.png";
 import { Filter } from "../pages/main/filter";
 import Badge from "@mui/material/Badge";
 import { IsMobile } from "../functions/isMobile";
+import { AuthContext } from "../context/AuthContext";
+import Avatar from "@mui/material/Avatar";
+import {
+  query,
+  limit,
+  orderBy,
+  collection,
+  doc,
+  onSnapshot,
+} from "firebase/firestore";
+import { db } from "../firebase";
+import Notifications from "../components/notifications";
 
 export const Header = () => {
   const isMobile = IsMobile();
+  const { currentUser } = useContext(AuthContext);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -28,8 +40,6 @@ export const Header = () => {
   const rerender = useSelector((state) => state.storeMain.rerender);
   const openMenu = useSelector((state) => state.storeMain.openMenu);
   const openMobileMenu = useSelector((state) => state.storeMain.openMobileMenu);
-
-  const currentUser = auth.currentUser;
 
   // import current user from redux state
   const userUnparsed = useSelector((state) => state.storeMain.user);
@@ -57,10 +67,66 @@ export const Header = () => {
   // define scroll
   const scroll = useSelector((state) => state.storeScroll.scroll);
 
+  // styled badge for menu
+
+  const StyledBadge = styled(Badge)(({ theme }) => ({
+    "& .MuiBadge-badge": {
+      right: 20,
+      top: 5,
+      padding: "0",
+    },
+  }));
+
+  // get notificationst
+  const [notifications, setNotifications] = useState([]);
+  useEffect(() => {
+    const ref = query(
+      collection(db, "users", `${currentUser?.uid}`, "notifications"),
+      orderBy("date", "desc"),
+      limit(50)
+    );
+    onSnapshot(ref, (snapshot) => {
+      setNotifications(snapshot.docs.map((doc) => doc.data()));
+    });
+  }, [currentUser]);
+
+  const notifLength = notifications?.filter(
+    (item) => item?.status === "unread"
+  );
+  // open notifs
+  const [openNotifications, setOpenNotifications] = useState(false);
+
+  // define unread messages length
+  const [chats, setChats] = React.useState([]);
+
+  React.useEffect(() => {
+    const getChats = () => {
+      const unsub = onSnapshot(
+        collection(db, "users", currentUser?.uid, "chats"),
+        (snapshot) => {
+          let result = snapshot.docs.map((doc) => doc.data());
+          const filtered = result?.filter(
+            (item) =>
+              item?.opened === false && item?.senderId !== currentUser?.uid
+          );
+          setChats(filtered?.length);
+        }
+      );
+      return () => {
+        unsub();
+      };
+    };
+    currentUser?.uid && getChats();
+  }, [currentUser]);
+
   return (
     <>
-      {openMobileMenu && <MobileMenu />}
-      <Container scroll={scroll}>
+      <Notifications
+        open={openNotifications}
+        setOpen={setOpenNotifications}
+        notifications={notifications}
+      />
+      <Container scroll={scroll} isMobile={isMobile}>
         <Divider style={{ justifyContent: "start", flex: 2 }} empty={true}>
           <BsStars className="logo" onClick={() => navigate("/")} />
         </Divider>
@@ -80,7 +146,7 @@ export const Header = () => {
             className="logoLink"
           >
             <Title>Beauty</Title>
-            <Title2 style={{ color: "#333" }}>verse</Title2>
+            <Title2>verse</Title2>
           </div>
         </Divider>
         <Divider style={{ justifyContent: "flex-end", alignItems: "center" }}>
@@ -103,49 +169,81 @@ export const Header = () => {
                   onClick={() => navigate("/add")}
                 />
               )}
-              <Badge badgeContent={5} color="secondary">
+              {chats > 0 ? (
+                <Badge badgeContent={chats} color="secondary">
+                  <TbMessages
+                    className="notifIcon"
+                    size={24}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate("/chat")}
+                  />
+                </Badge>
+              ) : (
                 <TbMessages
                   className="notifIcon"
                   size={24}
                   style={{ cursor: "pointer" }}
                   onClick={() => navigate("/chat")}
                 />
-              </Badge>
+              )}
             </div>
           )}
-          <Link
-            to={`/user/${currentUser?.uid}`}
-            style={{ color: "inherit", display: "flex", alignItems: "center" }}
-          >
-            <Profile>
-              {user?.cover == undefined ? (
-                <FaUser className="user" />
-              ) : (
-                <Img src={user?.cover} alt="cover" />
-              )}
-            </Profile>
-          </Link>
-
-          {isMobile ? (
-            <>
-              {!openMobileMenu ? (
-                <Badge badgeContent={999} overlap="circular" color="secondary">
-                  <CgMenuGridO className="menuIcon" onClick={MenuOpening} />
-                </Badge>
-              ) : (
-                <Badge badgeContent={999} overlap="circular" color="secondary">
-                  <CgMenuGridR
-                    className="ClosemenuIcon"
-                    onClick={() => {
-                      dispatch(setOpenMobileMenu(false));
-                    }}
-                  />
-                </Badge>
-              )}
-            </>
+          {currentUser !== null ? (
+            <Link
+              to={`/user/${currentUser?.uid}`}
+              style={{
+                color: "inherit",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <Profile>
+                <Avatar
+                  alt={user?.name}
+                  src={user?.cover !== undefined ? user?.cover : ""}
+                  sx={{ width: 36, height: 36 }}
+                />
+              </Profile>
+            </Link>
           ) : (
-            <Menu />
+            <Link
+              to={"/login"}
+              style={{
+                color: "inherit",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <Profile>
+                <Avatar
+                  alt={user?.name}
+                  src={user?.cover !== undefined ? user?.cover : ""}
+                  sx={{ width: 36, height: 36 }}
+                />
+              </Profile>
+            </Link>
           )}
+
+          {notifLength?.length > 0 ? (
+            <StyledBadge
+              badgeContent={notifLength?.length}
+              overlap="circular"
+              color="secondary"
+            >
+              <Menu
+                notifLength={notifLength?.length}
+                open={openNotifications}
+                setOpen={setOpenNotifications}
+              />
+            </StyledBadge>
+          ) : (
+            <Menu
+              notifLength={notifLength?.length}
+              open={openNotifications}
+              setOpen={setOpenNotifications}
+            />
+          )}
+          {/* )} */}
         </Divider>
       </Container>
     </>
@@ -159,7 +257,7 @@ const Container = styled.div`
   top: 0.2vw;
   left: 0;
   right: 0;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid ${(props) => props.theme.lineColor};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -182,9 +280,7 @@ const Container = styled.div`
     top: 1vw;
     height: 14vw;
     border-bottom: 0px solid #ddd;
-    padding: 0 3vw 0.6vw 3vw;
-    background: ${(props) =>
-      props.scroll ? "white" : "rgba(255, 255, 255, 0.9)"};
+    padding: 0 0 0.6vw 0;
     backdrop-filter: blur(30px);
     box-sizing: border-box;
   }
@@ -197,8 +293,8 @@ const Divider = styled.div`
 
   .logo {
     font-size: 1.7vw;
-    margin-right: 0.25vw;
-    // color: #c743e4;
+    margin-left: 3vw;
+    color: ${(props) => props.theme.logo};
 
     @media only screen and (max-width: 600px) {
       font-size: 6.5vw;
@@ -232,13 +328,14 @@ const Divider = styled.div`
   }
   .notifIcon {
     font-size: 1.7vw;
+    color: ${(props) => props.theme.icon};
 
     @media only screen and (max-width: 600px) {
       font-size: 6vw;
     }
   }
   .menuIcon {
-    margin-left: 0.5vw;
+    // margin-left: 0.5vw;
     font-size: 1.7vw;
     cursor: pointer;
 
@@ -263,8 +360,7 @@ const Title = styled.span`
   font-size: 1.5vw;
   font-weight: bold;
   padding: 0;
-
-  background: -webkit-linear-gradient(90deg, #222, #111, #111, #222);
+  background: ${(props) => props.theme.logo};
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 
@@ -279,7 +375,7 @@ const Title = styled.span`
 `;
 const Title2 = styled.span`
   font-size: 1.5vw;
-  color: #333;
+  color: ${(props) => props.theme.logo2};
 
   @media only screen and (max-width: 600px) {
     font-size: 6vw;
@@ -371,10 +467,6 @@ const Profile = styled.div`
       border: 2px solid #ccc;
       padding: 0.6vw;
     }
-  }
-
-  :hover {
-    filter: brightness(1);
   }
 `;
 
