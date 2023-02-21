@@ -1,4 +1,3 @@
-import * as React from "react";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Dialog from "@mui/material/Dialog";
@@ -37,8 +36,8 @@ export default function FormDialog(props) {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>გაუქმება</Button>
-          <Button onClick={handleClickOpen}>გაგზავნა</Button>
+          <Button onClick={handleClose}>{props.cancel}</Button>
+          <Button onClick={handleClickOpen}>{props.send}</Button>
         </DialogActions>
       </Dialog>
     </div>

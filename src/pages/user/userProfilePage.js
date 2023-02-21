@@ -1,32 +1,19 @@
-import React, { useState, useContext, useEffect } from "react";
+import { useContext } from "react";
 import styled from "styled-components";
 import CoverSection from "../../pages/user/coverSection";
 import { Links } from "../../pages/user/links";
 import { Navigator } from "../../pages/user/navigator";
 import { useSelector, useDispatch } from "react-redux";
-import { setContentChanger } from "../../redux/user";
-import { Contact } from "../../pages/user/contact";
-import { db } from "../../firebase";
-import {
-  collection,
-  deleteDoc,
-  doc,
-  onSnapshot,
-  setDoc,
-  query,
-  where,
-  getDocs,
-} from "firebase/firestore";
-import { Spinner } from "../../components/loader";
-import useWindowDimensions from "../../functions/dimensions";
 import { IsMobile } from "../../functions/isMobile";
 import { Outlet, useParams } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
+import { Language } from "../../context/language";
 
 const UserProfile = () => {
   const { currentUser } = useContext(AuthContext);
   const dispatch = useDispatch();
   const { Id } = useParams();
+  const language = Language();
 
   const usersList = useSelector((state) => state.storeMain.userList);
   let users;
@@ -41,22 +28,28 @@ const UserProfile = () => {
   return (
     <Container>
       <CoverSection
+        language={language}
         latitude={user?.adress.latitude}
         longitude={user?.adress.longitude}
         user={user}
       />
       <ContentSide>
         <div className="links">
-          <Links user={user} />
+          <Links user={user} language={language} />
         </div>
         <ContentRightSide>
-          <Navigator type={user?.type} user={user} />
+          <Navigator
+            type={user?.type}
+            user={user}
+            currentUser={currentUser}
+            language={language}
+          />
           {/* {loading ? (
             <LoadingContainer>
               <Spinner />
             </LoadingContainer>
           ) : ( */}
-          <Outlet context={[user]} />
+          <Outlet context={[user, language]} />
           {/* )} */}
         </ContentRightSide>
       </ContentSide>

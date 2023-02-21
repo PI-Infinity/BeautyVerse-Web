@@ -6,8 +6,10 @@ import { ChatUsers } from "../../pages/chat/chatUsers";
 import { Favourites } from "../../pages/chat/favourites";
 import { AiFillHeart } from "react-icons/ai";
 import { MdAvTimer } from "react-icons/md";
+import { Language } from "../../context/language";
 
 export const SideBar = (props) => {
+  const language = Language();
   const [search, setSearch] = React.useState("");
   const [active, setActive] = React.useState("recently");
 
@@ -21,14 +23,14 @@ export const SideBar = (props) => {
           onClick={() => setActive("recently")}
         >
           <MdAvTimer className="icon" />
-          Recently
+          {language?.language.Chat.chat.recently}
         </div>
         <div
           className={active == "followings" ? "active" : undefined}
           onClick={() => setActive("followings")}
         >
           <AiFillHeart className="icon" />
-          Followings
+          {language?.language.Chat.chat.followings}
         </div>
       </Navigator>
       <Search setSearch={setSearch} search={search} />

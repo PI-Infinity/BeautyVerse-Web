@@ -1,8 +1,9 @@
 import React from "react";
+import { useSelector } from "react-redux";
 
 export const ProceduresOptions = () => {
-  const language = localStorage.getItem("BeautyVerse:Language");
-  console.log(language);
+  const language = useSelector((state) => state.storeMain.language);
+
   let proceduresOptions;
   if (language === "ka") {
     proceduresOptions = proceduresOptionsKa?.concat(
@@ -1051,8 +1052,8 @@ const proceduresOptionsRu = [
     label: "Лазерное удаление татуировок и татуажа",
   },
   {
-    value: "Солярий",
-    label: "სოლარიუმი",
+    value: "Solarium",
+    label: "Солярий",
   },
   {
     value: "Solarium - vertical sunbed - vertical sunbed",
@@ -2278,58 +2279,76 @@ const proceduresOptionsKa = [
   },
 ];
 
-// working places
-export const workingPlacesOptions = [
-  { value: "Salon", label: "სალონი" },
-  { value: "Studia", label: "სტუდია" },
-  { value: "Clinic", label: "კლინიკა" },
-  { value: "On Adress", label: "მისამართზე მისვლით" },
-];
+// // working places
+// export const workingPlacesOptions = [
+//   { value: "Salon", en: "Salon", ka: "სალონი", ru: "" },
+//   { value: "Studia", en: "Studia", ka: "სტუდია", ru: "" },
+//   { value: "Clinic", en: "Clinic", ka: "კლინიკა", ru: "" },
+//   { value: "On Adress", en: "On Adress", ka: "მისამართზე მისვლით", ru: "" },
+// ];
 
 // working days
 export const workingDaysOptions = [
   {
     id: 0,
-    label: "ორშაბათი-პარასკევი",
-    value: "wotkingDays",
+    en: "Monday-Friday",
+    ka: "ორშაბათი-პარასკევი",
+    ru: "Понедельник-Пятница",
+    value: "workingDays",
   },
   {
-    label: "ორშაბათი",
+    en: "Monday",
+    ka: "ორშაბათი",
+    ru: "Понедельник",
     value: "monday",
     id: 1,
   },
   {
-    label: "სამშაბათი",
+    en: "Tuesday",
+    ka: "სამშაბათი",
+    ru: "Вторник",
     value: "tuesday",
     id: 2,
   },
   {
-    label: "ოთხშაბათი",
+    en: "Wednesday",
+    ka: "ოთხშაბათი",
+    ru: "Среда",
     value: "wednesday",
     id: 3,
   },
   {
-    label: "ხუთშაბათი",
-    value: "thrusday",
+    en: "Thursday",
+    ka: "ხუთშაბათი",
+    ru: "Четверг",
+    value: "thursday",
     id: 4,
   },
   {
-    label: "პარასკევი",
+    en: "Friday",
+    ka: "პარასკევი",
+    ru: "Пятница",
     value: "friday",
     id: 5,
   },
   {
-    label: "შაბათი",
+    en: "Saturday",
+    ka: "შაბათი",
+    ru: "Суббота",
     value: "saturday",
     id: 6,
   },
   {
-    label: "კვირა",
+    en: "Sunday",
+    ka: "კვირა",
+    ru: "Воскресенье",
     value: "sunday",
     id: 7,
   },
   {
-    label: "ყოველდღე",
+    en: "Everyday",
+    ka: "ყოველდღე",
+    ru: "Каждый день",
     value: "everyDay",
     id: 8,
   },

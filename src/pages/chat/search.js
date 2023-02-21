@@ -1,27 +1,14 @@
-import React, { useState } from "react";
 import styled from "styled-components";
-import { useSelector } from "react-redux";
-import {
-  collection,
-  query,
-  where,
-  doc,
-  getDoc,
-  getDocs,
-  setDoc,
-  updateDoc,
-  serverTimestamp,
-} from "firebase/firestore";
-import { ref, uploadBytes, listAll, getDownloadURL } from "firebase/storage";
-import { db, storage } from "../../firebase";
 import { BsSearch } from "react-icons/bs";
+import { Language } from "../../context/language";
 
 export const Search = (props) => {
+  const language = Language();
   return (
     <Container>
       <BsSearch id="icon" />
       <SearchInput
-        placeholder="Find User.."
+        placeholder={language?.language.Chat.chat.findUser}
         // onKeyDown={handleKey}
         onChange={(e) => props.setSearch(e.target.value)}
         value={props.search}

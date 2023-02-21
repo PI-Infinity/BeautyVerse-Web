@@ -1,7 +1,5 @@
 import React from "react";
 import styled from "styled-components";
-import { MdAddBusiness, MdLocationPin, MdLibraryAdd } from "react-icons/md";
-import { FcBusinessContact } from "react-icons/fc";
 import { RiEdit2Fill } from "react-icons/ri";
 import { ImCheckmark } from "react-icons/im";
 import {
@@ -13,9 +11,8 @@ import {
   FaChrome,
   FaWhatsapp,
   FaTelegram,
-  FaViber,
 } from "react-icons/fa";
-import { AiOutlineMail, AiOutlineDelete } from "react-icons/ai";
+import { AiOutlineMail } from "react-icons/ai";
 import { useSelector, useDispatch } from "react-redux";
 import { db } from "../../firebase";
 import {
@@ -25,7 +22,7 @@ import {
   setDoc,
   updateDoc,
 } from "firebase/firestore";
-import { setRerender, SetCurrentChat } from "../../redux/chat";
+import { SetCurrentChat } from "../../redux/chat";
 import { useNavigate } from "react-router-dom";
 
 export const Links = ({ user }) => {
@@ -497,63 +494,64 @@ export const Links = ({ user }) => {
       )}
       {LinkList?.map((item, index) => {
         if (item.id === "phone") {
-          return (
-            <LinkContainer>
-              {item.icon}
+          if (user?.type !== "user") {
+            return (
+              <LinkContainer>
+                {item.icon}
 
-              <Link>
-                <a
-                  style={{ color: "inherit", textDecoration: "none" }}
-                  href={`tel://${item.placeholder}`}
-                >
-                  {item.placeholder}
-                </a>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "15px",
-                  }}
-                >
-                  {whatsapp && (
-                    <a
-                      style={{
-                        color: user?.socMedia?.whatsapp ? "inherit" : "#ccc",
-                        textDecoration: "none",
-                      }}
-                      onClick={
-                        user?.id === currentuser?.id
-                          ? () => AddWhatsapp()
-                          : false
-                      }
-                      href={
-                        user?.id !== currentuser?.id &&
-                        `https://wa.me/${item.placeholder}`
-                      }
-                    >
-                      <FaWhatsapp className="icons" />
-                    </a>
-                  )}
-                  {telegram && (
-                    <a
-                      style={{
-                        color: user?.socMedia?.telegram ? "inherit" : "#ccc",
-                        textDecoration: "none",
-                      }}
-                      onClick={
-                        user?.id === currentuser?.id
-                          ? () => AddTelegram()
-                          : false
-                      }
-                      href={
-                        user?.id !== currentuser?.id &&
-                        ` https://t.me/${item.placeholder}`
-                      }
-                    >
-                      <FaTelegram className="icons" />
-                    </a>
-                  )}
-                  {/* <a
+                <Link>
+                  <a
+                    style={{ color: "inherit", textDecoration: "none" }}
+                    href={`tel://${item.placeholder}`}
+                  >
+                    {item.placeholder}
+                  </a>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "15px",
+                    }}
+                  >
+                    {whatsapp && (
+                      <a
+                        style={{
+                          color: user?.socMedia?.whatsapp ? "inherit" : "gray",
+                          textDecoration: "none",
+                        }}
+                        onClick={
+                          user?.id === currentuser?.id
+                            ? () => AddWhatsapp()
+                            : false
+                        }
+                        href={
+                          user?.id !== currentuser?.id &&
+                          `https://wa.me/${item.placeholder}`
+                        }
+                      >
+                        <FaWhatsapp className="icons" />
+                      </a>
+                    )}
+                    {telegram && (
+                      <a
+                        style={{
+                          color: user?.socMedia?.telegram ? "inherit" : "gray",
+                          textDecoration: "none",
+                        }}
+                        onClick={
+                          user?.id === currentuser?.id
+                            ? () => AddTelegram()
+                            : false
+                        }
+                        href={
+                          user?.id !== currentuser?.id &&
+                          ` https://t.me/${item.placeholder}`
+                        }
+                      >
+                        <FaTelegram className="icons" />
+                      </a>
+                    )}
+                    {/* <a
                   style={{
                       color: "inherit",
                       textDecoration: "none",
@@ -562,10 +560,11 @@ export const Links = ({ user }) => {
                   >
                     <FaViber className="icons" />
                   </a> */}
-                </div>
-              </Link>
-            </LinkContainer>
-          );
+                  </div>
+                </Link>
+              </LinkContainer>
+            );
+          }
         } else {
           return (
             <LinkContainer key={index} edit={edit}>
@@ -648,11 +647,11 @@ const SendMessage = styled.div`
   text-align: center;
   margin: 15px 0;
   box-shadow: 0 0.1vw 0.3vw rgba(0, 0, 0, 0.1);
-  background: #fff;
+  background: ${(props) => props.theme.categoryItem};
   border-radius: 0.5vw;
   cursor: pointer;
   font-weight: bold;
-  color: ${(props) => props.theme.background};
+  color: ${(props) => props.theme.font};
 
   @media only screen and (max-width: 600px) {
     margin: 0 0 15px 0;
@@ -662,7 +661,7 @@ const SendMessage = styled.div`
   }
 
   :hover {
-    background: none;
+    filter: brightness(0.98);
   }
 `;
 

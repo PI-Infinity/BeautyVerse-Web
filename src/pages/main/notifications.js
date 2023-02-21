@@ -8,19 +8,9 @@ import Avatar from "@mui/material/Avatar";
 import Typography from "@mui/material/Typography";
 import styled from "styled-components";
 import { AiOutlineComment } from "react-icons/ai";
-import { MdOutlineArrowRight } from "react-icons/md";
-import { RiUserHeartFill } from "react-icons/ri";
-import { SiHomeassistantcommunitystore } from "react-icons/si";
 import { useSelector, useDispatch } from "react-redux";
-import { setTargetUser } from "../../redux/chat";
 import { useNavigate } from "react-router-dom";
-import {
-  collection,
-  doc,
-  onSnapshot,
-  collectionGroup,
-  getDocs,
-} from "firebase/firestore";
+import { onSnapshot, collectionGroup } from "firebase/firestore";
 import { db } from "../../firebase";
 import { AuthContext } from "../../context/AuthContext";
 

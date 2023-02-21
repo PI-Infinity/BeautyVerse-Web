@@ -1,23 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { db, storage } from "../../firebase";
 import { collection, deleteDoc, doc, onSnapshot } from "firebase/firestore";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import {
-  ref,
-  uploadBytes,
-  listAll,
-  getDownloadURL,
-  deleteObject,
-} from "firebase/storage";
-import Loader from "react-js-loader";
-import {
-  MdAddBusiness,
-  MdLocationPin,
-  MdAddShoppingCart,
-} from "react-icons/md";
-import { AiOutlineMail, AiOutlineDelete } from "react-icons/ai";
+import { ref, deleteObject } from "firebase/storage";
+import { MdAddShoppingCart } from "react-icons/md";
+import { AiOutlineDelete } from "react-icons/ai";
 import { BiImageAdd } from "react-icons/bi";
 import useWindowDimensions from "../../functions/dimensions";
 import { IsMobile } from "../../functions/isMobile";

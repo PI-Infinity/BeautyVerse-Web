@@ -3,8 +3,8 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   search: "",
   filter: "",
-  cityFilter: "ქალაქი",
-  destrictFilter: "უბანი",
+  cityFilter: "City",
+  destrictFilter: "District",
   specialist: true,
   object: true,
   shop: true,

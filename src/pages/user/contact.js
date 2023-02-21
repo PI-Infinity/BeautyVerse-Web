@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { Links } from "../../pages/user/links";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import MapAutocomplete from "../../components/mapAutocomplete";
 import Map from "../../components/map";
@@ -9,12 +9,12 @@ import useWindowDimensions from "../../functions/dimensions";
 import { GiConfirmed } from "react-icons/gi";
 import { FiEdit } from "react-icons/fi";
 import { MdLocationPin } from "react-icons/md";
-import { collection, doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import { useOutletContext } from "react-router-dom";
 
 export const Contact = () => {
-  const [user] = useOutletContext();
+  const [user, language] = useOutletContext();
   // get user by params id
   const { Id } = useParams();
   const { height, width } = useWindowDimensions();
@@ -56,18 +56,24 @@ export const Contact = () => {
   return (
     <Container style={{ padding: "3vw 0" }} height={height}>
       <Links user={user} />
-      <span style={{ fontWeight: "bold" }}>მისამართი:</span>
+      <span style={{ fontWeight: "bold" }}>
+        {language?.language.User.userPage.address}:
+      </span>
 
       {editAdress ? (
         <div style={{ display: "flex", alignItems: "start", gap: "5px" }}>
-          <MapAutocomplete />
+          <MapAutocomplete language={language} />
           <GiConfirmed
             className="confirm"
-            onClick={async (e) => {
-              e.preventDefault();
-              await UpdateAdress();
-              SetEditAdress(false);
-            }}
+            onClick={
+              map?.country?.length > 1
+                ? async (e) => {
+                    e.preventDefault();
+                    await UpdateAdress();
+                    SetEditAdress(false);
+                  }
+                : () => alert("Add Address")
+            }
           />
         </div>
       ) : (
@@ -81,12 +87,14 @@ export const Contact = () => {
             {user?.adress?.streetNumber?.length > 0 ? " N" : ""}
             {user?.adress?.streetNumber}
           </div>
-          <FiEdit
-            className="edit"
-            onClick={() => {
-              SetEditAdress(true);
-            }}
-          />
+          {user?.id === currentuser?.id && (
+            <FiEdit
+              className="edit"
+              onClick={() => {
+                SetEditAdress(true);
+              }}
+            />
+          )}
         </div>
       )}
 

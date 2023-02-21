@@ -1,13 +1,10 @@
-import React, { useContext, useState, useEffect } from "react";
+import { useContext } from "react";
 import { ChatContext } from "../../context/ChatContext";
 import styled from "styled-components";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "../../firebase";
 import { useNavigate } from "react-router-dom";
 import { ImList2 } from "react-icons/im";
-import { FaUser } from "react-icons/fa";
 import Avatar from "@mui/material/Avatar";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 
 export const TopSection = (props) => {
   const navigate = useNavigate();

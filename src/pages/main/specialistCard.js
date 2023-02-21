@@ -1,38 +1,15 @@
-import React, { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect } from "react";
 import styled from "styled-components";
-import { AiOutlineStar } from "react-icons/ai";
 import { useSelector, useDispatch } from "react-redux";
 import { AuthContext } from "../../context/AuthContext";
 import { setLoadFeed } from "../../redux/main";
-import {
-  ref,
-  uploadBytes,
-  listAll,
-  getDownloadURL,
-  deleteObject,
-} from "firebase/storage";
-import { db, storage } from "../../firebase";
-import {
-  collection,
-  deleteDoc,
-  doc,
-  onSnapshot,
-  where,
-  collectionGroup,
-  query,
-  getDocs,
-  setDoc,
-  updateDoc,
-} from "firebase/firestore";
+import { db } from "../../firebase";
+import { onSnapshot, collectionGroup } from "firebase/firestore";
 import { FaUser } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import ContentLoader from "react-content-loader";
 import { BiStar } from "react-icons/bi";
-import Rating from "@mui/material/Rating";
-import { MdOutlineStarPurple500 } from "react-icons/md";
 import { ProceduresOptions } from "../../data/registerDatas";
 import { FaUserEdit } from "react-icons/fa";
-import { ImProfile } from "react-icons/im";
 import { MdAddBusiness } from "react-icons/md";
 import { BsBrush } from "react-icons/bs";
 import Tooltip from "@mui/material/Tooltip";
@@ -112,7 +89,6 @@ export const SpecialistsCard = (props) => {
     ?.map((u) => {
       let lab = proceduresOptions?.find((item) => {
         if (item.value === u) {
-          console.log(item.label);
           return item.label;
         }
       });
@@ -252,6 +228,7 @@ const City = styled.div`
   justify-content: center;
   min-height: 1.1vw;
   margin-top: 0.25vw;
+  overflow: hidden;
   @media only screen and (max-width: 600px) {
     min-height: 5.2vw;
   }

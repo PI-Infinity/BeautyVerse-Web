@@ -2,31 +2,56 @@ import React from "react";
 import styled from "styled-components";
 import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
 import Flag from "react-world-flags";
+import { setLanguage } from "../redux/main";
+import { useSelector, useDispatch } from "react-redux";
 
 export const Footer = () => {
+  const mainDispatch = useDispatch();
+  const lang = useSelector((state) => state.storeMain.language);
+  const [active, setActive] = React.useState();
+
+  React.useEffect(() => {
+    setActive(lang);
+  }, [lang]);
   return (
     <Container>
       <Icons>
-        <FaFacebook />
-        <FaInstagram />
-        <FaYoutube />
+        <LanguageBg>
+          <FaFacebook />
+        </LanguageBg>
+        <LanguageBg>
+          <FaInstagram />
+        </LanguageBg>
+        <LanguageBg>
+          <FaYoutube />
+        </LanguageBg>
       </Icons>
       <Copyright>&#169; beautyverse</Copyright>{" "}
-      <Languages
-        onClick={() => {
-          console.log("add");
-        }}
-      >
-        <div
+      <Languages>
+        <LanguageBg
+          active={active === "ka" ? "true" : "false"}
           onClick={() => {
-            localStorage.setItem("BeautyVerse:Language", "ka");
-            console.log("add");
+            mainDispatch(setLanguage("ka"));
           }}
         >
           <Flag code="geo" className="lang" />
-        </div>
-        <Flag code="usa" className="lang" />
-        <Flag code="rus" className="langR" />
+        </LanguageBg>
+        <LanguageBg
+          active={active === "en" ? "true" : "false"}
+          onClick={() => {
+            mainDispatch(setLanguage("en"));
+          }}
+        >
+          <Flag code="usa" className="lang" />
+        </LanguageBg>
+        <LanguageBg
+          active={active === "ru" ? "true" : "false"}
+          onClick={() => {
+            mainDispatch(setLanguage("ru"));
+          }}
+        >
+          <Flag code="rus" className="lang" />
+        </LanguageBg>
       </Languages>
     </Container>
   );
@@ -50,6 +75,20 @@ const Container = styled.div`
   @media only screen and (max-width: 600px) {
     display: none;
   }
+`;
+
+const LanguageBg = styled.div`
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px;
+  border-radius: 100px;
+  box-shadow: 0 0.1vw 0.2vw ${(props) => props.theme.shadowColor};
+  background: ${(props) =>
+    props.active === "true" ? props.theme.secondLevel : "none"};
+  cursor: pointer;
 `;
 
 const Languages = styled.div`

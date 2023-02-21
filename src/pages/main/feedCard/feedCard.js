@@ -3,55 +3,29 @@ import styled from "styled-components";
 import { BiStar } from "react-icons/bi";
 import { useSelector, useDispatch } from "react-redux";
 import {
-  ref,
-  uploadBytes,
-  listAll,
-  getDownloadURL,
-  deleteObject,
-} from "firebase/storage";
-import {
   setDoc,
   doc,
   collection,
   deleteDoc,
   onSnapshot,
   serverTimestamp,
-  deleteField,
-  getDoc,
-  updateDoc,
   getDocs,
   query,
   orderBy,
   getCountFromServer,
   limit,
 } from "firebase/firestore";
-import {
-  setImgNumber,
-  setFeeds,
-  setReviews,
-  setStars,
-  setUserId,
-  setUserCover,
-  setUserName,
-  setOpenFeed,
-  setUserType,
-  setFromReviews,
-} from "../../../redux/feed";
-import { setLoadFeed } from "../../../redux/main";
 import { TopSection } from "../../../pages/main/feedCard/topSection";
 import { Reports } from "../../../pages/main/feedCard/reports";
-import { storage, db } from "../../../firebase";
-import { FaUser } from "react-icons/fa";
-import { RiArrowLeftSFill, RiArrowRightSFill } from "react-icons/ri";
-import { FaLongArrowAltDown } from "react-icons/fa";
+import { db } from "../../../firebase";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../../context/AuthContext";
-import { OpenedFeed } from "../../../pages/main/feedCard/openedFeed";
 import useWindowDimensions from "../../../functions/dimensions";
 import { ImgLoader, TextLoader, LineLoader } from "../../../components/loader";
 import { IsMobile } from "../../../functions/isMobile";
 import { isWebpSupported } from "react-image-webp/dist/utils";
 import { v4 } from "uuid";
+import { Language } from "../../../context/language";
 
 export const FeedCard = (props) => {
   const { currentUser } = useContext(AuthContext);
@@ -59,6 +33,8 @@ export const FeedCard = (props) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isMobile = IsMobile();
+  const language = Language();
+
   // loading feeds
   const [loading, setLoading] = React.useState(true);
 
@@ -134,7 +110,7 @@ export const FeedCard = (props) => {
       reviewsLength: reviewsLength,
       userName: capitalizeFirstLetter(props?.name),
       userType: capitalizeFirstLetter(props?.type),
-      puserCover: props?.cover,
+      userCover: props?.cover,
     });
   };
 
@@ -268,11 +244,17 @@ export const FeedCard = (props) => {
   }, 600);
 
   return (
-    <Main feed={feed?.feed?.desktopJPEGurl}>
+    <Main feed={feed?.feed?.name}>
       {/* {loading ? (
         <Loader />
       ) : ( */}
-      <Container>
+      <Container
+        onClick={
+          feed?.feed?.name?.toLowerCase()?.endsWith("mp4")
+            ? () => navigate(`${props?.id}/feed/${feed?.feed?.id}/0`)
+            : false
+        }
+      >
         <Divider id="divider" loading={loading.toString()}></Divider>
         <TopSection
           cover={props.cover}
@@ -303,15 +285,15 @@ export const FeedCard = (props) => {
           {reports && (
             <Reports path={`${props?.id}/feed/${feed?.feed?.id}/0`} />
           )}
-          {feed?.feed?.desktopJPEGurl?.length > 0 && (
+          {feed?.feed?.name.length > 0 && (
             <>
-              {feed?.feed?.name?.endsWith("mp4") ? (
+              {feed?.feed?.name?.toLowerCase()?.endsWith("mp4") ? (
                 <FileContainer>
                   {loading ? (
                     <ImgLoader />
                   ) : (
                     <Video width="100%" height="auto" controls autoplay muted>
-                      <source src="" type="video/mp4" />
+                      <source src={feed?.feed?.videoUrl} type="video/mp4" />
                     </Video>
                   )}
                 </FileContainer>
@@ -388,7 +370,8 @@ export const FeedCard = (props) => {
                       navigate(`${props?.id}/feed/${feed?.feed?.id}/0`)
                     }
                   >
-                    ({feed?.reviewsLength}) შეფასებები
+                    ({feed?.reviewsLength}){" "}
+                    {language?.language.Main.feedCard.reviews}
                   </TextReview>
                 </Link>
               </div>
@@ -444,7 +427,7 @@ const Container = styled.div`
     border-radius: 0;
     box-sizing: border-box;
     margin-bottom: 0;
-    background: #f7e6ff;
+    background: ${(props) => props.theme.mobileFeedCard}
   }
 `;
 

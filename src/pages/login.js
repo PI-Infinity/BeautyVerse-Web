@@ -1,26 +1,18 @@
 import React, { useContext, useState, useEffect } from "react";
 import styled from "styled-components";
-import {
-  signInWithEmailAndPassword,
-  GoogleAuthProvider,
-  signInWithPopup,
-  FacebookAuthProvider,
-} from "firebase/auth";
 import { useNavigate } from "react-router-dom/";
-import { FcGoogle } from "react-icons/fc";
 import { Link } from "react-router-dom/";
 import { AuthContext } from "../context/AuthContext";
-import { doc, setDoc, serverTimestamp, updateDoc } from "firebase/firestore";
-import { db, DetectLanguage, auth } from "../firebase";
-import { setCover, setRerender, setLoading } from "../redux/main";
-import { setRegisterPage } from "../redux/register";
+import { auth } from "../firebase";
 import { useDispatch, useSelector } from "react-redux";
 import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import PhoneCode from "react-phone-code";
 import { Button } from "../components/button";
 import useWindowDimensions from "../functions/dimensions";
+import { Language } from "../context/language";
 
 export default function Login() {
+  const language = Language();
   const { height, width } = useWindowDimensions();
   const mainDispatch = useDispatch();
 
@@ -32,7 +24,6 @@ export default function Login() {
   }
 
   //signin with email and password
-  const [error, setError] = useState(false);
   const [code, setCode] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
@@ -65,7 +56,7 @@ export default function Login() {
   const GetOTP = async (e) => {
     e.preventDefault();
     if (phoneNumber === "" || phoneNumber === undefined) {
-      return alert("Please Input Valid Phone Phone Number");
+      return alert(`${language?.language.Auth.auth.valid}`);
     }
     try {
       const num = code + phoneNumber;
@@ -103,13 +94,13 @@ export default function Login() {
          */ if (definedUser.password === password) {
           GetOTP(e);
         } else {
-          alert("Password didn't match");
+          alert(`${language?.language.Auth.auth.passwrong}`);
         }
       } else {
-        alert("Phone Number not found");
+        alert(`${language?.language.Auth.auth.noPhone}`);
       }
     } else {
-      alert("Please Input Fields");
+      alert(`${language?.language.Auth.auth.pleaseInput}`);
     }
   };
 
@@ -119,7 +110,7 @@ export default function Login() {
         style={{ display: !flag ? "visible" : "none" }}
         height={height}
       >
-        <Title>Log In</Title>
+        <Title>{language?.language.Auth.auth.login}</Title>
         <Form onSubmit={handleLogin}>
           <InputWrapper>
             <PhoneCode
@@ -135,31 +126,32 @@ export default function Login() {
             />
             <Input
               type="text"
-              placeholder="Phone Number"
+              placeholder={language?.language.Auth.auth.phone}
               onChange={(e) => setPhoneNumber(e.target.value)}
             />
           </InputWrapper>
           <InputWrapper>
             <Input
               type="password"
-              placeholder="Password"
+              placeholder={language?.language.Auth.auth.password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </InputWrapper>
-          <Button type="submit" title="Log In" function={handleLogin} />
+          <Button
+            type="submit"
+            title={language?.language.Auth.auth.login}
+            function={handleLogin}
+          />
           <div id="recaptcha-container"></div>
-          <ForgottPass>Forgott Password?</ForgottPass>
-          {error && (
-            <span style={{ color: "red" }}>Wrong email or password!</span>
-          )}
+          <ForgottPass>{language?.language.Auth.auth.forgot}</ForgottPass>
           <SignupText>
-            Don't have a Account?{" "}
+            {language?.language.Auth.auth.dontHave}{" "}
             <Link
               to="/register"
               id="signup"
               style={{ color: "orange", textDecoration: "none" }}
             >
-              Register
+              {language?.language.Auth.auth.register}
             </Link>
           </SignupText>
         </Form>
@@ -174,7 +166,7 @@ export default function Login() {
           justifyContent: "center",
         }}
       >
-        <Title>Verify Phone Number</Title>
+        <Title>{language?.language.Auth.auth.verify}</Title>
         <InputWrapper>
           <Input
             type="text"
@@ -183,7 +175,9 @@ export default function Login() {
             value={otp}
           />
         </InputWrapper>
-        <SubmitButton type="submit">დადასტურება</SubmitButton>
+        <SubmitButton type="submit">
+          {language?.language.Auth.auth.confirm}
+        </SubmitButton>
       </Confirm>
     </>
   );
@@ -228,8 +222,9 @@ const Confirm = styled.form`
 `;
 
 const Title = styled.h4`
-  font-size: 1.7vw;
+  font-size: 1.2vw;
   letter-spacing: 0.05vw;
+  color: ${(props) => props.theme.font};
 
   @media only screen and (max-width: 600px) {
     font-size: 5vw;
@@ -241,6 +236,7 @@ const Form = styled.form`
   align-items: center;
   flex-direction: column;
   gap: 0.7vw;
+  color: ${(props) => props.theme.font};
 
   @media only screen and (max-width: 600px) {
     gap 3vw;
@@ -250,7 +246,7 @@ const InputWrapper = styled.div`
   width: 25vw;
   height: 2.5vw;
   border-radius: 0.5vw;
-  box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
+  box-shadow: 0 0.1vw 0.3vw ${(props) => props.theme.shadowColor};
   border: none;
   display: flex;
   flex-direction: row;
@@ -259,9 +255,11 @@ const InputWrapper = styled.div`
   gap: 0.5vw;
   transition: ease-in 200ms;
   box-sizing: border-box;
+  background: ${(props) => props.theme.categoryItem};
+  color: ${(props) => props.theme.font};
 
   @media only screen and (max-width: 600px) {
-    box-shadow: 0 0.2vw 0.6vw rgba(2, 2, 2, 0.1);
+    box-shadow: 0 0.2vw 0.6vw ${(props) => props.theme.shadowColor};
     width: 75vw;
     height: 10vw;
     border-radius: 1.5vw;
@@ -276,6 +274,8 @@ const InputWrapper = styled.div`
     border: none;
     padding: 0.5vw;
     cursor: pointer;
+    background: ${(props) => props.theme.categoryItem};
+    color: ${(props) => props.theme.font};
 
     @media only screen and (max-width: 600px) {
       width: 15vw;
@@ -301,7 +301,8 @@ const Input = styled.input`
   padding-left: 0.5vw;
   transition: ease-in 200ms;
   box-sizing: border-box;
-
+  background: ${(props) => props.theme.categoryItem};
+  color: ${(props) => props.theme.font};
   @media only screen and (max-width: 600px) {
     border-radius: 1.5vw;
     padding-left: 2vw;
@@ -314,6 +315,7 @@ const Input = styled.input`
 
   ::placeholder {
     font-size: 12px;
+    color: ${(props) => props.theme.font};
   }
 `;
 
@@ -321,7 +323,7 @@ const ForgottPass = styled.p`
   padding: 0;
   margin: 0;
   letter-spacing: 0.05vw;
-  font-size: 0.9vw;
+  font-size: 0.8vw;
 
   @media only screen and (max-width: 600px) {
     font-size: 3.3vw;
@@ -330,7 +332,7 @@ const ForgottPass = styled.p`
 `;
 const SignupText = styled.p`
   text-decoration: none;
-  font-size: 0.9vw;
+  font-size: 0.8vw;
   font-weight: bold;
 
   @media only screen and (max-width: 600px) {

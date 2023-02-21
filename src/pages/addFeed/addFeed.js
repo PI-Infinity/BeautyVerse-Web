@@ -1,50 +1,21 @@
 import React from "react";
 import styled from "styled-components";
 import { useSelector, useDispatch } from "react-redux";
-import { FaUser } from "react-icons/fa";
 import { Result } from "../../pages/addFeed/result";
-import { MdOutlineVideoLibrary } from "react-icons/md";
-import {
-  AiOutlineDesktop,
-  AiOutlineMobile,
-  AiOutlineCloseSquare,
-} from "react-icons/ai";
-import {
-  setDoc,
-  getDocs,
-  doc,
-  collection,
-  deleteDoc,
-  onSnapshot,
-  serverTimestamp,
-  deleteField,
-  getDoc,
-  updateDoc,
-  arrayUnion,
-  arrayRemove,
-  getCountFromServer,
-  orderBy,
-  query,
-  limit,
-} from "firebase/firestore";
+import { AiOutlineCloseSquare } from "react-icons/ai";
+import { setDoc, doc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { db, storage } from "../../firebase";
-import {
-  ref,
-  uploadBytes,
-  listAll,
-  getDownloadURL,
-  deleteObject,
-} from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useNavigate } from "react-router-dom";
 import { setRerender, setBackdropOpen } from "../../redux/main";
 import { v4 } from "uuid";
 import useWindowDimensions from "../../functions/dimensions";
-import { Spinner } from "../../components/loader";
 import Success from "../../snackBars/success";
-import SimpleBackdrop from "../../components/backDrop";
 import Avatar from "@mui/material/Avatar";
+import { Language } from "../../context/language";
 
 const AddFeed = () => {
+  const language = Language();
   const { height, width } = useWindowDimensions();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -85,24 +56,14 @@ const AddFeed = () => {
     //create id
     let imageId = resizedObj.desktopJPEG?.name + v4();
     // check file
-    if (resizedObj !== null) {
-      // add in cloud
-      let desktopRefs;
-      if (resizedObj.desktopJPEG?.type?.endsWith("mp4")) {
-        desktopRefs = ref(
-          storage,
-          `videos/${user?.id}/feeds/${imageId}/${imageId}/`
-        );
-      } else if (resizedObj.desktopJPEG?.type?.endsWith("jpeg")) {
-        desktopRefs = ref(
-          storage,
-          `images/${user?.id}/feeds/${imageId}/${imageId}/`
-        );
-      } else {
-        alert("Unsuported file type");
-      }
+    if (resizedObj !== null && !resizedObj?.name?.endsWith("mp4")) {
+      let desktopRefs = ref(
+        storage,
+        `images/${user?.id}/feeds/${imageId}/${imageId}/`
+      );
       if (desktopRefs != undefined) {
         // add desktop version
+
         await uploadBytes(desktopRefs, resizedObj.desktopJPEG).then(
           (snapshot) => {
             getDownloadURL(snapshot.ref).then((url) => {
@@ -112,6 +73,7 @@ const AddFeed = () => {
                 addTime: serverTimestamp(),
                 post: text,
                 desktopJPEGurl: url,
+                owner: user?.id,
               });
               updateDoc(doc(db, `users`, `${user?.id}`), {
                 lastPost: serverTimestamp(),
@@ -119,22 +81,13 @@ const AddFeed = () => {
             });
           }
         );
+
         // add mobile jpeg
         let sizedId = resizedObj.mobileJPEG?.name + v4();
-        let mobileJpegRefs;
-        if (resizedObj.desktopJPEG?.type?.endsWith("mp4")) {
-          mobileJpegRefs = ref(
-            storage,
-            `videos/${user?.id}/feeds/${imageId}/${sizedId}/`
-          );
-        } else if (resizedObj.desktopJPEG?.type?.endsWith("jpeg")) {
-          mobileJpegRefs = ref(
-            storage,
-            `images/${user?.id}/feeds/${imageId}/${sizedId}/`
-          );
-        } else {
-          alert("Unsuported file type");
-        }
+        let mobileJpegRefs = ref(
+          storage,
+          `images/${user?.id}/feeds/${imageId}/${sizedId}/`
+        );
         // add mobile jpeg for webp unspuported devices
         if (mobileJpegRefs != undefined) {
           await uploadBytes(mobileJpegRefs, resizedObj.mobileJPEG).then(
@@ -154,20 +107,10 @@ const AddFeed = () => {
           );
         }
         let sizedIdWebp = resizedObj.mobileWEBP?.name + v4();
-        let mobileWebpRefs;
-        if (resizedObj.mobileWEBP?.type?.endsWith("mp4")) {
-          mobileWebpRefs = ref(
-            storage,
-            `videos/${user?.id}/feeds/${imageId}/${sizedIdWebp}/`
-          );
-        } else if (resizedObj.mobileWEBP?.type?.endsWith("webp")) {
-          mobileWebpRefs = ref(
-            storage,
-            `images/${user?.id}/feeds/${imageId}/${sizedIdWebp}/`
-          );
-        } else {
-          alert("Unsuported file type");
-        }
+        let mobileWebpRefs = ref(
+          storage,
+          `images/${user?.id}/feeds/${imageId}/${sizedIdWebp}/`
+        );
         if (mobileWebpRefs != undefined) {
           await uploadBytes(mobileWebpRefs, resizedObj.mobileWEBP).then(
             (snapshot) => {
@@ -186,6 +129,24 @@ const AddFeed = () => {
           );
         }
       }
+    } else if (resizedObj !== null && resizedObj?.name?.endsWith("mp4")) {
+      let videoId = resizedObj?.name + v4();
+      let videoRef = ref(storage, `videos/${user?.id}/feeds/${videoId}/`);
+      await uploadBytes(videoRef, resizedObj).then((snapshot) => {
+        getDownloadURL(snapshot.ref).then((url) => {
+          setDoc(doc(db, `users`, `${user?.id}`, "feeds", `${videoId}`), {
+            id: videoId,
+            name: resizedObj.name,
+            addTime: serverTimestamp(),
+            post: text,
+            videoUrl: url,
+            owner: user?.id,
+          });
+          updateDoc(doc(db, `users`, `${user?.id}`), {
+            lastPost: serverTimestamp(),
+          });
+        });
+      });
     }
     await setOpenSuccess(true);
     await dispatch(setRerender());
@@ -202,7 +163,7 @@ const AddFeed = () => {
           <AiOutlineCloseSquare className="icon" />
         </div>
         <Wrapper>
-          <Title>Add Feed</Title>
+          <Title>{language?.language.User.addFeed.addFeed}</Title>
           <Info>
             <Profile>
               <Avatar
@@ -222,7 +183,11 @@ const AddFeed = () => {
             </Profile>
             <Name>{user?.name}</Name>
           </Info>
-          <Text value={text} onChange={(e) => setText(e.target.value)} />
+          <Text
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder={language?.language.User.addFeed.addText}
+          />
         </Wrapper>
         <Result
           file={file}
@@ -235,12 +200,13 @@ const AddFeed = () => {
           FileUpload={FileUpload}
           resizedObj={resizedObj}
           setResizedObj={setResizedObj}
+          language={language}
         />
       </SecondLevelContainer>
       <Success
         open={openSuccess}
         setOpen={setOpenSuccess}
-        title="პოსტი წარმატებით აიტვირთა"
+        title={language?.language.User.addFeed.feedAdded}
         type="success"
       />
     </Container>

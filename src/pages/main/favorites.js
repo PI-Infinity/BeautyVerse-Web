@@ -1,31 +1,22 @@
-import React from "react";
 import styled from "styled-components";
 import { ImCheckmark } from "react-icons/im";
 import { RiUserHeartFill } from "react-icons/ri";
 import { SiHomeassistantcommunitystore } from "react-icons/si";
 import { useSelector, useDispatch } from "react-redux";
-import { setTargetUser } from "../../redux/chat";
 import { useNavigate } from "react-router-dom";
+import { Language } from "../../context/language";
 
 export const Favorites = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const followings = useSelector((state) => state.storeMain.followings);
-  const list = [
-    "Ludmila Pashkova",
-    "Mariam Sepashvili",
-    "Viki Kuzmenko",
-    "Diana Darsalia",
-    "Ludmila Pashkova",
-    "Mariam Sepashvili",
-    "Viki Kuzmenko",
-    "Diana Darsalia",
-  ];
+  const language = Language();
 
   return (
     <Container>
       <Title>
-        ფავორიტები <ImCheckmark className="likedIcon" />
+        {language?.language?.Main?.favourites?.title}{" "}
+        <ImCheckmark className="likedIcon" />
       </Title>
       <List>
         {followings?.map((item, index) => {
@@ -101,7 +92,6 @@ const Item = styled.div`
   box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.05);
 
   &:hover {
-    background: #fff;
-    box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
+    filter: brightness(0.8);
   }
 `;

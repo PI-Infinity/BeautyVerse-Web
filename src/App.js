@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useContext, useMemo, memo } from "react";
+import React, { useEffect, useContext } from "react";
 import styled, { ThemeProvider } from "styled-components";
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import Main from "./pages/main/main";
 import { Feeds } from "./pages/main/feeds";
 import { Specialists } from "./pages/main/specialists";
+import { Recomended } from "./pages/main/recomended";
 import AddFeed from "./pages/addFeed/addFeed";
 import Login from "./pages/login";
 import Register from "./pages/register/register";
@@ -14,13 +15,16 @@ import UserProfile from "./pages/user/userProfilePage";
 import { Services } from "./pages/user/services";
 import { UserFeeds } from "./pages/user/feeds";
 import { Audience } from "./pages/user/audience";
+import { Settings } from "./pages/user/settings";
 import { Contact } from "./pages/user/contact";
 import { Team } from "./pages/user/team";
-import Marketplace from "./src-marketplace/pages/market/marketplace";
-import MarketplaceMain from "./src-marketplace/pages/market/marketplace-main";
-import Market from "./src-marketplace/pages/market/market";
-import Cart from "./src-marketplace/pages/cart-page";
-import Product from "./src-marketplace/pages/product/product";
+import AdminDashboard from "./pages/adminDashboard/main";
+import Users from "./pages/adminDashboard/users";
+import Notifications from "./pages/adminDashboard/notifications";
+import Reports from "./pages/adminDashboard/reports";
+import Statistics from "./pages/adminDashboard/statistics";
+import Messages from "./pages/adminDashboard/messages";
+import AllFeeds from "./pages/adminDashboard/feeds";
 import NotFound from "./pages/notfound";
 import { Header } from "./components/header";
 import { Filter } from "./pages/main/filter";
@@ -29,24 +33,23 @@ import {
   collection,
   doc,
   onSnapshot,
-  collectionGroup,
-  getDocs,
   query,
+  orderBy,
+  serverTimestamp,
+  updateDoc,
 } from "firebase/firestore";
-import { ref, uploadBytes, listAll, getDownloadURL } from "firebase/storage";
-import { db, storage } from "./firebase";
+import { db } from "./firebase";
 import { useDispatch, useSelector } from "react-redux";
 import { AuthContext } from "./context/AuthContext";
 import { Loading } from "./components/loading";
 import { Footer } from "./components/footer";
 import {
   setUser,
-  setCover,
-  setFeeds,
   setUserList,
-  setCoverInfo,
   setLoading,
+  setTheme,
   setFollowings,
+  setLanguage,
 } from "./redux/main";
 import { setCurrentShopProducts } from "./redux/marketplace/marketplace";
 import { GlobalStyles, darkTheme, lightTheme } from "./context/theme";
@@ -64,9 +67,7 @@ function App() {
   const { height, width } = useWindowDimensions();
   const isMobile = IsMobile();
   const location = useLocation();
-
-  // color mode
-  const theme = useSelector((state) => state.storeMain.theme);
+  const dispatch = useDispatch();
 
   // redux imports
   const loading = useSelector((state) => state.storeMain.loading);
@@ -74,7 +75,6 @@ function App() {
   const openFeed = useSelector((state) => state.storeFeed.openFeed);
   const changeFeed = useSelector((state) => state.storeMain.changeFeed);
   const loadFeed = useSelector((state) => state.storeMain.loadFeed);
-
   // open mobile filter
   const filterOpen = useSelector((state) => state.storeMain.mobileFilter);
 
@@ -85,6 +85,28 @@ function App() {
    */
   const { currentUser } = useContext(AuthContext);
 
+  /**
+   * define user last login date
+   */
+  useEffect(() => {
+    if (currentUser != null) {
+      updateDoc(doc(db, "users", currentUser?.uid), {
+        lastLogin: serverTimestamp(),
+      });
+    }
+  }, []);
+
+  /**
+   * define authentication requred routes
+   */
+
+  const RequireAdminAuth = ({ children }) => {
+    return currentUser?.uid === "VnuHFrjndyU42j5jeCsASnnOTpd2" ? (
+      children
+    ) : (
+      <Navigate to="/" />
+    );
+  };
   const RequireAuth = ({ children }) => {
     return currentUser ? children : <Navigate to="/login" />;
   };
@@ -96,7 +118,27 @@ function App() {
     );
   };
 
-  const dispatch = useDispatch();
+  /**
+   * get local storage datas
+   */
+  useEffect(() => {
+    JSON.parse(localStorage.getItem("BeautyVerse:ThemeMode")) !== null &&
+      dispatch(
+        setTheme(JSON.parse(localStorage.getItem("BeautyVerse:ThemeMode")))
+      );
+    if (localStorage.getItem("BeautyVerse:Language") !== null) {
+      dispatch(
+        setLanguage(JSON.parse(localStorage.getItem("BeautyVerse:Language")))
+      );
+    } else {
+      dispatch(setLanguage("en"));
+    }
+  }, [currentUser]);
+
+  /**
+   * Define active theme mode
+   */
+  const theme = useSelector((state) => state.storeMain.theme);
 
   useEffect(() => {
     let activeTheme;
@@ -108,6 +150,7 @@ function App() {
     document
       .querySelector("meta[name='theme-color']")
       .setAttribute("content", activeTheme);
+    document.body.style.background = activeTheme;
   }, [currentUser, theme]);
 
   /**
@@ -170,10 +213,16 @@ function App() {
    * send to redux
    */
   React.useEffect(() => {
-    const data = onSnapshot(collection(db, "users"), (snapshot) => {
-      dispatch(
-        setUserList(JSON.stringify(snapshot.docs.map((doc) => doc.data())))
-      );
+    const usersRef = query(
+      collection(db, "users"),
+      orderBy("registerDate", "desc")
+    );
+    const data = onSnapshot(usersRef, (snapshot) => {
+      const users = [];
+      snapshot.forEach((doc) => {
+        users.push(doc.data());
+      });
+      dispatch(setUserList(JSON.stringify(users)));
       setTimeout(() => {
         dispatch(setLoading(false));
       }, 300);
@@ -195,7 +244,7 @@ function App() {
   }, [currentUser]);
 
   /**
-   * Define paths where navigator is hidden
+   * Define paths where mobile navigator is hidden
    */
   let nav;
   if (
@@ -220,11 +269,10 @@ function App() {
       ) : (
         <Container>
           <SimpleBackdrop />
-          <Header />
+          {!window.location.pathname?.includes("admin") && <Header />}
           {isMobile &&
             (window.location.pathname === "/" ||
               window.location.pathname === "/cards") && <Filter />}
-          {/* {openFeed && <OpenedFeed />} */}
           <Routes>
             <Route path="/" element={<Main />}>
               <Route
@@ -234,6 +282,11 @@ function App() {
 
               <Route path="cards" element={<Specialists />} direction="row" />
               <Route path="add" element={<AddFeed />} direction="row" />
+              <Route
+                path="recomended"
+                element={<Recomended />}
+                direction="row"
+              />
             </Route>
             <Route path="/:User/feed/:Id/:ImgNumber" element={<OpenedFeed />} />
             <Route
@@ -258,6 +311,14 @@ function App() {
               <Route path="team" element={<Team />} />
               <Route path="contact" element={<Contact />} />
               <Route path="audience" element={<Audience />} />
+              <Route
+                path="settings"
+                element={
+                  <RequireAuth>
+                    <Settings />
+                  </RequireAuth>
+                }
+              />
               {/* <Route path="followings" element={<Followings />} /> */}
             </Route>
             {/* <Route path="/marketplace" element={<Marketplace />}>
@@ -271,6 +332,63 @@ function App() {
               path="/marketplace/:ShopId/product/:Id"
               element={<Product />}
             /> */}
+            <Route
+              path="admin"
+              element={
+                <RequireAdminAuth>
+                  <AdminDashboard />
+                </RequireAdminAuth>
+              }
+            >
+              <Route
+                index
+                element={
+                  <RequireAdminAuth>
+                    <Users />
+                  </RequireAdminAuth>
+                }
+              />
+              <Route
+                path="statistics"
+                element={
+                  <RequireAdminAuth>
+                    <Statistics />
+                  </RequireAdminAuth>
+                }
+              />
+              <Route
+                path="notifications"
+                element={
+                  <RequireAdminAuth>
+                    <Notifications />
+                  </RequireAdminAuth>
+                }
+              />
+              <Route
+                path="reports"
+                element={
+                  <RequireAdminAuth>
+                    <Reports />
+                  </RequireAdminAuth>
+                }
+              />
+              <Route
+                path="messages"
+                element={
+                  <RequireAdminAuth>
+                    <Messages />
+                  </RequireAdminAuth>
+                }
+              />
+              <Route
+                path="feeds"
+                element={
+                  <RequireAdminAuth>
+                    <AllFeeds />
+                  </RequireAdminAuth>
+                }
+              />
+            </Route>
             <Route
               path="/chat"
               element={
@@ -313,8 +431,8 @@ function App() {
             ></Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
-          <Footer />
-          {nav}
+          {!window.location.pathname?.includes("admin") && <Footer />}
+          {!window.location.pathname?.includes("admin") && <>{nav}</>}
         </Container>
       )}
     </ThemeProvider>

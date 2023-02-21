@@ -1,22 +1,32 @@
-import React from "react";
 import styled from "styled-components";
+import { Language } from "../../context/language";
 
 export const Ads = () => {
+  const language = Language();
+
   return (
-    <Container>
-      <Ad>
-        <img
-          src="https://res.cloudinary.com/dmmumy2b1/image/upload/v1668849735/Beautyverse/shop_ggr6lu.jpg"
-          style={{ width: "10vw", height: "8vw", objectFit: "cover" }}
-        />
-      </Ad>
-      <Ad>
-        <img
-          src="https://res.cloudinary.com/dmmumy2b1/image/upload/v1668849826/Beautyverse/konkurspost_fn7zqk.png"
-          style={{ width: "10vw", height: "8vw", objectFit: "cover" }}
-        />
-      </Ad>
-    </Container>
+    <>
+      <div style={{ margin: "1vw", fontWeight: "bold" }}>
+        {language?.language.Main.ads.title}
+      </div>
+      <Container>
+        {/* <React.Suspense fallback={<FallbackComponent />}>
+          <EmailForm />
+        </React.Suspense> */}
+        <Ad>
+          <img
+            src="https://res.cloudinary.com/dmmumy2b1/image/upload/v1668849735/Beautyverse/shop_ggr6lu.jpg"
+            style={{ width: "10vw", height: "8vw", objectFit: "cover" }}
+          />
+        </Ad>
+        <Ad>
+          <img
+            src="https://res.cloudinary.com/dmmumy2b1/image/upload/v1668849826/Beautyverse/konkurspost_fn7zqk.png"
+            style={{ width: "10vw", height: "8vw", objectFit: "cover" }}
+          />
+        </Ad>
+      </Container>
+    </>
   );
 };
 

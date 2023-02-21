@@ -1,4 +1,3 @@
-import React from "react";
 import styled from "styled-components";
 import { TopSection } from "../../pages/chat/topSection";
 import { Messages } from "../../pages/chat/messages";

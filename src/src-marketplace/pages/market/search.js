@@ -16,9 +16,8 @@ import { GrList } from "react-icons/gr";
 import { MdOutlinePersonPin } from "react-icons/md";
 import { setChangeFeed, setLoadFeed } from "../../../redux/main";
 
-const proceduresOptions = ProceduresOptions();
-
 export const Search = (props) => {
+  const proceduresOptions = ProceduresOptions();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 

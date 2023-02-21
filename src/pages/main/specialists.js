@@ -1,20 +1,13 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { SpecialistsCard } from "../../pages/main/specialistCard";
-import { collection, doc, setDoc, onSnapshot } from "firebase/firestore";
 import { useDispatch, useSelector } from "react-redux";
-import { db, storage } from "../../firebase";
 import useWindowDimensions from "../../functions/dimensions";
 import { setLoadFeed, setRerender } from "../../redux/main";
 import { setScroll } from "../../redux/scroll";
 import { IsMobile } from "../../functions/isMobile";
 import { Spinner } from "../../components/loader";
-import {
-  ProceduresOptions,
-  categoriesOptions,
-  workingPlacesOptions,
-  workingDaysOptions,
-} from "../../data/registerDatas";
+import { ProceduresOptions } from "../../data/registerDatas";
 
 export const Specialists = (props) => {
   const isMobile = IsMobile();
@@ -80,14 +73,22 @@ export const Specialists = (props) => {
         }
       })
       ?.filter((item, index) => {
-        if (destrictFilter == "უბანი") {
+        if (
+          destrictFilter == "უბანი" ||
+          destrictFilter === "District" ||
+          destrictFilter === "Район"
+        ) {
           return item;
         } else if (item.adress.destrict === destrictFilter) {
           return item;
         }
       })
       ?.filter((item, index) => {
-        if (cityFilter == "ქალაქი") {
+        if (
+          cityFilter == "ქალაქი" ||
+          cityFilter === "City" ||
+          cityFilter === "Город"
+        ) {
           return item;
         } else if (item.adress.city === cityFilter) {
           return item;
@@ -228,7 +229,7 @@ const Container = styled.div`
   z-index: 800;
   height: 85vh;
   width: 100%;
-  margin-left: 5px;
+  margin-left: 2px;
   background: ${(props) => props.theme.background};
 
   @media only screen and (max-width: 600px) {

@@ -3,24 +3,18 @@ import styled from "styled-components";
 import { Filter } from "../../pages/main/filter";
 import { CategoryFilter } from "../../pages/main/categoryFilter";
 import { Ads } from "../../pages/main/ads";
-import { Feeds } from "../../pages/main/feeds";
-import { Specialists } from "../../pages/main/specialists";
 import { Favorites } from "../../pages/main/favorites";
 import { Reviews } from "../../pages/main/reviews";
 import { Chat } from "../../pages/main/chat";
 import { useSelector, useDispatch } from "react-redux";
 import { setRegisterPage } from "../../redux/register";
-import { Loader } from "../../components/loader";
 import { FilterMobile } from "../../pages/main/filterMobile";
-import { useNavigate, Link, Outlet } from "react-router-dom";
-import { Menu } from "../../components/menu";
-import { setRerender } from "../../redux/main";
+import { useNavigate, Outlet } from "react-router-dom";
 import { auth } from "../../firebase";
 import { setLoadFeed, setNavigatorActive } from "../../redux/main";
 import { setScroll } from "../../redux/scroll";
 import useWindowDimensions from "../../functions/dimensions";
 import { IsMobile } from "../../functions/isMobile";
-import Notifications from "../../pages/main/notifications";
 
 const Main = (props) => {
   const dispatch = useDispatch();
@@ -78,7 +72,6 @@ const Main = (props) => {
           <FilterContainer>
             <CategoryFilter />
 
-            <div style={{ margin: "1vw", fontWeight: "bold" }}>რეკლამა</div>
             <Ads />
           </FilterContainer>
           <CenterContainer height={height}>

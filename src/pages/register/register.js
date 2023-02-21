@@ -1,21 +1,21 @@
-import React from "react";
 import styled from "styled-components";
-import { Link, useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import { setUserType, setRegisterPage } from "../../redux/register";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setUserType } from "../../redux/register";
 import { FaUserEdit } from "react-icons/fa";
 import { ImProfile } from "react-icons/im";
 import { MdAddBusiness } from "react-icons/md";
-import { RiShoppingCartFill } from "react-icons/ri";
 import useWindowDimensions from "../../functions/dimensions";
+import { Language } from "../../context/language";
 
 const Register = () => {
+  const language = Language();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { height, width } = useWindowDimensions();
   return (
     <FirstPageContainer height={height}>
-      <Title>აირჩიე რეგისტრაციის ტიპი:</Title>
+      <Title>{language?.language.Auth.auth.choice}:</Title>
       <ChoiseContainer>
         <Card
           onClick={async () => {
@@ -24,9 +24,9 @@ const Register = () => {
           }}
         >
           <FaUserEdit className="userIcon" />
-          <h2>მომხმარებელი</h2>
+          <h2>{language?.language.Auth.auth.user}</h2>
           <span style={{ textAlign: "center" }}>
-            შექმენი მომხმარებლის ანგარიში
+            {language?.language.Auth.auth.userText}
           </span>
         </Card>
         <Card
@@ -36,9 +36,9 @@ const Register = () => {
           }}
         >
           <ImProfile className="specIcon" />
-          <h2>სპეციალისტი</h2>
+          <h2>{language?.language.Auth.auth.specialist}</h2>
           <span style={{ textAlign: "center" }}>
-            შექმენი სპეციალისტის ანგარიში
+            {language?.language.Auth.auth.specText}
           </span>
         </Card>
         <Card
@@ -48,9 +48,9 @@ const Register = () => {
           }}
         >
           <MdAddBusiness className="businessIcon" />
-          <h2>სილამაზის ცენტრი</h2>
+          <h2>{language?.language.Auth.auth.beautySalon}</h2>
           <span style={{ textAlign: "center" }}>
-            შექმენი სილამაზის ცენტრი: სალონი, სტუდია, კლინიკა ან სხვა..
+            {language?.language.Auth.auth.salonText}
           </span>
         </Card>
         {/* <Card
@@ -93,6 +93,7 @@ const FirstPageContainer = styled.div`
 
 const Title = styled.h2`
   margin-bottom: 1vw;
+  color: ${(props) => props.theme.font};
 
   @media only screen and (max-width: 600px) {
     margin-bottom: 7vw;
@@ -114,7 +115,7 @@ const Card = styled.div`
   width: 15vw;
   height: 15vw;
   border-radius: 0.5vw;
-  box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
+  box-shadow: 0 0.1vw 0.3vw ${(props) => props.theme.shadowColor};
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -124,14 +125,15 @@ const Card = styled.div`
   transition: ease-in 200ms;
   cursor: pointer;
   font-size: 0.7vw;
-  background: rgba(255, 255, 255, 0.5);
+  background: ${(props) => props.theme.categoryItem};
   box-sizing: border-box;
+  color: ${(props) => props.theme.font};
 
   @media only screen and (max-width: 600px) {
     width: 80vw;
     height: 35vw;
     border-radius: 3vw;
-    box-shadow: 0 0.2vw 0.6vw rgba(2, 2, 2, 0.1);
+    box-shadow: 0 0.2vw 0.6vw ${(props) => props.theme.shadowColor};
     gap: 1.5vw;
     padding: 3vw;
   }

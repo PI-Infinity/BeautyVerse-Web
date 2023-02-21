@@ -1,35 +1,27 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useOutletContext, useNavigate } from "react-router-dom";
 import useWindowDimensions from "../../functions/dimensions";
 import makeAnimated from "react-select/animated";
 import Select from "react-select";
-import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import {
   collection,
   doc,
   setDoc,
-  updateDoc,
   onSnapshot,
   deleteDoc,
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../../firebase";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import Avatar from "@mui/material/Avatar";
 import Success from "../../snackBars/success";
 import { IoMdPersonAdd, IoMdClose } from "react-icons/io";
 import AlertDialog from "../../components/dialog";
 import { HiUserRemove } from "react-icons/hi";
-import {
-  ProceduresOptions,
-  categoriesOptions,
-  workingPlacesOptions,
-  workingDaysOptions,
-} from "../../data/registerDatas";
+import { ProceduresOptions } from "../../data/registerDatas";
 import { v4 } from "uuid";
-import { BsListCheck } from "react-icons/bs";
 import ProceduresPopup from "../../pages/user/proceduresPopup";
 
 const animatedComponents = makeAnimated();
@@ -43,7 +35,7 @@ export const Team = () => {
 
   const [member, setMember] = useState("");
   const [procedures, setProcedures] = useState("");
-  const [user] = useOutletContext();
+  const [user, language] = useOutletContext();
 
   const navigate = useNavigate();
   // define current user
@@ -86,7 +78,7 @@ export const Team = () => {
           senderId: currentuser?.id,
           senderName: currentuser?.name,
           senderCover: currentuser?.cover,
-          text: `გამოგიგზავნათ მოსაწვევი მის გუნდში გასაწევრიანებლად!`,
+          text: language?.language.User.userPage.invite,
           date: serverTimestamp(),
           type: "offer",
           status: "unread",
@@ -98,7 +90,7 @@ export const Team = () => {
       setProcedures("");
       setExperience("");
     } else {
-      alert("დაამატეთ გუნდის წავრი");
+      alert(language?.language.User.userPage.addMember);
     }
   };
 
@@ -108,27 +100,27 @@ export const Team = () => {
   const experienceOption = [
     {
       value: "beginner",
-      label: "0-1 წელი",
+      label: `0-1`,
     },
     {
       value: "intermediate",
-      label: "1-2 წელი",
+      label: `1-2`,
     },
     {
       value: "advanced",
-      label: "2-3 წელი",
+      label: `2-3`,
     },
     {
       value: "advanced2",
-      label: "3-4 წელი",
+      label: `3-4`,
     },
     {
       value: "advanced3",
-      label: "4-5 წელი",
+      label: `4-5`,
     },
     {
       value: "advanced3",
-      label: "5+ წელი",
+      label: `5+`,
     },
   ];
 
@@ -163,6 +155,71 @@ export const Team = () => {
     return symbolCount === 2;
   });
 
+  // color mode
+  const theme = useSelector((state) => state.storeMain.theme);
+  const CustomStyle = {
+    singleValue: (base, state) => ({
+      ...base,
+      color: state.isSelected
+        ? theme
+          ? "#333"
+          : "#f3f3f3"
+        : theme
+        ? "#f3f3f3"
+        : "#333",
+    }),
+    placeholder: (base, state) => ({
+      ...base,
+      fontSize: "16px",
+      color: state.isSelected
+        ? theme
+          ? "#333"
+          : "#f3f3f3"
+        : theme
+        ? "#f3f3f3"
+        : "#333",
+    }),
+    menuList: (base, state) => ({
+      ...base,
+      backgroundColor: theme ? "#333" : "#fff",
+    }),
+    input: (base, state) => ({
+      ...base,
+      color: theme ? "#f3f3f3" : "#333",
+      fontSize: "16px",
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isSelected
+        ? theme
+          ? "#f3f3f3"
+          : "#333"
+        : theme
+        ? "#333"
+        : "#f3f3f3",
+      color: state.isSelected
+        ? theme
+          ? "#333"
+          : "#f3f3f3"
+        : theme
+        ? "#f3f3f3"
+        : "#333",
+    }),
+    control: (baseStyles, state) => ({
+      ...baseStyles,
+      backgroundColor: theme ? "#333" : "#fff",
+      borderColor: state.isFocused ? "rgba(0,0,0,0)" : "rgba(0,0,0,0.1)",
+      width: "38vw",
+      minHeight: "2vw",
+      cursor: "pointer",
+      color: "red",
+      "@media only screen and (max-width: 1200px)": {
+        width: "80vw",
+        fontSize: "16px",
+      },
+    }),
+  };
+
   return (
     <Container height={height}>
       <div>
@@ -190,7 +247,7 @@ export const Team = () => {
                   style={{ cursor: "pointer" }}
                   className="icon"
                 />
-                <Title>მოიწვიე ახალი გუნდის წევრი</Title>
+                <Title>{language?.language.User.userPage.memberOffer}</Title>
               </div>
             )}
           </>
@@ -198,9 +255,9 @@ export const Team = () => {
       </div>
       {add && currentuser?.id === user?.id && (
         <AddMember onSubmit={AddingMember}>
-          <Title>დაამატე გუნდის წევრი</Title>
+          <Title>{language?.language.User.userPage.addMember}</Title>
           <Select
-            placeholder="მოძებნე გუნდის წევრი"
+            placeholder={language?.language.User.userPage.findMember}
             components={animatedComponents}
             onChange={(value) => {
               setMember(value);
@@ -208,21 +265,7 @@ export const Team = () => {
             required
             value={member}
             components={animatedComponents}
-            styles={{
-              control: (baseStyles, state) => ({
-                ...baseStyles,
-                borderColor: state.isFocused
-                  ? "rgba(0,0,0,0)"
-                  : "rgba(0,0,0,0.1)",
-                width: "15vw",
-                minHeight: "2vw",
-                cursor: "pointer",
-                "@media only screen and (max-width: 1200px)": {
-                  width: "50vw",
-                  fontSize: "16px",
-                },
-              }),
-            }}
+            styles={CustomStyle}
             options={optionList}
           />
           <div
@@ -274,9 +317,11 @@ export const Team = () => {
               )}
             </div>
           </div>
-          <Title>სპეციალისტის მიერ შეთავაზებული პროცედურები</Title>
+          <Title>
+            {language?.language.User.userPage.memberOfferedServices}
+          </Title>
           <Select
-            placeholder="სპეციალისტი პროცედურები"
+            placeholder={language?.language.User.userPage.memberServices}
             components={animatedComponents}
             onChange={(value) => {
               setProcedures(value);
@@ -285,26 +330,12 @@ export const Team = () => {
             required
             value={procedures}
             components={animatedComponents}
-            styles={{
-              control: (baseStyles, state) => ({
-                ...baseStyles,
-                borderColor: state.isFocused
-                  ? "rgba(0,0,0,0)"
-                  : "rgba(0,0,0,0.1)",
-                width: "25vw",
-                minHeight: "2vw",
-                cursor: "pointer",
-                "@media only screen and (max-width: 1200px)": {
-                  width: "80vw",
-                  fontSize: "16px",
-                },
-              }),
-            }}
+            styles={CustomStyle}
             options={option}
           />
-          <Title>სამუშაო გამოცდილება სილამაზის სფეროში</Title>
+          <Title>{language?.language.User.userPage.experienceInBeauty}</Title>
           <Select
-            placeholder="გამოცდილება"
+            placeholder={language?.language.User.userPage.experience}
             components={animatedComponents}
             onChange={(value) => {
               setExperience(value);
@@ -312,38 +343,32 @@ export const Team = () => {
             required
             value={experience}
             components={animatedComponents}
-            styles={{
-              control: (baseStyles, state) => ({
-                ...baseStyles,
-                borderColor: state.isFocused
-                  ? "rgba(0,0,0,0)"
-                  : "rgba(0,0,0,0.1)",
-                width: "15vw",
-                minHeight: "2vw",
-                cursor: "pointer",
-                "@media only screen and (max-width: 1200px)": {
-                  width: "50vw",
-                  fontSize: "16px",
-                },
-              }),
-            }}
+            styles={CustomStyle}
             options={experienceOption}
           />
           <Success
             open={open}
             setOpen={setOpen}
-            title="მოწვევა წარმატებით გაიგზავნა!"
+            title={language?.language.User.userPage.successOffer}
             type="success"
           />
-          <Button type="submit">მოწვევის გაგზავნა</Button>
+          <Button type="submit">
+            {language?.language.User.userPage.sendOffer}
+          </Button>
         </AddMember>
       )}
       {team?.filter((item) => item.confirm === true)?.length > 0 && (
         <MemberList>
           <MemberRow>
-            <div style={{ flex: 1, fontWeight: "bold" }}>სახელი</div>
-            <div style={{ flex: 1, fontWeight: "bold" }}>პროცედურები</div>{" "}
-            <div style={{ flex: 1, fontWeight: "bold" }}>გამოცდილება</div>
+            <div style={{ flex: 1, fontWeight: "bold" }}>
+              {language?.language.User.userPage.name}
+            </div>
+            <div style={{ flex: 1, fontWeight: "bold" }}>
+              {language?.language.User.userPage.service}
+            </div>{" "}
+            <div style={{ flex: 1, fontWeight: "bold" }}>
+              {language?.language.User.userPage.experience}
+            </div>
           </MemberRow>
           {team?.map((item, index) => {
             if (item?.confirm === true) {
@@ -369,7 +394,10 @@ export const Team = () => {
                   <div
                     style={{ flex: 1, display: "flex", alignItems: "center" }}
                   >
-                    <ProceduresPopup procedures={item?.procedures} />
+                    <ProceduresPopup
+                      procedures={item?.procedures}
+                      language={language}
+                    />
                   </div>{" "}
                   <div
                     style={{
@@ -380,7 +408,8 @@ export const Team = () => {
                       justifyContent: "space-between",
                     }}
                   >
-                    {item.experience?.label}
+                    {item.experience?.label}{" "}
+                    {language?.language.User.userPage.year}
                     {currentuser?.id === user?.id && (
                       <HiUserRemove
                         size={22}
@@ -390,10 +419,10 @@ export const Team = () => {
                     )}
                   </div>
                   <AlertDialog
-                    title="დაადასტურეთ აქტივობა"
+                    title={language?.language.User.userPage.confirm}
                     open={openDialog}
                     setOpen={setOpenDialog}
-                    text="ნამდვილად გსურთ გუნდის წევრის წაშლა?"
+                    text={language?.language.User.userPage.removeMember}
                     function={() => DeleteMember(item?.id)}
                   />
                 </MemberRow>
@@ -426,7 +455,7 @@ const Container = styled.div`
     width: 90vw;
     height: calc(${(props) => props.height}px - 65vw);
     padding-top: 5vw;
-    padding-left: 2vw;
+    padding-left: 0vw;
     gap: 5vw;
   }
 
@@ -505,15 +534,16 @@ const Title = styled.h5`
 const MemberList = styled.div`
   margin-top: 1vw;
   border-radius: 5px;
-  box-shadow: 0 0.1vw 0.2vw rgba(0, 0, 0, 0.2);
-  background: #fff;
+  box-shadow: 0 0.1vw 0.2vw ${(props) => props.theme.shadowColor};
+  background: ${(props) => props.theme.secondLevel};
+  color: ${(props) => props.theme.font};
 `;
 
 const InputContainer = styled.div`
   width: 15vw;
   height: 2.5vw;
   border-radius: 0.5vw;
-  box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
+  box-shadow: 0 0.1vw 0.2vw ${(props) => props.theme.shadowColor};
   border: none;
   display: flex;
   align-items: center;
@@ -523,7 +553,7 @@ const InputContainer = styled.div`
   box-sizing: border-box;
 
   @media only screen and (max-width: 600px) {
-    box-shadow: 0 0.2vw 0.6vw rgba(2, 2, 2, 0.1);
+    box-shadow: 0 0.2vw 0.4vw ${(props) => props.theme.shadowColor};
     width: 45vw;
     height: 10vw;
     border-radius: 1.5vw;
@@ -564,7 +594,7 @@ const Button = styled.button`
   width: 15vw;
   height: 2.5vw;
   border-radius: 0.5vw;
-  box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
+  box-shadow: 0 0.1vw 0.2vw ${(props) => props.theme.shadowColor};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -572,7 +602,7 @@ const Button = styled.button`
   transition: ease-in 200ms;
   color: ${(props) => (props.back ? "#ccc" : "green")};
   font-weight: bold;
-  background: rgba(255, 255, 255, 0.7);
+  background: ${(props) => props.theme.categoryItem};
   border: none;
   margin-top: 1vw;
 
@@ -580,24 +610,30 @@ const Button = styled.button`
     width: 45vw;
     height: 8vw;
     border-radius: 1.5vw;
-    box-shadow: 0 0.3vw 0.6vw rgba(2, 2, 2, 0.2);
-    font-size: 3.8vw;
+    box-shadow: 0 0.3vw 0.6vw ${(props) => props.theme.shadowColor};
+    font-size: 3vw;
   }
 
   :hover {
-    box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.2);
+    box-shadow: 0 0.1vw 0.3vw ${(props) => props.theme.shadowColor};
   }
 `;
 
 const MemberRow = styled.div`
   width: 42vw;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid ${(props) => props.theme.lineColor};
   padding: 15px;
   display: flex;
   font-size: 0.8vw;
   transition: ease 200;
+  gap: 10px;
+
+  @media only screen and (max-width: 600px) {
+    width: 90vw;
+    font-size: 2.7vw;
+  }
 
   :hover {
-    background: #f1f1f1;
+    filter: brightness(0.9);
   }
 `;

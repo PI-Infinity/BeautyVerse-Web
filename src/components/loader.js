@@ -1,9 +1,7 @@
-import React from "react";
 import ContentLoader from "react-content-loader";
 import { IsMobile } from "../functions/isMobile";
 import { TailSpin } from "react-loader-spinner";
-import styled from "styled-components";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 
 export const Spinner = () => {
   const theme = useSelector((state) => state.storeMain.theme);

@@ -1,21 +1,6 @@
-import React, { useEffect, useContext, useState } from "react";
+import React from "react";
 import styled from "styled-components";
-import { collection, doc, setDoc, onSnapshot } from "firebase/firestore";
-import { ref, uploadBytes, listAll, getDownloadURL } from "firebase/storage";
-import { db, storage } from "../firebase";
-import { useDispatch, useSelector } from "react-redux";
-import { AuthContext } from "../context/AuthContext";
-import {
-  setUser,
-  setCover,
-  setGallery,
-  setUserList,
-  setCoverInfo,
-} from "../redux/main";
-import { MdCircleNotifications, MdPersonPin } from "react-icons/md";
-import { CgMenuGridO } from "react-icons/cg";
-import { BsStars, BsLayoutTextSidebarReverse } from "react-icons/bs";
-import { setLoading, setRerender } from "../redux/main";
+import { BsStars } from "react-icons/bs";
 
 export const Loading = (props) => {
   React.useEffect(() => {

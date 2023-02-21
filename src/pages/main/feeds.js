@@ -1,17 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import { FeedCard } from "../../pages/main/feedCard/feedCard";
 import { useSelector, useDispatch } from "react-redux";
-import { setRerender, setLoadFeed } from "../../redux/main";
+import { setRerender } from "../../redux/main";
 import { setScroll } from "../../redux/scroll";
 import useWindowDimensions from "../../functions/dimensions";
 import { IsMobile } from "../../functions/isMobile";
-import {
-  ProceduresOptions,
-  categoriesOptions,
-  workingPlacesOptions,
-  workingDaysOptions,
-} from "../../data/registerDatas";
+import { ProceduresOptions } from "../../data/registerDatas";
 
 export const Feeds = (props) => {
   const rerender = useSelector((state) => state.storeMain.rerender);
@@ -82,14 +77,22 @@ export const Feeds = (props) => {
         }
       })
       ?.filter((item, index) => {
-        if (destrictFilter == "უბანი") {
+        if (
+          destrictFilter == "უბანი" ||
+          destrictFilter === "District" ||
+          destrictFilter === "Район"
+        ) {
           return item;
         } else if (item.adress.destrict === destrictFilter) {
           return item;
         }
       })
       ?.filter((item, index) => {
-        if (cityFilter == "ქალაქი") {
+        if (
+          cityFilter == "ქალაქი" ||
+          cityFilter === "City" ||
+          cityFilter === "Город"
+        ) {
           return item;
         } else if (item.adress.city === cityFilter) {
           return item;

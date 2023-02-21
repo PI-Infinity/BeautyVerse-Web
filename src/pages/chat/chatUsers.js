@@ -1,35 +1,21 @@
-import React, { useContext, useState } from "react";
+import React from "react";
 import styled from "styled-components";
 import { useSelector, useDispatch } from "react-redux";
-import { ChatContext } from "../../context/ChatContext";
 import {
   collection,
-  query,
-  where,
   doc,
-  getDoc,
-  getDocs,
-  setDoc,
   updateDoc,
-  serverTimestamp,
   onSnapshot,
   deleteDoc,
 } from "firebase/firestore";
-import { ref, uploadBytes, listAll, getDownloadURL } from "firebase/storage";
-import { db, storage } from "../../firebase";
-import {
-  setOpenMessage,
-  SetCurrentChat,
-  setCounter,
-  setScrollY,
-} from "../../redux/chat";
+import { db } from "../../firebase";
+import { SetCurrentChat } from "../../redux/chat";
 import { useNavigate } from "react-router-dom";
 import { TiUserDelete } from "react-icons/ti";
-import Loader from "react-js-loader";
-import { FaUser } from "react-icons/fa";
 import { Spinner } from "../../components/loader";
 import Avatar from "@mui/material/Avatar";
 import AlertDialog from "../../components/dialog";
+import { Language } from "../../context/language";
 
 export const ChatUsers = (props) => {
   const [loading, setLoading] = React.useState(true);
@@ -176,6 +162,7 @@ const FoundedUser = (props) => {
   const dispatch = useDispatch();
   // define open message
   const openMessage = useSelector((state) => state.storeChat.openMessage);
+  const language = Language();
 
   const newMessage = openMessage?.some(
     (item) => item == props.chat?.userInfo?.id
@@ -220,11 +207,12 @@ const FoundedUser = (props) => {
       </FoundedUserContainer>
       <TiUserDelete id="removeIcon" onClick={() => setOpen(true)} />
       <AlertDialog
-        title="დაადასტურეთ!"
-        text="ნამდვილად გსურთ ჩატის წაშლა?"
+        title={language?.language.Chat.chat.confirm}
+        text={language?.language.Chat.chat.deletChatText}
         open={open}
         setOpen={setOpen}
         function={() => DeleteChat()}
+        language={language}
       />
     </UserContainer>
   );

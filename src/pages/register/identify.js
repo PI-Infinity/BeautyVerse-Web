@@ -1,10 +1,8 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useContext } from "react";
 import styled from "styled-components";
 import { useSelector, useDispatch } from "react-redux";
 import {
-  setRegisterPage,
   setName,
-  setAddationalAdress,
   setEmail,
   setPhoneNumber,
   setPassword,
@@ -14,12 +12,10 @@ import {
 import { FaUserEdit } from "react-icons/fa";
 import { ImProfile } from "react-icons/im";
 import { MdAddBusiness } from "react-icons/md";
-import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import { db, auth } from "../../firebase";
-import { doc, setDoc, serverTimestamp, collection } from "firebase/firestore";
-import axios from "axios";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import MapAutocomplete from "../../components/mapAutocomplete";
 import { RiShoppingCartFill } from "react-icons/ri";
 import ReactGoogleMapLoader from "react-google-maps-loader";
@@ -28,9 +24,10 @@ import PhoneCode from "react-phone-code";
 import useWindowDimensions from "../../functions/dimensions";
 import { Button } from "../../components/button";
 import { v4 } from "uuid";
-// loading google map
+import { Language } from "../../context/language";
 
 export const Identify = (props) => {
+  const language = Language();
   const { height, width } = useWindowDimensions();
   // import users
   const usersList = useSelector((state) => state.storeMain.userList);
@@ -75,7 +72,7 @@ export const Identify = (props) => {
       registerFields?.phoneNumber === "" ||
       registerFields?.phoneNumber === undefined
     ) {
-      return alert("Please Input Valid Phone Number");
+      return alert(`${language?.language.Auth.auth.valid}`);
     }
     try {
       const num = registerFields?.countryCode + registerFields?.phoneNumber;
@@ -93,7 +90,6 @@ export const Identify = (props) => {
     if (otp === "" || otp === null) return;
     try {
       const userCredential = await confirmObj.confirm(otp);
-      console.log(userCredential);
       const user = userCredential.user;
       await dispatch({ type: "LOGIN", payload: user });
       // create user database
@@ -115,6 +111,7 @@ export const Identify = (props) => {
           longitude: map.longitude,
         },
         lastPost: serverTimestamp(),
+        registerDate: serverTimestamp(),
       });
       var actionId = v4();
       await setDoc(
@@ -124,7 +121,7 @@ export const Identify = (props) => {
           senderId: "beautyVerse",
           senderName: "Beautyverse",
           senderCover: "",
-          text: `თქვენ წარმატებით დარეგისტრირდით!`,
+          text: `${language?.language.Auth.auth.succesRegister}`,
           date: serverTimestamp(),
           type: "welcome",
           status: "unread",
@@ -175,16 +172,16 @@ export const Identify = (props) => {
           return HandleSubmit;
         } else {
           if (userRegistered !== undefined) {
-            alert("Phone Number Already Used");
+            alert(`${language?.language.Auth.auth.usedPhone}`);
           } else if (userRegistered2 !== undefined) {
-            alert("Email Already Used");
+            alert(`${language?.language.Auth.auth.usedEmail}`);
           }
         }
       } else {
-        alert("Password doesn't match");
+        alert(`${language?.language.Auth.auth.passNotMatch}`);
       }
     } else {
-      alert("Please Input Fields");
+      alert(`${language?.language.Auth.auth.pleaseInput}`);
     }
   };
 
@@ -208,11 +205,11 @@ export const Identify = (props) => {
       >
         <Title>
           {icon}
-          <span>იდენტიფიკაცია</span>
+          <span>{language?.language.Auth.auth.identify}</span>
         </Title>
         <WrapperContainer onSubmit={HandleSubmit}>
           <Button
-            title="Back"
+            title={language?.language.Auth.auth.back}
             back={true}
             function={() => navigate("/register")}
           />
@@ -221,11 +218,11 @@ export const Identify = (props) => {
               <TitleWrapper>
                 <InputTitle>
                   {type == "beautyCenter" || type == "shop"
-                    ? "დასახელება"
-                    : "სახელი, გვარი"}
+                    ? language?.language.Auth.auth.title
+                    : language?.language.Auth.auth.name}
                   *
                 </InputTitle>
-                <InputTitle>მისამართი</InputTitle>
+                <InputTitle>{language?.language.Auth.auth.adress}*</InputTitle>
               </TitleWrapper>
               <Wrapper>
                 <InputWrapper>
@@ -234,29 +231,29 @@ export const Identify = (props) => {
                     type="text"
                     placeholder={
                       type == "beautyCenter" || type == "shop"
-                        ? "დასახელება"
-                        : "სახელი, გვარი"
+                        ? language?.language.Auth.auth.title
+                        : language?.language.Auth.auth.name
                     }
                     onChange={(e) => mainDispatch(setName(e.target.value))}
                     value={registerFields?.name}
                   />
                 </InputWrapper>
                 {/* <InputWrapper> */}
-                <MapAutocomplete />
+                <MapAutocomplete language={language} />
                 {/* </InputWrapper> */}
               </Wrapper>
             </>
             <>
               <TitleWrapper>
-                <InputTitle>ელ-ფოსტა*</InputTitle>
-                <InputTitle>მობილურის ნომერი*</InputTitle>
+                <InputTitle>{language?.language.Auth.auth.email}*</InputTitle>
+                <InputTitle>{language?.language.Auth.auth.phone}*</InputTitle>
               </TitleWrapper>
               <Wrapper>
                 <InputWrapper>
                   <Input
                     required
                     type="text"
-                    placeholder="ელ-ფოსტა"
+                    placeholder={language?.language.Auth.auth.email}
                     onChange={(e) => mainDispatch(setEmail(e.target.value))}
                     value={registerFields?.email}
                   />
@@ -274,7 +271,7 @@ export const Identify = (props) => {
                   <Input
                     required
                     type="text"
-                    placeholder="მობილურის-ნომერი"
+                    placeholder={language?.language.Auth.auth.phone}
                     onChange={(e) =>
                       mainDispatch(setPhoneNumber(e.target.value))
                     }
@@ -285,15 +282,19 @@ export const Identify = (props) => {
             </>
             <>
               <TitleWrapper>
-                <InputTitle>პაროლი*</InputTitle>
-                <InputTitle>დაადასტურე პაროლი*</InputTitle>
+                <InputTitle>
+                  {language?.language.Auth.auth.password}*
+                </InputTitle>
+                <InputTitle>
+                  {language?.language.Auth.auth.confirmPassword}*
+                </InputTitle>
               </TitleWrapper>
               <Wrapper>
                 <InputWrapper>
                   <Input
                     required
                     type="password"
-                    placeholder="პაროლი"
+                    placeholder={language?.language.Auth.auth.password}
                     onChange={(e) => mainDispatch(setPassword(e.target.value))}
                     value={registerFields?.password}
                   />
@@ -302,7 +303,7 @@ export const Identify = (props) => {
                   <Input
                     required
                     type="password"
-                    placeholder="დაადასტურე პაროლი"
+                    placeholder={language?.language.Auth.auth.confirmPassword}
                     value={registerFields?.confirmPassowrd}
                     onChange={(e) =>
                       mainDispatch(setConfirmPassowrd(e.target.value))
@@ -313,7 +314,11 @@ export const Identify = (props) => {
               <div id="recaptcha-container"></div>
             </>
           </Fields>
-          <Button title="შემდეგი" type="Submit" function={HandleSubmit} />
+          <Button
+            title={language?.language.Auth.auth.next}
+            type="Submit"
+            function={HandleSubmit}
+          />
         </WrapperContainer>
       </Container>
       <Confirm
@@ -326,7 +331,7 @@ export const Identify = (props) => {
           justifyContent: "center",
         }}
       >
-        <Title>Verify Phone Number</Title>
+        <Title>{language?.language.Auth.auth.verify}</Title>
         <InputWrapper>
           <Input
             type="text"
@@ -335,7 +340,9 @@ export const Identify = (props) => {
             value={otp}
           />
         </InputWrapper>
-        <SubmitButton type="submit">დადასტურება</SubmitButton>
+        <SubmitButton type="submit">
+          {language?.language.Auth.auth.confirm}
+        </SubmitButton>
       </Confirm>
     </>
   );
@@ -409,6 +416,7 @@ const Title = styled.h2`
   display: flex;
   align-items: center;
   gap: 15px;
+  color: ${(props) => props.theme.font};
 
   @media only screen and (max-width: 600px) {
     margin-bottom: 7vw;
@@ -446,6 +454,7 @@ const WrapperBtn = styled.div`
 
 const WrapperContainer = styled.form`
   display: ${(props) => (props.flag === "true" ? "none" : "flex")};
+
   align-items: center;
   justify-content: center;
   gap: 10vw;
@@ -468,6 +477,8 @@ const InputWrapper = styled.div`
   gap: 0.5vw;
   transition: ease-in 200ms;
   box-sizing: border-box;
+  color: ${(props) => props.theme.font};
+  background: ${(props) => props.theme.categoryItem};
 
   @media only screen and (max-width: 600px) {
     box-shadow: 0 0.2vw 0.6vw rgba(2, 2, 2, 0.1);
@@ -484,6 +495,8 @@ const InputWrapper = styled.div`
     border: none;
     padding: 0.5vw;
     cursor: pointer;
+    color: ${(props) => props.theme.font};
+    background: ${(props) => props.theme.categoryItem};
 
     @media only screen and (max-width: 600px) {
       width: 15vw;
@@ -516,6 +529,8 @@ const Input = styled.input`
   transition: ease-in 200ms;
   padding-left: 0.5vw;
   box-sizing: border-box;
+  color: ${(props) => props.theme.font};
+  background: ${(props) => props.theme.categoryItem};
 
   @media only screen and (max-width: 600px) {
     border-radius: 1.5vw;
@@ -529,16 +544,17 @@ const Input = styled.input`
 
   ::placeholder {
     font-size: 12px;
+    color: ${(props) => props.theme.font};
   }
 `;
 
 const InputTitle = styled.div`
   flex: 1;
   margin-bottom: -0.5vw;
+  color: #888;
 
   @media only screen and (max-width: 600px) {
     font-size: 3vw;
-    color: #888;
   }
 `;
 

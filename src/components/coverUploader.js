@@ -1,27 +1,19 @@
 import React, { useContext } from "react";
 import styled from "styled-components";
 import { useSelector, useDispatch } from "react-redux";
-import { doc, updateDoc, serverTimestamp, setDoc } from "firebase/firestore";
+import { doc, updateDoc } from "firebase/firestore";
 import { updateProfile } from "firebase/auth";
 import { db, storage, auth } from "../firebase";
-import {
-  ref,
-  uploadBytes,
-  listAll,
-  getDownloadURL,
-  deleteObject,
-} from "firebase/storage";
-import { v4 } from "uuid";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { AuthContext } from "../context/AuthContext";
 import { setRerender } from "../redux/main";
-import { FaUser } from "react-icons/fa";
-import { BsStars, BsLayoutTextSidebarReverse } from "react-icons/bs";
+import { BsStars } from "react-icons/bs";
 import Avatar from "@mui/material/Avatar";
 import { useNavigate } from "react-router-dom";
 import { setBackdropOpen } from "../redux/main";
 
 export const CoverUploader = (props) => {
-  const currentUser = auth.currentUser;
+  const { currentUser } = useContext(AuthContext);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -50,11 +42,11 @@ export const CoverUploader = (props) => {
     if (file != null) {
       dispatch(setBackdropOpen(true));
       // add in storage
-      const imageRef = ref(storage, `images/${props?.currentUser?.id}/cover`);
+      const imageRef = ref(storage, `images/${currentUser?.uid}/cover`);
       // const snapshot = await uploadBytes(imageRef, file);
       const url = await uploadBytes(imageRef, file).then((snapshot) => {
         getDownloadURL(snapshot.ref).then((url) => {
-          updateDoc(doc(db, `users`, props?.currentUser.id), {
+          updateDoc(doc(db, `users`, currentUser.uid), {
             cover: url,
           });
           updateProfile(auth.currentUser, {

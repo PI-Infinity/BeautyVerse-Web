@@ -1,7 +1,4 @@
-import React from "react";
 import styled from "styled-components";
-import { IoMdArrowDropdown } from "react-icons/io";
-import { RiShoppingCartFill } from "react-icons/ri";
 import { Search } from "../../pages/main/search";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -9,23 +6,20 @@ import {
   setDestrictFilter,
   setSpecialist,
   setObject,
-  setShop,
-  setReiting,
 } from "../../redux/filter";
 import { setRerender } from "../../redux/main";
 import Select from "react-select";
 import { useNavigate } from "react-router-dom";
-import { MdOutlineStarPurple500, MdOutlineStarOutline } from "react-icons/md";
 import CheckBox from "@mui/material/Checkbox";
+import { Language } from "../../context/language";
+import { GiFlexibleStar } from "react-icons/gi";
 
 export const Filter = (props) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const language = Language();
 
-  React.useEffect(() => {
-    dispatch(setCityFilter("ქალაქი"));
-    dispatch(setDestrictFilter("უბანი"));
-  }, []);
+  const lang = useSelector((state) => state.storeMain.language);
 
   // import users
   const usersList = useSelector((state) => state.storeMain.userList);
@@ -40,15 +34,17 @@ export const Filter = (props) => {
   // filter cities and not dublicate same cities in map
 
   const cityFilter = useSelector((state) => state.storeFilter.cityFilter);
+
   const destrictFilter = useSelector(
     (state) => state.storeFilter.destrictFilter
   );
+
   const specialist = useSelector((state) => state.storeFilter.specialist);
   const physicalObject = useSelector((state) => state.storeFilter.object);
   const shop = useSelector((state) => state.storeFilter.shop);
   const reiting = useSelector((state) => state.storeFilter.reiting);
 
-  const cities = ["ქალაქი"];
+  const cities = [`${language?.language.Main.filter.city}`];
 
   const Cities = users?.filter((obj) => {
     const isDuplicate = cities.includes(obj.adress.city);
@@ -64,7 +60,7 @@ export const Filter = (props) => {
 
   // filter destricts and not dublicate same districts in map
 
-  const distr = ["უბანი"];
+  const distr = [`${language?.language.Main.filter.district}`];
 
   const Districts = users?.filter((obj) => {
     const isDuplicate = distr.includes(obj.adress.destrict);
@@ -80,39 +76,88 @@ export const Filter = (props) => {
 
   const destricts = distr?.filter((item) => item != "");
 
+  // color mode
+  const theme = useSelector((state) => state.storeMain.theme);
+
+  const CustomStyle = {
+    singleValue: (base, state) => ({
+      ...base,
+      color: state.isSelected
+        ? theme
+          ? "#333"
+          : "#f3f3f3"
+        : theme
+        ? "#f3f3f3"
+        : "#333",
+    }),
+    menuList: (base, state) => ({
+      ...base,
+      backgroundColor: theme ? "#333" : "#f3f3f3",
+    }),
+    input: (base, state) => ({
+      ...base,
+      color: theme ? "#f3f3f3" : "#333",
+      fontSize: "16px",
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isSelected
+        ? theme
+          ? "#f3f3f3"
+          : "#333"
+        : theme
+        ? "#333"
+        : "#f3f3f3",
+      color: state.isSelected
+        ? theme
+          ? "#333"
+          : "#f3f3f3"
+        : theme
+        ? "#f3f3f3"
+        : "#333",
+    }),
+    control: (baseStyles, state) => ({
+      ...baseStyles,
+      borderColor: state.isFocused ? "#333" : theme ? "#050505" : "gray",
+      borderWidth: state.isFocused ? "0.1vw" : "0.1vw",
+      borderRadius: "2vw 2vw 2vw 2vw",
+      padding: "0 0.1vw 0.1vw 0.5vw",
+      backgroundColor: theme ? "#333" : "#fff",
+      color: theme ? "auto" : "#f3f3f3",
+      cursor: "pointer",
+      "@media only screen and (max-width: 1200px)": {
+        display: "none",
+      },
+    }),
+  };
+
   return (
     <FilterContainer scroll={scroll?.toString()}>
       {!props.mobile && <Search />}
       <Select
         className="basic-single"
         classNamePrefix="select"
-        defaultValue={cities[0]}
-        placeholder="ქალაქი"
+        defaultValue={cityFilter}
+        placeholder={
+          cityFilter === "City"
+            ? language?.language.Main.filter.city
+            : cityFilter
+        }
         isDisabled={false}
         isLoading={false}
         className="react-select-container"
+        styles={CustomStyle}
         onChange={(value) => {
-          dispatch(setCityFilter(value.label));
-          dispatch(setDestrictFilter("უბანი"));
+          dispatch(setCityFilter(value.value));
+          dispatch(
+            setDestrictFilter(`${language?.language.Main.filter.district}`)
+          );
           dispatch(setRerender());
         }}
         // classNames={{
         //   control: (state) =>
         //     state.isFocused ? "border-red-400" : "border-grey-400",
         // }}
-        styles={{
-          control: (baseStyles, state) => ({
-            ...baseStyles,
-            borderColor: state.isFocused ? "#333" : "#ddd",
-            borderWidth: state.isFocused ? "0.1vw" : "0.1vw",
-            borderRadius: "2vw 2vw 2vw 2vw",
-            padding: "0 0.1vw 0.1vw 0.5vw",
-            cursor: "pointer",
-            "@media only screen and (max-width: 1200px)": {
-              display: "none",
-            },
-          }),
-        }}
         options={cities?.map((item, index) => {
           return { value: item, label: item };
         })}
@@ -121,8 +166,12 @@ export const Filter = (props) => {
         <Select
           className="basic-single"
           classNamePrefix="select"
-          defaultValue={destricts[0]}
-          placeholder="უბანი"
+          defaultValue={destrictFilter}
+          placeholder={
+            destrictFilter === "District"
+              ? language?.language.Main.filter.district
+              : destrictFilter
+          }
           isDisabled={false}
           isLoading={false}
           onChange={(value) => {
@@ -130,20 +179,7 @@ export const Filter = (props) => {
             dispatch(setRerender());
           }}
           className="react-select-container"
-          styles={{
-            control: (baseStyles, state) => ({
-              ...baseStyles,
-              borderColor: state.isFocused ? "#333" : "#ddd",
-              borderWidth: state.isFocused ? "0.1vw" : "0.1vw",
-              borderRadius: "2vw 2vw 2vw 2vw",
-              padding: "0 0.1vw 0.1vw 0.5vw",
-
-              cursor: "pointer",
-              "@media only screen and (max-width: 1200px)": {
-                display: "none",
-              },
-            }),
-          }}
+          styles={CustomStyle}
           options={destricts?.map((item, index) => {
             return { value: item, label: item };
           })}
@@ -166,7 +202,7 @@ export const Filter = (props) => {
           htmlFor="specialists"
           style={{ cursor: "pointer" }}
         >
-          სპეციალისტები
+          {language?.language.Main.filter.specialist}
         </label>
       </CheckBoxContainer>
       <CheckBoxContainer>
@@ -187,9 +223,24 @@ export const Filter = (props) => {
           htmlFor="beautyCenter"
           style={{ cursor: "pointer" }}
         >
-          ბიუთი ცენტრები
+          {language?.language.Main.filter.beautySalon}
         </label>
       </CheckBoxContainer>
+      <RecomendedActive
+        active={window.location.pathname === "/recomended" ? "true" : "false"}
+      >
+        <GiFlexibleStar
+          color="f2cd38"
+          onClick={
+            window.location.pathname === "/recomended"
+              ? () => navigate("/")
+              : () => navigate("/recomended")
+          }
+          size={22}
+          style={{ cursor: "pointer" }}
+        />
+      </RecomendedActive>
+
       {/* <CheckBoxContainer>
         <CheckBox
           type="checkbox"
@@ -253,6 +304,22 @@ const CheckBoxContainer = styled.div`
   }
   .checkbox {
     color: ${(props) => props.theme.logo};
+  }
+`;
+
+const RecomendedActive = styled.div`
+  width: 30px;
+  height: 30px;
+  padding: 3px;
+  background: ${(props) =>
+    props.active === "true" ? props?.theme.secondLevel : "none"};
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @media only screen and (max-width: 600px) {
+    display: none;
   }
 `;
 // const CheckBox = styled.input`

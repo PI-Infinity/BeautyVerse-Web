@@ -1,12 +1,13 @@
-import React from "react";
 import styled from "styled-components";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { FaUser } from "react-icons/fa";
 import Avatar from "@mui/material/Avatar";
+import { Language } from "../../context/language";
 
 export const Header = () => {
   const navigate = useNavigate();
+
+  const language = Language();
   // import current user & parse it
   const userUnparsed = useSelector((state) => state.storeMain.user);
   let currentuser;
@@ -29,7 +30,7 @@ export const Header = () => {
         </h4>
       </div>
 
-      <h3>Chat</h3>
+      <h3>{language?.language.Chat.chat.title}</h3>
     </Container>
   );
 };

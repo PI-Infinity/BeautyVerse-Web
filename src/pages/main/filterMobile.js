@@ -1,33 +1,29 @@
 import React from "react";
 import styled from "styled-components";
 import { CategoryFilter } from "../../pages/main/categoryFilter";
-import { IoMdArrowDropdown } from "react-icons/io";
-import { RiShoppingCartFill } from "react-icons/ri";
-import { Search } from "../../pages/main/search";
 import { useSelector, useDispatch } from "react-redux";
 import {
   setCityFilter,
   setDestrictFilter,
   setSpecialist,
   setObject,
-  setShop,
-  setReiting,
 } from "../../redux/filter";
 import { setRerender } from "../../redux/main";
 import Select from "react-select";
 import { useNavigate } from "react-router-dom";
-import { VscListFilter } from "react-icons/vsc";
 import { setFilterOpen } from "../../redux/main";
 import { Button } from "../../components/button";
-import { MdOutlineStarPurple500, MdOutlineStarOutline } from "react-icons/md";
 import useWindowDimensions from "../../functions/dimensions";
 import CheckBox from "@mui/material/Checkbox";
+import { Language } from "../../context/language";
 
 export const FilterMobile = () => {
   const { height, width } = useWindowDimensions();
   const [loading, setLoading] = React.useState(true);
   const dispatch = useDispatch();
   const reiting = useSelector((state) => state.storeFilter.reiting);
+
+  const language = Language();
 
   setTimeout(() => {
     setLoading(false);
@@ -36,7 +32,7 @@ export const FilterMobile = () => {
   return (
     <Container loading={loading.toString()} height={height}>
       <div style={{ margin: "3vw 0 0 0" }}>
-        <h3>Filter</h3>
+        <h3>{language?.language.Main.filter.title}</h3>
       </div>
 
       <CategoryFilter />
@@ -47,7 +43,7 @@ export const FilterMobile = () => {
           function={() => {
             dispatch(setFilterOpen(false));
           }}
-          title="გაფილტვრა..."
+          title={`${language?.language.Main.filter.search}`}
         />
       </div>
     </Container>
@@ -97,11 +93,7 @@ const Container = styled.div`
 export const Filter = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  React.useEffect(() => {
-    dispatch(setCityFilter("ქალაქი"));
-    dispatch(setDestrictFilter("უბანი"));
-  }, []);
+  const language = Language();
 
   // import users
   const usersList = useSelector((state) => state.storeMain.userList);
@@ -120,7 +112,7 @@ export const Filter = () => {
   const physicalObject = useSelector((state) => state.storeFilter.object);
   const shop = useSelector((state) => state.storeFilter.shop);
 
-  const cities = ["ქალაქი"];
+  const cities = [`${language?.language.Main.filter.city}`];
 
   const Cities = users?.filter((obj) => {
     const isDuplicate = cities.includes(obj.adress.city);
@@ -136,7 +128,7 @@ export const Filter = () => {
 
   // filter destricts and not dublicate same districts in map
 
-  const distr = ["უბანი"];
+  const distr = [`${language?.language.Main.filter.district}`];
 
   const Districts = users?.filter((obj) => {
     const isDuplicate = distr.includes(obj.adress.destrict);
@@ -152,34 +144,76 @@ export const Filter = () => {
 
   const destricts = distr?.filter((item) => item != "");
 
+  // color mode
+  const theme = useSelector((state) => state.storeMain.theme);
+  const CustomStyle = {
+    singleValue: (base, state) => ({
+      ...base,
+      color: state.isSelected
+        ? theme
+          ? "#333"
+          : "#f3f3f3"
+        : theme
+        ? "#f3f3f3"
+        : "#333",
+    }),
+    menuList: (base, state) => ({
+      ...base,
+      backgroundColor: theme ? "#333" : "#f3f3f3",
+    }),
+    input: (base, state) => ({
+      ...base,
+      color: theme ? "#f3f3f3" : "#333",
+      fontSize: "16px",
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isSelected
+        ? theme
+          ? "#f3f3f3"
+          : "#333"
+        : theme
+        ? "#333"
+        : "#f3f3f3",
+      color: state.isSelected
+        ? theme
+          ? "#333"
+          : "#f3f3f3"
+        : theme
+        ? "#f3f3f3"
+        : "#333",
+    }),
+    control: (baseStyles, state) => ({
+      ...baseStyles,
+      cursor: "pointer",
+      backgroundColor: theme ? "#333" : "#fff",
+      // "@media only screen and (max-width: 1200px)": {
+      //   display: "none",
+      // },
+    }),
+  };
+
   return (
     <FilterContainer>
       <Select
         classNamePrefix="select"
-        defaultValue={cities[0]}
-        placeholder="ქალაქი"
+        defaultValue={cityFilter}
+        placeholder={
+          cityFilter === "City"
+            ? language?.language.Main.filter.city
+            : cityFilter
+        }
         isDisabled={false}
         isLoading={false}
         className="react-select-container"
         onChange={(value) => {
           dispatch(setCityFilter(value.label));
-          dispatch(setDestrictFilter("უბანი"));
+          dispatch(
+            setDestrictFilter(`${language?.language.Main.filter.district}`)
+          );
           dispatch(setRerender());
         }}
-        classNames={{
-          control: (state) =>
-            state.isFocused ? "border-red-600" : "border-grey-300",
-        }}
-        styles={{
-          control: (baseStyles, state) => ({
-            ...baseStyles,
-            borderColor: state.isFocused ? "rgba(0,0,0,0)" : "rgba(0,0,0,0.1)",
-            cursor: "pointer",
-            // "@media only screen and (max-width: 1200px)": {
-            //   display: "none",
-            // },
-          }),
-        }}
+        styles={CustomStyle}
         options={cities?.map((item, index) => {
           return { value: item, label: item };
         })}
@@ -188,23 +222,19 @@ export const Filter = () => {
         <Select
           className="react-select-container"
           classNamePrefix="select"
-          defaultValue={destricts[0]}
-          placeholder="უბანი"
+          defaultValue={destrictFilter}
+          placeholder={
+            destrictFilter === "District"
+              ? language?.language.Main.filter.district
+              : destrictFilter
+          }
           isDisabled={false}
           isLoading={false}
           onChange={(value) => {
             dispatch(setDestrictFilter(value.value));
             dispatch(setRerender());
           }}
-          styles={{
-            control: (baseStyles, state) => ({
-              ...baseStyles,
-              borderColor: state.isFocused
-                ? "rgba(0,0,0,0)"
-                : "rgba(0,0,0,0.1)",
-              cursor: "pointer",
-            }),
-          }}
+          styles={CustomStyle}
           options={destricts?.map((item, index) => {
             return { value: item, label: item };
           })}
@@ -222,7 +252,9 @@ export const Filter = () => {
               dispatch(setSpecialist(!specialist));
             }}
           />
-          <label htmlFor="specialists">სპეციალისტები</label>
+          <label htmlFor="specialists">
+            {language?.language.Main.filter.specialist}
+          </label>
         </CheckBoxContainer>
         <CheckBoxContainer>
           <CheckBox
@@ -235,7 +267,9 @@ export const Filter = () => {
               dispatch(setObject(!physicalObject));
             }}
           />
-          <label htmlFor="beautyCenters">ბიუთი ცენტრები</label>
+          <label htmlFor="beautyCenters">
+            {language?.language.Main.filter.beautySalon}
+          </label>
         </CheckBoxContainer>
       </div>
       {/* <CheckBoxContainer>
@@ -263,7 +297,7 @@ const FilterContainer = styled.div`
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
-    gap: 0vw;
+    gap: 3vw;
     margin-top: 4vw;
     z-index: 10000;
   }

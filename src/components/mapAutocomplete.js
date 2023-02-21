@@ -1,15 +1,11 @@
 import React from "react";
 import PlacesAutocomplete from "react-places-autocomplete";
-import {
-  geocodeByAddress,
-  geocodeByPlaceId,
-  getLatLng,
-} from "react-places-autocomplete";
+import { geocodeByAddress, getLatLng } from "react-places-autocomplete";
 import { setMap } from "../redux/register";
 import styled from "styled-components";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 
-const MapAutocomplete = () => {
+const MapAutocomplete = ({ language }) => {
   const dispatch = useDispatch();
   const [adress, setAdress] = React.useState("");
   const handleSelect = async (value) => {
@@ -129,8 +125,10 @@ const MapAutocomplete = () => {
         {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
           <Container>
             <Input
+              requred
+              value={adress}
               {...getInputProps({
-                placeholder: "მოძებნე მისამართი ...",
+                placeholder: language?.language.User.userPage.findAdress,
                 className: "location-search-input",
               })}
             />
@@ -141,15 +139,15 @@ const MapAutocomplete = () => {
                   ? "suggestion-item--active"
                   : "suggestion-item";
                 // inline style for demonstration purpose
-                const style = suggestion?.active
-                  ? { backgroundColor: "#fafafa", cursor: "pointer" }
-                  : { backgroundColor: "#ffffff", cursor: "pointer" };
+                // const style = suggestion?.active
+                //   ? { backgroundColor: "#fafafa", cursor: "pointer" }
+                //   : { backgroundColor: "#ffffff", cursor: "pointer" };
                 return (
                   <div
                     key={index}
                     {...getSuggestionItemProps(suggestion, {
                       className,
-                      style,
+                      // style,
                     })}
                   >
                     <span>{suggestion?.description}</span>
@@ -178,10 +176,12 @@ const Container = styled.div`
   box-sizing: border-box;
   box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
   overflow: hidden;
+  color: ${(props) => props.theme.font};
+  background: ${(props) => props.theme.categoryItem};
 
   @media only screen and (max-width: 600px) {
-    width: 45vw;
-    height: 10vw;
+    width: 80vw;
+    height: 8vw;
     border-radius: 1.5vw;
     font-size: 16px;
   }
@@ -197,15 +197,16 @@ const Container = styled.div`
     text-align: start;
     box-sizing: border-box;
     border-radius: 0 0.5vw;
-    box-shadow: 0 0.1vw 0.3vw rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0.1vw 0.3vw ${(props) => props.theme.shadowColor};
     display: flex;
     flex-direction: column;
     gap: 0.5vw;
-    background: #fff;
+    color: auto;
+    background: ${(props) => props.theme.categoryItem};
 
     @media only screen and (max-width: 600px) {
       box-shadow: 0 0.2vw 0.6vw rgba(2, 2, 2, 0.1);
-      width: 45vw;
+      width: 80vw;
       height: auto;
       margin-top: 8vw;
       border-radius: 1vw;
@@ -215,11 +216,15 @@ const Container = styled.div`
 
   .suggestion-item {
     margin: 0.25vw 0.5vw;
-    border-bottom: 1px solid #050505;
+    border-bottom: 1px solid ${(props) => props.theme.font};
+    color: ${(props) => props.theme.font};
+    cursor: pointer;
   }
   .suggestion-item--active {
+    cursor: pointer;
     margin: 0.25vw 0.5vw;
-    border-bottom: 1px solid #050505;
+    border-bottom: 1px solid ${(props) => props.theme.font};
+    background: ${(props) => props.theme.categoryItem};
   }
 `;
 
@@ -235,6 +240,8 @@ const Input = styled.input`
   padding-left: 0.5vw;
   transition: ease-in 200ms;
   box-sizing: border-box;
+  color: ${(props) => props.theme.font};
+  background: ${(props) => props.theme.categoryItem};
 
   @media only screen and (max-width: 600px) {
     border-radius: 1.5vw;
@@ -252,5 +259,6 @@ const Input = styled.input`
 
   ::placeholder {
     font-size: 12px;
+    color: ${(props) => props.theme.font};
   }
 `;

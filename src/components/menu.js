@@ -1,47 +1,35 @@
-import React, { useState, useContext } from "react";
+import React, { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import styled from "styled-components";
 import Box from "@mui/material/Box";
 import Drawer from "@mui/material/Drawer";
 import Button from "@mui/material/Button";
-import List from "@mui/material/List";
-import Divider from "@mui/material/Divider";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import InboxIcon from "@mui/icons-material/MoveToInbox";
-import MailIcon from "@mui/icons-material/Mail";
 import { CgMenuGridO, CgMenuGridR } from "react-icons/cg";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { FaUser } from "react-icons/fa";
 import Badge from "@mui/material/Badge";
-import {
-  MdSecurity,
-  MdAttachMoney,
-  MdCircleNotifications,
-} from "react-icons/md";
-import { TbMessages } from "react-icons/tb";
-import { FcAdvertising, FcRules, FcWorkflow } from "react-icons/fc";
+import { MdSecurity, MdCircleNotifications } from "react-icons/md";
+import { FcRules, FcWorkflow } from "react-icons/fc";
 import { BsQuestionLg } from "react-icons/bs";
 import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
 import Flag from "react-world-flags";
 import {
-  setOpenMenu,
-  setRerender,
   setOpenMobileMenu,
   setTheme,
   setUser,
+  setLanguage,
 } from "../redux/main";
 import useWindowDimensions from "../functions/dimensions";
-import { GiExitDoor, GiShop } from "react-icons/gi";
+import { GiExitDoor } from "react-icons/gi";
 import { IsMobile } from "../functions/isMobile";
 import { makeStyles } from "@mui/styles";
 import DarkModeToggle from "react-dark-mode-toggle";
+import { Language } from "../context/language";
 
 export default function Menu(props) {
   const { height, width } = useWindowDimensions();
+  const language = Language();
 
   const Logout = async () => {
     await mainDispatch(setOpenMobileMenu(false));
@@ -51,6 +39,7 @@ export default function Menu(props) {
   };
 
   const theme = useSelector((state) => state.storeMain.theme);
+
   const { currentUser } = useContext(AuthContext);
   // import current user & parse it
   const userUnparsed = useSelector((state) => state.storeMain.user);
@@ -84,6 +73,14 @@ export default function Menu(props) {
 
     setState({ ...state, [anchor]: open });
   };
+
+  /// define active btn
+  const lang = useSelector((state) => state.storeMain.language);
+  const [active, setActive] = React.useState();
+
+  React.useEffect(() => {
+    setActive(lang);
+  }, [lang]);
 
   const list = (anchor) => (
     <Box
@@ -121,7 +118,7 @@ export default function Menu(props) {
                   <Img src={currentuser?.cover} alt="cover" />
                 )}
               </Profile>
-              <span>პირადი გვერდი</span>
+              <span>{language?.language.Main.menu.profile}</span>
             </Item>
           </div>
           {/* <Item
@@ -141,7 +138,7 @@ export default function Menu(props) {
             >
               <MdCircleNotifications className="icon" />{" "}
             </Badge>
-            <span>შეტყობინებები</span>
+            <span>{language?.language.Main.menu.notifications}</span>
           </Item>
           {/* <Item
           onClick={async () => {
@@ -153,7 +150,7 @@ export default function Menu(props) {
           </Badge>
           <span>ჩატი</span>
         </Item> */}
-          {currentuser?.type != "user" && (
+          {/* {currentuser?.type != "user" && (
             <Item
               onClick={async () => {
                 navigate("/advertisments");
@@ -162,7 +159,7 @@ export default function Menu(props) {
               <FcAdvertising className="icon" />
               რეკლამა
             </Item>
-          )}
+          )} */}
           {/* <Item>
             <GiShop className="icon" />
             მაღაზიის დამატება
@@ -183,15 +180,17 @@ export default function Menu(props) {
             }}
           >
             <FcRules className="icon" />
-            წესები და პირობები
+            {language?.language.Main.menu.tr}
           </Item>
           <Item
             onClick={async () => {
               navigate("/privacy");
             }}
+            style={{ flexDirection: "column" }}
           >
             <MdSecurity className="icon" />
-            კონფიდენცი- ალურობა
+            {language?.language.Main.menu.privacy?.split("", 9)}
+            {!language?.language.Main.menu.privacy?.includes("Pr") && "."}
           </Item>
           <Item
             onClick={async () => {
@@ -199,7 +198,7 @@ export default function Menu(props) {
             }}
           >
             <FcWorkflow className="icon" />
-            როგორ მუშაობს?
+            {language?.language.Main.menu.howitworks}
           </Item>
           <Item
             onClick={async () => {
@@ -207,52 +206,79 @@ export default function Menu(props) {
             }}
           >
             <BsQuestionLg className="icon" />
-            კითხვებზე პასუხები
+            {language?.language.Main.menu.qa}
           </Item>
         </Items>
 
         <FooterContainer>
           <FooterContent>
             <Icons>
-              <FaFacebook />
-              <FaInstagram />
-              <FaYoutube />
+              <LanguageBg>
+                <FaFacebook />
+              </LanguageBg>
+              <LanguageBg>
+                <FaInstagram />
+              </LanguageBg>
+              <LanguageBg>
+                <FaYoutube />
+              </LanguageBg>
             </Icons>
             <div>
               <DarkModeToggle
-                onChange={() => mainDispatch(setTheme())}
+                onChange={() => {
+                  mainDispatch(setTheme(!theme));
+                  localStorage.setItem(
+                    "BeautyVerse:ThemeMode",
+                    JSON.stringify(!theme)
+                  );
+                }}
                 checked={theme}
-                size={80}
+                size={50}
               />
             </div>
             <Languages>
-              <Flag
-                code="geo"
-                className="lang"
+              <LanguageBg
+                active={active === "ka" ? "true" : "false"}
                 onClick={() => {
-                  localStorage.setItem("BeautyVerse:Language", "ka");
+                  mainDispatch(setLanguage("ka"));
+                  localStorage.setItem(
+                    "BeautyVerse:Language",
+                    JSON.stringify("ka")
+                  );
                 }}
-              />
-              <Flag
-                code="usa"
-                className="lang"
+              >
+                <Flag code="geo" className="lang" />
+              </LanguageBg>
+              <LanguageBg
+                active={active === "en" ? "true" : "false"}
                 onClick={() => {
-                  localStorage.setItem("BeautyVerse:Language", "en");
+                  mainDispatch(setLanguage("en"));
+                  localStorage.setItem(
+                    "BeautyVerse:Language",
+                    JSON.stringify("en")
+                  );
                 }}
-              />
-              <Flag
-                code="rus"
-                className="langR"
+              >
+                <Flag code="usa" className="lang" />
+              </LanguageBg>
+              <LanguageBg
+                active={active === "ru" ? "true" : "false"}
                 onClick={() => {
-                  localStorage.setItem("BeautyVerse:Language", "ru");
+                  mainDispatch(setLanguage("ru"));
+                  localStorage.setItem(
+                    "BeautyVerse:Language",
+                    JSON.stringify("ru")
+                  );
                 }}
-              />
+              >
+                <Flag code="rus" className="langR" />
+              </LanguageBg>
             </Languages>
           </FooterContent>
           {currentUser != undefined ? (
             <LogoutBtn onClick={Logout}>
               <GiExitDoor />
-              გასვლა
+              {language?.language.Main.menu.logout}
             </LogoutBtn>
           ) : (
             <LogoutBtn
@@ -261,7 +287,7 @@ export default function Menu(props) {
               }}
             >
               <GiExitDoor />
-              შესვლა
+              {language?.language.Main.menu.login}
             </LogoutBtn>
           )}
           {/* <Copyright>&#169; beautyverse</Copyright>{" "} */}
@@ -276,6 +302,7 @@ export default function Menu(props) {
         borderRadius: "0.5vw 0 0 0.5vw",
         background: "none",
         boxShadow: "none",
+
         "@media only screen and (max-width: 1200px)": {
           borderRadius: "15px 15px 0 0",
           boxShadow: "0 -0.2vw 1vw rgba(0,0,0,0.2)",
@@ -339,6 +366,9 @@ const Cont = styled.div`
   background: ${(props) => props.theme.background};
   margin-top: 0.2vw;
   border-radius: 0 0 0 0.5vw;
+  @media only screen and (max-width: 1200px) {
+    margin-top: 0;
+  }
 `;
 
 const Items = styled.div`
@@ -367,6 +397,7 @@ const Item = styled.div`
   align-items: center;
   justify-content: center;
   padding: 1vw;
+  width: 100%;
   height: 7vw;
   margin: 0.25vw;
   gap: 0.5vw;
@@ -385,6 +416,7 @@ const Item = styled.div`
     margin: 1vw;
     font-size: 2.4vw;
     border-radius: 3vw;
+    gap: 1.5vw;
   }
 
   :hover {
@@ -455,7 +487,7 @@ const FooterContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: cente;
+  justify-content: center;
   margin-top: 3vw;
   @media only screen and (max-width: 600px) {
     display: flex;
@@ -478,6 +510,20 @@ const FooterContent = styled.div`
     box-sizing: border-box;
     width: 100%;
   }
+`;
+
+const LanguageBg = styled.div`
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px;
+  border-radius: 100px;
+  box-shadow: 0 0.1vw 0.2vw ${(props) => props.theme.shadowColor};
+  background: ${(props) =>
+    props.active === "true" ? props.theme.secondLevel : "none"};
+  cursor: pointer;
 `;
 
 const Languages = styled.div`
@@ -560,9 +606,12 @@ const LogoutBtn = styled.div`
   transition: ease-in-out 200ms;
   color: ${(props) => props.theme.font};
   margin-top: 3vw;
+  margin-bottom: 1vw;
+  gap: 0.5vw;
 
   @media only screen and (max-width: 600px) {
     height: 10vh;
+    gap: 1.5vw;
   }
 
   // :hover {

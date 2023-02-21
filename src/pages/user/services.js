@@ -1,6 +1,5 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
-import Loader from "react-js-loader";
 import { db } from "../../firebase";
 import {
   doc,
@@ -10,7 +9,7 @@ import {
   onSnapshot,
   collection,
 } from "firebase/firestore";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { TiDeleteOutline } from "react-icons/ti";
 import { MdLibraryAdd } from "react-icons/md";
 import { ImCheckmark } from "react-icons/im";
@@ -19,7 +18,6 @@ import Select from "react-select";
 import makeAnimated from "react-select/animated";
 import {
   ProceduresOptions,
-  workingPlacesOptions,
   workingDaysOptions,
 } from "../../data/registerDatas";
 import useWindowDimensions from "../../functions/dimensions";
@@ -27,13 +25,14 @@ import { IsMobile } from "../../functions/isMobile";
 import { useOutletContext } from "react-router-dom";
 import { RiEdit2Fill } from "react-icons/ri";
 import AlertDialog from "../../components/dialog";
+import BasicTimePicker from "../../components/timePicker";
 
 const animatedComponents = makeAnimated();
 
 export const Services = () => {
   const proceduresOptions = ProceduresOptions();
 
-  const [user] = useOutletContext();
+  const [user, language] = useOutletContext();
   const isMobile = IsMobile();
   const [loading, setLoading] = React.useState(true);
   const { height, width } = useWindowDimensions();
@@ -97,7 +96,7 @@ export const Services = () => {
   // delete service
   const Deleting = async (prop) => {
     if (services?.length == 1) {
-      alert("ბოლო სერვისისი წაშლა შეუძლებელია");
+      alert(language?.language.User.userPage.lastProcedure);
     } else {
       const main = doc(db, "users", `${user.id}`);
       let less = user?.filterCategories?.filter((item) => item != prop);
@@ -110,23 +109,42 @@ export const Services = () => {
     }
   };
 
-  const [editWorkingPlace, setEditWorkingPlace] = React.useState("");
+  // const [editWorkingPlace, setEditWorkingPlace] = React.useState("");
   const [editWorkingDays, setEditWorkingDays] = React.useState("");
-  const [editWorkingHours, setEditWorkingHours] = React.useState("");
   const [edit, setEdit] = React.useState(false);
 
-  // update working places
-  const UpdateWorkingPlace = (newValue) => {
-    const base = doc(db, "users", `${user?.id}`);
-    if (editWorkingPlace?.length > 0) {
-      updateDoc(base, {
-        workingPlace: editWorkingPlace,
-      });
-      setEditWorkingPlace("");
-    }
-    setEditWorkingPlace("");
-    setEdit(false);
-  };
+  const [startingHours, setStartingHours] = React.useState(null);
+  const [endingHours, setEndingHours] = React.useState(null);
+
+  // define working days options language
+  const lang = useSelector((state) => state.storeMain.language);
+  let workingDaysOpt;
+  if (lang === "ka") {
+    workingDaysOpt = workingDaysOptions?.map((item) => {
+      return { value: item.value, label: item.ka };
+    });
+  } else if (lang === "ru") {
+    workingDaysOpt = workingDaysOptions?.map((item) => {
+      return { value: item.value, label: item.ru };
+    });
+  } else {
+    workingDaysOpt = workingDaysOptions?.map((item) => {
+      return { value: item.value, label: item.en };
+    });
+  }
+
+  // // update working places
+  // const UpdateWorkingPlace = (newValue) => {
+  //   const base = doc(db, "users", `${user?.id}`);
+  //   if (editWorkingPlace?.length > 0) {
+  //     updateDoc(base, {
+  //       workingPlace: editWorkingPlace,
+  //     });
+  //     setEditWorkingPlace("");
+  //   }
+  //   setEditWorkingPlace("");
+  //   setEdit(false);
+  // };
   // update working days
   const UpdateWorkingDays = (newValue) => {
     const base = doc(db, "users", `${user?.id}`);
@@ -138,11 +156,92 @@ export const Services = () => {
     setEditWorkingDays("");
     setEdit(false);
   };
+  const UpdateWorkingHours = () => {
+    const base = doc(db, "users", `${user?.id}`);
+    if (startingHours !== null && endingHours !== null) {
+      updateDoc(base, {
+        workingHours: {
+          start: startingHours.$H + ":" + startingHours.$m,
+          end: endingHours.$H + ":" + endingHours.$m,
+        },
+      });
+      setEndingHours("");
+      setStartingHours("");
+      setEdit(false);
+    } else {
+      alert("Add starting and andign time");
+    }
+  };
 
   // confirm remove service
   const [confirmRemove, setConfirmRemove] = React.useState(false);
   // import user gallery images from firestore
   const [removeData, setRemoveData] = useState("");
+
+  // color mode
+  const theme = useSelector((state) => state.storeMain.theme);
+  const CustomStyle = {
+    singleValue: (base, state) => ({
+      ...base,
+      color: state.isSelected
+        ? theme
+          ? "#333"
+          : "#f3f3f3"
+        : theme
+        ? "#f3f3f3"
+        : "#333",
+    }),
+    placeholder: (base, state) => ({
+      ...base,
+      fontSize: "16px",
+      color: state.isSelected
+        ? theme
+          ? "#333"
+          : "#f3f3f3"
+        : theme
+        ? "#f3f3f3"
+        : "#333",
+    }),
+    menuList: (base, state) => ({
+      ...base,
+      backgroundColor: theme ? "#333" : "#fff",
+    }),
+    input: (base, state) => ({
+      ...base,
+      color: theme ? "#f3f3f3" : "#333",
+      fontSize: "16px",
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isSelected
+        ? theme
+          ? "#f3f3f3"
+          : "#333"
+        : theme
+        ? "#333"
+        : "#f3f3f3",
+      color: state.isSelected
+        ? theme
+          ? "#333"
+          : "#f3f3f3"
+        : theme
+        ? "#f3f3f3"
+        : "#333",
+    }),
+    control: (baseStyles, state) => ({
+      ...baseStyles,
+      backgroundColor: theme ? "#333" : "#fff",
+      borderColor: state.isFocused ? "rgba(0,0,0,0)" : "rgba(0,0,0,0.1)",
+      width: "38vw",
+      minHeight: "2vw",
+      cursor: "pointer",
+      color: "red",
+      "@media only screen and (max-width: 1200px)": {
+        width: "80vw",
+        fontSize: "16px",
+      },
+    }),
+  };
 
   setTimeout(() => {
     setLoading(false);
@@ -152,140 +251,125 @@ export const Services = () => {
     <ContentContainer height={height}>
       <WrapperOne>
         <WorkingDays>
-          <span style={{ fontWeight: "bold" }}>სამუშაო დღეები:</span>
+          <span style={{ fontWeight: "bold" }}>
+            {language?.language.User.userPage.workingDays}:{" "}
+            {user?.id === currentuser?.id && edit !== "days" && (
+              <RiEdit2Fill className="edit" onClick={() => setEdit("days")} />
+            )}
+          </span>
           <div>
             {user?.workingDays
               ?.sort(function (a, b) {
                 return a.id - b.id;
               })
               ?.map((item, index) => {
-                return <div key={item.id}>{item.label}</div>;
+                let daysLang = workingDaysOpt?.find(
+                  (item) => item.value === item.value
+                );
+                return <div key={item.id}>{daysLang.label}</div>;
               })}
           </div>
           {edit === "days" && (
-            <Select
-              placeholder="დაამატე სამუშაო დღეები"
-              components={animatedComponents}
-              onChange={(value) => {
-                setEditWorkingDays(value);
-              }}
-              placeholder="სამუშაო დღეები"
-              isMulti
-              components={animatedComponents}
-              styles={{
-                control: (baseStyles, state) => ({
-                  ...baseStyles,
-                  borderColor: state.isFocused
-                    ? "rgba(0,0,0,0)"
-                    : "rgba(0,0,0,0.1)",
-                  width: "15vw",
-                  minHeight: "2vw",
-                  cursor: "pointer",
-                  "@media only screen and (max-width: 1200px)": {
-                    width: "50vw",
-                    fontSize: "16px",
-                  },
-                }),
-              }}
-              options={workingDaysOptions}
-            />
-          )}
-          {edit === "days" ? (
-            <ImCheckmark
-              className="confirmIcon"
-              onClick={() => setEdit(false)}
-              onClick={UpdateWorkingDays}
-            />
-          ) : (
-            <RiEdit2Fill className="editIcon" onClick={() => setEdit("days")} />
+            <SelectContainer
+              style={{ display: "flex", gap: "10px", alignItems: "center" }}
+            >
+              <Select
+                components={animatedComponents}
+                onChange={(value) => {
+                  setEditWorkingDays(value);
+                }}
+                placeholder={language?.language.User.userPage.workingDays}
+                isMulti
+                components={animatedComponents}
+                styles={CustomStyle}
+                options={workingDaysOpt}
+              />
+              <ImCheckmark
+                className="add"
+                onClick={() => {
+                  setEdit(false);
+                  UpdateWorkingDays();
+                }}
+              />
+            </SelectContainer>
           )}
         </WorkingDays>
         <WorkingDays>
-          <span style={{ fontWeight: "bold" }}>სამუშაო გარემო:</span>
-          <div>
-            {user?.workingPlace
-              ?.sort(function (a, b) {
-                return a.id - b.id;
-              })
-              ?.map((item, index) => {
-                return <div key={item.id}>{item.label}</div>;
-              })}
-          </div>
-          {edit === "place" && (
-            <Select
-              placeholder="დაამატე სამუშაო გარემო"
-              components={animatedComponents}
-              onChange={(value) => {
-                setEditWorkingPlace(value);
-              }}
-              placeholder="სამუშაო გარემო"
-              isMulti
-              components={animatedComponents}
-              styles={{
-                control: (baseStyles, state) => ({
-                  ...baseStyles,
-                  borderColor: state.isFocused
-                    ? "rgba(0,0,0,0)"
-                    : "rgba(0,0,0,0.1)",
-                  width: "15vw",
-                  minHeight: "2vw",
-                  cursor: "pointer",
-                  "@media only screen and (max-width: 1200px)": {
-                    width: "50vw",
-                    fontSize: "16px",
-                  },
-                }),
-              }}
-              options={workingPlacesOptions}
-            />
-          )}
-          {edit === "place" ? (
-            <ImCheckmark
-              className="confirmIcon"
-              onClick={() => setEdit(false)}
-              onClick={UpdateWorkingPlace}
-            />
+          <span style={{ fontWeight: "bold" }}>
+            {user?.workingHours !== undefined &&
+              language?.language.User.userPage.workingHours + ": "}
+            {user?.id === currentuser?.id && edit !== "hours" && (
+              <RiEdit2Fill className="edit" onClick={() => setEdit("hours")} />
+            )}
+          </span>
+          {edit === "hours" ? (
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "start",
+                  gap: "10px",
+                }}
+              >
+                <span>{language?.language.User.userPage.startAt}</span>
+                <BasicTimePicker
+                  value={startingHours}
+                  setValue={setStartingHours}
+                />
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "start",
+                  gap: "10px",
+                }}
+              >
+                <span>{language?.language.User.userPage.endAt}</span>
+                <BasicTimePicker
+                  value={endingHours}
+                  setValue={setEndingHours}
+                />
+              </div>
+              <ImCheckmark
+                className="add"
+                onClick={() => setEdit(false)}
+                onClick={UpdateWorkingHours}
+              />
+            </div>
           ) : (
-            <RiEdit2Fill
-              className="editIcon"
-              onClick={() => setEdit("place")}
-            />
+            <span>
+              {user?.workingHours !== undefined &&
+                user?.workingHours?.start + "-" + user?.workingHours?.end}
+            </span>
           )}
         </WorkingDays>
       </WrapperOne>
       <ServicesContainer>
-        <span style={{ fontWeight: "bold", marginTop: "1vw" }}>სერვისები:</span>
+        <span style={{ fontWeight: "bold", marginTop: "1vw" }}>
+          {language?.language.User.userPage.service}:
+        </span>
         <Servs>
           {user?.id === currentuser?.id && (
             <>
-              {!addService ? (
+              {!addService && (
                 <MdLibraryAdd
                   className="open"
                   onClick={() => setAddService(true)}
                 />
-              ) : (
-                <ImCheckmark className="add" onClick={Adding} />
               )}
             </>
           )}
           {addService && (
-            <SelectContainer>
+            <SelectContainer style={{ display: "flex", gap: "10px" }}>
               <Select
-                placeholder="დაამატე სერვისი"
+                placeholder={language?.language.User.userPage.addService}
                 components={animatedComponents}
                 onChange={(value) => {
                   setAddServiceInput(value);
                 }}
-                styles={{
-                  control: (baseStyles, state) => ({
-                    ...baseStyles,
-                    borderColor: state.isFocused
-                      ? "rgba(0,0,0,0)"
-                      : "rgba(0,0,0,0.1)",
-                    width: "100%",
-                    cursor: "pointer",
-                  }),
-                }}
+                styles={CustomStyle}
                 options={proceduresOptions?.filter((item) => {
                   let symbolCount = 0;
                   for (let i = 0; i < item.value.length; i++) {
@@ -296,6 +380,7 @@ export const Services = () => {
                   return symbolCount === 2;
                 })}
               />
+              <ImCheckmark className="add" onClick={Adding} />
             </SelectContainer>
           )}
           <ServicesList>
@@ -331,7 +416,9 @@ export const Services = () => {
                           <InputContainer>
                             <Input
                               type="text"
-                              placeholder="ფასი"
+                              placeholder={
+                                language?.language.User.userPage.price
+                              }
                               onChange={(e) => setAddPrice(e.target.value)}
                             />
                             {`\u20BE`}
@@ -357,11 +444,14 @@ export const Services = () => {
                         }}
                       />
                       <AlertDialog
-                        title="დადასტურება!"
-                        text="ნამდივალდ გსურთ პრიცედურის წაშლა?"
+                        title={language?.language.User.userPage.confirm}
+                        text={
+                          language?.language.User.userPage.removeServiceText
+                        }
                         open={confirmRemove}
                         setOpen={setConfirmRemove}
                         function={() => Deleting(removeData)}
+                        language={language}
                       />
                     </>
                   )}
@@ -482,14 +572,18 @@ const WrapperOne = styled.div`
   flex-direction: column;
   gap: 1vw;
 
+  .datePicker {
+    width: 100%;
+  }
+
   @media only screen and (max-width: 600px) {
   }
 `;
 
 const SelectContainer = styled.div`
-  width: 45vw;
+  width: 42vw;
   @media only screen and (max-width: 600px) {
-    width: 81vw;
+    width: 90vw;
   }
 `;
 
@@ -518,6 +612,35 @@ const WorkingDays = styled.div`
   & div {
     @media only screen and (max-width: 600px) {
       font-size: 3vw;
+    }
+  }
+
+  .open {
+    font-size: 1.5vw;
+    color: ${(props) => props.theme.icon};
+    cursor: pointer;
+
+    @media only screen and (max-width: 600px) {
+      font-size: 6vw;
+      flex-direction: column;
+    }
+
+    :hover {
+      filter: brightness(1.1);
+    }
+  }
+
+  .add {
+    font-size: 1.5vw;
+    color: green;
+    cursor: pointer;
+
+    @media only screen and (max-width: 600px) {
+      font-size: 6vw;
+    }
+
+    :hover {
+      filter: brightness(1.1);
     }
   }
 `;
@@ -585,7 +708,7 @@ const Servs = styled.div`
     cursor: pointer;
 
     @media only screen and (max-width: 600px) {
-      font-size: 8vw;
+      font-size: 6vw;
       flex-direction: column;
     }
 
@@ -600,7 +723,7 @@ const Servs = styled.div`
     cursor: pointer;
 
     @media only screen and (max-width: 600px) {
-      font-size: 8vw;
+      font-size: 6vw;
     }
 
     :hover {
@@ -670,7 +793,6 @@ const Price = styled.div`
   width: 2vw;
   position: relative;
   right: 0;
-  background: ${(props) => props.theme.secondLevel};
 
   @media only screen and (max-width: 600px) {
     gap: 2vw;
@@ -689,7 +811,7 @@ const InputContainer = styled.div`
   padding: 0 0.5vw;
   border-radius: 0.25vw;
   box-sizing: border-box;
-
+  background: ${(props) => props.theme.secondLevel};
   @media only screen and (max-width: 600px) {
     position: relative;
     border-radius: 1vw;
@@ -709,7 +831,8 @@ const Input = styled.input`
   width: 5vw;
   height: 70%;
   padding-left: 0.25vw;
-
+  background: ${(props) => props.theme.secondLevel};
+  color: ${(props) => props.theme.font};
   @media only screen and (max-width: 600px) {
     width: 10vw;
     border-radius: 50vw;

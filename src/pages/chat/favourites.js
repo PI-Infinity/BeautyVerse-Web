@@ -12,7 +12,6 @@ import { db } from "../../firebase";
 import { setRerender, SetCurrentChat } from "../../redux/chat";
 import { useNavigate } from "react-router-dom";
 import { Spinner } from "../../components/loader";
-import { FaUser } from "react-icons/fa";
 import Avatar from "@mui/material/Avatar";
 
 export const Favourites = (props) => {
@@ -29,13 +28,10 @@ export const Favourites = (props) => {
   const followings = useSelector((state) => state.storeMain.followings);
 
   const handleSelect = async (user) => {
-    console.log(user);
     const combinedId =
       currentuser?.id > user?.id
         ? currentuser?.id + user?.id
         : user?.id + currentuser?.id;
-
-    console.log(combinedId);
 
     try {
       const res = await getDoc(doc(db, "chats", combinedId));

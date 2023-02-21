@@ -1,16 +1,11 @@
 import React, { useState, useEffect, useContext } from "react";
-import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useSelector, useDispatch } from "react-redux";
 import { MdOutlineCloseFullscreen } from "react-icons/md";
 import { IoMdArrowDropright, IoMdArrowDropleft } from "react-icons/io";
-import { FiSend } from "react-icons/fi";
-import { FaUser } from "react-icons/fa";
-import { FcDeleteRow } from "react-icons/fc";
-import { navigate } from "react-router-dom";
 import { AddReview } from "../../../pages/main/feedCard/addReview";
 import { ReviewList } from "../../../pages/main/feedCard/reviewList";
-import { setFromReviews } from "../../../redux/feed";
 import {
   setDoc,
   getDocs,
@@ -19,31 +14,15 @@ import {
   deleteDoc,
   onSnapshot,
   serverTimestamp,
-  deleteField,
   getDoc,
-  updateDoc,
-  arrayUnion,
-  arrayRemove,
   getCountFromServer,
   orderBy,
   query,
-  limit,
-  where,
-  startAfter,
 } from "firebase/firestore";
 import { v4 } from "uuid";
-import {
-  // setFeeds,
-  // setReviews,
-  // setStars,
-  // setstate?.UserCover,
-  // setUserName,
-  setOpenFeed,
-} from "../../../redux/feed";
-import Loader from "react-js-loader";
+import { setOpenFeed } from "../../../redux/feed";
 import { db } from "../../../firebase";
 import useWindowDimensions from "../../../functions/dimensions";
-import { BsFillArrowUpCircleFill } from "react-icons/bs";
 import { IsMobile } from "../../../functions/isMobile";
 import { AuthContext } from "../../../context/AuthContext";
 import { Spinner } from "../../../components/loader";
@@ -350,9 +329,9 @@ export const OpenedFeed = (props) => {
               <IoMdArrowDropleft size={40} color="rgba(255,255,255,0.5)" />
             </Arrow>
           )}
-          {feed?.currentFeed?.name?.endsWith("mp4") ? (
+          {feed?.currentFeed?.name?.toLowerCase().endsWith("mp4") ? (
             <Video width="100%" height="auto" controls autoplay muted>
-              <source src={feed?.currentFeed?.url} type="video/mp4" />
+              <source src={feed?.currentFeed?.videoUrl} type="video/mp4" />
             </Video>
           ) : (
             <>

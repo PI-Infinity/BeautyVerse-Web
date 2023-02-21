@@ -2,13 +2,7 @@ import React, { useContext, useRef, useEffect, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import styled from "styled-components";
 import { useSelector } from "react-redux";
-import {
-  ref,
-  uploadBytesResumable,
-  listAll,
-  getDownloadURL,
-  deleteObject,
-} from "firebase/storage";
+import { ref, deleteObject } from "firebase/storage";
 import { storage, db } from "../../firebase";
 import {
   collection,
@@ -20,12 +14,13 @@ import {
   arrayRemove,
 } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
-import { FaUser } from "react-icons/fa";
 import Avatar from "@mui/material/Avatar";
 import { MdRemove } from "react-icons/md";
 import AlertDialog from "../../components/dialog";
+import { Language } from "../../context/language";
 
 export const Message = ({ message }) => {
+  const language = Language();
   const navigate = useNavigate();
 
   const { currentUser } = useContext(AuthContext);
@@ -147,8 +142,9 @@ export const Message = ({ message }) => {
         open={open}
         setOpen={setOpen}
         function={() => DeleteMessage(message)}
-        title="დაადასტურება!"
-        text="ნამდვილად გსურთ წერილის წაშლა?"
+        title={language?.language.Chat.chat.confirm}
+        text={language?.language.Chat.chat.confirmText}
+        language={language}
       />
     </MainContainer>
   );

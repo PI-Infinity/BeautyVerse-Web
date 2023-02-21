@@ -3,7 +3,6 @@ import styled from "styled-components";
 import { AuthContext } from "../../../context/AuthContext";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
-import { FaUser } from "react-icons/fa";
 import { ImCheckmark } from "react-icons/im";
 import { BsThreeDots } from "react-icons/bs";
 import {
@@ -13,11 +12,13 @@ import {
   IconLoader,
 } from "../../../components/loader";
 import Avatar from "@mui/material/Avatar";
+import { Language } from "../../../context/language";
 
 export const TopSection = (props) => {
   const { currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const lang = useSelector((state) => state.storeMain.language);
 
   const followingLength = props.following?.id?.length;
 
@@ -29,6 +30,19 @@ export const TopSection = (props) => {
   const AddScrollPositionToLocalStorage = () => {
     localStorage.setItem("BeautyVerse:feedsScrollPosition:", scrollPosition);
   };
+
+  // const define type
+  const [type, setType] = React.useState("");
+  const language = Language();
+
+  React.useEffect(() => {
+    setType("");
+    if (props?.userType === "Specialist") {
+      setType(language?.language.Main.feedCard.specialist);
+    } else if (props?.userType === "BeautyCenter") {
+      setType(language?.language.Main.feedCard.beautySalon);
+    }
+  }, [lang, props.id, props.type, props]);
 
   return (
     <TopSectionContainer following={followingLength?.toString()}>
@@ -101,9 +115,7 @@ export const TopSection = (props) => {
             justifyContent: "flex-end",
           }}
         >
-          <Category>
-            {props.loading ? <TypeLoader /> : <>{props.userType}</>}
-          </Category>
+          <Category>{props.loading ? <TypeLoader /> : <>{type}</>}</Category>
         </div>
       </div>
       <TopRightSection>
@@ -262,5 +274,6 @@ const Category = styled.span`
     color: #aaa;
     font-size: 2.8vw;
     letter-spacing: 0.1vw;
+    margin-top: 1px;
   }
 `;

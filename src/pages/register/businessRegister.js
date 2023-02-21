@@ -1,24 +1,9 @@
-import React, { useState, useContext } from "react";
+import React, { useContext } from "react";
 import styled from "styled-components";
 import { Button } from "../../components/button";
 import { useSelector, useDispatch } from "react-redux";
-import {
-  setRegisterPage,
-  setCategories,
-  setWorkingDays,
-  setInstagram,
-  setFacebook,
-  setTiktok,
-  setYoutube,
-  setOtherMedia,
-  setOnAdress,
-  setWorkingPlace,
-  setWeb,
-} from "../../redux/register";
+import { setCategories, setWorkingDays } from "../../redux/register";
 import { useNavigate } from "react-router-dom";
-import { FaUserEdit } from "react-icons/fa";
-import { ImProfile } from "react-icons/im";
-import { MdAddBusiness } from "react-icons/md";
 import { AiOutlineProfile } from "react-icons/ai";
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
@@ -26,18 +11,19 @@ import { AuthContext } from "../../context/AuthContext";
 import {
   ProceduresOptions,
   categoriesOptions,
-  workingPlacesOptions,
   workingDaysOptions,
 } from "../../data/registerDatas";
 import { db, auth } from "../../firebase";
-import { doc, setDoc, serverTimestamp, collection } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import useWindowDimensions from "../../functions/dimensions";
 import { v4 } from "uuid";
+import { Language } from "../../context/language";
 
 const animatedComponents = makeAnimated();
 
 export const BusinessRegister = (props) => {
+  const language = Language();
   const { height, width } = useWindowDimensions();
   const mainDispatch = useDispatch();
   const navigate = useNavigate();
@@ -52,7 +38,7 @@ export const BusinessRegister = (props) => {
   const HandleSubmit = async (e) => {
     e.preventDefault();
     if (registerFields?.categories?.length < 1) {
-      alert("Please Input Required Fields");
+      alert(`${language?.language.Auth.auth.pleaseInput}`);
     } else {
       GetOTP(e);
     }
@@ -79,15 +65,16 @@ export const BusinessRegister = (props) => {
       registerFields?.phoneNumber === "" ||
       registerFields?.phoneNumber === undefined
     ) {
-      return alert("Please Input Valid Phone Phone Number");
-    }
-    try {
-      const num = registerFields?.countryCode + registerFields?.phoneNumber;
-      const response = await SetupRecaptcha(num);
-      setConfirmObj(response);
-      setFlag(true);
-    } catch (err) {
-      alert(err);
+      return alert(`${language?.language.Auth.auth.valid}`);
+    } else {
+      try {
+        const num = registerFields?.countryCode + registerFields?.phoneNumber;
+        const response = await SetupRecaptcha(num);
+        setConfirmObj(response);
+        setFlag(true);
+      } catch (err) {
+        alert(err);
+      }
     }
   };
 
@@ -101,66 +88,70 @@ export const BusinessRegister = (props) => {
   //verify code
   const VerifyOTP = async (e) => {
     e.preventDefault();
-    if (otp === "" || otp === null) return;
-    try {
-      const userCredential = await confirmObj.confirm(otp);
-      const user = userCredential.user;
-      await dispatch({ type: "LOGIN", payload: user });
-      // create user database
-      await setDoc(doc(db, `users`, user.uid), {
-        id: user.uid,
-        type: type,
-        name: registerFields?.name,
-        password: registerFields?.password,
-        email: registerFields?.email,
-        phone: registerFields?.countryCode + registerFields?.phoneNumber,
-        adress: {
-          country: map.country,
-          region: map.region,
-          city: map.city,
-          destrict: map.destrict,
-          adress: map.street,
-          streetNumber: map.number,
-          latitude: map.latitude,
-          longitude: map.longitude,
-        },
-        workingPlace:
-          registerFields?.workingPlace?.length > 0
-            ? registerFields?.workingPlace
-            : "",
-        workingDays:
-          registerFields?.workingDays?.length > 0
-            ? registerFields?.workingDays
-            : "",
-        lastPost: serverTimestamp(),
-        filterCategories: categories,
-      });
-      let subcat;
-      if (type === "specialist" || type === "beautyCenter") {
-        await registerFields?.categories?.map((item, index) => {
-          setDoc(doc(db, `users`, user.uid, "procedures", item.value), {
-            value: item.value,
-          });
+    if (otp === "" || otp === null) {
+      return;
+    } else {
+      try {
+        const userCredential = await confirmObj.confirm(otp);
+        const user = userCredential.user;
+        await dispatch({ type: "LOGIN", payload: user });
+        // create user database
+        await setDoc(doc(db, `users`, user.uid), {
+          id: user.uid,
+          type: type,
+          name: registerFields?.name,
+          password: registerFields?.password,
+          email: registerFields?.email,
+          phone: registerFields?.countryCode + registerFields?.phoneNumber,
+          adress: {
+            country: map.country,
+            region: map.region,
+            city: map.city,
+            destrict: map.destrict,
+            adress: map.street,
+            streetNumber: map.number,
+            latitude: map.latitude,
+            longitude: map.longitude,
+          },
+          // workingPlace:
+          //   registerFields?.workingPlace?.length > 0
+          //     ? registerFields?.workingPlace
+          //     : "",
+          workingDays:
+            registerFields?.workingDays?.length > 0
+              ? registerFields?.workingDays
+              : "",
+          lastPost: serverTimestamp(),
+          registerDate: serverTimestamp(),
+          filterCategories: categories,
         });
-      }
-      var actionId = v4();
-      await setDoc(
-        doc(db, `users`, `${user.uid}`, "notifications", `${actionId}`),
-        {
-          id: actionId,
-          senderId: "beautyVerse",
-          senderName: "Beautyverse",
-          senderCover: "",
-          text: `თქვენ წარმატებით დარეგისტრირდით!`,
-          date: serverTimestamp(),
-          type: "welcome",
-          status: "unread",
-          feed: ``,
+        let subcat;
+        if (type === "specialist" || type === "beautyCenter") {
+          await registerFields?.categories?.map((item, index) => {
+            setDoc(doc(db, `users`, user.uid, "procedures", item.value), {
+              value: item.value,
+            });
+          });
         }
-      );
-      navigate(`/user/${user?.uid}`);
-    } catch (err) {
-      alert(err);
+        var actionId = v4();
+        await setDoc(
+          doc(db, `users`, `${user.uid}`, "notifications", `${actionId}`),
+          {
+            id: actionId,
+            senderId: "beautyVerse",
+            senderName: "Beautyverse",
+            senderCover: "",
+            text: language?.language.Auth.auth.successRegister,
+            date: serverTimestamp(),
+            type: "welcome",
+            status: "unread",
+            feed: ``,
+          }
+        );
+        navigate(`/user/${user?.uid}`);
+      } catch (err) {
+        alert(err);
+      }
     }
   };
 
@@ -175,6 +166,92 @@ export const BusinessRegister = (props) => {
     return symbolCount === 2;
   });
 
+  // color mode
+  const theme = useSelector((state) => state.storeMain.theme);
+  const CustomStyle = {
+    singleValue: (base, state) => ({
+      ...base,
+      color: state.isSelected
+        ? theme
+          ? "#333"
+          : "#f3f3f3"
+        : theme
+        ? "#f3f3f3"
+        : "#333",
+    }),
+    placeholder: (base, state) => ({
+      ...base,
+      color: state.isSelected
+        ? theme
+          ? "#333"
+          : "#f3f3f3"
+        : theme
+        ? "#f3f3f3"
+        : "#333",
+    }),
+    input: (base, state) => ({
+      ...base,
+      color: theme ? "#f3f3f3" : "#333",
+      fontSize: "16px",
+    }),
+    menuList: (base, state) => ({
+      ...base,
+      backgroundColor: theme ? "#333" : "#f3f3f3",
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isSelected
+        ? theme
+          ? "#f3f3f3"
+          : "#333"
+        : theme
+        ? "#333"
+        : "#f3f3f3",
+      color: state.isSelected
+        ? theme
+          ? "#333"
+          : "#f3f3f3"
+        : theme
+        ? "#f3f3f3"
+        : "#333",
+    }),
+    control: (baseStyles, state) => ({
+      ...baseStyles,
+      backgroundColor: theme ? "#333" : "#fff",
+      borderColor: state.isFocused ? "rgba(0,0,0,0)" : "rgba(0,0,0,0.1)",
+      width: "38vw",
+      minHeight: "2vw",
+      cursor: "pointer",
+      "@media only screen and (max-width: 1200px)": {
+        width: "85vw",
+        fontSize: "16px",
+      },
+    }),
+  };
+
+  // define working days language
+  const lang = useSelector((state) => state.storeMain.language);
+  let wdOption = workingDaysOptions?.map((item, index) => {
+    if (lang === "en") {
+      return {
+        value: item.value,
+        label: item.en,
+      };
+    } else if (lang === "ka") {
+      return {
+        value: item.value,
+        label: item.ka,
+      };
+    } else if (lang === "ru") {
+      return {
+        value: item.value,
+        label: item.ru,
+      };
+    }
+  });
+
+  console.log(wdOption);
+
   return (
     <>
       <Container
@@ -185,11 +262,11 @@ export const BusinessRegister = (props) => {
           <AiOutlineProfile className="icon" />
           {type == "shop"
             ? "ინფორმაცია მაღაზიის შესახებ"
-            : "ინფორმაცია სამუშაოს შესახებ"}
+            : language?.language.Auth.auth.aboutSalon}
         </Title>
         <WrapperContainer onSubmit={HandleSubmit}>
           <Button
-            title="Back"
+            title={language?.language.Auth.auth.back}
             function={() => navigate("/register/identify")}
             back={true}
           />
@@ -197,41 +274,35 @@ export const BusinessRegister = (props) => {
             <>
               <TitleWrapper>
                 <InputTitle>
-                  {type == "shop" ? "აირჩიე კატეგორიები" : "სერვისები"}*
+                  {type == "shop"
+                    ? "აირჩიე კატეგორიები"
+                    : language?.language.Auth.auth.service}
+                  *
                 </InputTitle>
               </TitleWrapper>
               <Wrapper>
                 <Select
                   placeholder={
-                    type == "shop" ? "დაამატე კატეგორიები" : "დაამატე სერვისი"
+                    type == "shop"
+                      ? "დაამატე კატეგორიები"
+                      : language?.language.Auth.auth.addService
                   }
                   isMulti
                   components={animatedComponents}
                   onChange={(value) => {
                     mainDispatch(setCategories(value));
                   }}
-                  styles={{
-                    control: (baseStyles, state) => ({
-                      ...baseStyles,
-                      borderColor: state.isFocused
-                        ? "rgba(0,0,0,0)"
-                        : "rgba(0,0,0,0.1)",
-                      width: "38vw",
-                      minHeight: "2vw",
-                      cursor: "pointer",
-                      "@media only screen and (max-width: 1200px)": {
-                        width: "85vw",
-                        fontSize: "16px",
-                      },
-                    }),
-                  }}
+                  styles={CustomStyle}
                   options={type == "shop" ? categoriesOptions : option}
                 />
               </Wrapper>
               {type != "shop" && (
                 <>
                   <TitleWrapper>
-                    <InputTitle>სამუშაო დღეები (სურვილისამებრ)</InputTitle>
+                    <InputTitle>
+                      {language?.language.Auth.auth.workingDays} (
+                      {language?.language.Auth.auth.optional})
+                    </InputTitle>
                   </TitleWrapper>
                   <Wrapper>
                     <Select
@@ -241,28 +312,14 @@ export const BusinessRegister = (props) => {
                       onChange={(value) => {
                         mainDispatch(setWorkingDays(value));
                       }}
-                      styles={{
-                        control: (baseStyles, state) => ({
-                          ...baseStyles,
-                          borderColor: state.isFocused
-                            ? "rgba(0,0,0,0)"
-                            : "rgba(0,0,0,0.1)",
-                          width: "38vw",
-                          minHeight: "2vw",
-                          cursor: "pointer",
-                          "@media only screen and (max-width: 1200px)": {
-                            width: "85vw",
-                            fontSize: "16px",
-                          },
-                        }),
-                      }}
-                      options={workingDaysOptions}
+                      styles={CustomStyle}
+                      options={wdOption}
                     />
                   </Wrapper>
                 </>
               )}
             </>
-            {type != "shop" && (
+            {/* {type != "shop" && (
               <>
                 <TitleWrapper>
                   <InputTitle>სამუშაო სივრცე (სურვილისამებრ)</InputTitle>
@@ -275,30 +332,19 @@ export const BusinessRegister = (props) => {
                     onChange={(value) => {
                       mainDispatch(setWorkingPlace(value));
                     }}
-                    styles={{
-                      control: (baseStyles, state) => ({
-                        ...baseStyles,
-                        borderColor: state.isFocused
-                          ? "rgba(0,0,0,0)"
-                          : "rgba(0,0,0,0.1)",
-                        width: "38vw",
-                        minHeight: "2vw",
-                        cursor: "pointer",
-                        "@media only screen and (max-width: 1200px)": {
-                          width: "85vw",
-                          fontSize: "16px",
-                        },
-                      }),
-                    }}
+                    styles={CustomStyle}
                     options={workingPlacesOptions}
                   />
                 </Wrapper>
-                <div id="recaptcha-container"></div>
-              </>
-            )}
-            <></>
+                </>
+              )} */}
+            <div id="recaptcha-container"></div>
           </Fields>
-          <Button title="Next" type="Submit" function={HandleSubmit} />
+          <Button
+            title={language?.language.Auth.auth.next}
+            type="Submit"
+            function={HandleSubmit}
+          />
         </WrapperContainer>
       </Container>
       <Confirm
@@ -311,7 +357,7 @@ export const BusinessRegister = (props) => {
           justifyContent: "center",
         }}
       >
-        <Title>Verify Phone Number</Title>
+        <Title>{language?.language.Auth.auth.verify}</Title>
         <InputWrapper>
           <Input
             type="text"
@@ -320,7 +366,9 @@ export const BusinessRegister = (props) => {
             value={otp}
           />
         </InputWrapper>
-        <SubmitButton type="submit">დადასტურება</SubmitButton>
+        <SubmitButton type="submit">
+          {language?.language.Auth.auth.confirm}
+        </SubmitButton>
       </Confirm>
     </>
   );
@@ -379,6 +427,7 @@ const Title = styled.h2`
   display: flex;
   align-items: center;
   gap: 15px;
+  color: ${(props) => props.theme.font};
 
   @media only screen and (max-width: 600px) {
     margin-bottom: 7vw;
@@ -401,6 +450,8 @@ const Fields = styled.div`
 const Wrapper = styled.div`
   display: flex;
   gap: 1vw;
+  color: ${(props) => props.theme.font};
+  background: ${(props) => props.theme.categoryItem};
 
   @media only screen and (max-width: 600px) {
     justify-content: start;
@@ -410,6 +461,7 @@ const Wrapper = styled.div`
 const TitleWrapper = styled.div`
   display: flex;
   gap: 1vw;
+  color: #888;
 
   @media only screen and (max-width: 600px) {
     margin: 2vw 1vw;

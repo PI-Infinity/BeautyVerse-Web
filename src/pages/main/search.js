@@ -4,19 +4,19 @@ import { useDispatch, useSelector } from "react-redux";
 import { CgSearch } from "react-icons/cg";
 import { MdClear } from "react-icons/md";
 import { BsListCheck } from "react-icons/bs";
-import { setRerender, setEnterSearch, setFilterOpen } from "../../redux/main";
+import { setRerender, setFilterOpen } from "../../redux/main";
 import { setSearch } from "../../redux/filter";
 import { ProceduresOptions } from "../../data/registerDatas";
-import Select from "react-select";
-import { GrList } from "react-icons/gr";
 import { MdOutlinePersonPin } from "react-icons/md";
-import { setChangeFeed, setLoadFeed } from "../../redux/main";
 import { useNavigate } from "react-router-dom";
+import { Language } from "../../context/language";
 
 export const Search = (props) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const proceduresOptions = ProceduresOptions();
+  const language = Language();
+
   // import current user & parse it
   const loadFeed = useSelector((state) => state.storeMain.loadFeed);
   const changeFeed = useSelector((state) => state.storeMain.changeFeed);
@@ -92,7 +92,7 @@ export const Search = (props) => {
           <CgSearch className="icon" />
           <Input
             id="search"
-            placeholder="ძებნა..."
+            placeholder={language?.language.Main.filter.search}
             // isMulti
             value={srch}
             onFocus={() => {
@@ -256,6 +256,7 @@ const Input = styled.input`
   outline: none;
   border: none;
   font-size: 16px;
+  color: ${(props) => props.theme.font};
 
   :focus {
     outline: none;
@@ -382,6 +383,6 @@ const Item = styled.div`
   color: ${(props) => props.theme.font};
 
   :hover {
-    background: #f5f5f5;
+    filter: brightness(0.9);
   }
 `;

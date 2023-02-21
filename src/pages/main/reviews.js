@@ -2,23 +2,16 @@ import React, { useContext } from "react";
 import styled from "styled-components";
 import { AiOutlineComment } from "react-icons/ai";
 import { MdOutlineArrowRight } from "react-icons/md";
-import { RiUserHeartFill } from "react-icons/ri";
-import { SiHomeassistantcommunitystore } from "react-icons/si";
 import { useSelector, useDispatch } from "react-redux";
-import { setTargetUser } from "../../redux/chat";
 import { useNavigate } from "react-router-dom";
-import {
-  collection,
-  doc,
-  onSnapshot,
-  collectionGroup,
-  getDocs,
-} from "firebase/firestore";
+import { onSnapshot, collectionGroup } from "firebase/firestore";
 import { db } from "../../firebase";
 import { AuthContext } from "../../context/AuthContext";
+import { Language } from "../../context/language";
 
 export const Reviews = () => {
   const { currentUser } = useContext(AuthContext);
+  const language = Language();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -36,7 +29,8 @@ export const Reviews = () => {
   return (
     <Container>
       <Title>
-        ბოლო შეფასებები <AiOutlineComment className="likedIcon" />
+        {language?.language?.Main?.reviews?.title}{" "}
+        <AiOutlineComment className="likedIcon" />
       </Title>
       <List>
         {reviewList

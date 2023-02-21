@@ -1,11 +1,9 @@
-import React, { useEffect, useContext, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import styled from "styled-components";
-import { ChatContext } from "../../context/ChatContext";
 import { db } from "../../firebase";
 import { onSnapshot, doc } from "firebase/firestore";
 import { Message } from "../../pages/chat/message";
 import { useSelector, useDispatch } from "react-redux";
-import { setScrollY, setCounter } from "../../redux/chat";
 import { Spinner } from "../../components/loader";
 import SimpleBackdrop from "../../components/backDrop";
 
@@ -17,8 +15,6 @@ export const Messages = (props) => {
   const currentChat = useSelector((state) => state.storeChat.currentChat);
   const counter = useSelector((state) => state.storeChat.counter);
   const scrollY = useSelector((state) => state.storeChat.scrollY);
-
-  console.log(currentChat);
 
   useEffect(() => {
     if (currentChat?.length > 0) {

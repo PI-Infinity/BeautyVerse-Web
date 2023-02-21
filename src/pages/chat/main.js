@@ -1,7 +1,5 @@
-import React, { useState } from "react";
 import styled from "styled-components";
 import { SideBar } from "../../pages/chat/sideBar";
-import { ChatContent } from "../../pages/chat/chatContent";
 
 const Chat = () => {
   return (

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -33,9 +33,11 @@ export default function AlertDialog(props) {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>გაუქმება</Button>
+          <Button onClick={handleClose}>
+            {props?.language?.language.User.userPage.cancel}
+          </Button>
           <Button onClick={handleClickOpen} autoFocus>
-            წაშლა
+            {props?.language?.language.User.userPage.remove}
           </Button>
         </DialogActions>
       </Dialog>

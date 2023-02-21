@@ -1,4 +1,3 @@
-import React from "react";
 import styled from "styled-components";
 import { BsListCheck } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
@@ -7,11 +6,10 @@ import {
   MdContactPhone,
   MdShoppingCart,
 } from "react-icons/md";
-import { BsInfoLg } from "react-icons/bs";
 import { FaUsers } from "react-icons/fa";
-import { AiFillHeart, AiOutlineTeam } from "react-icons/ai";
+import { FiSettings } from "react-icons/fi";
+import { AiOutlineTeam } from "react-icons/ai";
 import { useSelector, useDispatch } from "react-redux";
-import { setContentChanger } from "../../redux/user";
 import { IsMobile } from "../../functions/isMobile";
 
 export const Navigator = (props) => {
@@ -20,13 +18,11 @@ export const Navigator = (props) => {
   const contentChanger = useSelector((state) => state.storeUser.contentChanger);
   const isMobile = IsMobile();
 
-  const type = props?.type;
-
-  const Contents = [
+  const list = [
     {
       id: 1,
       value: "posts",
-      title: "პოსტები",
+      title: props?.language?.language.User.userPage.feeds,
       onClick: () => navigate(`/user/${props?.user.id}`),
       className:
         window.location.pathname === `/user/${props?.user?.id}`
@@ -37,7 +33,7 @@ export const Navigator = (props) => {
     {
       id: 2,
       value: "contact",
-      title: "კონტაქტი",
+      title: props?.language?.language.User.userPage.contact,
       onClick: () => navigate(`contact`),
       className:
         window.location.pathname === `/user/${props?.user?.id}/contact`
@@ -49,7 +45,7 @@ export const Navigator = (props) => {
     {
       id: 3,
       value: "team",
-      title: "გუნდი",
+      title: props?.language?.language.User.userPage.team,
       onClick: () => navigate(`team`),
       className:
         window.location.pathname === `/user/${props?.user?.id}/team`
@@ -60,15 +56,18 @@ export const Navigator = (props) => {
     },
     {
       id: 4,
-      value: type == "shop" ? "products" : "services",
-      title: type == "shop" ? "პროდუქტები" : "სერვისები",
+      value: props?.user?.type == "shop" ? "products" : "services",
+      title:
+        props?.user?.type == "shop"
+          ? "პროდუქტები"
+          : props?.language?.language.User.userPage.service,
       onClick: () => navigate(`/user/${props?.user?.id}/services`),
       className:
         window.location.pathname === `/user/${props?.user?.id}/services`
           ? "active"
           : "btn",
       icon:
-        type == "shop" ? (
+        props?.user?.type == "shop" ? (
           <MdShoppingCart className="icon" />
         ) : (
           <BsListCheck className="icon" />
@@ -77,7 +76,7 @@ export const Navigator = (props) => {
     {
       id: 5,
       value: "audience",
-      title: "აუდიტორია",
+      title: props?.language?.language.User.userPage.audience,
       onClick: () => navigate(`/user/${props?.user?.id}/audience`),
       className:
         window.location.pathname === `/user/${props?.user?.id}/audience`
@@ -85,9 +84,18 @@ export const Navigator = (props) => {
           : "btn",
       icon: <FaUsers className="icon" />,
     },
+    {
+      id: 6,
+      value: "settings",
+      title: props?.language?.language.User.userPage.settings,
+      onClick: () => navigate(`/user/${props?.user?.id}/settings`),
+      className:
+        window.location.pathname === `/user/${props?.user?.id}/settings`
+          ? "active"
+          : "btn",
+      icon: <FiSettings className="icon" />,
+    },
   ];
-
-  const list = Contents;
 
   /* 
   // DEFINE content categories
@@ -107,77 +115,61 @@ export const Navigator = (props) => {
   // mapping content categories
 
   const DefineList = () => {
+    let withoutSettings = list?.filter((item, index) => {
+      if (
+        props?.currentUser == null ||
+        props?.currentUser?.uid !== props?.user?.id
+      ) {
+        return item.value !== "settings";
+      } else {
+        return item;
+      }
+    });
     let content;
-    if (type == "user") {
-      content = list
-        ?.filter((item, index) => {
-          if (props?.userVisit) {
-            return item?.value == "contact";
-          } else {
-            return item?.value == "followings" || item?.value == "contact";
-          }
-        })
-        ?.map((item, index) => {
-          return (
-            <Button
-              key={index}
-              className={item?.className}
-              onClick={item?.onClick}
-              id={item?.id}
-            >
-              {item?.icon}
-              {item?.title}
-            </Button>
-          );
-        });
-    } else if (type == "shop") {
-      content = list
-        ?.filter((item) => item.value !== "team")
-        .map((item, index) => {
-          return (
-            <Button
-              key={index}
-              className={item?.className}
-              onClick={item?.onClick}
-              id={item?.id}
-            >
-              {item?.icon}
-              {item?.title}
-            </Button>
-          );
-        });
-    } else if (type == "specialist") {
-      content = list
-        ?.filter((item) => item.value !== "team")
-        ?.map((item, index) => {
-          return (
-            <Button
-              key={index}
-              className={item?.className}
-              onClick={item?.onClick}
-              id={item?.id}
-            >
-              {item?.icon}
-              {item?.title}
-            </Button>
-          );
-        });
-    } else {
-      content = list?.map((item, index) => {
+    content = withoutSettings?.filter((item, index) => {
+      if (props?.user?.type == "user") {
         return (
-          <Button
-            key={item.id}
-            className={item?.className}
-            onClick={item?.onClick}
-            id={item?.id}
-          >
-            {item?.icon}
-            {item?.title}
-          </Button>
+          item.value !== "team" &&
+          item.value !== "services" &&
+          item.value !== "posts"
         );
-      });
-    }
-    return content;
+      } else if (props?.user?.type == "specialist") {
+        return item.value !== "team";
+      } else {
+        return item;
+      }
+    });
+
+    // } else if (type == "shop") {
+    //   content = list
+    //     ?.filter((item) => item.value !== "team")
+    //     .map((item, index) => {
+    //       return (
+    //         <Button
+    //           key={index}
+    //           className={item?.className}
+    //           onClick={item?.onClick}
+    //           id={item?.id}
+    //         >
+    //           {item?.icon}
+    //           {item?.title}
+    //         </Button>
+    //       );
+    //     });
+
+    return content.map((item, index) => {
+      return (
+        <Button
+          key={index}
+          className={item?.className}
+          onClick={item?.onClick}
+          id={item?.id}
+        >
+          {item?.icon}
+          {item?.title}
+        </Button>
+      );
+    });
   };
 
   const DefinedContet = DefineList();

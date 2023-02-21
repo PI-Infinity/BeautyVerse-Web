@@ -1,17 +1,17 @@
 import * as React from "react";
 import styled from "styled-components";
 import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import { BsListCheck } from "react-icons/bs";
+import { ProceduresOptions } from "../../data/registerDatas";
 
 export default function ProceduresPopup(props) {
   const [open, setOpen] = React.useState(false);
   const handleClose = () => {
     setOpen(false);
   };
+  const proceduresOptions = ProceduresOptions();
   return (
     <div>
       <div>
@@ -22,15 +22,20 @@ export default function ProceduresPopup(props) {
         />
       </div>
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>პროცედურები</DialogTitle>
+        <DialogTitle>
+          {props?.language?.language.User.userPage.service}
+        </DialogTitle>
         <DialogContent>
           {props.procedures?.map((item, index) => {
+            const langProc = proceduresOptions?.find(
+              (it) => it?.value === item?.value
+            );
             return (
               <div
                 key={index}
                 style={{ padding: "10px", borderBottom: "1px solid #f3f3f3" }}
               >
-                {item?.label}
+                {langProc?.label}
               </div>
             );
           })}

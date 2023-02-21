@@ -1,50 +1,11 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import styled from "styled-components";
-import { FaUserEdit } from "react-icons/fa";
-import { ImProfile } from "react-icons/im";
-import { MdAddBusiness, MdLocationPin, MdLibraryAdd } from "react-icons/md";
-import { FcBusinessContact } from "react-icons/fc";
-import {
-  FaFacebook,
-  FaInstagram,
-  FaYoutube,
-  FaTiktok,
-  FaPhoneAlt,
-  FaChrome,
-} from "react-icons/fa";
-import { AiOutlineMail, AiOutlineDelete } from "react-icons/ai";
+import { AiOutlineDelete } from "react-icons/ai";
 import { useSelector, useDispatch } from "react-redux";
-import axios from "axios";
-import { CoverUploader } from "../../components/coverUploader";
-import {
-  ref,
-  uploadBytes,
-  listAll,
-  getDownloadURL,
-  deleteObject,
-} from "firebase/storage";
-import { ImgUploader } from "../../components/imgUploader";
+import { ref, listAll, deleteObject } from "firebase/storage";
 import { db, storage } from "../../firebase";
 import { collection, deleteDoc, doc, onSnapshot } from "firebase/firestore";
 import { AuthContext } from "../../context/AuthContext";
-import {
-  setLoading,
-  setRerender,
-  setImgTargetGallery,
-  setOpenImg,
-  setCurrentImgNumber,
-} from "../../redux/main";
-import {
-  setImgNumber,
-  setUserId,
-  setUserCover,
-  setUserName,
-  setUserType,
-  setOpenFeed,
-} from "../../redux/feed";
-import { Loading } from "../../components/loading";
-import { BsStars, BsLayoutTextSidebarReverse } from "react-icons/bs";
-import Loader from "react-js-loader";
 import useWindowDimensions from "../../functions/dimensions";
 import { IsMobile } from "../../functions/isMobile";
 import { useNavigate } from "react-router-dom";
@@ -89,7 +50,7 @@ export const UserFeeds = () => {
 
   /** after getting files from firestore define list */
   const DefineList = (gall) => {
-    if (gall?.length > 0) {
+    if (gall?.length > 0 && user?.type !== "user") {
       let list = gall
         ?.sort((a, b) => {
           return b?.addTime?.seconds - a?.addTime?.seconds;

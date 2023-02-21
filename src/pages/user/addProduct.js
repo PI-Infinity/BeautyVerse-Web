@@ -1,14 +1,12 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import styled from "styled-components";
-import { BsImages } from "react-icons/bs";
-import { MdDeleteForever } from "react-icons/md";
 import { AiOutlineCloseCircle } from "react-icons/ai";
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
 import { categoriesOptions } from "../../data/registerDatas";
-import { useSelector, useDispatch } from "react-redux";
-import { doc, updateDoc, serverTimestamp, setDoc } from "firebase/firestore";
-import { db, storage } from "../../firebase";
+import { useSelector } from "react-redux";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
+import { db } from "../../firebase";
 import { v4 } from "uuid";
 import useWindowDimensions from "../../functions/dimensions";
 

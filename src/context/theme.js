@@ -15,6 +15,7 @@ export const darkTheme = {
   shadowColor: "rgba(0,0,0,0.5)",
   lineColor: "rgba(0,0,0,0.5)",
   frameColor: "rgba(0,0,0,0.2)",
+  mobileFeedCard: "lineard-gradient(90deg, #050505, #333)",
 };
 export const lightTheme = {
   background: "#FCFDFF",
@@ -30,12 +31,13 @@ export const lightTheme = {
   shadowColor: "rgba(0,0,0,0.1)",
   lineColor: "#e5e5e5",
   frameColor: "#fff",
+  mobileFeedCard: "#f7e6ff",
 };
 
 export const GlobalStyles = createGlobalStyle`
 
     body {
-        background-color: ${(props) => props.theme.body}
+        background-color: ${(props) => props.theme.background}
     }
 
 `;

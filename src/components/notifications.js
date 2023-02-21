@@ -7,18 +7,14 @@ import ListItemText from "@mui/material/ListItemText";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
 import Avatar from "@mui/material/Avatar";
 import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
 import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { updateDoc, doc } from "firebase/firestore";
 import { db } from "../firebase";
-import { BsStars, BsLayoutTextSidebarReverse } from "react-icons/bs";
+import { BsStars } from "react-icons/bs";
 import AgreementDialog from "../components/agreementDialog";
 
 export default function Notifications(props) {

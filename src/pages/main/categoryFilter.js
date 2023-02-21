@@ -1,26 +1,10 @@
-import React from "react";
+import React, { useContext } from "react";
 import styled from "styled-components";
-import { IoIosBrush } from "react-icons/io";
-import { MdFaceRetouchingNatural } from "react-icons/md";
-import { FaTooth } from "react-icons/fa";
-import { TbMassage } from "react-icons/tb";
-import { BsCheckAll } from "react-icons/bs";
-import { getCountFromServer, collection } from "firebase/firestore";
-import {
-  GiEyelashes,
-  GiHairStrands,
-  GiFingersCrossed,
-  GiDoctorFace,
-  GiAbstract088,
-  GiBathtub,
-  GiCrosshairArrow,
-  GiDoubleFaceMask,
-} from "react-icons/gi";
 import { setFilter } from "../../redux/filter";
 import { setRerender } from "../../redux/main";
 import { useDispatch, useSelector } from "react-redux";
 import { VerseCategories } from "../../data/categories";
-import { auth, db } from "../../firebase";
+import { AuthContext } from "../../context/AuthContext";
 import useWindowDimensions from "../../functions/dimensions";
 
 export const CategoryFilter = () => {
@@ -101,59 +85,14 @@ const List = styled.div`
 const CategoryItem = (props) => {
   const dispatch = useDispatch();
   const filter = useSelector((state) => state.storeFilter.filter);
-  const currentUser = auth.currentUser;
-
+  const { currentUser } = useContext(AuthContext);
+  const language = useSelector((state) => state.storeMain.language);
   // import users
   const usersList = useSelector((state) => state.storeMain.userList);
   let users;
   if (usersList?.length > 0) {
     users = JSON.parse(usersList);
   }
-
-  // const DefineLength = (serviceProps) => {
-  //   // let data = [];
-  //   var filtered = users?.filter((item) => item.type !== "user");
-  //   // ?.filter(async (item) => {
-  //   //   // const feedsRef = collection(db, "users", `${item?.id}`, "feeds");
-  //   //   // const feedsLengthRef = await getCountFromServer(feedsRef);
-  //   //   // const feedsLength = feedsLengthRef.data().count;
-  //   //   // if (feedsLength > 0) {
-  //   //   return item.;
-  //   //   // } else {
-  //   //   //   return;
-  //   //   // }
-  //   // });
-  //   // console.log(data);
-  //   var proceduresLength = filtered?.filter((item) => {
-  //     return item?.filterCategories?.some((it) => {
-  //       return it?.toLowerCase()?.includes(serviceProps?.toLowerCase());
-  //     });
-  //   });
-  //   return proceduresLength?.length;
-  // let filtered = listItems?.filter((item) => item.id != currentUser?.uid);
-  // let data = filtered?.map(async (item, index) => {
-  //   // get reviews length
-  //   const feedsRef = collection(db, "users", `${item?.id}`, "feeds");
-  //   const feedsLengthRef = await getCountFromServer(feedsRef);
-  //   const feedsLength = feedsLengthRef.data().count;
-  //   console.log(feedsLength);
-  //   if (feedsLength > 0) {
-  //     console.log("more");
-  //     if (
-  //       item?.filterCategories?.some((it) =>
-  //         it?.toLowerCase()?.includes(serviceProps?.toLowerCase())
-  //       )
-  //     ) {
-  //       return item;
-  //       data.push(item);
-  //     }
-  //   }
-  // });
-  // console.log(data);
-  // return data?.length;
-  // };
-
-  // const ListLength = DefineLength(props?.value);
 
   return (
     <Wrapper color={props.color}>
@@ -173,9 +112,16 @@ const CategoryItem = (props) => {
           }}
         >
           <div>{props.icon}</div>
-          {props.geo}
+          {(() => {
+            if (language === "ka") {
+              return props.geo;
+            } else if (language === "en") {
+              return props.eng;
+            } else if (language === "ru") {
+              return props.rus;
+            }
+          })()}
         </div>
-        {/* <div style={{ color: "#ccc" }}>({ListLength})</div> */}
       </CategoryItemContainer>
     </Wrapper>
   );

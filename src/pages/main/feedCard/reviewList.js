@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 import styled from "styled-components";
 import { MdOutlineRemove } from "react-icons/md";
 import { FaUser } from "react-icons/fa";

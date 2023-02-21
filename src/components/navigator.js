@@ -1,40 +1,17 @@
 import React, { useContext } from "react";
 import styled from "styled-components";
-import {
-  MdOutlineDynamicFeed,
-  MdOutlinePersonPin,
-  MdShoppingCart,
-} from "react-icons/md";
-import { CiBoxList } from "react-icons/ci";
-import { TbMessages } from "react-icons/tb";
-import { FaUser } from "react-icons/fa";
-import { MdFilterList } from "react-icons/md";
-import { BsFillArrowUpCircleFill } from "react-icons/bs";
-import { BiMessageSquareAdd } from "react-icons/bi";
-import { FiHome } from "react-icons/fi";
-import { CgSearch } from "react-icons/cg";
+import { GiFlexibleStar } from "react-icons/gi";
 import { useNavigate, Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { auth } from "../firebase";
 import { AuthContext } from "../context/AuthContext";
-import {
-  setFilterOpen,
-  setChangeFeed,
-  setLoadFeed,
-  setNavigatorActive,
-  setRerender,
-  setScroll,
-} from "../redux/main";
-import { setFilter } from "../redux/marketplace/marketplace";
+import { setLoadFeed, setRerender } from "../redux/main";
 import { IsMobile } from "../functions/isMobile";
 import Badge from "@mui/material/Badge";
 import DynamicFeedIcon from "@mui/icons-material/DynamicFeed";
 import SwitchAccountIcon from "@mui/icons-material/SwitchAccount";
-import MapsUgcIcon from "@mui/icons-material/MapsUgc";
 import ForumOutlinedIcon from "@mui/icons-material/ForumOutlined";
-import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import { db } from "../firebase";
-import { collection, doc, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot } from "firebase/firestore";
 import Avatar from "@mui/material/Avatar";
 
 export const Navigator = (props) => {
@@ -68,6 +45,8 @@ export const Navigator = (props) => {
     active = "add";
   } else if (window.location.pathname == "/chat") {
     active = "chat";
+  } else if (window.location.pathname == "/recomended") {
+    active = "recomended";
   } else if (window.location.pathname?.startsWith(`/user/${user?.id}`)) {
     active = "user";
   } else {
@@ -116,7 +95,10 @@ export const Navigator = (props) => {
 
   return (
     <>
-      <NavigatorContainer filterOpen={filterOpen}>
+      <NavigatorContainer
+        filterOpen={filterOpen}
+        recomended={active === "recomended" ? "true" : "false"}
+      >
         <DynamicFeedIcon
           style={{ fontSize: "6vw" }}
           className={
@@ -157,35 +139,16 @@ export const Navigator = (props) => {
             </MarketButton>
           </ButtonBg>
         </Market> */}
-        {user?.type === "user" ? (
-          <CgSearch
-            className={active == "add" ? "active" : "feedIcon"}
-            onClick={async () => {
-              await localStorage.setItem("BeautyVerse:scrollPosition", 0);
-              await dispatch(setRerender());
-              setTimeout(async () => {
-                document.getElementById("search").focus();
-              }, 500);
-            }}
-          />
-        ) : (
-          // <>
-          //   {window.location.pathname?.startsWith("/marketplace") ? (
-          //     <MdFilterList
-          //       className="feedIcon"
-          //       onClick={() => dispatch(setFilter(true))}
-          //     />
-          //   ) : (
-          <MapsUgcIcon
-            style={{ fontSize: "5.6vw" }}
-            className={active == "add" ? "active" : "feedIcon"}
-            onClick={() => {
-              // dispatch(setNavigatorActive(2));
-              navigate("add");
-            }}
-          />
-          // )}
-        )}
+
+        <GiFlexibleStar
+          className={active == "recomended" ? "active" : "feedIcon"}
+          style={{ color: "#f2cd38" }}
+          onClick={() => {
+            // dispatch(setNavigatorActive(2));
+            navigate("recomended");
+          }}
+        />
+
         {chats > 0 ? (
           <StyledBadge
             badgeContent={chats}
@@ -277,6 +240,18 @@ const NavigatorContainer = styled.div`
     }
   }
 
+  .listIcon {
+    font-size: 1.1vw;
+    color: linear-gradient(90deg, red, green);
+    cursor: pointer;
+
+    @media only screen and (max-width: 600px) {
+      font-size: 5.5vw;
+      border-top: 2px solid rgba(0, 0, 0, 0);
+      padding: 2vw 4vw;
+      margin: 0;
+    }
+  }
   .feedIcon {
     font-size: 1.1vw;
     color: ${(props) => props.theme.icon};
@@ -296,7 +271,8 @@ const NavigatorContainer = styled.div`
 
     @media only screen and (max-width: 600px) {
       font-size: 5.5vw;
-      border-top: 2px solid #2bdfd9;
+      border-top: 2px solid
+        ${(props) => (props.recomended === "true" ? "#f2cd38" : "#2bdfd9")};
       padding: 2vw 4vw;
       margin: 0;
     }

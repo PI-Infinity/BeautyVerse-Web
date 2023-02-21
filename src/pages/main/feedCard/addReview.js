@@ -1,21 +1,9 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 import styled from "styled-components";
-import {
-  setDoc,
-  doc,
-  collection,
-  deleteDoc,
-  onSnapshot,
-  serverTimestamp,
-  deleteField,
-  getDoc,
-  updateDoc,
-  arrayUnion,
-  arrayRemove,
-} from "firebase/firestore";
+import { setDoc, doc, serverTimestamp } from "firebase/firestore";
 import { AuthContext } from "../../../context/AuthContext";
-import { useSelector, useDispatch } from "react-redux";
-import { storage, db } from "../../../firebase";
+import { useSelector } from "react-redux";
+import { db } from "../../../firebase";
 import { useNavigate } from "react-router-dom";
 import { FiSend } from "react-icons/fi";
 import { v4 } from "uuid";
@@ -156,7 +144,7 @@ const ReviewContainer = styled.div`
     height: auto;
     margin-left: auto;
     padding: 3vw 3vw 0vw 3vw;
-    box-shadow: 0 -0.3vw 0.9vw rgba(0, 0, 0, 0.1);
+    box-shadow: 0 -0.3vw 0.9vw ${(props) => props.theme.shadowColor};
     background: ${(props) => props.theme.secondLevel};
     backdrop-filter: blur(40px);
     z-index: 10006;

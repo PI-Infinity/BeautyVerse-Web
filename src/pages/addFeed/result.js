@@ -1,30 +1,10 @@
-import React, { useContext } from "react";
+import React from "react";
 import styled from "styled-components";
 import { BiStar } from "react-icons/bi";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { setRerender } from "../../redux/main";
-import {
-  ref,
-  uploadBytes,
-  listAll,
-  getDownloadURL,
-  deleteObject,
-} from "firebase/storage";
-import {
-  setDoc,
-  doc,
-  collection,
-  deleteDoc,
-  onSnapshot,
-  serverTimestamp,
-  deleteField,
-  getDoc,
-  updateDoc,
-} from "firebase/firestore";
 import { TopSection } from "../../pages/main/feedCard/topSection";
-import { FaUser } from "react-icons/fa";
-import useWindowDimensions from "../../functions/dimensions";
 import { IsMobile } from "../../functions/isMobile";
 import { IoMdImages } from "react-icons/io";
 import Resizer from "react-image-file-resizer";
@@ -93,15 +73,28 @@ export const Result = (props) => {
 
   const DefineUrl = async () => {
     try {
-      const imageDesktop = await resizeFileDekstop(props?.file);
-      const imageMobile = await resizeFileMobileWebp(props?.file);
-      const imageMobileJPEG = await resizeFileMobileJpeg(props?.file);
-      if (props?.file) {
-        props?.setResizedObj({
-          desktopJPEG: imageDesktop,
-          mobileWEBP: imageMobile,
-          mobileJPEG: imageMobileJPEG,
-        });
+      if (props?.file?.name?.length > 0) {
+        if (props?.file?.name?.toLowerCase()?.endsWith("mp4")) {
+          props?.setResizedObj(props?.file);
+        } else if (
+          props?.file?.name?.toLowerCase()?.endsWith("jpeg") ||
+          props?.file?.name?.toLowerCase()?.endsWith("png") ||
+          props?.file?.name?.toLowerCase()?.endsWith("jpg") ||
+          props?.file?.name?.toLowerCase()?.endsWith("webp")
+        ) {
+          const imageDesktop = await resizeFileDekstop(props?.file);
+          const imageMobile = await resizeFileMobileWebp(props?.file);
+          const imageMobileJPEG = await resizeFileMobileJpeg(props?.file);
+          if (props?.file) {
+            props?.setResizedObj({
+              desktopJPEG: imageDesktop,
+              mobileWEBP: imageMobile,
+              mobileJPEG: imageMobileJPEG,
+            });
+          }
+        } else {
+          alert("File Not Suported");
+        }
       }
     } catch (err) {
       console.log(err);
@@ -173,7 +166,10 @@ export const Result = (props) => {
                     style={{ display: "flex", alignItems: "center" }}
                   >
                     <Video width="100%" height="auto" controls autoplay muted>
-                      <source src={url} type="video/mp4" />
+                      <source
+                        src={URL?.createObjectURL(props?.file)}
+                        type="video/mp4"
+                      />
                     </Video>
                   </label>
                 </>
@@ -257,7 +253,9 @@ export const Result = (props) => {
           </div>
 
           <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
-            <TextReview>(0) შეფასებები</TextReview>
+            <TextReview>
+              (0) {props?.language?.language.User.addFeed.reviews}
+            </TextReview>
           </div>
           <PostTime>
             <span>1hr ago</span>
@@ -274,7 +272,7 @@ export const Result = (props) => {
             : () => alert("Add File")
         }
       >
-        Add Feed
+        {props?.language?.language.User.addFeed.addFeed}
       </Button>
     </div>
   );

@@ -1,6 +1,5 @@
-import React, { useState, useContext, useRef } from "react";
+import { useState, useContext, useRef } from "react";
 import styled from "styled-components";
-import { ChatContext } from "../../context/ChatContext";
 import { AuthContext } from "../../context/AuthContext";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -11,14 +10,15 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { db, storage } from "../../firebase";
-import { ref, uploadBytes, listAll, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { v4 as uuid } from "uuid";
 import { ImFilePicture } from "react-icons/im";
-import { setRerender } from "../../redux/main";
 import { FiSend } from "react-icons/fi";
 import { setBackdropOpen } from "../../redux/main";
+import { Language } from "../../context/language";
 
 export const Input = () => {
+  const language = Language();
   const dispatch = useDispatch();
   // import current user & parse it
   const userUnparsed = useSelector((state) => state.storeMain.user);
@@ -141,7 +141,7 @@ export const Input = () => {
   return (
     <InputContainer>
       <InputField
-        placeholder="Type Text.."
+        placeholder={language?.language.Chat.chat.typeText}
         value={text}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={handleKey}

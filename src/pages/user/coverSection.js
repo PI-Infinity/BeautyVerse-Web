@@ -2,27 +2,26 @@ import React from "react";
 import styled from "styled-components";
 import { ImProfile } from "react-icons/im";
 import { BiShoppingBag } from "react-icons/bi";
-import { FcBusinessContact } from "react-icons/fc";
 import { useSelector, useDispatch } from "react-redux";
 import { CoverUploader } from "../../components/coverUploader";
 import { MdLocationPin } from "react-icons/md";
 import { BsBrush } from "react-icons/bs";
 import { ImCheckmark } from "react-icons/im";
 import { RiEdit2Fill, RiHomeHeartLine } from "react-icons/ri";
-import { setCover } from "../../redux/main";
-import { ref, uploadBytes, listAll, getDownloadURL } from "firebase/storage";
-import { db, storage, auth } from "../../firebase";
-import { collection, doc, updateDoc } from "firebase/firestore";
-import GoogleMapReact from "google-map-react";
+import { db } from "../../firebase";
+import { doc, updateDoc } from "firebase/firestore";
 import Map from "../../components/map";
-import { FaUser } from "react-icons/fa";
 import { GiConfirmed } from "react-icons/gi";
 import { FiEdit } from "react-icons/fi";
 import MapAutocomplete from "../../components/mapAutocomplete";
-import Avatar from "@mui/material/Avatar";
 import { useNavigate } from "react-router-dom";
 
-const CoverSection = React.memo(function ({ user, latitude, longitude }) {
+const CoverSection = React.memo(function ({
+  user,
+  latitude,
+  longitude,
+  language,
+}) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   // import current user from redux state
@@ -78,19 +77,36 @@ const CoverSection = React.memo(function ({ user, latitude, longitude }) {
   const [adress, SetAdress] = React.useState("");
 
   const UpdateAdress = () => {
-    updateDoc(doc(db, "users", `${user.id}`), {
-      adress: {
-        country: map.country,
-        region: map.region,
-        city: map.city,
-        destrict: map.destrict,
-        adress: map.street,
-        streetNumber: map.number,
-        latitude: map.latitude,
-        longitude: map.longitude,
-      },
-    });
+    if (map?.country?.length > 0) {
+      updateDoc(doc(db, "users", `${user.id}`), {
+        adress: {
+          country: map.country,
+          region: map.region,
+          city: map.city,
+          destrict: map.destrict,
+          adress: map.street,
+          streetNumber: map.number,
+          latitude: map.latitude,
+          longitude: map.longitude,
+        },
+      });
+    } else {
+      alert("Add Adress..");
+    }
   };
+
+  const [type, setType] = React.useState("");
+
+  React.useEffect(() => {
+    setType("");
+    if (userType === "Specialist") {
+      setType(language?.language.User.userPage.specialist);
+    } else if (userType === "BeautyCenter") {
+      setType(language?.language.User.userPage.beautySalon);
+    } else {
+      setType(language?.language.User.userPage.user);
+    }
+  }, [language]);
 
   return (
     <InfoSide>
@@ -98,7 +114,7 @@ const CoverSection = React.memo(function ({ user, latitude, longitude }) {
         <CoverUploader cover="cover" user={user} />
       </ProfileImg>
       <TitleContainer>
-        <Type>{userType}</Type>
+        <Type>{type}</Type>
         <Title edit={edit}>
           {coverIcon}
           {edit ? (
@@ -138,7 +154,7 @@ const CoverSection = React.memo(function ({ user, latitude, longitude }) {
             <MdLocationPin className="location" />{" "}
             {editAdress ? (
               <>
-                <MapAutocomplete />
+                <MapAutocomplete language={language} />
                 <GiConfirmed
                   className="confirm"
                   onClick={async (e) => {

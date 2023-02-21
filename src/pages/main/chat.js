@@ -1,18 +1,9 @@
 import React from "react";
 import styled from "styled-components";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { storage, db } from "../../firebase";
-import { ref, uploadBytes, listAll, getDownloadURL } from "firebase/storage";
-import {
-  collection,
-  doc,
-  setDoc,
-  addDoc,
-  updateDoc,
-  removeDoc,
-  serverTimestamp,
-} from "firebase/firestore";
+import { storage } from "../../firebase";
+import { ref, listAll, getDownloadURL } from "firebase/storage";
 import { MdOutlineDragIndicator } from "react-icons/md";
 import { AuthContext } from "../../context/AuthContext";
 

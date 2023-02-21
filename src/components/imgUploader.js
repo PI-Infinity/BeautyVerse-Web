@@ -1,19 +1,11 @@
-import React, { useContext } from "react";
+import React from "react";
 import styled from "styled-components";
 import { useSelector, useDispatch } from "react-redux";
 import { doc, updateDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { db, storage } from "../firebase";
-import {
-  ref,
-  uploadBytes,
-  listAll,
-  getDownloadURL,
-  deleteObject,
-} from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { v4 } from "uuid";
-import { AuthContext } from "../context/AuthContext";
 import { setRerender } from "../redux/main";
-import { BsStars, BsLayoutTextSidebarReverse } from "react-icons/bs";
 
 export const ImgUploader = (props) => {
   const dispatch = useDispatch();

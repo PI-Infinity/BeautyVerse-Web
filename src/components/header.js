@@ -1,20 +1,12 @@
 import React, { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
-import { MdCircleNotifications, MdPersonPin } from "react-icons/md";
 import { BiMessageSquareAdd } from "react-icons/bi";
-import { CgMenuGridO, CgMenuGridR } from "react-icons/cg";
-import { BsStars, BsLayoutTextSidebarReverse } from "react-icons/bs";
+import { BsStars } from "react-icons/bs";
 import { setOpenMenu, setOpenMobileMenu } from "../redux/main";
 import Menu from "../components/menu";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { FaUser } from "react-icons/fa";
-import { AiOutlineMenuUnfold } from "react-icons/ai";
 import { TbMessages } from "react-icons/tb";
-import { auth } from "../firebase";
-import { RiShoppingCartFill } from "react-icons/ri";
-import marketIcon from "../assets/market.png";
-import { Filter } from "../pages/main/filter";
 import Badge from "@mui/material/Badge";
 import { IsMobile } from "../functions/isMobile";
 import { AuthContext } from "../context/AuthContext";
@@ -24,7 +16,6 @@ import {
   limit,
   orderBy,
   collection,
-  doc,
   onSnapshot,
 } from "firebase/firestore";
 import { db } from "../firebase";

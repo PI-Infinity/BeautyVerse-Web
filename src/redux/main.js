@@ -20,8 +20,11 @@ const initialState = {
   changeFeed: true,
   navigatorActive: 0,
   backdrop: false,
-  theme: false,
+  theme: true,
+  language: "en",
 };
+
+console.log(initialState.language);
 
 export const main = createSlice({
   name: "main",
@@ -85,7 +88,10 @@ export const main = createSlice({
       state.backdrop = action.payload;
     },
     setTheme: (state, action) => {
-      state.theme = !state.theme;
+      state.theme = action.payload;
+    },
+    setLanguage: (state, action) => {
+      state.language = action.payload;
     },
   },
 });
@@ -111,5 +117,6 @@ export const {
   setNavigatorActive,
   setBackdropOpen,
   setTheme,
+  setLanguage,
 } = main.actions;
 export default main.reducer;

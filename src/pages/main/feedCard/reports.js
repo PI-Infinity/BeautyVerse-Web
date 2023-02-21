@@ -1,14 +1,15 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import styled from "styled-components";
-import { BsSave2 } from "react-icons/bs";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import FormDialog from "../../../components/formDialog";
 import { setDoc, doc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../../firebase";
 import Success from "../../../snackBars/success";
+import { Language } from "../../../context/language";
 
 export const Reports = (props) => {
   const [openList, setOpenList] = useState(false);
+  const language = Language();
 
   const [openDialog, setOpenDialog] = useState(false);
   const [inputText, setInputText] = useState("");
@@ -47,15 +48,19 @@ export const Reports = (props) => {
       >
         <Container onClick={() => setOpenList(!openList)}>
           <div className="title">
-            <b>პოსტის გასაჩივრება</b>
+            <b>{language?.language.Main.feedCard.report}</b>
           </div>
           {openList && (
             <ReportList>
-              <span onClick={() => SendReport("Spam")}>ეს არის სპამი</span>
-              <span onClick={() => SendReport("No Thematical Feed")}>
-                არათემატური პოსტი
+              <span onClick={() => SendReport("Spam")}>
+                {language?.language.Main.feedCard.spam}
               </span>
-              <span onClick={() => setOpenDialog(true)}>მიზეზის აღწერა</span>
+              <span onClick={() => SendReport("No Thematical Feed")}>
+                {language?.language.Main.feedCard.noThematical}
+              </span>
+              <span onClick={() => setOpenDialog(true)}>
+                {language?.language.Main.feedCard.reason}
+              </span>
             </ReportList>
           )}
         </Container>
@@ -66,15 +71,17 @@ export const Reports = (props) => {
         inputText={inputText}
         setInputText={setInputText}
         function={() => SendReport(inputText)}
-        title="აღწერე საჩივრის მიზეზი"
-        placeholder="ჩაწერე საჩივარი"
+        title={language?.language.Main.feedCard.aboutReason}
+        send={language?.language.Main.feedCard.send}
+        cancel={language?.language.Main.feedCard.cancel}
+        placeholder={language?.language.Main.feedCard.writeReason}
       />
       <SuccesCont id="success">
         <Success
           open={openSuccess}
           setOpen={setOpenSuccess}
           type="success"
-          title="საჩივარი წარმატებით გაიგზავნა!"
+          title={language?.language.Main.feedCard.success}
         />
       </SuccesCont>
     </>
@@ -86,7 +93,7 @@ const Container = styled.div`
   width: auto;
   height: auto;
   border-radius: 0.25vw;
-  box-shadow: 0 0.1vw 0.3vw rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0.1vw 0.3vw ${(props) => props.theme.shadowColor};
   padding: 0.5vw 1vw;
   box-sizing: border-box;
   display: flex;
@@ -95,7 +102,8 @@ const Container = styled.div`
   z-index: 10000;
   margin-right: 0.25vw;
   margin-top: 0.25vw;
-  background: rgba(255, 255, 255, 0.95);
+  background: ${(props) => props.theme.secondLevel};
+  color: ${(props) => props.theme.font};
   backdrop-filter: blur(40px);
 
   .title {
@@ -106,9 +114,10 @@ const Container = styled.div`
   }
 
   @media only screen and (max-width: 600px) {
-    width: 50vw;
+    width: auto;
+    min-width: 52vw;
     border-radius: 1vw;
-    padding: 1.75vw;
+    padding: 2vw 0vw;
     margin-right: 2vw;
     margin-top: 2vw;
     align-items: center;
@@ -171,7 +180,7 @@ const ReportList = styled.div`
   display: flex;
   flex-direction: column;
   align-items: end;
-  gap: 0.1vw;
+  gap: 0vw;
 
   @media only screen and (max-width: 600px) {
     margin-top: 1.5vw;
@@ -184,7 +193,7 @@ const ReportList = styled.div`
     border-radius: 5px;
 
     :hover {
-      background: #f1f1f1;
+      filter: brightness(0.8);
     }
   }
 `;
