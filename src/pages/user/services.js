@@ -96,7 +96,6 @@ export const Services = () => {
   // delete service
   const Deleting = async (prop) => {
     if (services?.length == 1) {
-      alert(language?.language.User.userPage.lastProcedure);
     } else {
       const main = doc(db, "users", `${user.id}`);
       let less = user?.filterCategories?.filter((item) => item != prop);
@@ -133,18 +132,6 @@ export const Services = () => {
     });
   }
 
-  // // update working places
-  // const UpdateWorkingPlace = (newValue) => {
-  //   const base = doc(db, "users", `${user?.id}`);
-  //   if (editWorkingPlace?.length > 0) {
-  //     updateDoc(base, {
-  //       workingPlace: editWorkingPlace,
-  //     });
-  //     setEditWorkingPlace("");
-  //   }
-  //   setEditWorkingPlace("");
-  //   setEdit(false);
-  // };
   // update working days
   const UpdateWorkingDays = (newValue) => {
     const base = doc(db, "users", `${user?.id}`);
@@ -156,20 +143,21 @@ export const Services = () => {
     setEditWorkingDays("");
     setEdit(false);
   };
+
   const UpdateWorkingHours = () => {
     const base = doc(db, "users", `${user?.id}`);
     if (startingHours !== null && endingHours !== null) {
       updateDoc(base, {
         workingHours: {
-          start: startingHours.$H + ":" + startingHours.$m,
-          end: endingHours.$H + ":" + endingHours.$m,
+          start: startingHours?.$d?.toString().slice(16, 21),
+          end: endingHours?.$d?.toString().slice(16, 21),
         },
       });
       setEndingHours("");
       setStartingHours("");
       setEdit(false);
     } else {
-      alert("Add starting and andign time");
+      alert("Add starting and ending time");
     }
   };
 
@@ -193,7 +181,6 @@ export const Services = () => {
     }),
     placeholder: (base, state) => ({
       ...base,
-      fontSize: "16px",
       color: state.isSelected
         ? theme
           ? "#333"
@@ -202,14 +189,14 @@ export const Services = () => {
         ? "#f3f3f3"
         : "#333",
     }),
-    menuList: (base, state) => ({
-      ...base,
-      backgroundColor: theme ? "#333" : "#fff",
-    }),
     input: (base, state) => ({
       ...base,
       color: theme ? "#f3f3f3" : "#333",
       fontSize: "16px",
+    }),
+    menuList: (base, state) => ({
+      ...base,
+      backgroundColor: theme ? "#333" : "#f3f3f3",
     }),
     option: (base, state) => ({
       ...base,
@@ -235,9 +222,8 @@ export const Services = () => {
       width: "38vw",
       minHeight: "2vw",
       cursor: "pointer",
-      color: "red",
       "@media only screen and (max-width: 1200px)": {
-        width: "80vw",
+        width: "85vw",
         fontSize: "16px",
       },
     }),
@@ -264,8 +250,9 @@ export const Services = () => {
               })
               ?.map((item, index) => {
                 let daysLang = workingDaysOpt?.find(
-                  (item) => item.value === item.value
+                  (it) => it.value === item.value
                 );
+                console.log(workingDaysOpt);
                 return <div key={item.id}>{daysLang.label}</div>;
               })}
           </div>
@@ -274,7 +261,6 @@ export const Services = () => {
               style={{ display: "flex", gap: "10px", alignItems: "center" }}
             >
               <Select
-                components={animatedComponents}
                 onChange={(value) => {
                   setEditWorkingDays(value);
                 }}
@@ -287,8 +273,8 @@ export const Services = () => {
               <ImCheckmark
                 className="add"
                 onClick={() => {
-                  setEdit(false);
                   UpdateWorkingDays();
+                  setEdit(false);
                 }}
               />
             </SelectContainer>
@@ -296,8 +282,7 @@ export const Services = () => {
         </WorkingDays>
         <WorkingDays>
           <span style={{ fontWeight: "bold" }}>
-            {user?.workingHours !== undefined &&
-              language?.language.User.userPage.workingHours + ": "}
+            {language?.language.User.userPage.workingHours + ": "}
             {user?.id === currentuser?.id && edit !== "hours" && (
               <RiEdit2Fill className="edit" onClick={() => setEdit("hours")} />
             )}
@@ -316,6 +301,7 @@ export const Services = () => {
                 <BasicTimePicker
                   value={startingHours}
                   setValue={setStartingHours}
+                  title={language?.language.User.userPage.startAt}
                 />
               </div>
               <div
@@ -330,6 +316,7 @@ export const Services = () => {
                 <BasicTimePicker
                   value={endingHours}
                   setValue={setEndingHours}
+                  title={language?.language.User.userPage.endAt}
                 />
               </div>
               <ImCheckmark
@@ -577,6 +564,7 @@ const WrapperOne = styled.div`
   }
 
   @media only screen and (max-width: 600px) {
+    gap: 5vw;
   }
 `;
 
@@ -605,13 +593,13 @@ const WorkingDays = styled.div`
 
   & span {
     @media only screen and (max-width: 600px) {
-      font-size: 3.5vw;
+      font-size: 16px;
     }
   }
 
   & div {
     @media only screen and (max-width: 600px) {
-      font-size: 3vw;
+      font-size: 16px;
     }
   }
 

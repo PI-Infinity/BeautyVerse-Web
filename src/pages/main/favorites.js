@@ -9,7 +9,12 @@ import { Language } from "../../context/language";
 export const Favorites = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const followings = useSelector((state) => state.storeMain.followings);
+  // import followings
+  const folls = useSelector((state) => state.storeMain.followings);
+  let followings;
+  if (folls?.length > 0) {
+    followings = JSON.parse(folls);
+  }
   const language = Language();
 
   return (

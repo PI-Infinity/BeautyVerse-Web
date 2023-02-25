@@ -1,6 +1,8 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import styled from "styled-components";
 import CoverSection from "../../pages/user/coverSection";
+import { db } from "../../firebase";
+import { setDoc, doc, serverTimestamp } from "firebase/firestore";
 import { Links } from "../../pages/user/links";
 import { Navigator } from "../../pages/user/navigator";
 import { useSelector, useDispatch } from "react-redux";
@@ -8,12 +10,17 @@ import { IsMobile } from "../../functions/isMobile";
 import { Outlet, useParams } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import { Language } from "../../context/language";
+import VisitorId from "../../functions/deviceUniqueId";
 
 const UserProfile = () => {
   const { currentUser } = useContext(AuthContext);
   const dispatch = useDispatch();
   const { Id } = useParams();
   const language = Language();
+
+  /**
+   *   // define user list
+   */
 
   const usersList = useSelector((state) => state.storeMain.userList);
   let users;
@@ -27,12 +34,8 @@ const UserProfile = () => {
 
   return (
     <Container>
-      <CoverSection
-        language={language}
-        latitude={user?.adress.latitude}
-        longitude={user?.adress.longitude}
-        user={user}
-      />
+      <VisitorId path="visitors-profile" targetUserId={Id} />
+      <CoverSection language={language} user={user} />
       <ContentSide>
         <div className="links">
           <Links user={user} language={language} />

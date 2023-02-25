@@ -279,7 +279,7 @@ const SecondLevelContainer = styled.div`
 `;
 
 const Wrapper = styled.div`
-  width: 32vw;
+  width: 35vw;
   height: 30vh;
   border-radius: 0.5vw;
   box-shadow: 0 0.1vw 0.3vw ${(props) => props.theme.shadowColor};

@@ -9,26 +9,29 @@ import { BsBrush } from "react-icons/bs";
 import { ImCheckmark } from "react-icons/im";
 import { RiEdit2Fill, RiHomeHeartLine } from "react-icons/ri";
 import { db } from "../../firebase";
-import { doc, updateDoc } from "firebase/firestore";
 import Map from "../../components/map";
 import { GiConfirmed } from "react-icons/gi";
 import { FiEdit } from "react-icons/fi";
 import MapAutocomplete from "../../components/mapAutocomplete";
 import { useNavigate } from "react-router-dom";
+import {
+  setDoc,
+  doc,
+  deleteDoc,
+  serverTimestamp,
+  updateDoc,
+} from "firebase/firestore";
+import { v4 } from "uuid";
+import { BsArrowRightCircleFill, BsArrowLeftCircleFill } from "react-icons/bs";
 
-const CoverSection = React.memo(function ({
-  user,
-  latitude,
-  longitude,
-  language,
-}) {
+const CoverSection = React.memo(function ({ user, language }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   // import current user from redux state
   const userUnparsed = useSelector((state) => state.storeMain.user);
-  let currentUser;
+  let currentuser;
   if (userUnparsed?.length > 0) {
-    currentUser = JSON.parse(userUnparsed);
+    currentuser = JSON.parse(userUnparsed);
   }
 
   // define user type
@@ -108,14 +111,87 @@ const CoverSection = React.memo(function ({
     }
   }, [language]);
 
+  // import followings
+  const folls = useSelector((state) => state.storeMain.followings);
+  let followings;
+  if (folls?.length > 0) {
+    followings = JSON.parse(folls);
+  }
+
+  // define if props user is in your followings list
+  const following = followings.find((item) => item?.id == user?.id);
+  const userToFollow = user;
+
+  // function to follow user
+  const FollowToUser = async () => {
+    var actionId = v4();
+    await setDoc(
+      doc(db, `users`, `${currentuser?.id}`, "followings", `${user?.id}`),
+      {
+        id: user?.id,
+        cover: user?.cover ? user?.cover : "",
+        name: user?.name,
+        date: serverTimestamp(),
+      }
+    );
+    await setDoc(
+      doc(db, `users`, `${user?.id}`, "followers", `${currentuser?.id}`),
+      {
+        id: currentuser?.id,
+        cover: currentuser?.cover ? currentuser?.cover : "",
+        name: currentuser?.name,
+        date: serverTimestamp(),
+      }
+    );
+    if (user?.id !== currentuser?.id) {
+      setDoc(doc(db, `users`, `${user?.id}`, "notifications", `${actionId}`), {
+        id: actionId,
+        senderId: currentuser?.id,
+        senderName: currentuser?.name,
+        senderCover: currentuser?.cover?.length > 0 ? currentuser?.cover : "",
+        text: `ჩაინიშნა თქვენი პერსონალური გვერდი!`,
+        date: serverTimestamp(),
+        type: "following",
+        status: "unread",
+      });
+    }
+  };
+
+  // function to unfollow user
+  const UnFollowToUser = async () => {
+    console.log("click");
+    await deleteDoc(
+      doc(db, `users`, `${currentuser?.id}`, "followings", `${user?.id}`)
+    );
+  };
+
+  /**
+   * change addresses
+   */
+
+  const [shownAddress, setShownAddress] = React.useState(0);
+  let latitude;
+  let longitude;
+  let address;
+  if (shownAddress === 0) {
+    latitude = user?.adress?.latitude;
+    longitude = user?.adress?.longitude;
+    address = (
+      <div>
+        {user?.adress.city}, {user?.adress.destrict}
+        {user?.adress.destrict?.length > 0 ? "," : ""} {user?.adress.adress}
+        {user?.adress.streetNumber?.length > 0 ? " N" : ""}
+        {user?.adress.streetNumber}
+      </div>
+    );
+  }
+
   return (
     <InfoSide>
-      <ProfileImg>
-        <CoverUploader cover="cover" user={user} />
-      </ProfileImg>
+      <CoverUploader cover="cover" user={user} />
       <TitleContainer>
         <Type>{type}</Type>
-        <Title edit={edit}>
+        <Title edit={edit} following={following?.id?.length?.toString()}>
           {coverIcon}
           {edit ? (
             <>
@@ -131,9 +207,29 @@ const CoverSection = React.memo(function ({
           ) : (
             <>
               <div>
-                <span>{name}</span>
+                <span>{name}</span>{" "}
+                {currentuser?.id !== user?.id && (
+                  <>
+                    {following?.id?.length > 0 ? (
+                      <ImCheckmark
+                        className="followIcon"
+                        following="true"
+                        onClick={UnFollowToUser}
+                      />
+                    ) : (
+                      <ImCheckmark
+                        className="followIcon"
+                        onClick={
+                          currentuser != undefined
+                            ? FollowToUser
+                            : () => navigate("/login")
+                        }
+                      />
+                    )}
+                  </>
+                )}
               </div>
-              {currentUser?.id === user?.id && (
+              {currentuser?.id === user?.id && (
                 <RiEdit2Fill
                   className="editIcon"
                   onClick={() => setEdit(true)}
@@ -143,6 +239,21 @@ const CoverSection = React.memo(function ({
           )}
         </Title>
       </TitleContainer>
+      {/* <div
+        style={{
+          display: "none",
+          alignItems: "center",
+          gap: "15px",
+          width: "45%",
+        }}
+      > */}
+      {/* {user?.address2 !== undefined && (
+        <BsArrowLeftCircleFill
+          size={24}
+          color={"#ccc"}
+          style={{ cursor: "pointer" }}
+        />
+      )} */}
       <WorkingInfo>
         <div style={{ zIndex: 4 }}>
           <div style={{ position: "relative", top: "8vw" }}>
@@ -166,25 +277,28 @@ const CoverSection = React.memo(function ({
               </>
             ) : (
               <>
-                <div>
-                  {user?.adress.country}, {user?.adress.city},{" "}
-                  {user?.adress.destrict}
-                  {user?.adress.destrict?.length > 0 ? "," : ""}{" "}
-                  {user?.adress.adress}
-                  {user?.adress.streetNumber?.length > 0 ? " N" : ""}
-                  {user?.adress.streetNumber}
-                </div>
-                <FiEdit
-                  className="edit"
-                  onClick={() => {
-                    SetEditAdress(true);
-                  }}
-                />
+                {address}
+                <>
+                  {currentuser?.id === user?.id && (
+                    <FiEdit
+                      className="edit"
+                      onClick={() => {
+                        SetEditAdress(true);
+                      }}
+                    />
+                  )}
+                </>
               </>
             )}
           </Location>
         </StaticInfo>
       </WorkingInfo>
+      {/* <BsArrowRightCircleFill
+        size={24}
+        color={"#ccc"}
+        style={{ cursor: "pointer" }}
+      /> */}
+      {/* </div> */}
     </InfoSide>
   );
 });
@@ -199,57 +313,11 @@ const InfoSide = styled.div`
   display: flex;
   align-items: center;
   justify-content: start;
+  box-sizing: border-box;
 
   @media only screen and (max-width: 600px) {
     width: 100%;
-    box-sizing: border-box;
     padding: 3vw 4vw;
-  }
-`;
-
-const ProfileImg = styled.div`
-  background: #fff;
-  width: 8vw;
-  height: 8vw;
-  border-radius: 50vw;
-  box-shadow: 0 0 0 0.3vw rgba(2, 2, 2, 0.05);
-  overflow: hidden;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-
-  @media only screen and (max-width: 600px) {
-    box-shadow: 0 0 0 1vw rgba(2, 2, 2, 0.05);
-    width: 20vw;
-    height: 20vw;
-    border-radius: 50vw;
-    padding: 0;
-  }
-
-  .undefinedUserIcon {
-    font-size: 4vw;
-    color: ${(props) => props.theme.disabled};
-    position: relative;
-    left: 3vw;
-
-    @media only screen and (max-width: 600px) {
-      font-size: 10vw;
-      left: 5vw;
-    }
-  }
-
-  .undefinedLogo {
-    font-size: 1.5vw;
-    font-weight: bold;
-    color: ${(props) => props.theme.disabled};
-    position: relative;
-    left: 3vw;
-
-    @media only screen and (max-width: 600px) {
-      font-size: 5vw;
-    }
   }
 `;
 
@@ -329,18 +397,30 @@ const Title = styled.span`
     letter-spacing: 0.2vw;
   }
 
-  & > div {
-    width: auto;
-    height: 2vw;
+  // & > div {
+  //   width: auto;
+  //   height: 2vw;
 
-    @media only screen and (max-width: 600px) {
-      height: 6vw;
-    }
-  }
+  //   @media only screen and (max-width: 600px) {
+  //     height: 6vw;
+  //   }
+  // }
 
   .editIcon {
     color: ${(props) => (props.edit ? "green" : "#ddd")};
     cursor: pointer;
+  }
+
+  .followIcon {
+    font-size: 1.1vw;
+    color: ${(props) => (props.following > 0 ? "#2bdfd9" : "#ddd")};
+    margin-left: 0.5vw;
+    cursor: pointer;
+
+    @media only screen and (max-width: 600px) {
+      font-size: 4.5vw;
+      margin-left: 1.5vw;
+    }
   }
 `;
 
@@ -431,6 +511,7 @@ const WorkingInfo = styled.div`
   overflow: hidden;
   border-radius: 0.5vw;
   z-index: 9;
+  gap: 15px;
 
   @media only screen and (max-width: 600px) {
     font-size: 3.5vw;

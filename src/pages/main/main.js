@@ -71,7 +71,6 @@ const Main = (props) => {
         <MainSection>
           <FilterContainer>
             <CategoryFilter />
-
             <Ads />
           </FilterContainer>
           <CenterContainer height={height}>

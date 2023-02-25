@@ -6,7 +6,7 @@ import { Feeds } from "./pages/main/feeds";
 import { Specialists } from "./pages/main/specialists";
 import { Recomended } from "./pages/main/recomended";
 import AddFeed from "./pages/addFeed/addFeed";
-import Login from "./pages/login";
+import Login from "./pages/login/login";
 import Register from "./pages/register/register";
 import { Identify } from "./pages/register/identify";
 import { BusinessRegister } from "./pages/register/businessRegister";
@@ -16,12 +16,14 @@ import { Services } from "./pages/user/services";
 import { UserFeeds } from "./pages/user/feeds";
 import { Audience } from "./pages/user/audience";
 import { Settings } from "./pages/user/settings";
+import { UserStatistics } from "./pages/user/statistics/statistics";
 import { Contact } from "./pages/user/contact";
 import { Team } from "./pages/user/team";
 import AdminDashboard from "./pages/adminDashboard/main";
 import Users from "./pages/adminDashboard/users";
 import Notifications from "./pages/adminDashboard/notifications";
 import Reports from "./pages/adminDashboard/reports";
+import UpdatePhone from "./pages/adminDashboard/updatePhone";
 import Statistics from "./pages/adminDashboard/statistics";
 import Messages from "./pages/adminDashboard/messages";
 import AllFeeds from "./pages/adminDashboard/feeds";
@@ -133,6 +135,7 @@ function App() {
     } else {
       dispatch(setLanguage("en"));
     }
+    localStorage.setItem("BeautyVerse:scrollPosition", 0);
   }, [currentUser]);
 
   /**
@@ -159,18 +162,9 @@ function App() {
    */
   React.useEffect(() => {
     if (currentUser) {
-      const data = onSnapshot(collection(db, "users"), (snapshot) => {
-        dispatch(
-          setUser(
-            JSON.stringify(
-              snapshot.docs
-                .map((doc) => doc.data())
-                .find((item) => item.id == currentUser?.uid)
-            )
-          )
-        );
+      const unsub = onSnapshot(doc(db, "users", currentUser?.uid), (doc) => {
+        dispatch(setUser(JSON.stringify(doc.data())));
       });
-      return data;
     }
   }, [currentUser, rerender]);
 
@@ -178,21 +172,21 @@ function App() {
    * import products from firesotre if current user type is shop
    * dispatch to redux for after control
    */
-  React.useEffect(() => {
-    const data = onSnapshot(
-      collection(db, "users", `${currentUser?.uid}`, "products"),
-      (snapshot) => {
-        if (snapshot != undefined) {
-          dispatch(
-            setCurrentShopProducts(
-              JSON.stringify(snapshot.docs.map((doc) => doc.data()))
-            )
-          );
-        }
-      }
-    );
-    return data;
-  }, [rerender, currentUser]);
+  // React.useEffect(() => {
+  //   const data = onSnapshot(
+  //     collection(db, "users", `${currentUser?.uid}`, "products"),
+  //     (snapshot) => {
+  //       if (snapshot != undefined) {
+  //         dispatch(
+  //           setCurrentShopProducts(
+  //             JSON.stringify(snapshot.docs.map((doc) => doc.data()))
+  //           )
+  //         );
+  //       }s
+  //     }
+  //   );
+  //   return data;
+  // }, [rerender, currentUser]);
 
   /**
    // import current user's followings
@@ -202,7 +196,9 @@ function App() {
     const data = onSnapshot(
       collection(db, "users", `${currentUser?.uid}`, "followings"),
       (snapshot) => {
-        dispatch(setFollowings(snapshot.docs.map((doc) => doc.data())));
+        dispatch(
+          setFollowings(JSON.stringify(snapshot.docs.map((doc) => doc.data())))
+        );
       }
     );
     return data;
@@ -311,6 +307,7 @@ function App() {
               <Route path="team" element={<Team />} />
               <Route path="contact" element={<Contact />} />
               <Route path="audience" element={<Audience />} />
+              <Route path="statistics" element={<UserStatistics />} />
               <Route
                 path="settings"
                 element={
@@ -377,6 +374,14 @@ function App() {
                 element={
                   <RequireAdminAuth>
                     <Messages />
+                  </RequireAdminAuth>
+                }
+              />
+              <Route
+                path="changePhone"
+                element={
+                  <RequireAdminAuth>
+                    <UpdatePhone />
                   </RequireAdminAuth>
                 }
               />

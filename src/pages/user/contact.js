@@ -12,6 +12,7 @@ import { MdLocationPin } from "react-icons/md";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import { useOutletContext } from "react-router-dom";
+import { BsArrowRightCircleFill, BsArrowLeftCircleFill } from "react-icons/bs";
 
 export const Contact = () => {
   const [user, language] = useOutletContext();
@@ -56,54 +57,75 @@ export const Contact = () => {
   return (
     <Container style={{ padding: "3vw 0" }} height={height}>
       <Links user={user} />
-      <span style={{ fontWeight: "bold" }}>
+      <span
+        style={{
+          fontWeight: "bold",
+          display: "flex",
+          alignItems: "center",
+          gap: "50px",
+        }}
+      >
+        {/* <BsArrowLeftCircleFill /> */}
         {language?.language.User.userPage.address}:
+        {/* <BsArrowRightCircleFill /> */}
       </span>
-
-      {editAdress ? (
-        <div style={{ display: "flex", alignItems: "start", gap: "5px" }}>
-          <MapAutocomplete language={language} />
-          <GiConfirmed
-            className="confirm"
-            onClick={
-              map?.country?.length > 1
-                ? async (e) => {
-                    e.preventDefault();
-                    await UpdateAdress();
-                    SetEditAdress(false);
+      <>
+        {
+          <>
+            {editAdress ? (
+              <div style={{ display: "flex", alignItems: "start", gap: "5px" }}>
+                <MapAutocomplete language={language} userMobile="true" />
+                <GiConfirmed
+                  className="confirm"
+                  onClick={
+                    map?.country?.length > 1
+                      ? async (e) => {
+                          e.preventDefault();
+                          await UpdateAdress();
+                          SetEditAdress(false);
+                        }
+                      : () => alert("Add Address")
                   }
-                : () => alert("Add Address")
-            }
-          />
-        </div>
-      ) : (
-        <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-          <MdLocationPin className="location" />
-          <div style={{ width: "80vw", textAlign: "center", fontSize: "3vw" }}>
-            {user?.adress?.country}, {user?.adress?.city},{" "}
-            {user?.adress?.destrict}
-            {user?.adress?.destrict?.length > 0 ? "," : ""}{" "}
-            {user?.adress?.adress}
-            {user?.adress?.streetNumber?.length > 0 ? " N" : ""}
-            {user?.adress?.streetNumber}
-          </div>
-          {user?.id === currentuser?.id && (
-            <FiEdit
-              className="edit"
-              onClick={() => {
-                SetEditAdress(true);
-              }}
-            />
-          )}
-        </div>
-      )}
+                />
+              </div>
+            ) : (
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "5px" }}
+              >
+                <MdLocationPin className="location" />
+                <div
+                  style={{
+                    width: "80vw",
+                    textAlign: "center",
+                    fontSize: "2.7vw",
+                  }}
+                >
+                  {user?.adress?.city}, {user?.adress?.destrict}
+                  {user?.adress?.destrict?.length > 0 ? "," : ""}{" "}
+                  {user?.adress?.adress}
+                  {user?.adress?.streetNumber?.length > 0 ? " N" : ""}
+                  {user?.adress?.streetNumber}
+                </div>
+                {user?.id === currentuser?.id && (
+                  <FiEdit
+                    className="edit"
+                    onClick={() => {
+                      SetEditAdress(true);
+                    }}
+                  />
+                )}
+              </div>
+            )}
 
-      <div>
-        <Map
-          latitude={user?.adress?.latitude}
-          longitude={user?.adress?.longitude}
-        />
-      </div>
+            <div>
+              <Map
+                latitude={user?.adress?.latitude}
+                longitude={user?.adress?.longitude}
+              />
+            </div>
+          </>
+        }
+      </>
     </Container>
   );
 };

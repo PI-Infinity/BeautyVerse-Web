@@ -39,13 +39,14 @@ export const Header = () => {
   if (userUnparsed?.length > 0) {
     user = JSON.parse(userUnparsed);
   }
-  // import current shop from redux state
-  const shopUnparsed = useSelector((state) => state.storeMarket.shop);
 
-  let shop;
-  if (shopUnparsed?.length > 0) {
-    shop = JSON.parse(shopUnparsed);
-  }
+  // import current shop from redux state
+  // const shopUnparsed = useSelector((state) => state.storeMarket.shop);
+
+  // let shop;
+  // if (shopUnparsed?.length > 0) {
+  //   shop = JSON.parse(shopUnparsed);
+  // }
 
   const MenuOpening = () => {
     if (isMobile) {

@@ -11,6 +11,7 @@ import { FiSettings } from "react-icons/fi";
 import { AiOutlineTeam } from "react-icons/ai";
 import { useSelector, useDispatch } from "react-redux";
 import { IsMobile } from "../../functions/isMobile";
+import ShowChartIcon from "@mui/icons-material/ShowChart";
 
 export const Navigator = (props) => {
   const dispatch = useDispatch();
@@ -86,6 +87,17 @@ export const Navigator = (props) => {
     },
     {
       id: 6,
+      value: "statistics",
+      title: props?.language?.language.User.userPage.statistics,
+      onClick: () => navigate(`/user/${props?.user?.id}/statistics`),
+      className:
+        window.location.pathname === `/user/${props?.user?.id}/statistics`
+          ? "active"
+          : "btn",
+      icon: <ShowChartIcon className="icon" />,
+    },
+    {
+      id: 7,
       value: "settings",
       title: props?.language?.language.User.userPage.settings,
       onClick: () => navigate(`/user/${props?.user?.id}/settings`),
@@ -120,7 +132,7 @@ export const Navigator = (props) => {
         props?.currentUser == null ||
         props?.currentUser?.uid !== props?.user?.id
       ) {
-        return item.value !== "settings";
+        return item.value !== "settings" && item.value !== "statistics";
       } else {
         return item;
       }
@@ -131,7 +143,8 @@ export const Navigator = (props) => {
         return (
           item.value !== "team" &&
           item.value !== "services" &&
-          item.value !== "posts"
+          item.value !== "posts" &&
+          item.value !== "statistics"
         );
       } else if (props?.user?.type == "specialist") {
         return item.value !== "team";

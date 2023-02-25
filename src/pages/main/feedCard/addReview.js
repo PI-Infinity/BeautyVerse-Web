@@ -1,6 +1,13 @@
-import { useContext } from "react";
+import React, { useState, useContext } from "react";
 import styled from "styled-components";
-import { setDoc, doc, serverTimestamp } from "firebase/firestore";
+import {
+  setDoc,
+  doc,
+  serverTimestamp,
+  onSnapshot,
+  collection,
+  deleteDoc,
+} from "firebase/firestore";
 import { AuthContext } from "../../../context/AuthContext";
 import { useSelector } from "react-redux";
 import { db } from "../../../firebase";
@@ -72,19 +79,99 @@ export const AddReview = (props) => {
     }
   };
 
+  const [stars, setStars] = useState([]);
+  // get stars
+  React.useEffect(() => {
+    let data = onSnapshot(
+      collection(
+        db,
+        "users",
+        `${props?.state?.userId}`,
+        "feeds",
+        `${props?.currentFeed?.id}`,
+        `${props?.state?.userId}+stars`
+      ),
+      (snapshot) => {
+        setStars(snapshot.docs.map((doc) => doc.data()));
+      }
+    );
+    return data;
+  }, [props?.path, props?.state, props?.currentFeed, props?.state?.imgNumber]);
+
+  // give heart to user
+  const SetStar = async () => {
+    await setDoc(
+      doc(
+        db,
+        `users`,
+        `${props?.state?.userId}`,
+        "feeds",
+        `${props?.currentFeed?.id}`,
+        `${props?.state?.userId}+stars`,
+        currentuser?.id
+      ),
+      {
+        id: currentuser?.id,
+        name: currentuser?.name,
+        cover: currentuser?.cover ? currentuser?.cover : "",
+        date: serverTimestamp(),
+      }
+    );
+    var actionId = v4();
+    if (props?.state?.userId !== currentUser?.uid) {
+      setDoc(
+        doc(
+          db,
+          `users`,
+          `${props?.state?.userId}`,
+          "notifications",
+          `${actionId}`
+        ),
+        {
+          id: actionId,
+          senderId: currentUser?.uid,
+          senderName: currentuser?.name,
+          senderCover: currentuser?.cover?.length > 0 ? currentuser?.cover : "",
+          text: `მიანიჭა ვარსკვლავი თქვენ პოსტს!`,
+          date: serverTimestamp(),
+          type: "star",
+          status: "unread",
+          feed: `${window.location.pathname}`,
+        }
+      );
+    }
+  };
+
+  const isStarGiven = stars?.find((item) => item.id === currentuser?.id);
+
+  // remove heart
+  const RemoveStar = async () => {
+    await deleteDoc(
+      doc(
+        db,
+        `users`,
+        `${props?.state?.userId}`,
+        "feeds",
+        `${props?.currentFeed?.id}`,
+        `${props?.state?.userId}+stars`,
+        currentuser?.id
+      )
+    );
+  };
+
   return (
     <ReviewContainer>
       {props.currentuser?.id !== undefined && (
         <Footer>
           <Likes>
-            {props.isStarGiven != undefined ? (
-              <BiStar className="likedIcon" onClick={props.RemoveStar} />
+            {isStarGiven != undefined ? (
+              <BiStar className="likedIcon" onClick={RemoveStar} />
             ) : (
               <BiStar
                 className="unlikedIcon"
                 onClick={
                   props.currentuser != ""
-                    ? props.SetStar
+                    ? SetStar
                     : async () => {
                         await props.setOpenFeed(false);
                         navigate("/login");
@@ -92,7 +179,7 @@ export const AddReview = (props) => {
                 }
               />
             )}
-            {props.stars?.length}
+            {stars?.length}
           </Likes>
           <AddReviewContainer
             value={props.reviewText}

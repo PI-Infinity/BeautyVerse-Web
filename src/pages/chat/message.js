@@ -18,8 +18,9 @@ import Avatar from "@mui/material/Avatar";
 import { MdRemove } from "react-icons/md";
 import AlertDialog from "../../components/dialog";
 import { Language } from "../../context/language";
+import ChatMsg from "@mui-treasury/components/chatMsg/ChatMsg";
 
-export const Message = ({ message }) => {
+export const Message = ({ message, sameSender, prevMsg, nextMsg }) => {
   const language = Language();
   const navigate = useNavigate();
 
@@ -72,19 +73,23 @@ export const Message = ({ message }) => {
   const currentTime = new Date().getTime() / 1000;
 
   let cover;
-  if (message?.senderId === currentuser?.id) {
-    cover = (
-      <Avatar
-        alt={currentuser?.name}
-        src={currentuser?.cover}
-        sx={{ width: 36, height: 36 }}
-      />
-    );
+  if (!sameSender) {
+    if (message?.senderId === currentuser?.id) {
+      cover = (
+        <Avatar
+          alt={currentuser?.name}
+          src={currentuser?.cover}
+          sx={{ width: 30, height: 30 }}
+        />
+      );
+    } else {
+      let us = userList?.find((item) => item?.id === message?.senderId);
+      cover = (
+        <Avatar alt={us?.name} src={us?.cover} sx={{ width: 30, height: 30 }} />
+      );
+    }
   } else {
-    let us = userList?.find((item) => item?.id === message?.senderId);
-    cover = (
-      <Avatar alt={us?.name} src={us?.cover} sx={{ width: 36, height: 36 }} />
-    );
+    cover = <div style={{ width: 30, height: 30 }} />;
   }
 
   // delete message
@@ -105,39 +110,104 @@ export const Message = ({ message }) => {
   // open dialog
   const [open, setOpen] = React.useState(false);
 
+  // define message design
+  let design;
+  if (message?.senderId === currentuser.id) {
+    if (
+      prevMsg?.senderId === nextMsg?.senderId &&
+      prevMsg?.senderId === message?.senderId
+    ) {
+      design = "50px 8px 8px 50px";
+    } else if (
+      prevMsg?.senderId !== message?.senderId &&
+      message?.senderId === nextMsg?.senderId
+    ) {
+      design = "50px 40px 8px 50px";
+    } else if (
+      prevMsg?.senderId === message?.senderId &&
+      message?.senderId !== nextMsg?.senderId
+    ) {
+      design = "50px 8px 40px 50px";
+    } else {
+      design = "50px 50px 50px 50px";
+    }
+  } else {
+    if (
+      prevMsg?.senderId === nextMsg?.senderId &&
+      prevMsg?.senderId === message?.senderId
+    ) {
+      design = "8px 50px 50px 8px";
+    } else if (
+      prevMsg?.senderId !== message?.senderId &&
+      message?.senderId === nextMsg?.senderId
+    ) {
+      design = "40px 50px 50px 8px";
+    } else if (
+      prevMsg?.senderId === message?.senderId &&
+      message?.senderId !== nextMsg?.senderId
+    ) {
+      design = "8px 50px 50px 40px";
+    } else {
+      design = "50px 50px 50px 50px";
+    }
+  }
+
+  // define
+  let lastMsg;
+  if (
+    (prevMsg?.senderId === message?.senderId ||
+      prevMsg?.senderId === undefined ||
+      prevMsg?.senderId !== message?.senderId) &&
+    (nextMsg?.senderId !== message?.senderId || nextMsg?.senderId === undefined)
+  ) {
+    lastMsg = true;
+  }
+
   return (
     <MainContainer prop={message?.senderId === currentuser.id}>
       <MessageContainer
         ref={messageref}
         prop={message?.senderId === currentuser.id}
+        design={design}
       >
-        {cover}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "end",
-          }}
-        >
-          {message?.img && <img id="img" src={message?.img} />}
+        {message?.senderId !== currentuser.id && cover}
+        <div>
+          {message?.img && (
+            <img id="img" style={{ margin: "2px 0" }} src={message?.img} />
+          )}
           <MessageContent
             img={message?.img}
             className={
               message?.senderId === currentuser.id ? "current" : "noCurrent"
             }
+            onClick={() => setOpen(true)}
           >
             {message?.text}
           </MessageContent>
+          {lastMsg && (
+            <span
+              style={{
+                color: "#ddd",
+                opacity: "0.7",
+                marginTop: "5px",
+              }}
+              className="time"
+            >
+              {currentTime > message?.date?.seconds + 70
+                ? sendDate
+                : "Just Now"}
+            </span>
+          )}
         </div>
-        <MdRemove
+        {/* <MdRemove
           color="#ccc"
           onClick={() => setOpen(true)}
           style={{ cursor: "pointer" }}
-        />
+        /> */}
+        {/* {prevMsg?.id === message?.id && ( */}
+        {/* )} */}
       </MessageContainer>
-      <span style={{ color: "#ddd", marginTop: "10px" }} className="time">
-        {currentTime > message?.date?.seconds + 70 ? sendDate : "Just Now"}
-      </span>
+
       <AlertDialog
         open={open}
         setOpen={setOpen}
@@ -151,42 +221,47 @@ export const Message = ({ message }) => {
 };
 
 const MainContainer = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: ${(props) => (props.prop ? "flex-end" : "start")};
+  // width: 100%;
+  // display: flex;
+  // // flex-direction: column;
+  // // align-items: ${(props) => (props.prop ? "flex-end" : "start")};
 
-  @media only screen and (max-width: 600px) {
-    gap: 0vw;
-  }
-
-  & > span {
-    font-size: 0.5vw;
-    @media only screen and (max-width: 600px) {
-      font-size: 2vw;
-    }
-  }
+  // @media only screen and (max-width: 600px) {
+  // }
 `;
 
 const MessageContainer = styled.div`
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 15px;
   width: 100%;
   flex-direction: ${(props) => (props.prop ? "row-reverse" : "row")};
   justify-content: ${(props) => (props.prop ? "auto" : "start")};
 
+  @media only screen and (max-width: 600px) {
+    gap: 10px;
+  }
+
   .current {
-    background: #fff;
-    border-radius: 20px 0 20px 20px;
+    background: #3f51b5;
+    border-radius: ${(props) => props.design};
+    color: #fff;
   }
   .noCurrent {
     background: #fff;
-    border-radius: 20px 20px 20px 0px;
+    border-radius: ${(props) => props.design};
+  }
+
+  & > span {
+    font-size: 0.5vw;
+    @media only screen and (max-width: 600px) {
+      font-size: 1.5vw;
+    }
   }
 
   #img {
     max-width: 25vw;
+    border-radius: 5px;
     @media only screen and (max-width: 600px) {
       max-width: 60vw;
       // height: 30vw;
@@ -213,8 +288,14 @@ const Img = styled.img`
   }
 `;
 const MessageContent = styled.div`
-  padding: ${(props) => (props?.img ? "0" : "10px 20px")};
+  padding: ${(props) => (props?.img ? "0" : "5px 14px 6px 14px")};
   box-shadow: 0 0.1vw 0.3vw rgba(0, 0, 0, 0.1);
+  font-size: 15px;
+  cursor: pointer;
+
+  @media only screen and (max-width: 600px) {
+    padding: ${(props) => (props?.img ? "0" : "7px 15px 8px 15px")};
+  }
 `;
 
 const UserProfileEmpty = styled.div`

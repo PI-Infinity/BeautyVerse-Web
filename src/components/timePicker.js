@@ -12,7 +12,7 @@ export default function BasicTimePicker(props) {
     <Container>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <TimePicker
-          label="Basic example"
+          label={props.title}
           value={props.value}
           className="picker"
           ampm={false}

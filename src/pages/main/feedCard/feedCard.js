@@ -70,6 +70,7 @@ export const FeedCard = (props) => {
 
   //get user feeds from storage
   const userList = useSelector((state) => state.storeMain.userList);
+
   const fnc = async () => {
     // define feeds collection
     const feedsRef = collection(db, "users", `${props?.id}`, "feeds");
@@ -133,22 +134,26 @@ export const FeedCard = (props) => {
       ),
       {
         id: currentUser?.uid,
-        name: feed?.userName,
-        cover: props?.cover ? props?.cover : "",
+        name: currentuser?.name,
+        cover: currentuser?.cover ? currentuser?.cover : "",
+        date: serverTimestamp(),
       }
     );
     if (props?.id !== currentUser?.uid) {
-      setDoc(doc(db, `users`, `${props?.id}`, "notifications", `${actionId}`), {
-        id: actionId,
-        senderId: currentUser?.uid,
-        senderName: currentuser?.name,
-        senderCover: currentuser?.cover?.length > 0 ? currentuser?.cover : "",
-        text: `მიანიჭა ვარსკვლავი თქვენ პოსტს!`,
-        date: serverTimestamp(),
-        type: "star",
-        status: "unread",
-        feed: `${props?.id}/feed/${feed?.feed?.id}/0`,
-      });
+      await setDoc(
+        doc(db, `users`, `${props?.id}`, "notifications", `${actionId}`),
+        {
+          id: actionId,
+          senderId: currentUser?.uid,
+          senderName: currentuser?.name,
+          senderCover: currentuser?.cover?.length > 0 ? currentuser?.cover : "",
+          text: `მიანიჭა ვარსკვლავი თქვენ პოსტს!`,
+          date: serverTimestamp(),
+          type: "star",
+          status: "unread",
+          feed: `${props?.id}/feed/${feed?.feed?.id}/0`,
+        }
+      );
     }
   };
 
@@ -160,11 +165,11 @@ export const FeedCard = (props) => {
     await deleteDoc(
       doc(
         db,
-        `users`,
-        `${props.id}`,
+        "users",
+        `${props?.id}`,
         "feeds",
         `${feed?.feed?.id}`,
-        `${props.id}+stars`,
+        `${props?.id}+stars`,
         currentUser?.uid
       )
     );
@@ -177,9 +182,35 @@ export const FeedCard = (props) => {
   const [reports, setReports] = React.useState(false);
 
   // define shown post added time
-  const currentPostTime = new Date(feed?.feed?.addTime?.seconds * 1000)
-    .toString()
-    .slice(4, 15);
+  let currentPostTime;
+  let hoursAgo;
+  let definetTitle;
+  if (
+    (
+      (new Date().getTime() - feed?.feed?.addTime?.seconds * 1000) /
+      3600000
+    ).toFixed(0) < 1
+  ) {
+    hoursAgo =
+      (new Date().getTime() - feed?.feed?.addTime?.seconds * 1000) / 60000;
+    definetTitle = " min";
+  } else {
+    hoursAgo =
+      (new Date().getTime() - feed?.feed?.addTime?.seconds * 1000) / 3600000;
+    definetTitle = " h";
+  }
+
+  if (new Date().getTime() - feed?.feed?.addTime?.seconds * 1000 > 86400000) {
+    currentPostTime = new Date(feed?.feed?.addTime?.seconds * 1000)
+      .toString()
+      .slice(4, 15);
+  } else {
+    if (definetTitle < 1) {
+      currentPostTime = hoursAgo.toFixed(0) + 1;
+    } else {
+      currentPostTime = hoursAgo.toFixed(0) + definetTitle;
+    }
+  }
 
   /** Define following to user or not
    * //
@@ -192,7 +223,11 @@ export const FeedCard = (props) => {
     currentuser = JSON.parse(userUnparsed);
   }
   // import followings
-  const followings = useSelector((state) => state.storeMain.followings);
+  const folls = useSelector((state) => state.storeMain.followings);
+  let followings;
+  if (folls?.length > 0) {
+    followings = JSON.parse(folls);
+  }
 
   // define if props user is in your followings list
   const following = followings.find((item) => item.id == props.id);
@@ -205,13 +240,19 @@ export const FeedCard = (props) => {
     await setDoc(
       doc(db, `users`, `${currentUser?.uid}`, "followings", `${props?.id}`),
       {
-        ...props,
+        id: props?.id,
+        cover: props?.cover ? props?.cover : "",
+        name: props?.name,
+        date: serverTimestamp(),
       }
     );
     await setDoc(
       doc(db, `users`, `${props?.id}`, "followers", `${currentUser?.uid}`),
       {
-        ...currentuser,
+        id: currentuser?.id,
+        cover: currentuser?.cover ? currentuser?.cover : "",
+        name: currentuser?.name,
+        date: serverTimestamp(),
       }
     );
     if (props?.id !== currentUser?.uid) {
@@ -224,7 +265,6 @@ export const FeedCard = (props) => {
         date: serverTimestamp(),
         type: "following",
         status: "unread",
-        feed: `${props?.id}/feed/${feed?.feed?.id}/0`,
       });
     }
   };
@@ -370,7 +410,7 @@ export const FeedCard = (props) => {
                       navigate(`${props?.id}/feed/${feed?.feed?.id}/0`)
                     }
                   >
-                    ({feed?.reviewsLength}){" "}
+                    {feed?.reviewsLength}{" "}
                     {language?.language.Main.feedCard.reviews}
                   </TextReview>
                 </Link>
@@ -455,7 +495,7 @@ const FileContainer = styled.div`
   justify-content: center;
 
   @media only screen and (max-width: 600px) {
-    min-height: 300px;
+    min-height: 250px;
   }
 `;
 
@@ -675,7 +715,6 @@ const PostTime = styled.div`
   span {
     color: #ddd;
     font-size: 0.8vw;
-    font-style: italic;
 
     @media only screen and (max-width: 600px) {
       font-size: 3vw;

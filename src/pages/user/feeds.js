@@ -13,8 +13,10 @@ import { HiOutlineViewGridAdd } from "react-icons/hi";
 import { useOutletContext } from "react-router-dom";
 import { isWebpSupported } from "react-image-webp/dist/utils";
 import AlertDialog from "../../components/dialog";
+import { Language } from "../../context/language";
 
 export const UserFeeds = () => {
+  const language = Language();
   const [user] = useOutletContext();
   const { currentUser } = useContext(AuthContext);
   const isMobile = IsMobile();
@@ -71,10 +73,10 @@ export const UserFeeds = () => {
                     <AiOutlineDelete className="removeIcon" />
                   </RemoveIconContainer>
                   <AlertDialog
-                    title="დაადასტურეთ აქტივობა"
+                    title={language?.language.User.userPage.removeTitle}
                     open={openDialog}
                     setOpen={setOpenDialog}
-                    text="ნამდვილად გსურთ პოსტის წაშლა?"
+                    text={language?.language.User.userPage.removeText}
                     function={() => Deleting(feedData?.id, feedData?.name)}
                   />
                 </div>

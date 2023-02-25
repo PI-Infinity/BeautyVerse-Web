@@ -52,15 +52,15 @@ export const Reports = (props) => {
           </div>
           {openList && (
             <ReportList>
-              <span onClick={() => SendReport("Spam")}>
+              <div onClick={() => SendReport("Spam")}>
                 {language?.language.Main.feedCard.spam}
-              </span>
-              <span onClick={() => SendReport("No Thematical Feed")}>
+              </div>
+              <div onClick={() => SendReport("No Thematical Feed")}>
                 {language?.language.Main.feedCard.noThematical}
-              </span>
-              <span onClick={() => setOpenDialog(true)}>
+              </div>
+              <div onClick={() => setOpenDialog(true)}>
                 {language?.language.Main.feedCard.reason}
-              </span>
+              </div>
             </ReportList>
           )}
         </Container>
@@ -95,7 +95,6 @@ const Container = styled.div`
   border-radius: 0.25vw;
   box-shadow: 0 0.1vw 0.3vw ${(props) => props.theme.shadowColor};
   padding: 0.5vw 1vw;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: end;
@@ -107,20 +106,18 @@ const Container = styled.div`
   backdrop-filter: blur(40px);
 
   .title {
+    width: auto;
     cursor: pointer;
-    gap: 10px;
-    display: flex;
-    align-items: center;
   }
 
   @media only screen and (max-width: 600px) {
     width: auto;
-    min-width: 52vw;
     border-radius: 1vw;
-    padding: 2vw 0vw;
+    padding: 2vw 4vw;
     margin-right: 2vw;
     margin-top: 2vw;
-    align-items: center;
+    font-size: 12px;
+    align-items: end;
   }
 
   animation: fadeIn 0.5s;
@@ -181,16 +178,20 @@ const ReportList = styled.div`
   flex-direction: column;
   align-items: end;
   gap: 0vw;
+  width: auto;
 
   @media only screen and (max-width: 600px) {
     margin-top: 1.5vw;
     gap: 1vw;
   }
 
-  & span {
+  & > div {
+    width: auto;
     cursor: pointer;
     padding: 5px;
     border-radius: 5px;
+    font-size: 12px;
+    white-space: nowrap;
 
     :hover {
       filter: brightness(0.8);

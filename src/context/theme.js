@@ -5,7 +5,7 @@ export const darkTheme = {
   background: "#222",
   icon: "#f3f3f3",
   font: "#f3f3f3",
-  disabled: "#ddd",
+  disabled: "#333",
   secondLevel: "#333",
   logo: "#f3f3f3",
   logo2: "#f7f7f7",

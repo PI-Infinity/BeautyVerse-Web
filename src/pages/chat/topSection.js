@@ -73,6 +73,7 @@ const Container = styled.div`
     font-size: 1.2vw;
     @media only screen and (max-width: 600px) {
       font-size: 4vw;
+      margin-right: 1.5vw;
     }
   }
 `;

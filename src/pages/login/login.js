@@ -2,14 +2,27 @@ import React, { useContext, useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom/";
 import { Link } from "react-router-dom/";
-import { AuthContext } from "../context/AuthContext";
-import { auth } from "../firebase";
+import { AuthContext } from "../../context/AuthContext";
+import { db, auth } from "../../firebase";
 import { useDispatch, useSelector } from "react-redux";
 import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import PhoneCode from "react-phone-code";
-import { Button } from "../components/button";
-import useWindowDimensions from "../functions/dimensions";
-import { Language } from "../context/language";
+import { Button } from "../../components/button";
+import useWindowDimensions from "../../functions/dimensions";
+import { Language } from "../../context/language";
+import MuiButton from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import { AiOutlineEyeInvisible, AiOutlineEye } from "react-icons/ai";
+import { updateDoc, doc } from "firebase/firestore";
+import ForgotPass from "../../pages/login/forgotPassword";
+import UpdatePhoneButton from "../../pages/login/updatePhoneButton";
+import ChangePassword from "../../pages/login/changePassword";
+import UpdatePhone from "../../pages/login/updatePhone";
 
 export default function Login() {
   const language = Language();
@@ -54,7 +67,7 @@ export default function Login() {
   };
   // get otp
   const GetOTP = async (e) => {
-    e.preventDefault();
+    // e.preventDefault();
     if (phoneNumber === "" || phoneNumber === undefined) {
       return alert(`${language?.language.Auth.auth.valid}`);
     }
@@ -83,7 +96,7 @@ export default function Login() {
   };
 
   const handleLogin = (e) => {
-    e.preventDefault();
+    // e.preventDefault();
     const definedUser = users?.find(
       (item) => item.phone === code + phoneNumber
     );
@@ -103,6 +116,60 @@ export default function Login() {
       alert(`${language?.language.Auth.auth.pleaseInput}`);
     }
   };
+
+  const handleKey = (e) => {
+    e.code === "Enter" && handleLogin();
+  };
+  const verifyKey = (e) => {
+    e.code === "Enter" && VerifyOTP();
+  };
+
+  /**
+   * send email for define random passowrd
+   */
+
+  const [emailInput, setEmailInput] = useState("");
+  // open change passwords
+  const [openChange, setOpenChange] = useState(false);
+  const [openInput, setOpenInput] = useState(false);
+  const [randomPass, setRandomPass] = useState("");
+
+  const targetUser = users?.find((item) => item.email === emailInput);
+
+  /**
+   * update phone number
+   */
+
+  // open change passwords
+  const [openPhoneChange, setOpenPhoneChange] = useState(false);
+  const [openPhoneInput, setOpenPhoneInput] = useState(false);
+
+  function SendEmail() {
+    const email = emailInput;
+    if (users?.find((item) => item.email === emailInput) !== undefined) {
+      fetch(
+        `https://beautyverse.herokuapp.com/emails/forgotPassword?email=${email}`
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          setRandomPass(data);
+          if (openInput) {
+            setOpenInput(false);
+            setOpenChange(true);
+          } else if (openPhoneInput) {
+            setOpenPhoneInput(false);
+            setOpenPhoneChange(true);
+          } else {
+            return;
+          }
+        })
+        .catch((error) => {
+          console.log("Error fetching data:", error);
+        });
+    } else {
+      alert("Wrong Email");
+    }
+  }
 
   return (
     <>
@@ -135,6 +202,7 @@ export default function Login() {
               type="password"
               placeholder={language?.language.Auth.auth.password}
               onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={handleKey}
             />
           </InputWrapper>
           <Button
@@ -143,7 +211,27 @@ export default function Login() {
             function={handleLogin}
           />
           <div id="recaptcha-container"></div>
-          <ForgottPass>{language?.language.Auth.auth.forgot}</ForgottPass>
+          <ForgotPass
+            title={language?.language.Auth.auth.forgot}
+            emailInput={emailInput}
+            setEmailInput={setEmailInput}
+            SendEmail={() => SendEmail()}
+            language={language}
+            setOpenChange={setOpenChange}
+            openInput={openInput}
+            setOpenInput={setOpenInput}
+          />
+          <UpdatePhoneButton
+            title="Update Phone Number"
+            emailInput={emailInput}
+            setEmailInput={setEmailInput}
+            SendEmail={() => SendEmail()}
+            language={language}
+            setOpenChange={setOpenPhoneChange}
+            openInput={openPhoneInput}
+            setOpenInput={setOpenPhoneInput}
+          />
+
           <SignupText>
             {language?.language.Auth.auth.dontHave}{" "}
             <Link
@@ -156,6 +244,22 @@ export default function Login() {
           </SignupText>
         </Form>
       </Container>
+      <ChangePassword
+        forgot={true}
+        open={openChange}
+        setOpen={setOpenChange}
+        randomPass={randomPass}
+        targetUser={targetUser}
+        language={language}
+      />
+      <UpdatePhone
+        forgot={true}
+        open={openPhoneChange}
+        setOpen={setOpenPhoneChange}
+        randomPass={randomPass}
+        targetUser={targetUser}
+        language={language}
+      />
       <Confirm
         height={height}
         onSubmit={VerifyOTP}
@@ -173,6 +277,7 @@ export default function Login() {
             placeholder="enter code"
             onChange={(e) => setOTP(e.target.value)}
             value={otp}
+            onKeyDown={verifyKey}
           />
         </InputWrapper>
         <SubmitButton type="submit">
@@ -319,17 +424,6 @@ const Input = styled.input`
   }
 `;
 
-const ForgottPass = styled.p`
-  padding: 0;
-  margin: 0;
-  letter-spacing: 0.05vw;
-  font-size: 0.8vw;
-
-  @media only screen and (max-width: 600px) {
-    font-size: 3.3vw;
-    letter-spacing: 0.2vw;
-  }
-`;
 const SignupText = styled.p`
   text-decoration: none;
   font-size: 0.8vw;

@@ -35,6 +35,7 @@ export default function Menu(props) {
     await mainDispatch(setOpenMobileMenu(false));
     await dispatch({ type: "LOGOUT" });
     await mainDispatch(setUser(""));
+    await localStorage.removeItem("BeautyVerse:user");
     navigate("/login");
   };
 

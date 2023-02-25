@@ -58,9 +58,33 @@ export const Messages = (props) => {
         </LoadingContainer>
       ) : (
         <Container height={props?.height}>
-          {messages?.map((m) => (
-            <Message message={m} key={m.id} />
-          ))}
+          {messages?.map((m, i) => {
+            let prevMsg = messages[i - 1];
+            let nextMsg = messages[i + 1];
+            if (prevMsg?.senderId === m?.senderId) {
+              return (
+                <Message
+                  message={m}
+                  key={m.id}
+                  msg={messages[0]}
+                  sameSender={true}
+                  prevMsg={prevMsg}
+                  nextMsg={nextMsg}
+                />
+              );
+            } else {
+              return (
+                <Message
+                  message={m}
+                  key={m.id}
+                  msg={messages[0]}
+                  sameSender={false}
+                  prevMsg={prevMsg}
+                  nextMsg={nextMsg}
+                />
+              );
+            }
+          })}
           <SimpleBackdrop />
         </Container>
       )}
@@ -88,13 +112,14 @@ const Container = styled.div`
   overflow-y: scroll;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  justify-content: start;
+  gap: 2px;
   background: ${(props) => props.theme.background};
 
   @media only screen and (max-width: 600px) {
     width: 100%;
-    height: calc(${(props) => props.height}px - 30vw - 10vh);
-    max-height: calc(${(props) => props.height}px - 30vw - 10vh);
-    gap: 3vw;
+    height: calc(${(props) => props.height}px - 30vw - 7vh);
+    max-height: calc(${(props) => props.height}px - 30vw - 7vh);
+    gap: 0.5vw;
   }
 `;

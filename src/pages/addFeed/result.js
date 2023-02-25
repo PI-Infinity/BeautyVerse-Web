@@ -612,7 +612,7 @@ const TextReview = styled.span`
 `;
 
 const Button = styled.div`
-  width: 32vw;
+  width: 20vw;
   height: 2.5vw;
   border-radius: 0.5vw;
   box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);

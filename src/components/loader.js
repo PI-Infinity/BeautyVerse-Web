@@ -161,7 +161,7 @@ export const ImgLoader = (props) => {
     <ContentLoader
       speed={1}
       width={isMobile ? 800 : 800}
-      height={isMobile ? 300 : 400}
+      height={isMobile ? 250 : 400}
       backgroundColor={theme ? "#333" : "#f3f3f3"}
       foregroundColor={theme ? "#222" : "#F7E6FF"}
       {...props}
@@ -172,7 +172,7 @@ export const ImgLoader = (props) => {
         rx={isMobile ? 0 : 0}
         ry={isMobile ? 0 : 0}
         width={isMobile ? 800 : 800}
-        height={isMobile ? 300 : 400}
+        height={isMobile ? 250 : 400}
       />
     </ContentLoader>
   );

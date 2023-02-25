@@ -19,6 +19,7 @@ import DynamicFeedIcon from "@mui/icons-material/DynamicFeed";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
 import Email from "@mui/icons-material/Email";
 import Report from "@mui/icons-material/Report";
+import Phone from "@mui/icons-material/Phone";
 import Notifications from "@mui/icons-material/Notifications";
 import FeaturedVideoIcon from "@mui/icons-material/FeaturedVideo";
 import Star from "@mui/icons-material/Star";
@@ -32,6 +33,7 @@ const data = [
   { icon: <DynamicFeedIcon />, label: "Feeds", path: "feeds" },
   { icon: <Notifications />, label: "Notifications", path: "notifications" },
   { icon: <Email />, label: "Messages", path: "messages" },
+  { icon: <Phone />, label: "Change Phone Requests", path: "changePhone" },
   { icon: <Report />, label: "Reports", path: "reports" },
 ];
 

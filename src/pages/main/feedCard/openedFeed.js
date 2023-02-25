@@ -107,7 +107,7 @@ export const OpenedFeed = (props) => {
   }
 
   const [feed, setFeed] = useState([]);
-  const [stars, setStars] = useState([]);
+
   const [reviews, setReviews] = useState([]);
 
   // add review to firebase
@@ -133,20 +133,6 @@ export const OpenedFeed = (props) => {
       documentSnapshots.docs[num + 1 > feedsLength - 1 ? num : num + 1];
     const nextFeedId = nextDoc?.data().id;
 
-    // get stars
-    onSnapshot(
-      collection(
-        db,
-        "users",
-        `${state?.userId}`,
-        "feeds",
-        `${currentFeed?.id}`,
-        `${state?.userId}+stars`
-      ),
-      (snapshot) => {
-        setStars(snapshot.docs.map((doc) => doc.data()));
-      }
-    );
     // get review sorderBy("name", "desc"),
     const revRef = query(
       collection(
@@ -159,7 +145,7 @@ export const OpenedFeed = (props) => {
       ),
       orderBy("time", "desc")
     );
-    onSnapshot(revRef, (snapshot) => {
+    await onSnapshot(revRef, (snapshot) => {
       setReviews(snapshot.docs.map((doc) => doc.data()));
     });
 
@@ -175,72 +161,46 @@ export const OpenedFeed = (props) => {
     }, 500);
   };
 
-  // give heart to user
-  const SetStar = async () => {
-    await setDoc(
-      doc(
-        db,
-        `users`,
-        `${state?.userId}`,
-        "feeds",
-        `${feed?.currentFeed?.id}`,
-        `${state?.userId}+stars`,
-        currentuser?.id
-      ),
-      {
-        id: currentuser?.id,
-      }
-    );
-    var actionId = v4();
-    if (state?.userId !== currentUser?.uid) {
-      setDoc(
-        doc(db, `users`, `${state?.userId}`, "notifications", `${actionId}`),
-        {
-          id: actionId,
-          senderId: currentUser?.uid,
-          senderName: currentuser?.name,
-          senderCover: currentuser?.cover?.length > 0 ? currentuser?.cover : "",
-          text: `მიანიჭა ვარსკვლავი თქვენ პოსტს!`,
-          date: serverTimestamp(),
-          type: "star",
-          status: "unread",
-          feed: `${window.location.pathname}`,
-        }
-      );
-    }
-  };
-
-  const isStarGiven = stars?.find((item) => item.id === currentuser?.id);
-
-  // remove heart
-  const RemoveStar = async () => {
-    await deleteDoc(
-      doc(
-        db,
-        `users`,
-        `${state?.userId}`,
-        "feeds",
-        `${feed?.currentFeed?.id}`,
-        `${state?.userId}+stars`,
-        currentuser?.id
-      )
-    );
-  };
-
   // define post img added time
   const [postTime, setPostTime] = React.useState([]);
 
   // open report
   const [reports, setReports] = React.useState(false);
 
-  // define shown post added time
-  const currentPostTime = new Date(feed?.currentFeed?.addTime?.seconds * 1000)
-    .toString()
-    .slice(4, 15);
-
   React.useEffect(() => {
     fnc(state?.imgNumber);
   }, [rerender, state?.userId, state?.imgNumber, path]);
+
+  // define shown post added time
+  let currentPostTime;
+  let hoursAgo;
+  let definetTitle;
+  if (
+    (
+      (new Date().getTime() - feed?.feed?.addTime?.seconds * 1000) /
+      3600000
+    ).toFixed(0) < 1
+  ) {
+    hoursAgo =
+      (new Date().getTime() - feed?.feed?.addTime?.seconds * 1000) / 60000;
+    definetTitle = " min";
+  } else {
+    hoursAgo =
+      (new Date().getTime() - feed?.feed?.addTime?.seconds * 1000) / 3600000;
+    definetTitle = " h";
+  }
+
+  if (new Date().getTime() - feed?.feed?.addTime?.seconds * 1000 > 86400000) {
+    currentPostTime = new Date(feed?.feed?.addTime?.seconds * 1000)
+      .toString()
+      .slice(4, 15);
+  } else {
+    if (definetTitle < 1) {
+      currentPostTime = hoursAgo.toFixed(0) + 1;
+    } else {
+      currentPostTime = hoursAgo.toFixed(0) + definetTitle;
+    }
+  }
 
   /**
    * define links destionation path
@@ -401,13 +361,11 @@ export const OpenedFeed = (props) => {
                 cover={state?.userCover}
                 reviews={reviews}
                 currentFeed={feed?.currentFeed}
-                stars={stars}
-                RemoveStar={RemoveStar}
-                isStarGiven={isStarGiven}
-                SetStar={SetStar}
                 setOpenFeed={setOpenFeed}
                 setReviewText={setReviewText}
                 reviewText={reviewText}
+                pathc={path}
+                state={state}
               />
             )}
           </>
@@ -423,13 +381,11 @@ export const OpenedFeed = (props) => {
           cover={state?.userCover}
           reviews={reviews}
           currentFeed={feed?.currentFeed}
-          stars={stars}
-          RemoveStar={RemoveStar}
-          isStarGiven={isStarGiven}
-          SetStar={SetStar}
           setOpenFeed={setOpenFeed}
           setReviewText={setReviewText}
           reviewText={reviewText}
+          pathc={path}
+          state={state}
         />
       )}
     </Container>

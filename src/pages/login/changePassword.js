@@ -1,18 +1,16 @@
-import * as React from "react";
+import React from "react";
 import styled from "styled-components";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
+import MuiButton from "@mui/material/Button";
+import { AiOutlineEyeInvisible, AiOutlineEye } from "react-icons/ai";
+import { updateDoc, doc } from "firebase/firestore";
+import { db, auth } from "../../firebase";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
+import TextField from "@mui/material/TextField";
 import DialogTitle from "@mui/material/DialogTitle";
-import { AiOutlineEyeInvisible, AiOutlineEye } from "react-icons/ai";
-import { db } from "../../firebase";
-import { updateDoc, doc } from "firebase/firestore";
 
 export default function ChangePassword(props) {
-  const [open, setOpen] = React.useState(false);
-
   const [showPassword, setShowPassword] = React.useState("");
 
   const [oldPassword, setOldPassword] = React.useState("");
@@ -21,12 +19,17 @@ export default function ChangePassword(props) {
 
   // change password
   const Changing = () => {
-    if (oldPassword === props?.user?.password) {
+    if (oldPassword === props?.randomPass) {
       if (newPassword?.length > 7) {
         if (newPassword === confirmPassword) {
-          updateDoc(doc(db, "users", props?.user?.id), {
+          updateDoc(doc(db, "users", props.targetUser?.id), {
             password: newPassword,
           });
+          setOldPassword("");
+          setNewPassword("");
+          setConfirmPassword("");
+          props?.setOpen(false);
+          alert("changed");
         } else {
           alert("New Passwords doesn't match!");
         }
@@ -36,30 +39,24 @@ export default function ChangePassword(props) {
     } else {
       alert("Old Password is wrong!");
     }
-    setOldPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-    setOpen(false);
-    props?.setOpen(true);
-  };
-
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
   };
 
   return (
-    <Container>
-      {!props.forgot && (
-        <Button variant="outlined" onClick={handleClickOpen}>
-          Change Password
-        </Button>
-      )}
-      <Dialog open={open} onClose={handleClose} id="dialog">
-        <DialogTitle>Change Password</DialogTitle>
+    <Cont>
+      <Dialog
+        open={props?.open}
+        onClose={() => {
+          props.setOpen(false);
+          setOldPassword("");
+          setNewPassword("");
+          setConfirmPassword("");
+          props?.setOpen(false);
+        }}
+        id="dialog"
+      >
+        <DialogTitle>
+          {props?.language?.language.User.userPage.changePassword}
+        </DialogTitle>
         <DialogContent>
           <div
             style={{
@@ -73,7 +70,7 @@ export default function ChangePassword(props) {
               autoFocus
               margin="dense"
               id="name"
-              label="Old Password"
+              label={props?.language?.language.Auth.auth.verifyCode}
               value={oldPassword}
               type={showPassword === "old" ? "text" : "password"}
               fullWidth
@@ -107,7 +104,7 @@ export default function ChangePassword(props) {
             <TextField
               margin="dense"
               id="name"
-              label="New Password"
+              label={props?.language?.language.User.userPage.newPassword}
               value={newPassword}
               type={showPassword === "new" ? "text" : "password"}
               fullWidth
@@ -141,7 +138,7 @@ export default function ChangePassword(props) {
             <TextField
               margin="dense"
               id="name"
-              label="Confirm Password"
+              label={props?.language?.language.User.userPage.confirmPassword}
               value={confirmPassword}
               type={showPassword === "confirm" ? "text" : "password"}
               fullWidth
@@ -166,15 +163,27 @@ export default function ChangePassword(props) {
           </div>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={Changing}>Change</Button>
+          <MuiButton
+            onClick={() => {
+              props.setOpen(false);
+              setOldPassword("");
+              setNewPassword("");
+              setConfirmPassword("");
+              props?.setOpen(false);
+            }}
+          >
+            {props?.language?.language.User.userPage.cancel}
+          </MuiButton>
+          <MuiButton onClick={Changing}>
+            {props?.language?.language.User.userPage.change}
+          </MuiButton>
         </DialogActions>
       </Dialog>
-    </Container>
+    </Cont>
   );
 }
 
-const Container = styled.div`
+const Cont = styled.div`
   width: 100%;
   #dialog {
     .eye {

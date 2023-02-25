@@ -16,10 +16,15 @@ import { ImFilePicture } from "react-icons/im";
 import { FiSend } from "react-icons/fi";
 import { setBackdropOpen } from "../../redux/main";
 import { Language } from "../../context/language";
+import EmojiPicker from "emoji-picker-react";
+import { FaRegSmileBeam } from "react-icons/fa";
+import { Theme } from "emoji-picker-react";
+import { IsMobile } from "../../functions/isMobile";
 
 export const Input = () => {
   const language = Language();
   const dispatch = useDispatch();
+  const isMobile = IsMobile();
   // import current user & parse it
   const userUnparsed = useSelector((state) => state.storeMain.user);
   let currentuser;
@@ -115,10 +120,14 @@ export const Input = () => {
     }
   };
 
+  // emojis
+  const [open, setOpen] = useState(false);
+
   const handleKey = (e) => {
     if (text?.length > 0 || img != null) {
       e.code === "Enter" && handleSend();
     }
+    setOpen(false);
   };
 
   // open messig on focus
@@ -139,33 +148,66 @@ export const Input = () => {
   }
 
   return (
-    <InputContainer>
-      <InputField
-        placeholder={language?.language.Chat.chat.typeText}
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        onKeyDown={handleKey}
-        onFocus={Opening}
-        ref={searchInput}
-      />
-      <File>
-        <input
-          type="file"
-          //   style={{ display: "none" }}
-          id="file"
-          onChange={(e) => setImg(e.target.files[0])}
+    <div>
+      {open && !isMobile && (
+        <Emojies>
+          <EmojiPicker
+            Theme="dark"
+            onEmojiClick={(emoji) => setText((old) => [...old, emoji.emoji])}
+          />
+        </Emojies>
+      )}
+      <InputContainer>
+        <InputField
+          placeholder={language?.language.Chat.chat.typeText}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={handleKey}
+          onFocus={Opening}
+          ref={searchInput}
         />
-        <label htmlFor="file">
-          <ImFilePicture id="label" />
-        </label>
-        <FiSend
-          className="send"
-          onClick={(text?.length > 0 || img != null) && handleSend}
-        />
-      </File>
-    </InputContainer>
+        <File>
+          <input
+            type="file"
+            //   style={{ display: "none" }}
+            id="file"
+            onChange={(e) => setImg(e.target.files[0])}
+          />
+          <label htmlFor="file">
+            <ImFilePicture
+              className="label"
+              style={{ color: img === null ? "" : "gray" }}
+            />
+          </label>
+          {!isMobile && (
+            <FaRegSmileBeam
+              onClick={() => setOpen(!open)}
+              className="label"
+              color="orange"
+              style={{ position: "relative", bottom: "1px" }}
+            />
+          )}
+          <FiSend
+            className="send"
+            onClick={(text?.length > 0 || img != null) && handleSend}
+          />
+        </File>
+      </InputContainer>
+    </div>
   );
 };
+
+const Emojies = styled.div`
+  position: absolute;
+  bottom: 10vw;
+  right: 16vw;
+  zindex: 10000;
+
+  @media only screen and (max-width: 600px) {
+    bottom: 8vh;
+    right: 3vw;
+  }
+`;
 
 const InputContainer = styled.div`
   height: 70px;
@@ -179,16 +221,18 @@ const InputContainer = styled.div`
 
   @media only screen and (max-width: 600px) {
     width: 100%;
-    height: 10vh;
-    min-height: 10vh;
+    height: 7vh;
+    min-height: 7vh;
     position: relative;
     width: 100%;
     left: 0;
+    padding: 0 20px;
   }
 `;
 
 const InputField = styled.input`
   width: 100%;
+  height: 70%;
   border: none;
   outline: none;
   background: none;
@@ -206,9 +250,9 @@ const File = styled.div`
   gap: 15px;
 
   .send {
-    font-size: 1.3vw;
+    font-size: 1.5vw;
     color: green;
-    margin: 0 2vw;
+    margin: 0 1vw;
     cursor: pointer;
 
     @media only screen and (max-width: 600px) {
@@ -219,8 +263,8 @@ const File = styled.div`
   #file {
     display: none;
   }
-  #label {
-    font-size: 1.2vw;
+  .label {
+    font-size: 1vw;
     cursor: pointer;
     color: ${(props) => props.theme.font};
 

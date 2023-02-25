@@ -7,6 +7,7 @@ import { GiFlexibleStar } from "react-icons/gi";
 import { Spinner } from "../../components/loader";
 import Rating from "@mui/material/Rating";
 import { MdLocationPin } from "react-icons/md";
+import { FaUser } from "react-icons/fa";
 
 export const Recomended = () => {
   const list = useSelector((state) => state.storeMain.userList);
@@ -23,7 +24,7 @@ export const Recomended = () => {
   }, 300);
 
   return (
-    <Container>
+    <Container height={height}>
       {loading ? (
         <Loader height={height}>
           <Spinner />
@@ -43,15 +44,19 @@ export const Recomended = () => {
                     onClick={() => navigate(`/user/${item.id}`)}
                   >
                     <UserCover>
-                      <img
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                        }}
-                        src={item.cover}
-                        alt={item.name}
-                      />
+                      {item.cover?.length > 0 ? (
+                        <img
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                          src={item.cover}
+                          alt={item.name}
+                        />
+                      ) : (
+                        <FaUser id="undefined" />
+                      )}
                     </UserCover>
                     <Info>
                       <Name>{item?.name}</Name>
@@ -109,7 +114,7 @@ const Container = styled.div`
   background: ${(props) => props.theme.background};
 
   @media only screen and (max-width: 600px) {
-    height: calc(${(props) => props.height}px - 17vw);
+    height: calc(${(props) => props.height}px - 30vw);
     width: 100vw;
     display: flex;
     justify-content: center;
@@ -217,6 +222,9 @@ const UserCover = styled.div`
   overflow: hidden;
   border-radius: 0.5vw 0 0 0.5vw;
   filter: brightness(0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   & > img {
     transition: ease 400ms;
@@ -224,6 +232,15 @@ const UserCover = styled.div`
 
   :hover {
     filter: brightness(1);
+  }
+
+  #undefined {
+    color: #fff;
+    font-size: 2vw;
+
+    @media only screen and (max-width: 600px) {
+      font-size: 12vw;
+    }
   }
 `;
 

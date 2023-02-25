@@ -23,6 +23,7 @@ import { HiUserRemove } from "react-icons/hi";
 import { ProceduresOptions } from "../../data/registerDatas";
 import { v4 } from "uuid";
 import ProceduresPopup from "../../pages/user/proceduresPopup";
+import VisitorId from "../../functions/deviceUniqueId";
 
 const animatedComponents = makeAnimated();
 

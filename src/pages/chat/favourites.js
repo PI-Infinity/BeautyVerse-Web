@@ -25,7 +25,12 @@ export const Favourites = (props) => {
     currentuser = JSON.parse(userUnparsed);
   }
 
-  const followings = useSelector((state) => state.storeMain.followings);
+  // import followings
+  const folls = useSelector((state) => state.storeMain.followings);
+  let followings;
+  if (folls?.length > 0) {
+    followings = JSON.parse(folls);
+  }
 
   const handleSelect = async (user) => {
     const combinedId =

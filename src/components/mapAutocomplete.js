@@ -5,7 +5,7 @@ import { setMap } from "../redux/register";
 import styled from "styled-components";
 import { useDispatch } from "react-redux";
 
-const MapAutocomplete = ({ language }) => {
+const MapAutocomplete = ({ language, userMobile }) => {
   const dispatch = useDispatch();
   const [adress, setAdress] = React.useState("");
   const handleSelect = async (value) => {
@@ -86,16 +86,17 @@ const MapAutocomplete = ({ language }) => {
     let nmb;
     if (
       result[0]?.address_components?.find(
-        (item) => item?.types[0] == "street_number"
-      ) != undefined
+        (item) =>
+          item?.types[0] == "street_number" || item?.types[0] == "premise"
+      ) !== undefined
     ) {
       nmb = result[0]?.address_components?.find(
-        (item) => item?.types[0] == "street_number"
+        (item) =>
+          item?.types[0] == "street_number" || item?.types[0] == "premise"
       )?.long_name;
     } else {
       nmb = "";
     }
-
     // lantitude && logitude
     const lat = ll.lat;
     const lng = ll.lng;
@@ -114,6 +115,8 @@ const MapAutocomplete = ({ language }) => {
     );
   };
 
+  console.log(userMobile);
+
   return (
     <div>
       <PlacesAutocomplete
@@ -123,7 +126,7 @@ const MapAutocomplete = ({ language }) => {
         googleCallbackName="myCallbackFunc"
       >
         {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
-          <Container>
+          <Container userMobile={userMobile}>
             <Input
               requred
               value={adress}
@@ -180,8 +183,10 @@ const Container = styled.div`
   background: ${(props) => props.theme.categoryItem};
 
   @media only screen and (max-width: 600px) {
-    width: 80vw;
-    height: 8vw;
+    width: ${(props) => (props.userMobile === "true" ? "70vw" : "45vw")};
+    height: ${(props) => (props.userMobile === "true" ? "8vw" : "10vw")};
+    justify-content: ${(props) =>
+      props.userMobile === "true" ? "start" : "space-between"};
     border-radius: 1.5vw;
     font-size: 16px;
   }
@@ -208,7 +213,7 @@ const Container = styled.div`
       box-shadow: 0 0.2vw 0.6vw rgba(2, 2, 2, 0.1);
       width: 80vw;
       height: auto;
-      margin-top: 8vw;
+      margin-top: ${(props) => (props.userMobile === "true" ? "0" : "8vw")};
       border-radius: 1vw;
       max-height: 40vw;
     }

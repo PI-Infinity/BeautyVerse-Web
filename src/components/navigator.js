@@ -12,7 +12,7 @@ import SwitchAccountIcon from "@mui/icons-material/SwitchAccount";
 import ForumOutlinedIcon from "@mui/icons-material/ForumOutlined";
 import { db } from "../firebase";
 import { collection, onSnapshot } from "firebase/firestore";
-import Avatar from "@mui/material/Avatar";
+import Avatar from "../components/avatar";
 
 export const Navigator = (props) => {
   const navigate = useNavigate();
@@ -183,16 +183,17 @@ export const Navigator = (props) => {
               return `user/${currentUser?.uid}`;
             }
           })()}
-          style={{ color: "inherit", display: "flex", alignItems: "center" }}
+          style={{
+            color: "inherit",
+            display: "flex",
+            alignItems: "center",
+          }}
         >
           <Profile active={active?.toString()}>
             <Avatar
               alt={user?.name}
-              src={user?.cover !== undefined ? user?.cover : ""}
-              sx={{
-                width: 45,
-                height: 45,
-              }}
+              link={user?.cover !== undefined ? user?.cover : ""}
+              size="small"
             />
           </Profile>
         </Link>
@@ -207,7 +208,7 @@ const NavigatorContainer = styled.div`
   @media only screen and (max-width: 600px) {
     display: flex;
     width: 100vw;
-    padding: 0 3vw 0 2vw;
+    padding: 0 4vw 0 3vw;
     border-top: 1px solid ${(props) => props.theme.secondLevel};
     height: 11vw;
     overflow: hidden;
@@ -215,10 +216,9 @@ const NavigatorContainer = styled.div`
     justify-content: space-between;
     box-sizing: border-box;
     bottom: 0;
-    align-items: start;
+    align-items: center;
     z-index: 90;
     background: ${(props) => props.theme.background};
-    backdrop-filter: blur(30px);
   }
 
   .filter {
@@ -248,7 +248,7 @@ const NavigatorContainer = styled.div`
     @media only screen and (max-width: 600px) {
       font-size: 5.5vw;
       border-top: 2px solid rgba(0, 0, 0, 0);
-      padding: 2vw 4vw;
+      padding: 2vw;
       margin: 0;
     }
   }
@@ -260,7 +260,7 @@ const NavigatorContainer = styled.div`
     @media only screen and (max-width: 600px) {
       font-size: 5.5vw;
       border-top: 2px solid rgba(0, 0, 0, 0);
-      padding: 2vw 4vw;
+      padding: 2vw;
       margin: 0;
     }
   }
@@ -273,7 +273,7 @@ const NavigatorContainer = styled.div`
       font-size: 5.5vw;
       border-top: 2px solid
         ${(props) => (props.recomended === "true" ? "#f2cd38" : "#2bdfd9")};
-      padding: 2vw 4vw;
+      padding: 2vw;
       margin: 0;
     }
   }
@@ -388,115 +388,16 @@ const ButtonBg = styled.div`
 `;
 
 const Profile = styled.div`
-  width: 1.6vw;
-  height: 1.6vw;
+  width: auto;
+  height: auto;
   border-radius: 50%;
-  overflow: hidden;
-  cursor: pointer;
-  z-index: 7;
-  margin-right: 0.5vw;
-  margin-top: 0.1vw;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  filter: brightness(0.9);
-
-  animation: fadeIn 0.5s;
-  -webkit-animation: fadeIn 0.5s;
-  -moz-animation: fadeIn 0.5s;
-  -o-animation: fadeIn 0.5s;
-  -ms-animation: fadeIn 0.5s;
-
-  @keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-
-  @-moz-keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-
-  @-webkit-keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-
-  @-o-keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-
-  @-ms-keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
 
   @media only screen and (max-width: 600px) {
-    width: 5vw;
-    height: 5vw;
-    margin: 2vw;
-    padding: 0;
-    border-radius: 50%;
     border: 2px solid
       ${(props) => (props.active === "user" ? "#2bdfd9" : props.theme.font)};
   }
 
   :hover {
     filter: brightness(1);
-  }
-`;
-
-const Img = styled.img`
-  width: 1.8vw;
-  height: 1.8vw;
-  cursor: pointer;
-  object-fit: cover;
-
-  @media only screen and (max-width: 600px) {
-    width: 7vw;
-    height: 7vw;
-  }
-`;
-
-const UserProfileEmpty = styled.div`
-  width: 1.5vw;
-  height: 1.5vw;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  @media only screen and (max-width: 600px) {
-    width: 3vw;
-    height: 3vw;
-  }
-
-  .user {
-    font-size: 1.2vw;
-
-    @media only screen and (max-width: 600px) {
-      font-size: 5vw;
-    }
   }
 `;
