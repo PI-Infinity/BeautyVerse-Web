@@ -187,6 +187,8 @@ export const FeedCard = (props) => {
     timeTitle = language?.language.Main.feedCard.h;
   } else if (currentPostTime?.title === "min") {
     timeTitle = language?.language.Main.feedCard.min;
+  } else {
+    timeTitle = currentPostTime?.title;
   }
   /** Define following to user or not
    * //
@@ -256,15 +258,9 @@ export const FeedCard = (props) => {
 
   // translate feed text
   const GetLanguages = (x) => {
-    let fromLang = "en";
-    let toLang = lang; // translate to norwegian
-
     const API_KEY = "AIzaSyAuSnUmGlptL0E4m4wP-1XzlqL_iv_y3g8";
 
-    let url = `https://translation.googleapis.com/language/translate/v2?key=${API_KEY}`;
-    url += "&q=" + encodeURI(x);
-    url += `&source=${fromLang}`;
-    url += `&target=${toLang}`;
+    let url = `https://translation.googleapis.com/language/translate/v2?q=${x}&target=${lang}&key=${API_KEY}`;
 
     fetch(url, {
       method: "GET",
@@ -275,6 +271,7 @@ export const FeedCard = (props) => {
     })
       .then((res) => res.json())
       .then((response) => {
+        console.log(response.data.translations[0].translatedText);
         setTranslated(response.data.translations[0].translatedText);
       })
       .catch((error) => {

@@ -76,7 +76,7 @@ function AlignItemsList(props) {
   return (
     <List sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper" }}>
       {props?.notifications?.map((item, index) => {
-        const user = users?.find((it) => it.id === item?.senderId);
+        const user = users?.find((it) => it?.id === item?.senderId);
         return (
           <>
             <Container>
@@ -100,7 +100,7 @@ function AlignItemsList(props) {
                   {item?.senderId === "beautyVerse" ? (
                     <BsStars className="logo" onClick={() => navigate("/")} />
                   ) : (
-                    <Avatar alt="Remy Sharp" src={it?.cover} />
+                    <Avatar alt="Remy Sharp" src={user?.cover} />
                   )}
                 </ListItemAvatar>
 
@@ -129,7 +129,7 @@ function AlignItemsList(props) {
                         variant="body2"
                         color="text.primary"
                       >
-                        {item?.type !== "welcome" && it?.name}{" "}
+                        {item?.type !== "welcome" && user?.name}{" "}
                       </Typography>
                       <span
                         style={{

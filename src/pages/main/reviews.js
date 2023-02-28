@@ -43,6 +43,8 @@ export const Reviews = () => {
               timeTitle = language?.language.Main.feedCard.h;
             } else if (currentPostTime?.title === "min") {
               timeTitle = language?.language.Main.feedCard.min;
+            } else {
+              timeTitle = currentPostTime?.title;
             }
             return (
               <div key={index}>

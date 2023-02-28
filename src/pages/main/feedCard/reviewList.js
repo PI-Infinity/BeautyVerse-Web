@@ -40,6 +40,8 @@ export const ReviewList = (props) => {
           timeTitle = language?.language.Main.feedCard.h;
         } else if (time?.title === "min") {
           timeTitle = language?.language.Main.feedCard.min;
+        } else {
+          timeTitle = time?.title;
         }
 
         return (
