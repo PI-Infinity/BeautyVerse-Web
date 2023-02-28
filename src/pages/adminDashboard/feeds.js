@@ -86,7 +86,6 @@ export default function AllFeeds() {
           >
             {feeds?.map((item, index) => {
               let user = Data?.find((it) => it.id === item?.owner);
-              console.log(user);
               return (
                 <div key={index}>
                   <div style={{ display: "flex", gap: "10px" }}>

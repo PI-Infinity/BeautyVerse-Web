@@ -4,7 +4,7 @@ const initialState = {
   search: "",
   filter: "",
   cityFilter: "City",
-  destrictFilter: "District",
+  districtFilter: "District",
   specialist: true,
   object: true,
   shop: true,
@@ -24,8 +24,8 @@ export const filter = createSlice({
     setCityFilter: (state, action) => {
       state.cityFilter = action.payload;
     },
-    setDestrictFilter: (state, action) => {
-      state.destrictFilter = action.payload;
+    setDistrictFilter: (state, action) => {
+      state.districtFilter = action.payload;
     },
     setSpecialist: (state, action) => {
       state.specialist = action.payload;
@@ -46,7 +46,7 @@ export const {
   setSearch,
   setFilter,
   setCityFilter,
-  setDestrictFilter,
+  setDistrictFilter,
   setSpecialist,
   setObject,
   setShop,

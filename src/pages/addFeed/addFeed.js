@@ -13,10 +13,16 @@ import useWindowDimensions from "../../functions/dimensions";
 import Success from "../../snackBars/success";
 import Avatar from "@mui/material/Avatar";
 import { Language } from "../../context/language";
+import EmojiPicker from "emoji-picker-react";
+import { FaRegSmileBeam } from "react-icons/fa";
+import { Theme } from "emoji-picker-react";
+import { IsMobile } from "../../functions/isMobile";
+import axios from "axios";
 
 const AddFeed = () => {
   const language = Language();
   const { height, width } = useWindowDimensions();
+  const isMobile = IsMobile();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   // import current user from redux state
@@ -31,7 +37,6 @@ const AddFeed = () => {
   // add text
 
   const [text, setText] = React.useState("");
-
   // add file
 
   const [file, setFile] = React.useState(null);
@@ -156,6 +161,9 @@ const AddFeed = () => {
     dispatch(setBackdropOpen(false));
   }
 
+  // emojies
+  const [open, setOpen] = React.useState(false);
+
   return (
     <Container height={height}>
       <SecondLevelContainer>
@@ -188,6 +196,23 @@ const AddFeed = () => {
             onChange={(e) => setText(e.target.value)}
             placeholder={language?.language.User.addFeed.addText}
           />
+          {open && (
+            <Emojies>
+              <EmojiPicker
+                Theme="dark"
+                onEmojiClick={(emoji) => setText((old) => old + emoji.emoji)}
+              />
+            </Emojies>
+          )}
+          {!isMobile && (
+            <FaRegSmileBeam
+              onClick={() => setOpen(!open)}
+              className="label"
+              color="yellow"
+              size={20}
+              style={{ marginTop: "10px", cursor: "pointer" }}
+            />
+          )}
         </Wrapper>
         <Result
           file={file}
@@ -214,6 +239,12 @@ const AddFeed = () => {
 };
 
 export default AddFeed;
+
+const Emojies = styled.div`
+  zindex: 10000;
+  margin-left: 4vw;
+  position: absolute;
+`;
 
 const Container = styled.div`
   width: 100%;
@@ -280,7 +311,7 @@ const SecondLevelContainer = styled.div`
 
 const Wrapper = styled.div`
   width: 35vw;
-  height: 30vh;
+  height: 32vh;
   border-radius: 0.5vw;
   box-shadow: 0 0.1vw 0.3vw ${(props) => props.theme.shadowColor};
   background: ${(props) => props.theme.background};

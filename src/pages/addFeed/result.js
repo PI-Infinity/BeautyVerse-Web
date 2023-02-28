@@ -254,7 +254,7 @@ export const Result = (props) => {
 
           <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
             <TextReview>
-              (0) {props?.language?.language.User.addFeed.reviews}
+              0 {props?.language?.language.User.addFeed.reviews}
             </TextReview>
           </div>
           <PostTime>
@@ -584,7 +584,6 @@ const PostTime = styled.div`
   span {
     color: #ddd;
     font-size: 0.8vw;
-    font-style: italic;
 
     @media only screen and (max-width: 600px) {
       font-size: 3vw;

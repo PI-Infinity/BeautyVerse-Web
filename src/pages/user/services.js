@@ -252,7 +252,6 @@ export const Services = () => {
                 let daysLang = workingDaysOpt?.find(
                   (it) => it.value === item.value
                 );
-                console.log(workingDaysOpt);
                 return <div key={item.id}>{daysLang.label}</div>;
               })}
           </div>

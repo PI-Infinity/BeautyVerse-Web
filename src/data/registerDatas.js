@@ -6,20 +6,11 @@ export const ProceduresOptions = () => {
 
   let proceduresOptions;
   if (language === "ka") {
-    proceduresOptions = proceduresOptionsKa?.concat(
-      proceduresOptionsEn,
-      proceduresOptionsRu
-    );
+    proceduresOptions = proceduresOptionsKa;
   } else if (language === "ru") {
-    proceduresOptions = proceduresOptionsRu?.concat(
-      proceduresOptionsEn,
-      proceduresOptionsKa
-    );
+    proceduresOptions = proceduresOptionsRu;
   } else {
-    proceduresOptions = proceduresOptionsEn?.concat(
-      proceduresOptionsKa,
-      proceduresOptionsRu
-    );
+    proceduresOptions = proceduresOptionsEn;
   }
 
   return proceduresOptions;
@@ -2284,7 +2275,7 @@ const proceduresOptionsKa = [
 //   { value: "Salon", en: "Salon", ka: "სალონი", ru: "" },
 //   { value: "Studia", en: "Studia", ka: "სტუდია", ru: "" },
 //   { value: "Clinic", en: "Clinic", ka: "კლინიკა", ru: "" },
-//   { value: "On Adress", en: "On Adress", ka: "მისამართზე მისვლით", ru: "" },
+//   { value: "On Address", en: "On Address", ka: "მისამართზე მისვლით", ru: "" },
 // ];
 
 // working days
@@ -2297,59 +2288,59 @@ export const workingDaysOptions = [
     value: "workingDays",
   },
   {
+    en: "Everyday",
+    ka: "ყოველდღე",
+    ru: "Каждый день",
+    value: "everyDay",
+    id: 1,
+  },
+  {
     en: "Monday",
     ka: "ორშაბათი",
     ru: "Понедельник",
     value: "monday",
-    id: 1,
+    id: 2,
   },
   {
     en: "Tuesday",
     ka: "სამშაბათი",
     ru: "Вторник",
     value: "tuesday",
-    id: 2,
+    id: 3,
   },
   {
     en: "Wednesday",
     ka: "ოთხშაბათი",
     ru: "Среда",
     value: "wednesday",
-    id: 3,
+    id: 4,
   },
   {
     en: "Thursday",
     ka: "ხუთშაბათი",
     ru: "Четверг",
     value: "thursday",
-    id: 4,
+    id: 5,
   },
   {
     en: "Friday",
     ka: "პარასკევი",
     ru: "Пятница",
     value: "friday",
-    id: 5,
+    id: 6,
   },
   {
     en: "Saturday",
     ka: "შაბათი",
     ru: "Суббота",
     value: "saturday",
-    id: 6,
+    id: 7,
   },
   {
     en: "Sunday",
     ka: "კვირა",
     ru: "Воскресенье",
     value: "sunday",
-    id: 7,
-  },
-  {
-    en: "Everyday",
-    ka: "ყოველდღე",
-    ru: "Каждый день",
-    value: "everyDay",
     id: 8,
   },
 ];

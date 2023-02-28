@@ -16,8 +16,10 @@ import { updateDoc, doc } from "firebase/firestore";
 import { db } from "../firebase";
 import { BsStars } from "react-icons/bs";
 import AgreementDialog from "../components/agreementDialog";
+import { Language } from "../context/language";
 
 export default function Notifications(props) {
+  const language = Language();
   const handleClose = () => {
     props?.setOpen(false);
   };
@@ -25,7 +27,7 @@ export default function Notifications(props) {
   return (
     <div>
       <Dialog open={props?.open} onClose={handleClose}>
-        <DialogTitle>შეტყობინებები</DialogTitle>
+        <DialogTitle>{language?.language.Main.menu.notifications}</DialogTitle>
         <DialogContent>
           <AlignItemsList notifications={props.notifications} />
         </DialogContent>
@@ -61,9 +63,20 @@ function AlignItemsList(props) {
     });
   };
 
+  /**
+   *   // define user list
+   */
+
+  const usersList = useSelector((state) => state.storeMain.userList);
+  let users;
+  if (usersList?.length > 0) {
+    users = JSON.parse(usersList);
+  }
+
   return (
     <List sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper" }}>
       {props?.notifications?.map((item, index) => {
+        const user = users?.find((it) => it.id === item?.senderId);
         return (
           <>
             <Container>
@@ -84,10 +97,10 @@ function AlignItemsList(props) {
                 }}
               >
                 <ListItemAvatar>
-                  {item?.senderName === "Beautyverse" ? (
+                  {item?.senderId === "beautyVerse" ? (
                     <BsStars className="logo" onClick={() => navigate("/")} />
                   ) : (
-                    <Avatar alt="Remy Sharp" src={item?.cover} />
+                    <Avatar alt="Remy Sharp" src={it?.cover} />
                   )}
                 </ListItemAvatar>
 
@@ -116,7 +129,7 @@ function AlignItemsList(props) {
                         variant="body2"
                         color="text.primary"
                       >
-                        {item?.type !== "welcome" && item?.senderName}{" "}
+                        {item?.type !== "welcome" && it?.name}{" "}
                       </Typography>
                       <span
                         style={{

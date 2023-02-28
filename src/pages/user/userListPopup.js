@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { db } from "../../firebase";
 import { doc, deleteDoc } from "firebase/firestore";
+import { useSelector } from "react-redux";
 import PropTypes from "prop-types";
 import Button from "@mui/material/Button";
 import Avatar from "@mui/material/Avatar";
@@ -38,38 +39,48 @@ function UserListDialog(props) {
     await deleteDoc(ref);
   };
 
+  // users
+  const usersList = useSelector((state) => state.storeMain.userList);
+  let users;
+  if (usersList?.length > 0) {
+    users = JSON.parse(usersList);
+  }
+
   return (
     <Dialog onClose={handleClose} open={open}>
       <DialogTitle>{props?.title}</DialogTitle>
       <List sx={{ pt: 0 }}>
-        {props?.users?.map((item) => (
-          <ListItem disableGutters sx={{ pr: 3, pl: 3 }}>
-            <ListItemButton
-              onClick={() => navigate(`/user/${item.id}`)}
-              key={item.name}
-            >
-              <ListItemAvatar>
-                <Avatar
-                  sx={{ bgcolor: blue[100], color: blue[600] }}
-                  src={item?.cover}
-                >
-                  <PersonIcon />
-                </Avatar>
-              </ListItemAvatar>
-              <ListItemText primary={item.name} />
-            </ListItemButton>
-            {props.user?.id === currentUser?.uid && (
-              <Tooltip
-                title={props?.language?.language.User.userPage.remove}
-                onClick={() => Deleting(props.type, item.id)}
+        {props?.users?.map((item) => {
+          let us = users?.find((it) => it.id === item.id);
+          return (
+            <ListItem disableGutters sx={{ pr: 3, pl: 3 }}>
+              <ListItemButton
+                onClick={() => navigate(`/user/${item.id}`)}
+                key={us.name}
               >
-                <IconButton>
-                  <DeleteIcon />
-                </IconButton>
-              </Tooltip>
-            )}
-          </ListItem>
-        ))}
+                <ListItemAvatar>
+                  <Avatar
+                    sx={{ bgcolor: blue[100], color: blue[600] }}
+                    src={us?.cover}
+                  >
+                    <PersonIcon />
+                  </Avatar>
+                </ListItemAvatar>
+                <ListItemText primary={us.name} />
+              </ListItemButton>
+              {props.user?.id === currentUser?.uid && (
+                <Tooltip
+                  title={props?.language?.language.User.userPage.remove}
+                  onClick={() => Deleting(props.type, item.id)}
+                >
+                  <IconButton>
+                    <DeleteIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </ListItem>
+          );
+        })}
       </List>
     </Dialog>
   );

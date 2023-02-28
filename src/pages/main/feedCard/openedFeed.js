@@ -28,11 +28,16 @@ import { AuthContext } from "../../../context/AuthContext";
 import { Spinner } from "../../../components/loader";
 import { isWebpSupported } from "react-image-webp/dist/utils";
 import Avatar from "@mui/material/Avatar";
+import GetTimesAgo from "../../../functions/getTimesAgo";
+import { SiGoogletranslate } from "react-icons/si";
+import { SlReload } from "react-icons/sl";
+import { Language } from "../../../context/language";
 
 export const OpenedFeed = (props) => {
   const { currentUser } = useContext(AuthContext);
   const { height, width } = useWindowDimensions();
   const isMobile = IsMobile();
+  const language = Language();
   const [loading, setLoading] = useState(true);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -172,36 +177,13 @@ export const OpenedFeed = (props) => {
   }, [rerender, state?.userId, state?.imgNumber, path]);
 
   // define shown post added time
-  let currentPostTime;
-  let hoursAgo;
-  let definetTitle;
-  if (
-    (
-      (new Date().getTime() - feed?.feed?.addTime?.seconds * 1000) /
-      3600000
-    ).toFixed(0) < 1
-  ) {
-    hoursAgo =
-      (new Date().getTime() - feed?.feed?.addTime?.seconds * 1000) / 60000;
-    definetTitle = " min";
-  } else {
-    hoursAgo =
-      (new Date().getTime() - feed?.feed?.addTime?.seconds * 1000) / 3600000;
-    definetTitle = " h";
+  const currentPostTime = GetTimesAgo(feed?.currentFeed?.addTime?.seconds);
+  let timeTitle;
+  if (currentPostTime?.title === "h") {
+    timeTitle = language?.language.Main.feedCard.h;
+  } else if (currentPostTime?.title === "min") {
+    timeTitle = language?.language.Main.feedCard.min;
   }
-
-  if (new Date().getTime() - feed?.feed?.addTime?.seconds * 1000 > 86400000) {
-    currentPostTime = new Date(feed?.feed?.addTime?.seconds * 1000)
-      .toString()
-      .slice(4, 15);
-  } else {
-    if (definetTitle < 1) {
-      currentPostTime = hoursAgo.toFixed(0) + 1;
-    } else {
-      currentPostTime = hoursAgo.toFixed(0) + definetTitle;
-    }
-  }
-
   /**
    * define links destionation path
    */
@@ -275,6 +257,39 @@ export const OpenedFeed = (props) => {
 
   const closeOpenedFeed = Closing();
 
+  // translate feed
+  const [translated, setTranslated] = React.useState("");
+
+  const lang = useSelector((state) => state.storeMain.language);
+
+  // translate feed text
+  const GetLanguages = (x) => {
+    let fromLang = "en";
+    let toLang = lang; // translate to norwegian
+
+    const API_KEY = "AIzaSyAuSnUmGlptL0E4m4wP-1XzlqL_iv_y3g8";
+
+    let url = `https://translation.googleapis.com/language/translate/v2?key=${API_KEY}`;
+    url += "&q=" + encodeURI(x);
+    url += `&source=${fromLang}`;
+    url += `&target=${toLang}`;
+
+    fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((response) => {
+        setTranslated(response.data.translations[0].translatedText);
+      })
+      .catch((error) => {
+        console.log("There was an error with the translation request: ", error);
+      });
+  };
+
   return (
     <Container height={height}>
       <Wrapper height={height} id="wrapper">
@@ -334,14 +349,38 @@ export const OpenedFeed = (props) => {
             <UserName onClick={() => navigate(`/user/${state?.userId}`)}>
               {state?.userName}
             </UserName>
-            <PostTime>{currentPostTime}</PostTime>
+            {currentPostTime !== undefined && (
+              <PostTime>
+                {currentPostTime === "Just now"
+                  ? language?.language.Main.feedCard.justNow
+                  : currentPostTime?.numbers + " " + timeTitle}
+              </PostTime>
+            )}
 
             <ClosePost onClick={closeOpenedFeed}>
               <MdOutlineCloseFullscreen className="closeIcon" />
             </ClosePost>
           </UserInfo>
-          <Post>{feed?.currentFeed?.post}</Post>
-
+          <Post>
+            {translated?.length > 0 ? translated : feed?.currentFeed?.post}
+            <div style={{ cursor: "pointer" }}>
+              {translated?.length < 1 ? (
+                <SiGoogletranslate
+                  onClick={() => GetLanguages(feed?.feed?.post)}
+                  size={14}
+                  color="#ddd"
+                  style={{ cursor: "pointer" }}
+                />
+              ) : (
+                <SlReload
+                  onClick={() => setTranslated("")}
+                  size={14}
+                  color="#ddd"
+                  style={{ cursor: "pointer" }}
+                />
+              )}
+            </div>
+          </Post>
           <ReviewList
             reviews={reviews}
             currentuser={currentuser}
@@ -644,6 +683,7 @@ const UserProfileEmpty = styled.div`
 const Post = styled.div`
   display: flex;
   text-alignt: start;
+  justify-content: space-between;
   width: 100%;
   height: auto;
   max-height: 30%;

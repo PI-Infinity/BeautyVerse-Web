@@ -12,8 +12,8 @@ const Chat = {
     remove: "Remove",
   },
   ka: {
-    title: "ჩათი",
-    recently: "ბოლო",
+    title: "სასაუბრო",
+    recently: "უახლესი",
     followings: "ფავორიტები",
     findUser: "მოძებნეთ მომხმარებელი...",
     typeText: "შეიყვანეთ ტექსტი",

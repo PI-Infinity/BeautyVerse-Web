@@ -8,6 +8,7 @@ import { onSnapshot, collectionGroup } from "firebase/firestore";
 import { db } from "../../firebase";
 import { AuthContext } from "../../context/AuthContext";
 import { Language } from "../../context/language";
+import GetTimesAgo from "../../functions/getTimesAgo";
 
 export const Reviews = () => {
   const { currentUser } = useContext(AuthContext);
@@ -36,9 +37,13 @@ export const Reviews = () => {
         {reviewList
           ?.sort((a, b) => b?.time?.seconds - a?.time?.seconds)
           ?.map((item, index) => {
-            let currentPostTime = new Date(item?.time?.seconds * 1000)
-              .toString()
-              .slice(4, 24);
+            let currentPostTime = GetTimesAgo(item?.time?.seconds);
+            let timeTitle;
+            if (currentPostTime?.title === "h") {
+              timeTitle = language?.language.Main.feedCard.h;
+            } else if (currentPostTime?.title === "min") {
+              timeTitle = language?.language.Main.feedCard.min;
+            }
             return (
               <div key={index}>
                 <div
@@ -59,7 +64,9 @@ export const Reviews = () => {
                       marginBottom: "0.5vw",
                     }}
                   >
-                    {currentPostTime}
+                    {currentPostTime === "Just now"
+                      ? language?.language.Main.feedCard.justNow
+                      : currentPostTime?.numbers + " " + timeTitle}
                   </span>
                 </div>
                 <ReviewItem>
@@ -121,7 +128,7 @@ const List = styled.div`
   width: 92%;
   display: flex;
   flex-direction: column;
-  align-items: start;
+  align-items: flex-end;
   gap: 0.3vw;
   overflow-y: scroll;
 
@@ -149,7 +156,7 @@ const ReviewItem = styled.div`
   width: 90%;
   margin-left: 5%;
   background: ${(props) => props.theme.categoryItem};
-  border-radius: 0 2vw 2vw 2vw;
+  border-radius: 2vw 0 2vw 2vw;
   padding: 0.25vw 1vw 0.5vw 1.5vw;
   box-sizing: border-box;
   margin-bottom: 0.3vw;

@@ -23,6 +23,7 @@ import ForgotPass from "../../pages/login/forgotPassword";
 import UpdatePhoneButton from "../../pages/login/updatePhoneButton";
 import ChangePassword from "../../pages/login/changePassword";
 import UpdatePhone from "../../pages/login/updatePhone";
+import { FaPhoneAlt } from "react-icons/fa";
 
 export default function Login() {
   const language = Language();
@@ -222,7 +223,6 @@ export default function Login() {
             setOpenInput={setOpenInput}
           />
           <UpdatePhoneButton
-            title="Update Phone Number"
             emailInput={emailInput}
             setEmailInput={setEmailInput}
             SendEmail={() => SendEmail()}

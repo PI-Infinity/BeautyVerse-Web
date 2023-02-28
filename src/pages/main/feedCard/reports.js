@@ -108,6 +108,7 @@ const Container = styled.div`
   .title {
     width: auto;
     cursor: pointer;
+    font-size: 14px;
   }
 
   @media only screen and (max-width: 600px) {

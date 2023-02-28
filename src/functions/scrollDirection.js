@@ -10,10 +10,8 @@ const ScrollDirection = () => {
     (e) => {
       if (y > window.scrollY) {
         setScrollDirection("Scrolling Up");
-        console.log("scrolling up");
       } else if (y < window.scrollY) {
         setScrollDirection("Scrolling Down");
-        console.log("scrolling down");
       }
       setY(window.scrollY);
     },

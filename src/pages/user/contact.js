@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { Links } from "../../pages/user/links";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 import MapAutocomplete from "../../components/mapAutocomplete";
 import Map from "../../components/map";
@@ -13,12 +13,16 @@ import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import { useOutletContext } from "react-router-dom";
 import { BsArrowRightCircleFill, BsArrowLeftCircleFill } from "react-icons/bs";
+import AddAddress from "../../pages/user/addAddressPopup";
+import { setMap } from "../../redux/register";
 
 export const Contact = () => {
   const [user, language] = useOutletContext();
   // get user by params id
   const { Id } = useParams();
   const { height, width } = useWindowDimensions();
+
+  const dispatch = useDispatch();
 
   // import users
   const usersList = useSelector((state) => state.storeMain.userList);
@@ -34,24 +38,78 @@ export const Contact = () => {
     currentuser = JSON.parse(userUnparsed);
   }
 
-  // edit adress
+  // edit address
   const map = useSelector((state) => state.storeRegister.map);
-  const [editAdress, SetEditAdress] = React.useState("");
-  const [adress, SetAdress] = React.useState("");
+  const [editAddress, SetEditAddress] = React.useState("");
+  const [address, setAddress] = React.useState("");
 
-  const UpdateAdress = () => {
-    updateDoc(doc(db, "users", `${user.id}`), {
-      adress: {
-        country: map.country,
-        region: map.region,
-        city: map.city,
-        destrict: map.destrict,
-        adress: map.street,
-        streetNumber: map.number,
-        latitude: map.latitude,
-        longitude: map.longitude,
-      },
-    });
+  // get all addresses
+  function findValueByPrefix(object, prefix) {
+    let addressesList = [];
+    for (var property in object) {
+      if (
+        object.hasOwnProperty(property) &&
+        property.toString().startsWith(prefix)
+      ) {
+        addressesList?.push(object[property]);
+      }
+    }
+    return addressesList?.sort((a, b) => a?.number - b?.number);
+  }
+
+  const addresses = findValueByPrefix(user, "address");
+
+  /**
+   * change addresses list on cover
+   */
+
+  const [currentAddress, setCurrentAddress] = React.useState(0);
+
+  let latitude;
+  let longitude;
+  let addressDefined;
+  if (currentAddress !== undefined) {
+    latitude = addresses[currentAddress]?.latitude;
+    longitude = addresses[currentAddress]?.longitude;
+    addressDefined = (
+      <div
+        style={{
+          width: "80vw",
+          textAlign: "center",
+          fontSize: "2.7vw",
+        }}
+      >
+        {addresses[currentAddress]?.city}
+        {addresses[currentAddress]?.district?.length > 0 &&
+          ", " + addresses[currentAddress]?.district}
+        {addresses[currentAddress]?.address?.length > 0 &&
+          ", " + addresses[currentAddress]?.address}
+        {addresses[currentAddress]?.streetNumber?.length > 0 &&
+          ", " + addresses[currentAddress]?.streetNumber}
+      </div>
+    );
+  }
+
+  const UpdateAddress = () => {
+    if (address?.length > 0) {
+      updateDoc(doc(db, "users", `${user.id}`), {
+        address: {
+          number: 1,
+          country: map.country,
+          region: map.region,
+          city: map.city,
+          district: map.district,
+          address: map.street,
+          streetNumber: map.number,
+          latitude: map.latitude,
+          longitude: map.longitude,
+        },
+      });
+      setAddress("");
+      dispatch(setMap(""));
+    } else {
+      alert("Add address...");
+    }
   };
 
   return (
@@ -72,20 +130,21 @@ export const Contact = () => {
       <>
         {
           <>
-            {editAdress ? (
+            {editAddress ? (
               <div style={{ display: "flex", alignItems: "start", gap: "5px" }}>
-                <MapAutocomplete language={language} userMobile="true" />
+                <MapAutocomplete
+                  language={language}
+                  userMobile="true"
+                  address={address}
+                  setAddress={setAddress}
+                />
                 <GiConfirmed
                   className="confirm"
-                  onClick={
-                    map?.country?.length > 1
-                      ? async (e) => {
-                          e.preventDefault();
-                          await UpdateAdress();
-                          SetEditAdress(false);
-                        }
-                      : () => alert("Add Address")
-                  }
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    await UpdateAddress();
+                    SetEditAddress(false);
+                  }}
                 />
               </div>
             ) : (
@@ -93,24 +152,12 @@ export const Contact = () => {
                 style={{ display: "flex", alignItems: "center", gap: "5px" }}
               >
                 <MdLocationPin className="location" />
-                <div
-                  style={{
-                    width: "80vw",
-                    textAlign: "center",
-                    fontSize: "2.7vw",
-                  }}
-                >
-                  {user?.adress?.city}, {user?.adress?.destrict}
-                  {user?.adress?.destrict?.length > 0 ? "," : ""}{" "}
-                  {user?.adress?.adress}
-                  {user?.adress?.streetNumber?.length > 0 ? " N" : ""}
-                  {user?.adress?.streetNumber}
-                </div>
-                {user?.id === currentuser?.id && (
+                {addressDefined}
+                {user?.id === currentuser?.id && currentAddress === 0 && (
                   <FiEdit
                     className="edit"
                     onClick={() => {
-                      SetEditAdress(true);
+                      SetEditAddress(true);
                     }}
                   />
                 )}
@@ -118,10 +165,62 @@ export const Contact = () => {
             )}
 
             <div>
-              <Map
-                latitude={user?.adress?.latitude}
-                longitude={user?.adress?.longitude}
-              />
+              <Map latitude={latitude} longitude={longitude} />
+            </div>
+            <div
+              style={{
+                display: "flex",
+                width: "100%",
+                alignItems: "center",
+                justifyContent: "space-evenly",
+              }}
+            >
+              <div>
+                {addresses?.length > 1 && (
+                  <BsArrowLeftCircleFill
+                    size={24}
+                    color={"#ccc"}
+                    style={{
+                      cursor: currentAddress === 0 ? "auto" : "pointer",
+                      opacity: currentAddress === 0 ? "0.5" : 1,
+                    }}
+                    onClick={
+                      currentAddress !== 0
+                        ? () => setCurrentAddress(currentAddress - 1)
+                        : false
+                    }
+                  />
+                )}
+              </div>
+              {user?.id === currentuser?.id && (
+                <AddAddress
+                  language={language}
+                  currentuser={currentuser}
+                  type="true"
+                  address={address}
+                  setAddress={setAddress}
+                />
+              )}
+              <div>
+                {addresses?.length > 1 && (
+                  <BsArrowRightCircleFill
+                    size={24}
+                    color={"#ccc"}
+                    style={{
+                      cursor:
+                        currentAddress < addresses?.length - 1
+                          ? "pointer"
+                          : "auto",
+                      opacity: currentAddress < addresses?.length - 1 ? 1 : 0.5,
+                    }}
+                    onClick={
+                      currentAddress < addresses?.length - 1
+                        ? () => setCurrentAddress(currentAddress + 1)
+                        : undefined
+                    }
+                  />
+                )}
+              </div>
             </div>
           </>
         }

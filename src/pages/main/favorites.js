@@ -5,6 +5,7 @@ import { SiHomeassistantcommunitystore } from "react-icons/si";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Language } from "../../context/language";
+import Avatar from "@mui/material/Avatar";
 
 export const Favorites = () => {
   const navigate = useNavigate();
@@ -17,6 +18,12 @@ export const Favorites = () => {
   }
   const language = Language();
 
+  const usersList = useSelector((state) => state.storeMain.userList);
+  let users;
+  if (usersList?.length > 0) {
+    users = JSON.parse(usersList);
+  }
+
   return (
     <Container>
       <Title>
@@ -25,6 +32,7 @@ export const Favorites = () => {
       </Title>
       <List>
         {followings?.map((item, index) => {
+          let us = users?.find((it) => it.id === item.id);
           return (
             <Item
               key={index}
@@ -33,11 +41,12 @@ export const Favorites = () => {
               // }
               onClick={() => navigate(`/user/${item.id}`)}
             >
-              {item?.type == "specialist" && <RiUserHeartFill />}
-              {item?.type == "beautyCenter" && (
-                <SiHomeassistantcommunitystore />
-              )}
-              <span>{item.name}</span>
+              <Avatar
+                alt={us?.name}
+                src={us?.cover !== undefined ? us?.cover : ""}
+                sx={{ width: 30, height: 30 }}
+              />
+              <span>{us?.name}</span>
             </Item>
           );
         })}
@@ -83,7 +92,7 @@ const List = styled.div`
 
 const Item = styled.div`
   width: 80%;
-  padding: 0.5vw 1vw;
+  padding: 0.25vw;
   box-sizing: border-box;
   display: flex;
   justify-content: start;

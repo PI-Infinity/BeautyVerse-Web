@@ -5,10 +5,8 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-import { Language } from "../context/language";
 
 export default function AlertDialog(props) {
-  const language = Language();
   const [open, setOpen] = React.useState(false);
 
   const handleClickOpen = async () => {
@@ -36,10 +34,10 @@ export default function AlertDialog(props) {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>
-            {language?.language.User.userPage.cancel}
+            {props?.language?.language.User.userPage.cancel}
           </Button>
           <Button onClick={handleClickOpen} autoFocus>
-            {language?.language.User.userPage.remove}
+            {props?.language?.language.User.userPage.remove}
           </Button>
         </DialogActions>
       </Dialog>

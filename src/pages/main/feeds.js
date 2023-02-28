@@ -29,8 +29,8 @@ export const Feeds = (props) => {
 
   // import filters
   const cityFilter = useSelector((state) => state.storeFilter.cityFilter);
-  const destrictFilter = useSelector(
-    (state) => state.storeFilter.destrictFilter
+  const districtFilter = useSelector(
+    (state) => state.storeFilter.districtFilter
   );
   const search = useSelector((state) => state.storeFilter.search);
   const filter = useSelector((state) => state.storeFilter.filter);
@@ -78,12 +78,12 @@ export const Feeds = (props) => {
       })
       ?.filter((item, index) => {
         if (
-          destrictFilter == "უბანი" ||
-          destrictFilter === "District" ||
-          destrictFilter === "Район"
+          districtFilter == "უბანი" ||
+          districtFilter === "District" ||
+          districtFilter === "Район"
         ) {
           return item;
-        } else if (item.adress.destrict === destrictFilter) {
+        } else if (item.address.district === districtFilter) {
           return item;
         }
       })
@@ -94,7 +94,7 @@ export const Feeds = (props) => {
           cityFilter === "Город"
         ) {
           return item;
-        } else if (item.adress.city === cityFilter) {
+        } else if (item.address.city === cityFilter) {
           return item;
         }
       })

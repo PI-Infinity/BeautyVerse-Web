@@ -25,9 +25,11 @@ import useWindowDimensions from "../../functions/dimensions";
 import { Button } from "../../components/button";
 import { v4 } from "uuid";
 import { Language } from "../../context/language";
+import { IsMobile } from "../../functions/isMobile";
 
 export const Identify = (props) => {
   const language = Language();
+  const isMobile = IsMobile();
   const { height, width } = useWindowDimensions();
   // import users
   const usersList = useSelector((state) => state.storeMain.userList);
@@ -100,12 +102,13 @@ export const Identify = (props) => {
         password: registerFields?.password,
         email: registerFields?.email,
         phone: registerFields?.countryCode + registerFields?.phoneNumber,
-        adress: {
+        address: {
+          number: 1,
           country: map.country,
           region: map.region,
           city: map.city,
-          destrict: map.destrict,
-          adress: map.street,
+          district: map.district,
+          address: map.street,
           streetNumber: map.number,
           latitude: map.latitude,
           longitude: map.longitude,
@@ -119,9 +122,7 @@ export const Identify = (props) => {
         {
           id: actionId,
           senderId: "beautyVerse",
-          senderName: "Beautyverse",
-          senderCover: "",
-          text: `${language?.language.Auth.auth.succesRegister}`,
+          text: `${language?.language.Auth.auth.successRegister}`,
           date: serverTimestamp(),
           type: "welcome",
           status: "unread",
@@ -197,6 +198,9 @@ export const Identify = (props) => {
     icon = <RiShoppingCartFill className="businessIcon" />;
   }
 
+  /// address
+  const [address, setAddress] = React.useState("");
+
   return (
     <>
       <Container
@@ -208,11 +212,13 @@ export const Identify = (props) => {
           <span>{language?.language.Auth.auth.identify}</span>
         </Title>
         <WrapperContainer onSubmit={HandleSubmit}>
-          <Button
-            title={language?.language.Auth.auth.back}
-            back={true}
-            function={() => navigate("/register")}
-          />
+          {!isMobile && (
+            <Button
+              title={language?.language.Auth.auth.back}
+              back={true}
+              function={() => navigate("/register")}
+            />
+          )}
           <Fields>
             <>
               <TitleWrapper>
@@ -222,7 +228,7 @@ export const Identify = (props) => {
                     : language?.language.Auth.auth.name}
                   *
                 </InputTitle>
-                <InputTitle>{language?.language.Auth.auth.adress}*</InputTitle>
+                <InputTitle>{language?.language.Auth.auth.address}*</InputTitle>
               </TitleWrapper>
               <Wrapper>
                 <InputWrapper>
@@ -239,7 +245,11 @@ export const Identify = (props) => {
                   />
                 </InputWrapper>
                 {/* <InputWrapper> */}
-                <MapAutocomplete language={language} />
+                <MapAutocomplete
+                  language={language}
+                  address={address}
+                  setAddress={setAddress}
+                />
                 {/* </InputWrapper> */}
               </Wrapper>
             </>
@@ -314,12 +324,27 @@ export const Identify = (props) => {
               <div id="recaptcha-container"></div>
             </>
           </Fields>
+          {!isMobile && (
+            <Button
+              title={language?.language.Auth.auth.next}
+              type="Submit"
+              function={HandleSubmit}
+            />
+          )}
+        </WrapperContainer>
+        <MobileButtons>
+          {" "}
+          <Button
+            title={language?.language.Auth.auth.back}
+            back={true}
+            function={() => navigate("/register")}
+          />
           <Button
             title={language?.language.Auth.auth.next}
             type="Submit"
             function={HandleSubmit}
           />
-        </WrapperContainer>
+        </MobileButtons>
       </Container>
       <Confirm
         height={height}
@@ -361,14 +386,14 @@ const Container = styled.div`
   gap: 2vw;
 
   @media only screen and (max-width: 600px) {
+    justify-content: start;
     font-size: 3vw;
-    padding-top: 14vw;
-    padding-bottom: 5vw;
+    padding-top: 40vw;
   }
 
   .userIcon {
     font-size: 2vw;
-    margin-bottom: -1.5vw;
+    // margin-bottom: -1.5vw;
 
     @media only screen and (max-width: 600px) {
       font-size: 7vw;
@@ -384,7 +409,7 @@ const Container = styled.div`
 
   .businessIcon {
     font-size: 2vw;
-    margin-bottom: -1.5vw;
+    // margin-bottom: -1.5vw;
 
     @media only screen and (max-width: 600px) {
       font-size: 7vw;
@@ -583,5 +608,18 @@ const SubmitButton = styled.button`
 
   :hover {
     box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.2);
+  }
+`;
+
+const MobileButtons = styled.div`
+  display: none;
+
+  @media only screen and (max-width: 600px) {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    position: fixed;
+    bottom: 3vw;
+    gap: 15px;
   }
 `;

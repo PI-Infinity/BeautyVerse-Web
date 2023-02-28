@@ -66,7 +66,6 @@ export const UserStatistics = () => {
     const starsGroupRef = onSnapshot(
       collectionGroup(db, `${user?.id + "+stars"}`),
       (snapshot) => {
-        console.log(snapshot);
         setStars(snapshot.docs.map((doc) => doc.data()));
       }
     );

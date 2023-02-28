@@ -5,13 +5,12 @@ import { setMap } from "../redux/register";
 import styled from "styled-components";
 import { useDispatch } from "react-redux";
 
-const MapAutocomplete = ({ language, userMobile }) => {
+const MapAutocomplete = ({ language, userMobile, address, setAddress }) => {
   const dispatch = useDispatch();
-  const [adress, setAdress] = React.useState("");
   const handleSelect = async (value) => {
     const result = await geocodeByAddress(value);
     const ll = await getLatLng(result[0]);
-    setAdress(value);
+    setAddress(value);
     // country
     let countr;
     if (
@@ -106,7 +105,7 @@ const MapAutocomplete = ({ language, userMobile }) => {
         country: countr,
         region: reg,
         city: cit,
-        destrict: destr,
+        district: destr,
         street: str,
         number: nmb,
         latitude: lat,
@@ -115,26 +114,26 @@ const MapAutocomplete = ({ language, userMobile }) => {
     );
   };
 
-  console.log(userMobile);
-
   return (
-    <div>
+    <MainContainer userMobile={userMobile}>
       <PlacesAutocomplete
-        value={adress}
-        onChange={setAdress}
+        value={address}
+        onChange={setAddress}
         onSelect={handleSelect}
         googleCallbackName="myCallbackFunc"
       >
         {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
-          <Container userMobile={userMobile}>
-            <Input
-              requred
-              value={adress}
-              {...getInputProps({
-                placeholder: language?.language.User.userPage.findAdress,
-                className: "location-search-input",
-              })}
-            />
+          <>
+            <Container userMobile={userMobile}>
+              <Input
+                requred
+                value={address}
+                {...getInputProps({
+                  placeholder: language?.language.User.userPage.findAddress,
+                  className: "location-search-input",
+                })}
+              />
+            </Container>
             <div className="autocomplete-dropdown-container">
               {loading && <div>Loading...</div>}
               {suggestions?.map((suggestion, index) => {
@@ -158,14 +157,65 @@ const MapAutocomplete = ({ language, userMobile }) => {
                 );
               })}
             </div>
-          </Container>
+          </>
         )}
       </PlacesAutocomplete>
-    </div>
+    </MainContainer>
   );
 };
 
 export default MapAutocomplete;
+
+const MainContainer = styled.div`
+  .autocomplete-dropdown-container {
+    z-index: 100000;
+    position: absolute;
+    width: 18.5vw;
+    overflow-y: scroll;
+    margin-top: 1vw;
+    font-size: 14px;
+    text-align: start;
+    box-sizing: border-box;
+    border-radius: 0 0.5vw;
+    box-shadow: 0 0.1vw 0.3vw ${(props) => props.theme.shadowColor};
+    display: flex;
+    flex-direction: column;
+    gap: 0.5vw;
+    color: auto;
+    background: ${(props) => props.theme.categoryItem};
+
+    @media only screen and (max-width: 600px) {
+      position: ${(props) =>
+        props.userMobile === "true" ? "relative" : "absolute"};
+      box-shadow: 0 0.2vw 0.6vw rgba(2, 2, 2, 0.1);
+      width: ${(props) => (props.userMobile === "true" ? "100%" : "45vw")};
+      height: auto;
+      margin-top: ${(props) => (props.userMobile === "true" ? "1vw" : "3vw")};
+      border-radius: 1vw;
+    }
+  }
+
+  .suggestion-item {
+    margin: 0.25vw 0.5vw;
+    border-bottom: 1px solid ${(props) => props.theme.font};
+    color: ${(props) => props.theme.font};
+    cursor: pointer;
+
+    @media only screen and (max-width: 600px) {
+      padding: 1vw 0;
+    }
+  }
+  .suggestion-item--active {
+    cursor: pointer;
+    margin: 0.25vw 0.5vw;
+    border-bottom: 1px solid ${(props) => props.theme.font};
+    background: ${(props) => props.theme.categoryItem};
+
+    @media only screen and (max-width: 600px) {
+      padding: 1vw 0;
+    }
+  }
+`;
 
 const Container = styled.div`
   width: 18.5vw;
@@ -189,47 +239,6 @@ const Container = styled.div`
       props.userMobile === "true" ? "start" : "space-between"};
     border-radius: 1.5vw;
     font-size: 16px;
-  }
-
-  .autocomplete-dropdown-container {
-    z-index: 1000;
-    position: absolute;
-    width: 18.5vw;
-    max-height: 10vw;
-    overflow-y: scroll;
-    margin-top: 2vw;
-    font-size: 14px;
-    text-align: start;
-    box-sizing: border-box;
-    border-radius: 0 0.5vw;
-    box-shadow: 0 0.1vw 0.3vw ${(props) => props.theme.shadowColor};
-    display: flex;
-    flex-direction: column;
-    gap: 0.5vw;
-    color: auto;
-    background: ${(props) => props.theme.categoryItem};
-
-    @media only screen and (max-width: 600px) {
-      box-shadow: 0 0.2vw 0.6vw rgba(2, 2, 2, 0.1);
-      width: 80vw;
-      height: auto;
-      margin-top: ${(props) => (props.userMobile === "true" ? "0" : "8vw")};
-      border-radius: 1vw;
-      max-height: 40vw;
-    }
-  }
-
-  .suggestion-item {
-    margin: 0.25vw 0.5vw;
-    border-bottom: 1px solid ${(props) => props.theme.font};
-    color: ${(props) => props.theme.font};
-    cursor: pointer;
-  }
-  .suggestion-item--active {
-    cursor: pointer;
-    margin: 0.25vw 0.5vw;
-    border-bottom: 1px solid ${(props) => props.theme.font};
-    background: ${(props) => props.theme.categoryItem};
   }
 `;
 

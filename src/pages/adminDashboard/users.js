@@ -52,12 +52,12 @@ export default function Users() {
         id: index + 1,
         name: item?.name,
         type: item?.type,
-        country: item?.adress?.country,
-        region: item?.adress?.region,
-        city: item?.adress?.city,
-        district: item?.adress?.destrict,
-        address: item?.adress?.adress,
-        streetNumber: item?.adress?.streetNumber,
+        country: item?.address?.country,
+        region: item?.address?.region,
+        city: item?.address?.city,
+        district: item?.address?.district,
+        address: item?.address?.address,
+        streetNumber: item?.address?.streetNumber,
         registerDate: new Date(item?.registerDate?.seconds * 1000)
           .toString()
           .slice(3, 21),

@@ -153,7 +153,7 @@ export const Input = () => {
         <Emojies>
           <EmojiPicker
             Theme="dark"
-            onEmojiClick={(emoji) => setText((old) => [...old, emoji.emoji])}
+            onEmojiClick={(emoji) => setText((old) => old + emoji.emoji)}
           />
         </Emojies>
       )}

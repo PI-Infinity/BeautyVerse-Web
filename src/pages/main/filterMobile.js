@@ -4,7 +4,7 @@ import { CategoryFilter } from "../../pages/main/categoryFilter";
 import { useSelector, useDispatch } from "react-redux";
 import {
   setCityFilter,
-  setDestrictFilter,
+  setDistrictFilter,
   setSpecialist,
   setObject,
 } from "../../redux/filter";
@@ -105,8 +105,8 @@ export const Filter = () => {
   // filter cities and not dublicate same cities in map
 
   const cityFilter = useSelector((state) => state.storeFilter.cityFilter);
-  const destrictFilter = useSelector(
-    (state) => state.storeFilter.destrictFilter
+  const districtFilter = useSelector(
+    (state) => state.storeFilter.districtFilter
   );
   const specialist = useSelector((state) => state.storeFilter.specialist);
   const physicalObject = useSelector((state) => state.storeFilter.object);
@@ -115,10 +115,10 @@ export const Filter = () => {
   const cities = [`${language?.language.Main.filter.city}`];
 
   const Cities = users?.filter((obj) => {
-    const isDuplicate = cities.includes(obj.adress.city);
+    const isDuplicate = cities.includes(obj.address.city);
 
     if (!isDuplicate) {
-      cities.push(obj.adress.city);
+      cities.push(obj.address.city);
 
       return true;
     }
@@ -126,15 +126,15 @@ export const Filter = () => {
     return false;
   });
 
-  // filter destricts and not dublicate same districts in map
+  // filter districts and not dublicate same districts in map
 
   const distr = [`${language?.language.Main.filter.district}`];
 
   const Districts = users?.filter((obj) => {
-    const isDuplicate = distr.includes(obj.adress.destrict);
+    const isDuplicate = distr.includes(obj.address.district);
 
     if (!isDuplicate) {
-      distr.push(obj.adress.destrict);
+      distr.push(obj.address.district);
 
       return true;
     }
@@ -142,7 +142,7 @@ export const Filter = () => {
     return false;
   });
 
-  const destricts = distr?.filter((item) => item != "");
+  const districts = distr?.filter((item) => item != "");
 
   // color mode
   const theme = useSelector((state) => state.storeMain.theme);
@@ -209,7 +209,7 @@ export const Filter = () => {
         onChange={(value) => {
           dispatch(setCityFilter(value.label));
           dispatch(
-            setDestrictFilter(`${language?.language.Main.filter.district}`)
+            setDistrictFilter(`${language?.language.Main.filter.district}`)
           );
           dispatch(setRerender());
         }}
@@ -222,20 +222,20 @@ export const Filter = () => {
         <Select
           className="react-select-container"
           classNamePrefix="select"
-          defaultValue={destrictFilter}
+          defaultValue={districtFilter}
           placeholder={
-            destrictFilter === "District"
+            districtFilter === "District"
               ? language?.language.Main.filter.district
-              : destrictFilter
+              : districtFilter
           }
           isDisabled={false}
           isLoading={false}
           onChange={(value) => {
-            dispatch(setDestrictFilter(value.value));
+            dispatch(setDistrictFilter(value.value));
             dispatch(setRerender());
           }}
           styles={CustomStyle}
-          options={destricts?.map((item, index) => {
+          options={districts?.map((item, index) => {
             return { value: item, label: item };
           })}
         />

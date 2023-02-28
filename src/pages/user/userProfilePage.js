@@ -34,7 +34,9 @@ const UserProfile = () => {
 
   return (
     <Container>
-      <VisitorId path="visitors-profile" targetUserId={Id} />
+      {user !== undefined && (
+        <VisitorId path="visitors-profile" targetUserId={Id} />
+      )}
       <CoverSection language={language} user={user} />
       <ContentSide>
         <div className="links">

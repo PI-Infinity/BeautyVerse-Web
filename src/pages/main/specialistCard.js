@@ -24,8 +24,8 @@ export const SpecialistsCard = (props) => {
 
   // import filters
   const cityFilter = useSelector((state) => state.storeFilter.cityFilter);
-  const destrictFilter = useSelector(
-    (state) => state.storeFilter.destrictFilter
+  const districtFilter = useSelector(
+    (state) => state.storeFilter.districtFilter
   );
 
   /**
@@ -81,8 +81,9 @@ export const SpecialistsCard = (props) => {
     icon = <MdAddBusiness />;
   }
 
-  // define full adress
-  const fullAdress = props?.adress?.adress + ", " + props?.adress?.streetNumber;
+  // define full address
+  const fullAddress =
+    props?.address?.address + ", " + props?.address?.streetNumber;
 
   // define all procedures
   const allProcedures = props?.filterCategories
@@ -119,17 +120,17 @@ export const SpecialistsCard = (props) => {
           </IconCont>
         )}
       </ImgContainer>
-      <Tooltip title={fullAdress}>
+      <Tooltip title={fullAddress}>
         <City>
-          <div>{props?.adress?.city}</div>
+          <div>{props?.address?.city}</div>
         </City>
       </Tooltip>
-      <Tooltip title={fullAdress}>
+      <Tooltip title={fullAddress}>
         <City>
           <div>
-            {props?.adress?.destrict?.length > 0
-              ? props?.adress?.destrict
-              : props?.adress?.adress}
+            {props?.address?.district?.length > 0
+              ? props?.address?.district
+              : props?.address?.address}
           </div>
         </City>
       </Tooltip>

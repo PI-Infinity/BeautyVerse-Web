@@ -66,8 +66,6 @@ export const AddReview = (props) => {
       setDoc(doc(db, `users`, `${props?.id}`, "notifications", `${actionId}`), {
         id: actionId,
         senderId: currentUser?.uid,
-        senderName: currentuser?.name,
-        senderCover: currentuser?.cover?.length > 0 ? currentuser?.cover : "",
         review: props.reviewText,
         text: `დაგიტოვათ კომენტარი პოსტზე!`,
         date: serverTimestamp(),
@@ -75,8 +73,8 @@ export const AddReview = (props) => {
         status: "unread",
         feed: `${window.location.pathname}`,
       });
-      props.setReviewText("");
     }
+    props.setReviewText("");
   };
 
   const [stars, setStars] = useState([]);
@@ -112,8 +110,6 @@ export const AddReview = (props) => {
       ),
       {
         id: currentuser?.id,
-        name: currentuser?.name,
-        cover: currentuser?.cover ? currentuser?.cover : "",
         date: serverTimestamp(),
       }
     );
@@ -130,8 +126,6 @@ export const AddReview = (props) => {
         {
           id: actionId,
           senderId: currentUser?.uid,
-          senderName: currentuser?.name,
-          senderCover: currentuser?.cover?.length > 0 ? currentuser?.cover : "",
           text: `მიანიჭა ვარსკვლავი თქვენ პოსტს!`,
           date: serverTimestamp(),
           type: "star",

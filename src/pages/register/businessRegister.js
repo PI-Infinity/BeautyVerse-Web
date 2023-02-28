@@ -19,12 +19,14 @@ import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import useWindowDimensions from "../../functions/dimensions";
 import { v4 } from "uuid";
 import { Language } from "../../context/language";
+import { IsMobile } from "../../functions/isMobile";
 
 const animatedComponents = makeAnimated();
 
 export const BusinessRegister = (props) => {
   const language = Language();
   const { height, width } = useWindowDimensions();
+  const isMobile = IsMobile();
   const mainDispatch = useDispatch();
   const navigate = useNavigate();
   const { dispatch } = useContext(AuthContext);
@@ -103,20 +105,17 @@ export const BusinessRegister = (props) => {
           password: registerFields?.password,
           email: registerFields?.email,
           phone: registerFields?.countryCode + registerFields?.phoneNumber,
-          adress: {
+          address: {
+            number: 1,
             country: map.country,
             region: map.region,
             city: map.city,
-            destrict: map.destrict,
-            adress: map.street,
+            district: map.district,
+            address: map.street,
             streetNumber: map.number,
             latitude: map.latitude,
             longitude: map.longitude,
           },
-          // workingPlace:
-          //   registerFields?.workingPlace?.length > 0
-          //     ? registerFields?.workingPlace
-          //     : "",
           workingDays:
             registerFields?.workingDays?.length > 0
               ? registerFields?.workingDays
@@ -139,8 +138,6 @@ export const BusinessRegister = (props) => {
           {
             id: actionId,
             senderId: "beautyVerse",
-            senderName: "Beautyverse",
-            senderCover: "",
             text: language?.language.Auth.auth.successRegister,
             date: serverTimestamp(),
             type: "welcome",
@@ -181,6 +178,7 @@ export const BusinessRegister = (props) => {
     }),
     placeholder: (base, state) => ({
       ...base,
+      // height: "1000px",
       color: state.isSelected
         ? theme
           ? "#333"
@@ -188,15 +186,26 @@ export const BusinessRegister = (props) => {
         : theme
         ? "#f3f3f3"
         : "#333",
+      maxHeight: "50px",
     }),
     input: (base, state) => ({
       ...base,
       color: theme ? "#f3f3f3" : "#333",
       fontSize: "16px",
+      maxHeight: "100px",
+    }),
+    multiValue: (base, state) => ({
+      ...base,
+      backgroundColor: state.isDisabled ? null : "lightblue",
+      borderRadius: "20px",
+    }),
+    multiValueLabel: (base, state) => ({
+      ...base,
     }),
     menuList: (base, state) => ({
       ...base,
       backgroundColor: theme ? "#333" : "#f3f3f3",
+      zIndex: 1000,
     }),
     option: (base, state) => ({
       ...base,
@@ -250,8 +259,6 @@ export const BusinessRegister = (props) => {
     }
   });
 
-  console.log(wdOption);
-
   return (
     <>
       <Container
@@ -265,11 +272,13 @@ export const BusinessRegister = (props) => {
             : language?.language.Auth.auth.aboutSalon}
         </Title>
         <WrapperContainer onSubmit={HandleSubmit}>
-          <Button
-            title={language?.language.Auth.auth.back}
-            function={() => navigate("/register/identify")}
-            back={true}
-          />
+          {!isMobile && (
+            <Button
+              title={language?.language.Auth.auth.back}
+              function={() => navigate("/register/identify")}
+              back={true}
+            />
+          )}
           <Fields>
             <>
               <TitleWrapper>
@@ -280,7 +289,7 @@ export const BusinessRegister = (props) => {
                   *
                 </InputTitle>
               </TitleWrapper>
-              <Wrapper>
+              <Wrapper cat={registerFields?.categories?.length}>
                 <Select
                   placeholder={
                     type == "shop"
@@ -292,6 +301,7 @@ export const BusinessRegister = (props) => {
                   onChange={(value) => {
                     mainDispatch(setCategories(value));
                   }}
+                  value={registerFields?.categories}
                   styles={CustomStyle}
                   options={type == "shop" ? categoriesOptions : option}
                 />
@@ -304,18 +314,18 @@ export const BusinessRegister = (props) => {
                       {language?.language.Auth.auth.optional})
                     </InputTitle>
                   </TitleWrapper>
-                  <Wrapper>
-                    <Select
-                      placeholder="სამუშაო დღეები"
-                      isMulti
-                      components={animatedComponents}
-                      onChange={(value) => {
-                        mainDispatch(setWorkingDays(value));
-                      }}
-                      styles={CustomStyle}
-                      options={wdOption}
-                    />
-                  </Wrapper>
+                  {/* <Wrapper> */}
+                  <Select
+                    placeholder={language?.language.Auth.auth.workingDays}
+                    isMulti
+                    components={animatedComponents}
+                    onChange={(value) => {
+                      mainDispatch(setWorkingDays(value));
+                    }}
+                    styles={CustomStyle}
+                    options={wdOption}
+                  />
+                  {/* </Wrapper> */}
                 </>
               )}
             </>
@@ -340,12 +350,27 @@ export const BusinessRegister = (props) => {
               )} */}
             <div id="recaptcha-container"></div>
           </Fields>
+          {!isMobile && (
+            <Button
+              title={language?.language.Auth.auth.next}
+              type="Submit"
+              function={HandleSubmit}
+            />
+          )}
+        </WrapperContainer>
+        <MobileButtons>
+          {" "}
+          <Button
+            title={language?.language.Auth.auth.back}
+            function={() => navigate("/register/identify")}
+            back={true}
+          />
           <Button
             title={language?.language.Auth.auth.next}
             type="Submit"
             function={HandleSubmit}
           />
-        </WrapperContainer>
+        </MobileButtons>
       </Container>
       <Confirm
         height={height}
@@ -385,13 +410,12 @@ const Container = styled.div`
   align-items: center;
   justify-content: center;
   gap: 2vw;
-  overflow-y: scroll;
 
   @media only screen and (max-width: 600px) {
     justify-content: start;
     font-size: 3vw;
-    padding-top: 30vw;
     padding-bottom: 15vw;
+    padding-top: 40vw;
   }
 
   .icon {
@@ -445,6 +469,9 @@ const Fields = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1vw;
+  // overflow-y: scroll;
+  padding: 10px;
+  height: 100%;
 `;
 
 const Wrapper = styled.div`
@@ -452,9 +479,35 @@ const Wrapper = styled.div`
   gap: 1vw;
   color: ${(props) => props.theme.font};
   background: ${(props) => props.theme.categoryItem};
+  max-height: 400px;
+  overflow-y: ${(props) => (props.cat > 30 ? "scroll" : "visible")};
+  height: auto;
+  z-index: 900;
 
   @media only screen and (max-width: 600px) {
     justify-content: start;
+    max-height: 300px;
+  }
+
+  /* width */
+  ::-webkit-scrollbar {
+    width: 0.3vw;
+    height: 0.5vw;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background-color: white;
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background-color: red;
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #1e1e1e;
   }
 `;
 
@@ -587,5 +640,18 @@ const SubmitButton = styled.button`
 
   :hover {
     box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.2);
+  }
+`;
+
+const MobileButtons = styled.div`
+  display: none;
+
+  @media only screen and (max-width: 600px) {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    position: fixed;
+    bottom: 3vw;
+    gap: 15px;
   }
 `;

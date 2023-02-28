@@ -103,7 +103,7 @@ function App() {
    */
 
   const RequireAdminAuth = ({ children }) => {
-    return currentUser?.uid === "VnuHFrjndyU42j5jeCsASnnOTpd2" ? (
+    return currentUser?.uid === "UxslVW5dQGWqHKjviICuHo1qu6H3" ? (
       children
     ) : (
       <Navigate to="/" />
@@ -219,6 +219,13 @@ function App() {
         users.push(doc.data());
       });
       dispatch(setUserList(JSON.stringify(users)));
+      // if localstorage user is active but not belongs to really beautyvers users, remove from localstorage
+      const CurUser = JSON.parse(localStorage.getItem("BeautyVerse:user"));
+      const us = users?.find((item) => item?.id === CurUser?.uid);
+      if (users?.length > 0 && us === undefined) {
+        localStorage.removeItem("BeautyVerse:user");
+        dispatch(setUser(""));
+      }
       setTimeout(() => {
         dispatch(setLoading(false));
       }, 300);

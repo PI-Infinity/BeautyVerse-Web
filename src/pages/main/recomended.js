@@ -60,16 +60,16 @@ export const Recomended = () => {
                     </UserCover>
                     <Info>
                       <Name>{item?.name}</Name>
-                      <Adress>
+                      <Address>
                         <MdLocationPin size={24} color="red" />
-                        {item?.adress?.city +
+                        {item?.address?.city +
                           ", " +
-                          item?.adress?.destrict +
+                          item?.address?.district +
                           ", " +
-                          item?.adress?.adress +
+                          item?.address?.address +
                           ", " +
-                          item?.adress?.streetNumber}
-                      </Adress>
+                          item?.address?.streetNumber}
+                      </Address>
                       <Procedure>წარბების ლამინირება</Procedure>
                       <div
                         style={{
@@ -269,7 +269,7 @@ const Name = styled.h4`
   }
 `;
 
-const Adress = styled.div`
+const Address = styled.div`
   font-size: 0.6vw;
   display: flex;
   align-items: start;

@@ -33,7 +33,7 @@ export const UserFeeds = () => {
 
   React.useEffect(() => {
     const data = onSnapshot(
-      collection(db, "users", `${user.id}`, "feeds"),
+      collection(db, "users", `${user?.id}`, "feeds"),
       (snapshot) => {
         setFeeds(snapshot.docs.map((doc) => doc.data()));
       }

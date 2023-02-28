@@ -26,6 +26,9 @@ import { IsMobile } from "../../../functions/isMobile";
 import { isWebpSupported } from "react-image-webp/dist/utils";
 import { v4 } from "uuid";
 import { Language } from "../../../context/language";
+import GetTimesAgo from "../../../functions/getTimesAgo";
+import { SiGoogletranslate } from "react-icons/si";
+import { SlReload } from "react-icons/sl";
 
 export const FeedCard = (props) => {
   const { currentUser } = useContext(AuthContext);
@@ -44,8 +47,8 @@ export const FeedCard = (props) => {
   const rerender = useSelector((state) => state.storeMain.rerender);
 
   const cityFilter = useSelector((state) => state.storeFilter.cityFilter);
-  const destrictFilter = useSelector(
-    (state) => state.storeFilter.destrictFilter
+  const districtFilter = useSelector(
+    (state) => state.storeFilter.districtFilter
   );
 
   // capitalize first letters
@@ -134,8 +137,6 @@ export const FeedCard = (props) => {
       ),
       {
         id: currentUser?.uid,
-        name: currentuser?.name,
-        cover: currentuser?.cover ? currentuser?.cover : "",
         date: serverTimestamp(),
       }
     );
@@ -145,8 +146,6 @@ export const FeedCard = (props) => {
         {
           id: actionId,
           senderId: currentUser?.uid,
-          senderName: currentuser?.name,
-          senderCover: currentuser?.cover?.length > 0 ? currentuser?.cover : "",
           text: `მიანიჭა ვარსკვლავი თქვენ პოსტს!`,
           date: serverTimestamp(),
           type: "star",
@@ -182,36 +181,13 @@ export const FeedCard = (props) => {
   const [reports, setReports] = React.useState(false);
 
   // define shown post added time
-  let currentPostTime;
-  let hoursAgo;
-  let definetTitle;
-  if (
-    (
-      (new Date().getTime() - feed?.feed?.addTime?.seconds * 1000) /
-      3600000
-    ).toFixed(0) < 1
-  ) {
-    hoursAgo =
-      (new Date().getTime() - feed?.feed?.addTime?.seconds * 1000) / 60000;
-    definetTitle = " min";
-  } else {
-    hoursAgo =
-      (new Date().getTime() - feed?.feed?.addTime?.seconds * 1000) / 3600000;
-    definetTitle = " h";
+  const currentPostTime = GetTimesAgo(feed?.feed?.addTime?.seconds);
+  let timeTitle;
+  if (currentPostTime?.title === "h") {
+    timeTitle = language?.language.Main.feedCard.h;
+  } else if (currentPostTime?.title === "min") {
+    timeTitle = language?.language.Main.feedCard.min;
   }
-
-  if (new Date().getTime() - feed?.feed?.addTime?.seconds * 1000 > 86400000) {
-    currentPostTime = new Date(feed?.feed?.addTime?.seconds * 1000)
-      .toString()
-      .slice(4, 15);
-  } else {
-    if (definetTitle < 1) {
-      currentPostTime = hoursAgo.toFixed(0) + 1;
-    } else {
-      currentPostTime = hoursAgo.toFixed(0) + definetTitle;
-    }
-  }
-
   /** Define following to user or not
    * //
    */
@@ -241,8 +217,6 @@ export const FeedCard = (props) => {
       doc(db, `users`, `${currentUser?.uid}`, "followings", `${props?.id}`),
       {
         id: props?.id,
-        cover: props?.cover ? props?.cover : "",
-        name: props?.name,
         date: serverTimestamp(),
       }
     );
@@ -250,8 +224,6 @@ export const FeedCard = (props) => {
       doc(db, `users`, `${props?.id}`, "followers", `${currentUser?.uid}`),
       {
         id: currentuser?.id,
-        cover: currentuser?.cover ? currentuser?.cover : "",
-        name: currentuser?.name,
         date: serverTimestamp(),
       }
     );
@@ -259,8 +231,6 @@ export const FeedCard = (props) => {
       setDoc(doc(db, `users`, `${props?.id}`, "notifications", `${actionId}`), {
         id: actionId,
         senderId: currentUser?.uid,
-        senderName: currentuser?.name,
-        senderCover: currentuser?.cover?.length > 0 ? currentuser?.cover : "",
         text: `ჩაინიშნა თქვენი პერსონალური გვერდი!`,
         date: serverTimestamp(),
         type: "following",
@@ -278,6 +248,39 @@ export const FeedCard = (props) => {
 
   // open post
   const [openPost, setOpenPost] = React.useState(false);
+
+  // translate feed
+  const [translated, setTranslated] = React.useState("");
+
+  const lang = useSelector((state) => state.storeMain.language);
+
+  // translate feed text
+  const GetLanguages = (x) => {
+    let fromLang = "en";
+    let toLang = lang; // translate to norwegian
+
+    const API_KEY = "AIzaSyAuSnUmGlptL0E4m4wP-1XzlqL_iv_y3g8";
+
+    let url = `https://translation.googleapis.com/language/translate/v2?key=${API_KEY}`;
+    url += "&q=" + encodeURI(x);
+    url += `&source=${fromLang}`;
+    url += `&target=${toLang}`;
+
+    fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((response) => {
+        setTranslated(response.data.translations[0].translatedText);
+      })
+      .catch((error) => {
+        console.log("There was an error with the translation request: ", error);
+      });
+  };
 
   setTimeout(() => {
     setLoading(false);
@@ -309,17 +312,40 @@ export const FeedCard = (props) => {
           loading={loading}
         />
         {feed?.feed?.post?.length > 0 && (
-          <PostContainer openPost={openPost}>
-            <p
-              style={{
-                whiteSpace: "pre-line",
-                margin: "0 5px 5px 5px",
-                fontSize: "14px",
-              }}
-            >
-              {loading ? <TextLoader /> : <>{feed?.feed?.post}</>}
-            </p>
-          </PostContainer>
+          <>
+            <PostContainer openPost={openPost}>
+              <p
+                style={{
+                  whiteSpace: "pre-line",
+                  margin: "0 5px 5px 5px",
+                  fontSize: "14px",
+                }}
+              >
+                {loading ? (
+                  <TextLoader />
+                ) : (
+                  <>{translated?.length > 0 ? translated : feed?.feed?.post}</>
+                )}
+              </p>
+              <div style={{ cursor: "pointer" }}>
+                {translated?.length < 1 ? (
+                  <SiGoogletranslate
+                    onClick={() => GetLanguages(feed?.feed?.post)}
+                    size={14}
+                    color="#ddd"
+                    style={{ cursor: "pointer" }}
+                  />
+                ) : (
+                  <SlReload
+                    onClick={() => setTranslated("")}
+                    size={14}
+                    color="#ddd"
+                    style={{ cursor: "pointer" }}
+                  />
+                )}
+              </div>
+            </PostContainer>
+          </>
         )}
         <div>
           {reports && (
@@ -416,7 +442,11 @@ export const FeedCard = (props) => {
                 </Link>
               </div>
               <PostTime>
-                <span>{currentPostTime}</span>
+                <span>
+                  {currentPostTime === "Just now"
+                    ? language?.language.Main.feedCard.justNow
+                    : currentPostTime?.numbers + " " + timeTitle}
+                </span>
               </PostTime>
             </>
           )}
@@ -472,18 +502,25 @@ const Container = styled.div`
 `;
 
 const PostContainer = styled.div`
-  padding: 0 20px 10px 20px;
+  padding: 0 25px 10px 20px;
   margin: 0;
   max-height: ${(props) => (props.openPost ? "100%" : "55px")};
   height: auto,
   overflow: ${(props) => (props.openPost ? "visible" : "hidden")};
   cursor: pointer;
   background: ${(props) => props.theme.background};
+  display: flex;
+  justify-content: space-between;
   
   & > p {
     color: ${(props) => props.theme.font};
     background: ${(props) => props.theme.background};
   }
+
+  @media only screen and (max-width: 600px) {
+    padding: 0 15px 10px 10px;
+  }
+ 
 `;
 
 const FileContainer = styled.div`
@@ -725,7 +762,7 @@ const PostTime = styled.div`
 const TextReview = styled.span`
   cursor: pointer;
   color: ${(props) => props.theme.font};
-  transition: ease-in-out 200ms;
+  transition: ease-in-out 100ms;
   font-size: 0.8vw;
   letter-spacing: 0;
   margin-bottom: 0.1vw;
@@ -736,7 +773,6 @@ const TextReview = styled.span`
   }
 
   :hover {
-    color: #444;
-    text-decoration: underline;
+    color: #ccc;
   }
 `;

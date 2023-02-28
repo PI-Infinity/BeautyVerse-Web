@@ -23,10 +23,14 @@ import {
 } from "firebase/firestore";
 import { v4 } from "uuid";
 import { BsArrowRightCircleFill, BsArrowLeftCircleFill } from "react-icons/bs";
+import AddAddress from "../../pages/user/addAddressPopup";
+import { IsMobile } from "../../functions/isMobile";
+import { setMap } from "../../redux/register";
 
 const CoverSection = React.memo(function ({ user, language }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const isMobile = IsMobile();
   // import current user from redux state
   const userUnparsed = useSelector((state) => state.storeMain.user);
   let currentuser;
@@ -74,27 +78,76 @@ const CoverSection = React.memo(function ({ user, language }) {
     coverIcon = <ImProfile />;
   }
 
-  // edit adress
+  // edit address
   const map = useSelector((state) => state.storeRegister.map);
-  const [editAdress, SetEditAdress] = React.useState("");
-  const [adress, SetAdress] = React.useState("");
+  const [editAddress, SetEditAddress] = React.useState("");
+  const [addressInput, SetAddressInput] = React.useState("");
 
-  const UpdateAdress = () => {
+  /// address for autocomplete
+  const [address, setAddress] = React.useState("");
+
+  // get all addresses
+  function findValueByPrefix(object, prefix) {
+    let addressesList = [];
+    for (var property in object) {
+      if (
+        object.hasOwnProperty(property) &&
+        property.toString().startsWith(prefix)
+      ) {
+        addressesList?.push(object[property]);
+      }
+    }
+    return addressesList?.sort((a, b) => a?.number - b?.number);
+  }
+
+  const addresses = findValueByPrefix(user, "address");
+
+  /**
+   * change addresses list on cover
+   */
+
+  const [currentAddress, setCurrentAddress] = React.useState(0);
+
+  let latitude;
+  let longitude;
+  let addressDefined;
+  if (currentAddress !== undefined) {
+    latitude = addresses[currentAddress]?.latitude;
+    longitude = addresses[currentAddress]?.longitude;
+    addressDefined = (
+      <div>
+        {addresses[currentAddress]?.city}
+        {addresses[currentAddress]?.district?.length > 0 &&
+          ", " + addresses[currentAddress]?.district}
+        {addresses[currentAddress]?.address?.length > 0 &&
+          ", " + addresses[currentAddress]?.address}
+        {addresses[currentAddress]?.streetNumber?.length > 0 &&
+          ", " + addresses[currentAddress]?.streetNumber}
+      </div>
+    );
+  }
+
+  // update main address
+
+  const UpdateAddress = () => {
     if (map?.country?.length > 0) {
       updateDoc(doc(db, "users", `${user.id}`), {
-        adress: {
+        address: {
+          number: 1,
           country: map.country,
           region: map.region,
           city: map.city,
-          destrict: map.destrict,
-          adress: map.street,
+          district: map.district,
+          address: map.street,
           streetNumber: map.number,
           latitude: map.latitude,
           longitude: map.longitude,
         },
       });
+      dispatch(setMap(""));
+      setAddress("");
     } else {
-      alert("Add Adress..");
+      alert("Add Address..");
     }
   };
 
@@ -129,8 +182,6 @@ const CoverSection = React.memo(function ({ user, language }) {
       doc(db, `users`, `${currentuser?.id}`, "followings", `${user?.id}`),
       {
         id: user?.id,
-        cover: user?.cover ? user?.cover : "",
-        name: user?.name,
         date: serverTimestamp(),
       }
     );
@@ -138,8 +189,6 @@ const CoverSection = React.memo(function ({ user, language }) {
       doc(db, `users`, `${user?.id}`, "followers", `${currentuser?.id}`),
       {
         id: currentuser?.id,
-        cover: currentuser?.cover ? currentuser?.cover : "",
-        name: currentuser?.name,
         date: serverTimestamp(),
       }
     );
@@ -147,8 +196,6 @@ const CoverSection = React.memo(function ({ user, language }) {
       setDoc(doc(db, `users`, `${user?.id}`, "notifications", `${actionId}`), {
         id: actionId,
         senderId: currentuser?.id,
-        senderName: currentuser?.name,
-        senderCover: currentuser?.cover?.length > 0 ? currentuser?.cover : "",
         text: `ჩაინიშნა თქვენი პერსონალური გვერდი!`,
         date: serverTimestamp(),
         type: "following",
@@ -159,32 +206,10 @@ const CoverSection = React.memo(function ({ user, language }) {
 
   // function to unfollow user
   const UnFollowToUser = async () => {
-    console.log("click");
     await deleteDoc(
       doc(db, `users`, `${currentuser?.id}`, "followings", `${user?.id}`)
     );
   };
-
-  /**
-   * change addresses
-   */
-
-  const [shownAddress, setShownAddress] = React.useState(0);
-  let latitude;
-  let longitude;
-  let address;
-  if (shownAddress === 0) {
-    latitude = user?.adress?.latitude;
-    longitude = user?.adress?.longitude;
-    address = (
-      <div>
-        {user?.adress.city}, {user?.adress.destrict}
-        {user?.adress.destrict?.length > 0 ? "," : ""} {user?.adress.adress}
-        {user?.adress.streetNumber?.length > 0 ? " N" : ""}
-        {user?.adress.streetNumber}
-      </div>
-    );
-  }
 
   return (
     <InfoSide>
@@ -239,66 +264,100 @@ const CoverSection = React.memo(function ({ user, language }) {
           )}
         </Title>
       </TitleContainer>
-      {/* <div
+      <div
         style={{
-          display: "none",
+          display: "flex",
           alignItems: "center",
           gap: "15px",
-          width: "45%",
+          width: "50%",
+          minWidth: "50%",
         }}
-      > */}
-      {/* {user?.address2 !== undefined && (
-        <BsArrowLeftCircleFill
-          size={24}
-          color={"#ccc"}
-          style={{ cursor: "pointer" }}
-        />
-      )} */}
-      <WorkingInfo>
-        <div style={{ zIndex: 4 }}>
-          <div style={{ position: "relative", top: "8vw" }}>
-            <Map latitude={latitude} longitude={longitude} />
+      >
+        {!isMobile && user?.id === currentuser?.id && (
+          <AddAddress
+            language={language}
+            currentuser={currentuser}
+            type="dekstop"
+            address={address}
+            setAddress={setAddress}
+          />
+        )}
+        {addresses?.length > 1 && !isMobile && (
+          <BsArrowLeftCircleFill
+            size={24}
+            color={"#ccc"}
+            style={{
+              cursor: currentAddress === 0 ? "auto" : "pointer",
+              opacity: currentAddress === 0 ? "0.5" : 1,
+            }}
+            onClick={
+              currentAddress !== 0
+                ? () => setCurrentAddress(currentAddress - 1)
+                : undefined
+            }
+          />
+        )}
+        <WorkingInfo>
+          <div style={{ zIndex: 4 }}>
+            <div style={{ position: "relative", top: "8vw" }}>
+              <Map latitude={latitude} longitude={longitude} />
+            </div>
           </div>
-        </div>
-        <StaticInfo>
-          <Location>
-            <MdLocationPin className="location" />{" "}
-            {editAdress ? (
-              <>
-                <MapAutocomplete language={language} />
-                <GiConfirmed
-                  className="confirm"
-                  onClick={async (e) => {
-                    e.preventDefault();
-                    await UpdateAdress();
-                    SetEditAdress(false);
-                  }}
-                />
-              </>
-            ) : (
-              <>
-                {address}
+
+          <StaticInfo>
+            <Location>
+              <MdLocationPin className="location" />{" "}
+              {editAddress ? (
                 <>
-                  {currentuser?.id === user?.id && (
-                    <FiEdit
-                      className="edit"
-                      onClick={() => {
-                        SetEditAdress(true);
-                      }}
-                    />
-                  )}
+                  <MapAutocomplete
+                    language={language}
+                    address={address}
+                    setAddress={setAddress}
+                  />
+                  <GiConfirmed
+                    className="confirm"
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      await UpdateAddress();
+                      SetEditAddress(false);
+                    }}
+                  />
                 </>
-              </>
-            )}
-          </Location>
-        </StaticInfo>
-      </WorkingInfo>
-      {/* <BsArrowRightCircleFill
-        size={24}
-        color={"#ccc"}
-        style={{ cursor: "pointer" }}
-      /> */}
-      {/* </div> */}
+              ) : (
+                <>
+                  {addressDefined}
+                  <>
+                    {currentuser?.id === user?.id && currentAddress === 0 && (
+                      <FiEdit
+                        className="edit"
+                        onClick={() => {
+                          SetEditAddress(true);
+                        }}
+                      />
+                    )}
+                  </>
+                </>
+              )}
+            </Location>
+          </StaticInfo>
+        </WorkingInfo>
+        {addresses?.length > 1 && !isMobile && (
+          <BsArrowRightCircleFill
+            size={24}
+            color={"#ccc"}
+            style={{
+              cursor:
+                currentAddress < addresses?.length - 1 ? "pointer" : "auto",
+              opacity: currentAddress < addresses?.length - 1 ? 1 : 0.5,
+            }}
+            onClick={
+              currentAddress < addresses?.length - 1
+                ? () => setCurrentAddress(currentAddress + 1)
+                : false
+            }
+          />
+        )}
+      </div>
     </InfoSide>
   );
 });
@@ -370,9 +429,11 @@ const TitleContainer = styled.div`
   justify-content: space-between;
   padding-left: 2vw;
   width: 30vw;
+  white-space: nowrap;
+  max-width: 60vw;
 
   @media only screen and (max-width: 600px) {
-    min-width: 50vw;
+    min-width: auto;
     width: auto;
     padding-left: 6vw;
   }
@@ -505,7 +566,7 @@ const WorkingInfo = styled.div`
   flex-direction: column;
   align-items: start;
   justify-content: flex-end;
-  width: 40%;
+  width: 100%;
   height: 10vw;
   box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
   overflow: hidden;

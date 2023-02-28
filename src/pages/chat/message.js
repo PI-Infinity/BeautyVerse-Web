@@ -19,6 +19,7 @@ import { MdRemove } from "react-icons/md";
 import AlertDialog from "../../components/dialog";
 import { Language } from "../../context/language";
 import ChatMsg from "@mui-treasury/components/chatMsg/ChatMsg";
+import GetTimesAgo from "../../functions/getTimesAgo";
 
 export const Message = ({ message, sameSender, prevMsg, nextMsg }) => {
   const language = Language();
@@ -67,10 +68,14 @@ export const Message = ({ message, sameSender, prevMsg, nextMsg }) => {
     handleSearch();
   }, [message]);
 
-  const sendDate = new Date(message?.date.seconds * 1000)
-    .toString()
-    .slice(4, 21);
-  const currentTime = new Date().getTime() / 1000;
+  // define send time
+  const time = GetTimesAgo(message?.date.seconds);
+  let timeTitle;
+  if (time?.title === "h") {
+    timeTitle = language?.language.Main.feedCard.h;
+  } else if (time?.title === "min") {
+    timeTitle = language?.language.Main.feedCard.min;
+  }
 
   let cover;
   if (!sameSender) {
@@ -184,21 +189,21 @@ export const Message = ({ message, sameSender, prevMsg, nextMsg }) => {
           >
             {message?.text}
           </MessageContent>
-          {lastMsg && (
-            <span
-              style={{
-                color: "#ddd",
-                opacity: "0.7",
-                marginTop: "5px",
-              }}
-              className="time"
-            >
-              {currentTime > message?.date?.seconds + 70
-                ? sendDate
-                : "Just Now"}
-            </span>
-          )}
         </div>
+        {lastMsg && (
+          <span
+            style={{
+              color: "#ddd",
+              opacity: "0.7",
+              marginTop: "5px",
+            }}
+            className="time"
+          >
+            {time === "Just now"
+              ? language?.language.Main.feedCard.justNow
+              : time?.numbers + " " + timeTitle}
+          </span>
+        )}
         {/* <MdRemove
           color="#ccc"
           onClick={() => setOpen(true)}

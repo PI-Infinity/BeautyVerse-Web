@@ -22,7 +22,6 @@ const Cart = () => {
     const cartItems = JSON.stringify(cart);
     localStorage.setItem("BeautyVerse:shoppingCart", cartItems);
   }, [cart]);
-  console.log(shoppingCart);
   React.useEffect(() => {
     const items = localStorage.getItem("BeautyVerse:shoppingCart");
     // localStorage.clear();

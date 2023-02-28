@@ -6,8 +6,11 @@ import { useNavigate } from "react-router-dom";
 import { db } from "../../../firebase";
 import { doc, deleteDoc } from "firebase/firestore";
 import { AuthContext } from "../../../context/AuthContext";
+import GetTimesAgo from "../../../functions/getTimesAgo";
+import { Language } from "../../../context/language";
 
 export const ReviewList = (props) => {
+  const language = Language();
   const { currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const RemoveReview = async (reviewer, i) => {
@@ -31,6 +34,14 @@ export const ReviewList = (props) => {
   return (
     <ReviewListContainer>
       {props?.reviews?.map((item, index) => {
+        let time = GetTimesAgo(item.time?.seconds);
+        let timeTitle;
+        if (time?.title === "h") {
+          timeTitle = language?.language.Main.feedCard.h;
+        } else if (time?.title === "min") {
+          timeTitle = language?.language.Main.feedCard.min;
+        }
+
         return (
           <ReviewItem key={index}>
             <div
@@ -52,9 +63,19 @@ export const ReviewList = (props) => {
               <Reviewer onClick={() => navigate(`/user/${item?.reviewerId}`)}>
                 {item.reviewer}
               </Reviewer>
-              <span style={{ fontSize: "12px", color: "#ccc" }}>
-                {new Date(item.time?.seconds * 1000).toString().slice(4, 24)}
-              </span>
+              {time !== undefined && (
+                <span
+                  style={{
+                    fontSize: "12px",
+                    color: "#ccc",
+                    marginLeft: "auto",
+                  }}
+                >
+                  {time === "Just now"
+                    ? language?.language.Main.feedCard.justNow
+                    : time?.numbers + " " + timeTitle}
+                </span>
+              )}
             </div>
             <div
               style={{
@@ -214,10 +235,9 @@ const Reviewer = styled.div`
   transition: ease 200ms;
   cursor: pointer;
   width: auto;
-  min-width: 40%;
 
   @media only screen and (max-width: 600px) {
-    margin-right: 2vw;
+    margin-right: 0;
   }
 
   :hover {

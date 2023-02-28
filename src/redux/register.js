@@ -7,7 +7,7 @@ const initialState = {
   //register info
   name: "",
   map: "",
-  addationalAdress: "",
+  addationalAddress: "",
   countryCode: "",
   phoneNumber: "",
   email: "",
@@ -36,8 +36,8 @@ export const register = createSlice({
     setMap: (state, action) => {
       state.map = action.payload;
     },
-    setAddationalAdress: (state, action) => {
-      state.addationalAdress = action.payload;
+    setAddationalAddress: (state, action) => {
+      state.addationalAddress = action.payload;
     },
     setWorkingPlace: (state, action) => {
       state.workingPlace = action.payload;
@@ -71,7 +71,7 @@ export const {
   setUserType,
   setName,
   setMap,
-  setAddationalAdress,
+  setAddationalAddress,
   setWorkingPlace,
   setEmail,
   setCountryCode,

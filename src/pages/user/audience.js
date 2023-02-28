@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebase";
 import { AuthContext } from "../../context/AuthContext";
+import { useSelector } from "react-redux";
 import { IsMobile } from "../../functions/isMobile";
 import { useOutletContext, useNavigate } from "react-router-dom";
 import Avatar from "@mui/material/Avatar";
@@ -19,6 +20,12 @@ export const Audience = () => {
 
   const [followers, setFollowers] = React.useState([]);
   const [followings, setFollowings] = React.useState([]);
+
+  const usersList = useSelector((state) => state.storeMain.userList);
+  let users;
+  if (usersList?.length > 0) {
+    users = JSON.parse(usersList);
+  }
 
   React.useEffect(() => {
     const data = onSnapshot(
@@ -76,10 +83,11 @@ export const Audience = () => {
             )}
             <AvatarGroup total={followers?.length}>
               {followers?.map((item, index) => {
+                let us = users?.find((it) => it.id === item.id);
                 return (
                   <Avatar
-                    alt={item?.name}
-                    src={item?.cover}
+                    alt={us?.name}
+                    src={us?.cover}
                     onClick={() => navigate(`/user/${item?.id}`)}
                     style={{ cursor: "pointer" }}
                   />
@@ -99,11 +107,12 @@ export const Audience = () => {
             )}
             <AvatarGroup total={followings?.length}>
               {followings?.map((item, index) => {
+                let us = users?.find((it) => it.id === item.id);
                 return (
                   <Avatar
-                    alt={item?.name}
-                    src={item?.cover}
-                    onClick={() => navigate(`/user/${item?.id}`)}
+                    alt={us?.name}
+                    src={us?.cover}
+                    onClick={() => navigate(`/user/${us?.id}`)}
                     style={{ cursor: "pointer" }}
                   />
                 );

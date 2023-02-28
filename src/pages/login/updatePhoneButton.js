@@ -6,6 +6,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import TextField from "@mui/material/TextField";
+import { FaPhoneAlt } from "react-icons/fa";
 
 export default function UpdatePhoneButton({
   emailInput,
@@ -23,12 +24,14 @@ export default function UpdatePhoneButton({
 
   return (
     <div>
-      <ForgottPass onClick={handleClickOpen}>{title}</ForgottPass>
+      <ForgottPass onClick={handleClickOpen}>
+        <FaPhoneAlt color="red" /> {language?.language.Auth.auth.phoneChange}
+      </ForgottPass>
       <Dialog open={openInput} onClose={() => setOpenInput(false)}>
-        <DialogTitle>Update phone number</DialogTitle>
+        <DialogTitle>{language?.language.Auth.auth.phoneChange}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            after verify, phone number will change in 1-3 days
+            {language?.language.Auth.auth.phoneChangeText}
           </DialogContentText>
           <TextField
             autoFocus
@@ -60,6 +63,9 @@ const ForgottPass = styled.p`
   letter-spacing: 0.05vw;
   font-size: 0.8vw;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 
   @media only screen and (max-width: 600px) {
     font-size: 3.3vw;

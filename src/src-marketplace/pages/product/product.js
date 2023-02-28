@@ -178,7 +178,6 @@ const Product = (props) => {
         await deleteObject(desertRef)
           .then(() => {
             // File deleted successfully
-            console.log("deleted");
             dispatch(setRerender());
             navigate(`/user/${ShopId}`);
           })
