@@ -10,6 +10,15 @@ import { Spinner } from "../../components/loader";
 import { ProceduresOptions } from "../../data/registerDatas";
 
 export const Specialists = (props) => {
+  const scrollY = useSelector((state) => state.storeScroll.cardsScrollY);
+  useEffect(() => {
+    const Scrolling = () => {
+      setTimeout(() => {
+        return window.scrollTo(0, scrollY);
+      }, 500);
+    };
+    return Scrolling();
+  }, [scrollY]);
   const isMobile = IsMobile();
   const { height, width } = useWindowDimensions();
   const dispatch = useDispatch();
@@ -195,6 +204,8 @@ export const Specialists = (props) => {
     }
   }, [userList]);
 
+  console.log(userList?.length);
+
   return (
     <Container direction={props.direction} height={height}>
       {loading ? (
@@ -203,7 +214,24 @@ export const Specialists = (props) => {
         </Loader>
       ) : (
         <Wrapper onScroll={getscroll} id="list" ref={scrollref}>
-          {userList}
+          {/* <div style={{ color: "orange", height: "auto", width: "auto" }}> */}
+          {userList?.length > 0 ? (
+            userList
+          ) : (
+            <div
+              style={{
+                width: "100%",
+                height: "90vh",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                color: "orange",
+              }}
+            >
+              Nothing found with this filter!
+            </div>
+          )}
+          {/* </div> */}
         </Wrapper>
       )}
     </Container>
@@ -227,13 +255,13 @@ const Loader = styled.div`
 
 const Container = styled.div`
   z-index: 800;
-  height: 85vh;
+  // height: 85vh;
+  overflow-x: hidden;
   width: 100%;
-  margin-left: 2px;
   background: ${(props) => props.theme.background};
 
   @media only screen and (max-width: 600px) {
-    height: ${(props) => props.height}px;
+    // height: ${(props) => props.height}px;
     width: 100vw;
     display: flex;
     justify-content: center;
@@ -257,7 +285,7 @@ const Wrapper = styled.div`
     width: 92vw;
     justify-content: start;
     flex-wrap: wrap;
-    padding: 30vw 0 15vw 0;
+    padding: 15vw 0 15vw 0;
     gap: 15px;
   }
 

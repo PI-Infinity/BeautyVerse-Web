@@ -30,19 +30,13 @@ const Container = styled.div`
   border-radius: 50vw;
 
   #icon {
-    font-size: 1.2vw;
-    color: #ddd;
-
-    @media only screen and (max-width: 600px) {
-      color: #050505;
-      font-size: 5vw;
-    }
+    font-size: 20px;
+    color: ${(props) => props.theme.font};
   }
   @media only screen and (max-width: 600px) {
     width: 85%;
     height: 4vh;
     border: none;
-
     margin: 4vw 0;
   }
 `;
@@ -51,7 +45,7 @@ const SearchInput = styled.input`
   border: none;
   outline: none;
   background: none;
-  font-size: 18px;
+  font-size: 16px;
   color: #ddd;
   padding: 0 15px;
   width: 100%;
@@ -64,7 +58,6 @@ const SearchInput = styled.input`
   }
   @media only screen and (max-width: 600px) {
     color: ${(props) => props.theme.font};
-    font-size: 16px;
   }
 `;
 

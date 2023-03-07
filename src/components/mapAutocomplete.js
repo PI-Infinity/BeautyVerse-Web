@@ -1,7 +1,7 @@
 import React from "react";
 import PlacesAutocomplete from "react-places-autocomplete";
 import { geocodeByAddress, getLatLng } from "react-places-autocomplete";
-import { setMap } from "../redux/register";
+import { setMap, setAddressInput } from "../redux/register";
 import styled from "styled-components";
 import { useDispatch } from "react-redux";
 
@@ -100,6 +100,17 @@ const MapAutocomplete = ({ language, userMobile, address, setAddress }) => {
     const lat = ll.lat;
     const lng = ll.lng;
 
+    console.log({
+      country: countr,
+      region: reg,
+      city: cit,
+      district: destr,
+      street: str,
+      number: nmb,
+      latitude: lat,
+      longitude: lng,
+    });
+
     dispatch(
       setMap({
         country: countr,
@@ -135,7 +146,7 @@ const MapAutocomplete = ({ language, userMobile, address, setAddress }) => {
               />
             </Container>
             <div className="autocomplete-dropdown-container">
-              {loading && <div>Loading...</div>}
+              {/* {loading && <div>Loading...</div>} */}
               {suggestions?.map((suggestion, index) => {
                 const className = suggestion.active
                   ? "suggestion-item--active"
@@ -210,6 +221,7 @@ const MainContainer = styled.div`
     margin: 0.25vw 0.5vw;
     border-bottom: 1px solid ${(props) => props.theme.font};
     background: ${(props) => props.theme.categoryItem};
+    color: green;
 
     @media only screen and (max-width: 600px) {
       padding: 1vw 0;
@@ -273,6 +285,6 @@ const Input = styled.input`
 
   ::placeholder {
     font-size: 12px;
-    color: ${(props) => props.theme.font};
+    color: #888;
   }
 `;

@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
 import { BiStar } from "react-icons/bi";
 import { useSelector, useDispatch } from "react-redux";
@@ -15,6 +15,7 @@ import {
   getCountFromServer,
   limit,
 } from "firebase/firestore";
+import { setFeedScrollY } from "../../../redux/scroll";
 import { TopSection } from "../../../pages/main/feedCard/topSection";
 import { Reports } from "../../../pages/main/feedCard/reports";
 import { db } from "../../../firebase";
@@ -70,6 +71,19 @@ export const FeedCard = (props) => {
   // define imgs with url and name from cloude storage
   const [feed, setFeed] = React.useState([]);
   const [stars, setStars] = React.useState([]);
+
+  // const scrollYP = useSelector((state) => state.storeScroll.feedScrollY);
+  // console.log(scrollYP);
+  // useEffect(() => {
+  //   Go();
+  // }, [feed, stars]);
+
+  // const Go = () => {
+  //   window.scrollTo({
+  //     top: 300,
+  //     behavior: "smooth",
+  //   });
+  // };
 
   //get user feeds from storage
   const userList = useSelector((state) => state.storeMain.userList);
@@ -208,7 +222,7 @@ export const FeedCard = (props) => {
   }
 
   // define if props user is in your followings list
-  const following = followings.find((item) => item.id == props.id);
+  const following = followings?.find((item) => item?.id == props?.id);
 
   const userToFollow = props;
 
@@ -283,6 +297,21 @@ export const FeedCard = (props) => {
     setLoading(false);
   }, 600);
 
+  // const [scrollY, setScrollY] = useState(0);
+
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     setScrollY(window.scrollY);
+  //   };
+
+  //   window.addEventListener("scroll", handleScroll, { passive: true });
+
+  //   return () => {
+  //     window.removeEventListener("scroll", handleScroll);
+  //   };
+  // }, []);
+  // console.log(scrollY);
+
   return (
     <Main feed={feed?.feed?.name}>
       {/* {loading ? (
@@ -291,7 +320,10 @@ export const FeedCard = (props) => {
       <Container
         onClick={
           feed?.feed?.name?.toLowerCase()?.endsWith("mp4")
-            ? () => navigate(`${props?.id}/feed/${feed?.feed?.id}/0`)
+            ? () => {
+                navigate(`${props?.id}/feed/${feed?.feed?.id}/0`);
+                dispatch(setFeedScrollY(window.scrollY));
+              }
             : false
         }
       >
@@ -301,6 +333,7 @@ export const FeedCard = (props) => {
           following={following}
           id={props.id}
           name={feed?.userName}
+          username={props?.username}
           userType={feed?.userType}
           UnFollowToUser={UnFollowToUser}
           FollowToUser={FollowToUser}
@@ -314,7 +347,7 @@ export const FeedCard = (props) => {
               <p
                 style={{
                   whiteSpace: "pre-line",
-                  margin: "0 5px 5px 5px",
+                  margin: "0 15px 5px 15px",
                   fontSize: "14px",
                 }}
               >
@@ -324,23 +357,29 @@ export const FeedCard = (props) => {
                   <>{translated?.length > 0 ? translated : feed?.feed?.post}</>
                 )}
               </p>
-              <div style={{ cursor: "pointer" }}>
-                {translated?.length < 1 ? (
-                  <SiGoogletranslate
-                    onClick={() => GetLanguages(feed?.feed?.post)}
-                    size={14}
-                    color="#ddd"
-                    style={{ cursor: "pointer" }}
-                  />
-                ) : (
-                  <SlReload
-                    onClick={() => setTranslated("")}
-                    size={14}
-                    color="#ddd"
-                    style={{ cursor: "pointer" }}
-                  />
-                )}
-              </div>
+              {feed?.feed?.post?.length > 0 && (
+                <Translater style={{ cursor: "pointer" }}>
+                  {translated?.length < 1 ? (
+                    <div style={{ padding: "2px" }}>
+                      <SiGoogletranslate
+                        onClick={() => GetLanguages(feed?.feed?.post)}
+                        size={15}
+                        color="#ddd"
+                        style={{ cursor: "pointer" }}
+                      />
+                    </div>
+                  ) : (
+                    <div style={{ padding: "2px" }}>
+                      <SlReload
+                        onClick={() => setTranslated("")}
+                        size={15}
+                        color="#ddd"
+                        style={{ cursor: "pointer" }}
+                      />
+                    </div>
+                  )}
+                </Translater>
+              )}
             </PostContainer>
           </>
         )}
@@ -362,9 +401,9 @@ export const FeedCard = (props) => {
                 </FileContainer>
               ) : (
                 <FileContainer
-                  onClick={() =>
-                    navigate(`${props?.id}/feed/${feed?.feed?.id}/0`)
-                  }
+                // onClick={() =>
+                //   navigate(`${props?.id}/feed/${feed?.feed?.id}/0`)
+                // }
                 >
                   {loading ? (
                     <ImgLoader />
@@ -375,17 +414,29 @@ export const FeedCard = (props) => {
                           <Cover
                             src={feed?.feed?.mobileWEBPurl}
                             active={props.active}
+                            onClick={() => {
+                              dispatch(setFeedScrollY(window.scrollY));
+                              navigate(`${props?.id}/feed/${feed?.feed?.id}/0`);
+                            }}
                           />
                         ) : (
                           <Cover
                             src={feed?.feed?.mobileJPEGurl}
                             active={props.active}
+                            onClick={() => {
+                              dispatch(setFeedScrollY(window.scrollY));
+                              navigate(`${props?.id}/feed/${feed?.feed?.id}/0`);
+                            }}
                           />
                         )
                       ) : (
                         <Cover
                           src={feed?.feed?.desktopJPEGurl}
                           active={props.active}
+                          onClick={() => {
+                            dispatch(setFeedScrollY(window.scrollY));
+                            navigate(`${props?.id}/feed/${feed?.feed?.id}/0`);
+                          }}
                         />
                       )}
                     </>
@@ -429,9 +480,10 @@ export const FeedCard = (props) => {
                 >
                   <TextReview
                     open={openReview}
-                    onClick={() =>
-                      navigate(`${props?.id}/feed/${feed?.feed?.id}/0`)
-                    }
+                    onClick={() => {
+                      dispatch(setFeedScrollY(window.scrollY));
+                      navigate(`${props?.id}/feed/${feed?.feed?.id}/0`);
+                    }}
                   >
                     {feed?.reviewsLength}{" "}
                     {language?.language.Main.feedCard.reviews}
@@ -462,12 +514,78 @@ const Divider = styled.div`
   display: none;
   @media only screen and (max-width: 600px) {
     display: flex;
-    height: 1.5vw;
-    background: ${(props) =>
-      props.loading === "true"
-        ? props.theme.divider
-        : props?.theme.loadingDivider};
-    width: 100%;
+    height: 1px;
+    background: ${(props) => props.theme.secondLevel};
+    // background: linear-gradient(
+    //   226deg,
+    //   #2bdf61,
+    //   #dfc32b,
+    //   #ce2bdf,
+    //   #2bc6df,
+    //   #df2bb8,
+    //   #2b8edf,
+    //   #d3df2b,
+    //   #2bdfd9,
+    //   #df8c2b,
+    //   #2bbedf,
+    //   #df2bb0,
+    //   #c3df2b,
+    //   #ea7c7c,
+    //   #2bdf61,
+    //   #dfc32b
+    // );
+    // background-size: 800% 800%;
+    // z-index: 10;
+
+    // -webkit-animation: AnimationName 30s ease infinite;
+    // -moz-animation: AnimationName 30s ease infinite;
+    // -o-animation: AnimationName 30s ease infinite;
+    // animation: AnimationName 30s ease infinite;
+
+    // @-webkit-keyframes AnimationName {
+    //   0% {
+    //     background-position: 0% 50%;
+    //   }
+    //   50% {
+    //     background-position: 100% 50%;
+    //   }
+    //   100% {
+    //     background-position: 0% 50%;
+    //   }
+    // }
+    // @-moz-keyframes AnimationName {
+    //   0% {
+    //     background-position: 0% 50%;
+    //   }
+    //   50% {
+    //     background-position: 100% 50%;
+    //   }
+    //   100% {
+    //     background-position: 0% 50%;
+    //   }
+    // }
+    // @-o-keyframes AnimationName {
+    //   0% {
+    //     background-position: 0% 50%;
+    //   }
+    //   50% {
+    //     background-position: 100% 50%;
+    //   }
+    //   100% {
+    //     background-position: 0% 50%;
+    //   }
+    // }
+    // @keyframes AnimationName {
+    //   0% {
+    //     background-position: 0% 50%;
+    //   }
+    //   50% {
+    //     background-position: 100% 50%;
+    //   }
+    //   100% {
+    //     background-position: 0% 50%;
+    //   }
+    // }
   }
 `;
 
@@ -494,7 +612,8 @@ const Container = styled.div`
     border-radius: 0;
     box-sizing: border-box;
     margin-bottom: 0;
-    background: ${(props) => props.theme.mobileFeedCard}
+    background: ${(props) => props.theme.mobileFeedCard};
+    box-shadow: none;
   }
 `;
 
@@ -515,9 +634,16 @@ const PostContainer = styled.div`
   }
 
   @media only screen and (max-width: 600px) {
-    padding: 0 15px 10px 10px;
+    padding: 0 4.3vw 10px 10px;
   }
  
+`;
+
+const Translater = styled.div`
+  @media only screen and (max-width: 600px) {
+    position: relative;
+    left: 0.5vw;
+  }
 `;
 
 const FileContainer = styled.div`
@@ -733,12 +859,8 @@ const Review = styled.div`
 const Likes = styled.div`
   display: flex;
   align-items: center;
-  font-size: 0.8vw;
+  font-size: 14px;
   color: ${(props) => props.theme.font};
-
-  @media only screen and (max-width: 600px) {
-    font-size: 3vw;
-  }
 `;
 
 const PostTime = styled.div`
@@ -747,12 +869,8 @@ const PostTime = styled.div`
   justify-content: flex-end;
 
   span {
-    color: #ddd;
-    font-size: 0.8vw;
-
-    @media only screen and (max-width: 600px) {
-      font-size: 3vw;
-    }
+    color: ${(props) => props.theme.font};
+    font-size: 14px;
   }
 `;
 
@@ -760,13 +878,13 @@ const TextReview = styled.span`
   cursor: pointer;
   color: ${(props) => props.theme.font};
   transition: ease-in-out 100ms;
-  font-size: 0.8vw;
+  font-size: 14px;
   letter-spacing: 0;
-  margin-bottom: 0.1vw;
+  // margin-bottom: 0.1vw;
 
   @media only screen and (max-width: 600px) {
-    font-size: 3vw;
-    margin-bottom: 0.2vw;
+    position: relative;
+    bottom: 0.2px;
   }
 
   :hover {

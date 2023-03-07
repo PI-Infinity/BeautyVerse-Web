@@ -206,28 +206,26 @@ const ReviewContainer = styled.div`
 
   .send {
     color: ${(props) => props.theme.icon};
-    font-size: 1.8vw;
+    font-size: 24px;
     margin-left: 0.2vw;
     cursor: pointer;
     width: 15%;
 
     @media only screen and (max-width: 600px) {
-      font-size: 7vw;
       margin-left: 0;
     }
   }
 
   @media only screen and (max-width: 600px) {
-    position: absolute;
+    position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
     height: auto;
     margin-left: auto;
-    padding: 3vw 3vw 0vw 3vw;
+    padding: 1.5vw 3vw 1.5vw 3vw;
     box-shadow: 0 -0.3vw 0.9vw ${(props) => props.theme.shadowColor};
     background: ${(props) => props.theme.secondLevel};
-    backdrop-filter: blur(40px);
     z-index: 10006;
   }
 
@@ -275,6 +273,7 @@ const AddReviewContainer = styled.input`
 
   ::placeholder {
     color: #fff;
+    font-size: 14px;
   }
 
   :focus {
@@ -285,13 +284,9 @@ const AddReviewContainer = styled.input`
 const Likes = styled.div`
   display: flex;
   align-items: center;
-  font-size: 1.2vw;
+  font-size: 14px;
   width: 15%;
   color: ${(props) => props.theme.font};
-
-  @media only screen and (max-width: 600px) {
-    font-size: 3vw;
-  }
 `;
 
 const Footer = styled.div`
@@ -300,9 +295,5 @@ const Footer = styled.div`
   justify-content: space-between;
   width: 100%;
   gap: 15px;
-  margin-bottom: 15px;
-
-  @media only screen and (max-width: 600px) {
-    font-size: 3vw;
-  }
+  font-size: 14px;
 `;

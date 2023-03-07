@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import styled from "styled-components";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -6,6 +6,7 @@ import {
   setEmail,
   setPhoneNumber,
   setPassword,
+  setMap,
   setCountryCode,
   setConfirmPassowrd,
 } from "../../redux/register";
@@ -19,13 +20,16 @@ import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import MapAutocomplete from "../../components/mapAutocomplete";
 import { RiShoppingCartFill } from "react-icons/ri";
 import ReactGoogleMapLoader from "react-google-maps-loader";
-import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
-import PhoneCode from "react-phone-code";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import useWindowDimensions from "../../functions/dimensions";
 import { Button } from "../../components/button";
 import { v4 } from "uuid";
 import { Language } from "../../context/language";
 import { IsMobile } from "../../functions/isMobile";
+import { countries } from "../../data/countryCodes";
+import Select from "react-select";
+import VerifyEmail from "../../pages/register/verifyPopup";
+import Error from "../../snackBars/success";
 
 export const Identify = (props) => {
   const language = Language();
@@ -53,45 +57,50 @@ export const Identify = (props) => {
   const registerFields = useSelector((state) => state.storeRegister);
   const map = useSelector((state) => state.storeRegister.map);
 
-  // otp register
-  const [otp, setOTP] = React.useState("");
-  const [flag, setFlag] = React.useState(false);
-  const [confirmObj, setConfirmObj] = React.useState("");
-  // send recaptcha
-  const SetupRecaptcha = (number) => {
-    const recaptchaVerifer = new RecaptchaVerifier(
-      "recaptcha-container",
-      {},
-      auth
-    );
-    recaptchaVerifer.render(number);
-    return signInWithPhoneNumber(auth, number, recaptchaVerifer);
-  };
-  // get otp
-  const GetOTP = async (e) => {
-    e.preventDefault();
-    if (
-      registerFields?.phoneNumber === "" ||
-      registerFields?.phoneNumber === undefined
-    ) {
-      return alert(`${language?.language.Auth.auth.valid}`);
-    }
-    try {
-      const num = registerFields?.countryCode + registerFields?.phoneNumber;
-      const response = await SetupRecaptcha(num);
-      setConfirmObj(response);
-      setFlag(true);
-    } catch (err) {
-      alert(err);
-    }
-  };
+  const [alert, setAlert] = useState(false);
+
+  // // otp register
+  // const [otp, setOTP] = React.useState("");
+  // const [flag, setFlag] = React.useState(false);
+  // const [confirmObj, setConfirmObj] = React.useState("");
+  // // send recaptcha
+  // const SetupRecaptcha = (number) => {
+  //   const recaptchaVerifer = new RecaptchaVerifier(
+  //     "recaptcha-container",
+  //     {},
+  //     auth
+  //   );
+  //   recaptchaVerifer.render(number);
+  //   return signInWithPhoneNumber(auth, number, recaptchaVerifer);
+  // };
+  // // get otp
+  // const GetOTP = async (e) => {
+  //   e.preventDefault();
+  //   if (
+  //     registerFields?.phoneNumber === "" ||
+  //     registerFields?.phoneNumber === undefined
+  //   ) {
+  //     return alert(`${language?.language.Auth.auth.valid}`);
+  //   }
+  //   try {
+  //     const num = registerFields?.countryCode + registerFields?.phoneNumber;
+  //     const response = await SetupRecaptcha(num);
+  //     setConfirmObj(response);
+  //     setFlag(true);
+  //   } catch (err) {
+  //     alert(err);
+  //   }
+  // };
 
   //verify code
-  const VerifyOTP = async (e) => {
-    e.preventDefault();
-    if (otp === "" || otp === null) return;
+  const Register = async (e) => {
+    // if (otp === "" || otp === null) return;
     try {
-      const userCredential = await confirmObj.confirm(otp);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        registerFields?.email,
+        registerFields?.password
+      );
       const user = userCredential.user;
       await dispatch({ type: "LOGIN", payload: user });
       // create user database
@@ -99,9 +108,9 @@ export const Identify = (props) => {
         id: user.uid,
         type: type,
         name: registerFields?.name,
-        password: registerFields?.password,
         email: registerFields?.email,
-        phone: registerFields?.countryCode + registerFields?.phoneNumber,
+        phone: registerFields?.countryCode?.value + registerFields?.phoneNumber,
+        active: true,
         address: {
           number: 1,
           country: map.country,
@@ -129,61 +138,150 @@ export const Identify = (props) => {
           feed: ``,
         }
       );
+      await setDoc(doc(db, `users`, `${user.uid}`, "secret", `password`), {
+        password: registerFields?.password,
+      });
+      mainDispatch(setMap(""));
+      mainDispatch(setPassword(""));
+      mainDispatch(setConfirmPassowrd(""));
+      mainDispatch(setName());
+      mainDispatch(setEmail(""));
+      mainDispatch(setPhoneNumber(""));
       navigate(`/user/${user?.uid}`);
     } catch (err) {
-      alert(err);
+      setAlert({
+        active: true,
+        title: err,
+      });
     }
   };
 
   const HandleSubmit = (e) => {
     e.preventDefault();
     if (
-      registerFields?.name?.length > 3 &&
-      registerFields?.countryCode?.length > 3 &&
-      registerFields?.phoneNumber?.length > 7 &&
-      registerFields?.email?.length > 5 &&
-      map?.country?.length > 5 &&
-      map?.city?.length > 3
+      registerFields?.name?.length > 0 &&
+      registerFields?.phoneNumber?.length > 0 &&
+      registerFields?.email?.length > 0 &&
+      map?.country?.length > 0 &&
+      registerFields?.password?.length > 0 &&
+      registerFields?.confirmPassowrd?.length > 0
     ) {
-      if (registerFields?.password === registerFields?.confirmPassowrd) {
-        /**
-         * define user registered or not
-         */
-        const userRegistered = users.find(
-          (item) =>
-            item.phone ===
-            registerFields?.countryCode + registerFields?.phoneNumber
-        );
-        const userRegistered2 = users.find(
-          (item) => item.email === registerFields?.email
-        );
-        if (userRegistered === undefined && userRegistered2 === undefined) {
-          let HandleSubmit;
-          if (type == "user") {
-            GetOTP(e);
-          } else if (
-            type === "specialist" ||
-            type === "beautyCenter" ||
-            type === "shop"
+      if (registerFields?.name?.length > 2) {
+        if (map?.country?.length > 5 && map?.city?.length > 3) {
+          if (
+            registerFields?.email?.length > 5 &&
+            registerFields?.email?.includes("@") &&
+            registerFields?.email?.includes(".")
           ) {
-            navigate("/register/business");
+            /**
+             * define email used or not
+             */
+            let emailUsed = users?.find(
+              (item) =>
+                item.email?.toLowerCase() ===
+                registerFields?.email?.toLowerCase()
+            );
+            if (emailUsed === undefined) {
+              if (registerFields?.phoneNumber?.length > 8) {
+                /**
+                 * define mobile used or not
+                 */
+                const mobileUsed = users.find(
+                  (item) =>
+                    item.phone ===
+                    registerFields?.countryCode?.value +
+                      registerFields?.phoneNumber
+                );
+                if (
+                  registerFields?.countryCode?.value?.length > 0 &&
+                  registerFields?.countryCode != undefined
+                ) {
+                  if (mobileUsed === undefined) {
+                    if (registerFields?.password?.length > 7) {
+                      if (
+                        registerFields?.password ===
+                        registerFields?.confirmPassowrd
+                      ) {
+                        let HandleSubmit;
+                        if (type == "user") {
+                          SendEmail();
+                        } else if (
+                          type === "specialist" ||
+                          type === "beautyCenter" ||
+                          type === "shop"
+                        ) {
+                          navigate("/register/business");
+                        } else {
+                          setAlert({
+                            active: true,
+                            title: language?.language.Auth.auth.undefinedType,
+                          });
+                        }
+                        return HandleSubmit;
+                      } else {
+                        setAlert({
+                          active: true,
+                          title: language?.language.Auth.auth.passNotMatch,
+                        });
+                      }
+                    } else {
+                      setAlert({
+                        active: true,
+                        title: language?.language.Auth.auth.wrongPassword,
+                      });
+                    }
+                  } else {
+                    setAlert({
+                      active: true,
+                      title: language?.language.Auth.auth.usedPhone,
+                    });
+                  }
+                } else {
+                  setAlert({
+                    active: true,
+                    title: language?.language.Auth.auth.inputCode,
+                  });
+                }
+              } else {
+                setAlert({
+                  active: true,
+                  title: language?.language.Auth.auth.wrongPhoneNumber,
+                });
+              }
+            } else {
+              setAlert({
+                active: true,
+                title: language?.language.Auth.auth.emailUsed,
+              });
+            }
           } else {
-            navigate("/register");
+            setAlert({
+              active: true,
+              title: language?.language.Auth.auth.wrongEmail,
+            });
           }
-          return HandleSubmit;
         } else {
-          if (userRegistered !== undefined) {
-            alert(`${language?.language.Auth.auth.usedPhone}`);
-          } else if (userRegistered2 !== undefined) {
-            alert(`${language?.language.Auth.auth.usedEmail}`);
-          }
+          setAlert({
+            active: true,
+            title: language?.language.Auth.auth.wrongAddress,
+          });
         }
       } else {
-        alert(`${language?.language.Auth.auth.passNotMatch}`);
+        setAlert({
+          active: true,
+          title: language?.language.Auth.auth.nameWarning,
+        });
       }
     } else {
-      alert(`${language?.language.Auth.auth.pleaseInput}`);
+      setAlert({
+        active: true,
+        title: language?.language.Auth.auth.pleaseInput,
+      });
     }
+  };
+
+  const handleKey = (e) => {
+    e.code === "Enter" && HandleSubmit(e);
   };
 
   // define title icon
@@ -200,12 +298,133 @@ export const Identify = (props) => {
 
   /// address
   const [address, setAddress] = React.useState("");
+  // color mode
+  const theme = useSelector((state) => state.storeMain.theme);
+  const CustomStyle = {
+    singleValue: (base, state) => ({
+      ...base,
+      color: state.isSelected
+        ? theme
+          ? "#333"
+          : "#f3f3f3"
+        : theme
+        ? "#f3f3f3"
+        : "#333",
+    }),
+    placeholder: (base, state) => ({
+      ...base,
+      // height: "1000px",
+      color: state.isSelected
+        ? theme
+          ? "#333"
+          : "#f3f3f3"
+        : theme
+        ? "#f3f3f3"
+        : "#333",
+      maxHeight: "50px",
+    }),
+    input: (base, state) => ({
+      ...base,
+      color: theme ? "#f3f3f3" : "#333",
+      fontSize: "16px",
+      maxHeight: "100px",
+    }),
+    multiValue: (base, state) => ({
+      ...base,
+      backgroundColor: state.isDisabled ? null : "lightblue",
+      borderRadius: "20px",
+    }),
+    multiValueLabel: (base, state) => ({
+      ...base,
+    }),
+    menuList: (base, state) => ({
+      ...base,
+      backgroundColor: theme ? "#333" : "#f3f3f3",
+      zIndex: 1000,
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isSelected
+        ? theme
+          ? "#f3f3f3"
+          : "#333"
+        : theme
+        ? "#333"
+        : "#f3f3f3",
+      color: state.isSelected
+        ? theme
+          ? "#333"
+          : "#f3f3f3"
+        : theme
+        ? "#f3f3f3"
+        : "#333",
+    }),
+    control: (baseStyles, state) => ({
+      ...baseStyles,
+      backgroundColor: theme ? "#333" : "#fff",
+      borderColor: state.isFocused ? "rgba(0,0,0,0)" : "rgba(0,0,0,0.1)",
+      width: "7vw",
+      minHeight: "2vw",
+      cursor: "pointer",
+      "@media only screen and (max-width: 1200px)": {
+        width: "23vw",
+        fontSize: "12px",
+      },
+    }),
+  };
+
+  /**
+   * send identify email
+   */
+
+  const [verifyCode, setVerifyCode] = useState("");
+  const [verify, setVerify] = useState(false);
+
+  function SendEmail() {
+    const email = registerFields?.email;
+    console.log(email);
+    if (
+      users?.find(
+        (item) => item.email.toLowerCase() === email.toLowerCase()
+      ) === undefined
+    ) {
+      fetch(`https://beautyverse.herokuapp.com/emails/verify?email=${email}`)
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("get");
+          setVerifyCode(data);
+          setVerify(true);
+        })
+        .catch((error) => {
+          console.log("Error fetching data:", error);
+        });
+    } else {
+      setAlert({
+        active: true,
+        title: language?.language.Auth.auth.emailUsed,
+      });
+    }
+  }
 
   return (
     <>
+      <Error
+        open={alert?.active}
+        setOpen={setAlert}
+        type="error"
+        title={alert?.title}
+      />
+      <VerifyEmail
+        open={verify}
+        setOpen={setVerify}
+        Register={Register}
+        verifyCode={verifyCode}
+        email={registerFields?.email}
+        language={language}
+      />
       <Container
         height={height}
-        style={{ display: !flag ? "visible" : "none" }}
+        // style={{ display: !flag ? "visible" : "none" }}
       >
         <Title>
           {icon}
@@ -269,18 +488,21 @@ export const Identify = (props) => {
                   />
                 </InputWrapper>
                 <InputWrapper style={{ display: "flex", flexDirection: "row" }}>
-                  <PhoneCode
-                    onSelect={(code) => mainDispatch(setCountryCode(code))} // required
-                    showFirst={["GE"]}
-                    defaultValue="GE"
-                    id="codes"
-                    name="codes"
-                    className="codes"
-                    optionClassName="codesOption"
+                  <Select
+                    // placeholder={language?.language.Auth.auth.workingDays}
+                    defaultValue="+995"
+                    defaultInputValue="+995"
+                    placeholder="+995"
+                    value={registerFields?.countryCode?.code}
+                    onChange={(value) => {
+                      mainDispatch(setCountryCode(value));
+                    }}
+                    styles={CustomStyle}
+                    options={countries}
                   />
                   <Input
                     required
-                    type="text"
+                    type="tel"
                     placeholder={language?.language.Auth.auth.phone}
                     onChange={(e) =>
                       mainDispatch(setPhoneNumber(e.target.value))
@@ -318,6 +540,7 @@ export const Identify = (props) => {
                     onChange={(e) =>
                       mainDispatch(setConfirmPassowrd(e.target.value))
                     }
+                    onKeyDown={handleKey}
                   />
                 </InputWrapper>
               </Wrapper>
@@ -326,7 +549,11 @@ export const Identify = (props) => {
           </Fields>
           {!isMobile && (
             <Button
-              title={language?.language.Auth.auth.next}
+              title={
+                type === "user"
+                  ? language?.language.Auth.auth.register
+                  : language?.language.Auth.auth.next
+              }
               type="Submit"
               function={HandleSubmit}
             />
@@ -340,35 +567,16 @@ export const Identify = (props) => {
             function={() => navigate("/register")}
           />
           <Button
-            title={language?.language.Auth.auth.next}
+            title={
+              type === "user"
+                ? language?.language.Auth.auth.register
+                : language?.language.Auth.auth.next
+            }
             type="Submit"
             function={HandleSubmit}
           />
         </MobileButtons>
       </Container>
-      <Confirm
-        height={height}
-        onSubmit={VerifyOTP}
-        className="verify"
-        style={{
-          display: flag ? "flex" : "none",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Title>{language?.language.Auth.auth.verify}</Title>
-        <InputWrapper>
-          <Input
-            type="text"
-            placeholder="enter code"
-            onChange={(e) => setOTP(e.target.value)}
-            value={otp}
-          />
-        </InputWrapper>
-        <SubmitButton type="submit">
-          {language?.language.Auth.auth.confirm}
-        </SubmitButton>
-      </Confirm>
     </>
   );
 };
@@ -387,7 +595,6 @@ const Container = styled.div`
 
   @media only screen and (max-width: 600px) {
     justify-content: start;
-    font-size: 3vw;
     padding-top: 40vw;
   }
 
@@ -430,7 +637,6 @@ const Confirm = styled.form`
   gap: 2vw;
 
   @media only screen and (max-width: 600px) {
-    font-size: 3vw;
     padding-top: 14vw;
     padding-bottom: 3vw;
   }
@@ -442,6 +648,7 @@ const Title = styled.h2`
   align-items: center;
   gap: 15px;
   color: ${(props) => props.theme.font};
+  font-size: 18px;
 
   @media only screen and (max-width: 600px) {
     margin-bottom: 7vw;
@@ -490,6 +697,12 @@ const WrapperContainer = styled.form`
   }
 `;
 
+const Codes = styled.select`
+  background: none;
+  border: none;
+  cursor: pointer;
+`;
+
 const InputWrapper = styled.div`
   width: 18.5vw;
   height: 2.5vw;
@@ -511,33 +724,6 @@ const InputWrapper = styled.div`
     height: 10vw;
     border-radius: 1.5vw;
     font-size: 16px;
-  }
-
-  .codes {
-    width: 5vw;
-    height: 2.5vw;
-    border-radius: 0.5vw;
-    border: none;
-    padding: 0.5vw;
-    cursor: pointer;
-    color: ${(props) => props.theme.font};
-    background: ${(props) => props.theme.categoryItem};
-
-    @media only screen and (max-width: 600px) {
-      width: 15vw;
-      height: 8vw;
-    }
-
-    :focus {
-      outline: none;
-    }
-  }
-
-  .codesOption {
-    border: none;
-    outline: none;
-    border-radius: 0.5vw;
-    box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
   }
 `;
 
@@ -569,18 +755,15 @@ const Input = styled.input`
 
   ::placeholder {
     font-size: 12px;
-    color: ${(props) => props.theme.font};
+    color: #888;
   }
 `;
 
 const InputTitle = styled.div`
   flex: 1;
   margin-bottom: -0.5vw;
-  color: #888;
-
-  @media only screen and (max-width: 600px) {
-    font-size: 3vw;
-  }
+  color: ${(props) => props.theme.font};
+  font-size: 14px;
 `;
 
 const SubmitButton = styled.button`
@@ -621,5 +804,6 @@ const MobileButtons = styled.div`
     position: fixed;
     bottom: 3vw;
     gap: 15px;
+    font-size: 14px;
   }
 `;

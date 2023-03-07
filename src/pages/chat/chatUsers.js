@@ -201,9 +201,29 @@ const FoundedUser = (props) => {
           src={props?.chat?.userInfo?.cover}
           sx={{ width: 36, height: 36 }}
         />
+        <h3 style={{ whiteSpace: "nowrap", width: "auto" }}>
+          {props?.chat?.userInfo?.name}
+        </h3>
+        <p
+          style={{
+            color: "#666",
+            width: "100px",
 
-        <span>{props?.chat?.userInfo?.name}</span>
-        <p>{props.chat?.lastMessage}</p>
+            overflow: "hidden",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {props.chat?.lastMessage}
+        </p>
+        <p
+          style={{
+            color: "#666",
+            width: "15px",
+            marginRight: "5px",
+          }}
+        >
+          ...
+        </p>
       </FoundedUserContainer>
       <TiUserDelete id="removeIcon" onClick={() => setOpen(true)} />
       <AlertDialog
@@ -238,13 +258,15 @@ const FoundedUserContainer = styled.div`
   padding: 0 20px;
   font-weight: ${(props) => (props.bold === "true" ? "bold" : "normal")};
 
-  p {
-    font-size: 0.7vw;
-    color: ${(props) => props.theme.secondLevel};
+  h3 {
+    margin: 0;
+    font-size: 14px;
+    color: ${(props) => props.theme.font};
+  }
 
-    @media only screen and (max-width: 600px) {
-      font-size: 2.5vw;
-    }
+  p {
+    font-size: 12px;
+    color: ${(props) => props.theme.secondLevel};
   }
 
   :hover {

@@ -56,7 +56,7 @@ function UserListDialog(props) {
             <ListItem disableGutters sx={{ pr: 3, pl: 3 }}>
               <ListItemButton
                 onClick={() => navigate(`/user/${item.id}`)}
-                key={us.name}
+                key={us?.name}
               >
                 <ListItemAvatar>
                   <Avatar
@@ -66,7 +66,7 @@ function UserListDialog(props) {
                     <PersonIcon />
                   </Avatar>
                 </ListItemAvatar>
-                <ListItemText primary={us.name} />
+                <ListItemText primary={us?.name} />
               </ListItemButton>
               {props.user?.id === currentUser?.uid && (
                 <Tooltip

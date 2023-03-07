@@ -11,6 +11,7 @@ import {
   TypeLoader,
   IconLoader,
 } from "../../../components/loader";
+import { setFeedScrollY } from "../../../redux/scroll";
 import Avatar from "@mui/material/Avatar";
 import { Language } from "../../../context/language";
 
@@ -48,7 +49,7 @@ export const TopSection = (props) => {
     <TopSectionContainer following={followingLength?.toString()}>
       <Profile
         onClick={() => {
-          AddScrollPositionToLocalStorage();
+          dispatch(setFeedScrollY(window.scrollY));
           navigate(`/user/${props?.id}`);
         }}
       >
@@ -63,7 +64,10 @@ export const TopSection = (props) => {
           </div>
         ) : (
           <Avatar
-            onClick={() => navigate(`/user/${props?.id}`)}
+            onClick={() => {
+              navigate(`/user/${props?.id}`);
+              dispatch(setFeedScrollY(window.scrollY));
+            }}
             alt={props?.name}
             src={props?.cover !== undefined ? props?.cover : ""}
             sx={{
@@ -80,12 +84,15 @@ export const TopSection = (props) => {
       </Profile>
       <div className="link">
         <div style={{ display: "flex", alignItems: "center" }}>
-          <Link
-            to={`/user/${props?.id}`}
+          <div
+            onClick={() => {
+              navigate(`/user/${props?.id}`);
+              dispatch(setFeedScrollY(window.scrollY));
+            }}
             style={{ color: "inherit", textDecoration: "none" }}
           >
             {props.loading ? <TitleLoader /> : <Name>{props.name}</Name>}
-          </Link>
+          </div>
 
           {currentUser?.uid !== props?.id && !props.loading && (
             <>
@@ -115,7 +122,13 @@ export const TopSection = (props) => {
             justifyContent: "flex-end",
           }}
         >
-          <Category>{props.loading ? <TypeLoader /> : <>{type}</>}</Category>
+          <Category>
+            {props.loading ? (
+              <TypeLoader />
+            ) : (
+              <>{props?.username !== undefined ? props?.username : type}</>
+            )}
+          </Category>
         </div>
       </div>
       <TopRightSection>
@@ -142,7 +155,7 @@ const TopSectionContainer = styled.div`
 
   @media only screen and (max-width: 600px) {
     height: 16vw;
-    padding: 0 3vw 0 3vw;
+    padding: 0 4vw 0 4vw;
   }
 
   .followIcon {
@@ -160,7 +173,7 @@ const TopSectionContainer = styled.div`
 
   .link {
     margin-left: 1vw;
-    flex: 2;
+    flex: 5;
     dispaly: flex;
     flex-direction: column;
     align-items: center;
@@ -242,7 +255,7 @@ const UserProfileEmpty = styled.div`
 `;
 
 const Name = styled.h2`
-  font-size: 0.8vw;
+  font-size: 14px;
   font-weight: bold;
   letter-spacing: 0.01vw;
   cursor: pointer;
@@ -253,7 +266,6 @@ const Name = styled.h2`
   margin: 0;
 
   @media only screen and (max-width: 600px) {
-    font-size: 3.8vw;
     letter-spacing: 0.1vw;
     margin-bottom: 0.5vw;
   }
@@ -265,14 +277,13 @@ const Name = styled.h2`
 
 const Category = styled.span`
   flex: 6;
-  font-size: 0.6vw;
+  font-size: 12px;
   color: ${(props) => props.theme.logo2};
   letter-spacing: 0.003w;
   margin-top: 3px;
 
   @media only screen and (max-width: 600px) {
     color: #aaa;
-    font-size: 2.8vw;
     letter-spacing: 0.1vw;
     margin-top: 1px;
   }

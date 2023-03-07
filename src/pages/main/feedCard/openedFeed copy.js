@@ -51,7 +51,6 @@ export const OpenedFeed = (props) => {
   useEffect(() => {
     window.scrollTo(0, 0);
     DefineState(path);
-    document.body.style.overflowY = "hidden";
   }, [path]);
 
   /**

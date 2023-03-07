@@ -10,10 +10,12 @@ import { ProceduresOptions } from "../../data/registerDatas";
 import { MdOutlinePersonPin } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import { Language } from "../../context/language";
+import { IsMobile } from "../../functions/isMobile";
 
 export const Search = (props) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const isMobile = IsMobile();
   const proceduresOptions = ProceduresOptions();
   const language = Language();
 
@@ -32,7 +34,9 @@ export const Search = (props) => {
   const [srch, setSrch] = React.useState("");
 
   React.useEffect(() => {
-    dispatch(setSearch(""));
+    if (!isMobile) {
+      dispatch(setSearch(""));
+    }
     setSrch("");
   }, []);
 
@@ -80,14 +84,6 @@ export const Search = (props) => {
   return (
     <Container changeFeed={window.location.pathname.toString()}>
       <SearchWrapper>
-        <div
-          className="iconContainer"
-          onClick={() => {
-            dispatch(setFilterOpen(true));
-          }}
-        >
-          <BsListCheck className="feedicon" />
-        </div>
         <SearchContainer>
           <CgSearch className="icon" />
           <Input
@@ -96,10 +92,9 @@ export const Search = (props) => {
             // isMulti
             value={srch}
             onFocus={() => {
-              dispatch(setFilterOpen(false));
               setFocus(true);
             }}
-            autoFocus={false}
+            autoFocus={isMobile ? true : false}
             onChange={(e) => {
               setSrch(e.target.value);
             }}
@@ -154,11 +149,13 @@ const Container = styled.div`
   padding: 0;
   height: 2vw;
   background: ${(props) => props.theme.background};
+  z-index: 900;
 
   @media only screen and (max-width: 600px) {
     width: 100%;
+    justify-content: start;
     align-items: center;
-    height: 8vw;
+    height: auto;
   }
 
   .profileicon {
@@ -194,7 +191,7 @@ const SearchWrapper = styled.div`
   gap: 15px;
 
   @media only screen and (max-width: 600px) {
-    width: 92%;
+    width: 93%;
   }
 
   .iconContainer {
@@ -259,6 +256,7 @@ const Input = styled.input`
   color: ${(props) => props.theme.font};
 
   :focus {
+    position: static !important;
     outline: none;
   }
 `;
@@ -310,12 +308,15 @@ const ResultContainer = styled.div`
   border-radius: 0.5vw;
 
   @media only screen and (max-width: 600px) {
-    height: calc(100vh - 35vw);
+    overflow-y: visible;
+    box-sizing: content-box;
+    position: static;
+    height: auto;
     width: 100vw;
     border-radius: 0;
-    top: 2vw;
-    padding: 2vw 12vw;
+    padding: 2vw 12vw 5vw 12vw;
     z-index: 920;
+    border: none;
   }
 
   animation: fadeIn 0.5s;

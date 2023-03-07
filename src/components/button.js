@@ -23,13 +23,13 @@ const Container = styled.div`
   color: ${(props) => (props.back ? "#ccc" : "green")};
   font-weight: bold;
   background: ${(props) => props.theme.categoryItem};
+  font-size: 14px;
 
   @media only screen and (max-width: 600px) {
     width: 45vw;
     height: 8vw;
     border-radius: 1.5vw;
     box-shadow: 0 0.3vw 0.6vw rgba(2, 2, 2, 0.2);
-    font-size: 3vw;
   }
 
   :hover {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -10,6 +10,9 @@ import { MdLocationPin } from "react-icons/md";
 import { FaUser } from "react-icons/fa";
 
 export const Recomended = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   const list = useSelector((state) => state.storeMain.userList);
   const navigate = useNavigate();
   let recomendedList;
@@ -25,7 +28,7 @@ export const Recomended = () => {
 
   return (
     <Container height={height}>
-      {loading ? (
+      {/* {loading ? (
         <Loader height={height}>
           <Spinner />
         </Loader>
@@ -62,13 +65,12 @@ export const Recomended = () => {
                       <Name>{item?.name}</Name>
                       <Address>
                         <MdLocationPin size={24} color="red" />
-                        {item?.address?.city +
-                          ", " +
-                          item?.address?.district +
-                          ", " +
-                          item?.address?.address +
-                          ", " +
-                          item?.address?.streetNumber}
+                        {item?.address?.city}
+                        {item?.address?.district?.length > 0 &&
+                          ", " + item?.address?.district}
+                        {item?.address?.address?.length > 0 &&
+                          ", " + item?.address?.address + " "}
+                        {item?.address?.streetNumber}
                       </Address>
                       <Procedure>წარბების ლამინირება</Procedure>
                       <div
@@ -86,7 +88,7 @@ export const Recomended = () => {
               })}
           </RecomendedList>
         </Wrapper>
-      )}
+      )} */}
     </Container>
   );
 };
@@ -108,17 +110,17 @@ const Loader = styled.div`
 
 const Container = styled.div`
   z-index: 800;
-  height: 85vh;
+  // height: 85vh;
   width: 100%;
   margin-left: 2px;
   background: ${(props) => props.theme.background};
 
   @media only screen and (max-width: 600px) {
-    height: calc(${(props) => props.height}px - 30vw);
+    // height: calc(${(props) => props.height}px - 25vw);
     width: 100vw;
     display: flex;
     justify-content: center;
-    margin-top: 17vw;
+    margin-top: 14vw;
   }
 `;
 
@@ -129,7 +131,7 @@ const Wrapper = styled.div`
   flex-direction: column;
   justify-content: start;
   align-items: center;
-  overflow-y: scroll;
+  // overflow-y: scroll;
   overflow-x: hidden;
   box-sizing: border-box;
   padding: 1vw 2.5vw;
@@ -168,6 +170,7 @@ const Title = styled.h3`
   align-items: center;
   gap: 10px;
   letter-spacing: 0.05vw;
+  font-size: 18px;
 
   #recomendedIcon {
     color: #f2cd38;
@@ -177,7 +180,6 @@ const Title = styled.h3`
   }
   @media only screen and (max-width: 600px) {
     letter-spacing: 0.2vw;
-    font-size: 3.5vw;
   }
 `;
 
@@ -264,20 +266,19 @@ const Name = styled.h4`
   margin: 0;
 
   @media only screen and (max-width: 600px) {
-    font-size: 3.5vw;
     letter-spacing: 0.15vw;
   }
 `;
 
 const Address = styled.div`
-  font-size: 0.6vw;
+  font-size: 12px;
   display: flex;
   align-items: start;
   gap: 3px;
   margin: 5px 0;
 
   @media only screen and (max-width: 600px) {
-    font-size: 2.5vw;
+    font-size: 14px;
   }
 `;
 const Procedure = styled.div`
@@ -285,11 +286,11 @@ const Procedure = styled.div`
   padding: 3px 0 4px 0;
   border-radius: 5px;
   width: auto;
-  font-size: 0.7vw;
+  font-size: 12px;
   display: flex;
   justify-content: center;
 
   @media only screen and (max-width: 600px) {
-    font-size: 2.7vw;
+    font-size: 14px;
   }
 `;

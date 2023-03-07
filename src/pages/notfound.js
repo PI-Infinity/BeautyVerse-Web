@@ -9,6 +9,7 @@ const NotFound = () => {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        color: "orange",
       }}
     >
       Page Not Found!

@@ -76,16 +76,17 @@ export const Contact = () => {
         style={{
           width: "80vw",
           textAlign: "center",
-          fontSize: "2.7vw",
+          fontSize: "12px",
         }}
       >
-        {addresses[currentAddress]?.city}
+        {addresses[currentAddress]?.city === "T'bilisi"
+          ? "Tbilisi"
+          : addresses[currentAddress]?.city}
         {addresses[currentAddress]?.district?.length > 0 &&
           ", " + addresses[currentAddress]?.district}
         {addresses[currentAddress]?.address?.length > 0 &&
-          ", " + addresses[currentAddress]?.address}
-        {addresses[currentAddress]?.streetNumber?.length > 0 &&
-          ", " + addresses[currentAddress]?.streetNumber}
+          ", " + addresses[currentAddress]?.address + " "}
+        {addresses[currentAddress]?.streetNumber}
       </div>
     );
   }

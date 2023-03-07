@@ -4,6 +4,7 @@ import CostumizedList from "../../pages/adminDashboard/categoryList";
 import { Outlet, useNavigate } from "react-router-dom";
 
 export default function AdminDashboard() {
+  document.body.style.overflowY = "hidden";
   return (
     <Container>
       <CostumizedList />

@@ -17,7 +17,7 @@ export const TopSection = (props) => {
   if (list?.length > 0) {
     userList = JSON.parse(list);
   }
-  const targetUser = userList?.find((item) => item.id === chatUser[0].userId);
+  const targetUser = userList?.find((item) => item.id === chatUser[0]?.userId);
 
   return (
     <Container>
@@ -63,6 +63,7 @@ const Container = styled.div`
 
   h4 {
     cursor: pointer;
+    font-size: 14px;
     :hover {
       text-decoration: underline;
     }
@@ -70,10 +71,9 @@ const Container = styled.div`
 
   #closeIcon {
     display: flex;
-    font-size: 1.2vw;
+    font-size: 16px;
+    cursor: pointer;
     @media only screen and (max-width: 600px) {
-      font-size: 4vw;
-      margin-right: 1.5vw;
     }
   }
 `;

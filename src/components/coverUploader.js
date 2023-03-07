@@ -11,6 +11,7 @@ import { BsStars } from "react-icons/bs";
 import Avatar from "../components/avatar";
 import { useNavigate } from "react-router-dom";
 import { setBackdropOpen } from "../redux/main";
+import Resizer from "react-image-file-resizer";
 
 export const CoverUploader = (props) => {
   const { currentUser } = useContext(AuthContext);
@@ -19,6 +20,28 @@ export const CoverUploader = (props) => {
   const dispatch = useDispatch();
   // State to store uploaded file
   const [file, setFile] = React.useState(null);
+  const [resizedObj, setResizedObj] = React.useState(null);
+  const ResizeCover = (file) =>
+    new Promise((resolve) => {
+      Resizer.imageFileResizer(
+        file,
+        240,
+        240,
+        "JPEG",
+        100,
+        0,
+        (uri) => {
+          resolve(uri);
+        },
+        "file"
+      );
+    });
+
+  const DefineResized = async () => {
+    const newObj = await ResizeCover(file);
+    setResizedObj(newObj);
+  };
+  const imageObj = React.useMemo(() => DefineResized(), [file]);
 
   const cov = useSelector((state) => state.storeMain.coverInfo);
   let cover;
@@ -38,13 +61,13 @@ export const CoverUploader = (props) => {
   async function FileUpload() {
     /* after delete last cover, add new cover
      */
-    if (file == null) return;
-    if (file != null) {
+    if (resizedObj == null) return;
+    if (resizedObj != null) {
       dispatch(setBackdropOpen(true));
       // add in storage
       const imageRef = ref(storage, `images/${currentUser?.uid}/cover`);
-      // const snapshot = await uploadBytes(imageRef, file);
-      const url = await uploadBytes(imageRef, file).then((snapshot) => {
+      // const snapshot = await uploadBytes(imageRef, resizedObj);
+      const url = await uploadBytes(imageRef, resizedObj).then((snapshot) => {
         getDownloadURL(snapshot.ref).then((url) => {
           updateDoc(doc(db, `users`, currentUser.uid), {
             cover: url,
@@ -70,7 +93,7 @@ export const CoverUploader = (props) => {
 
   React.useEffect(() => {
     FileUpload();
-  }, [file]);
+  }, [resizedObj]);
 
   return (
     <Container>

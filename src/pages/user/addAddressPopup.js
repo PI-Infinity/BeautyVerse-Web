@@ -115,7 +115,7 @@ export default function AddAddress({
           <GrMapLocation /> {language?.language.User.userPage.address}
         </DialogTitle>
         <DialogContent>
-          <p style={{ margin: "0 auto 10px auto", fontSize: "12px" }}>
+          <p style={{ margin: "0 auto 10px auto", fontSize: "14px" }}>
             {language?.language.User.userPage.addAddress}{" "}
             {addresses?.length + 1}
           </p>

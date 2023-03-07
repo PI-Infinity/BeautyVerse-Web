@@ -302,18 +302,21 @@ export function Monthly(props) {
     <>
       <Stats>
         <AiOutlineEye color="orange" />
-        {d} visitors: {monthly?.length}
+        {d} {props?.language?.language.User.userPage.visitors}:{" "}
+        {monthly?.length}
       </Stats>
       <Stats>
         <ImCheckmark color="#2bdfd9" />
-        {d} followers: {followers?.length}
+        {d} {props?.language?.language.User.userPage.followers}:{" "}
+        {followers?.length}
       </Stats>
       <Stats>
         <BiStar color="#bb3394" />
-        {d} stars: {stars?.length}
+        {d} {props?.language?.language.User.userPage.stars}: {stars?.length}
       </Stats>
       <Stats>
-        Last month's stats <ShowChartIcon />
+        {props?.language?.language.User.userPage.lastMonthsStats}{" "}
+        <ShowChartIcon />
       </Stats>
       <Scrollable>
         <div>
@@ -336,10 +339,7 @@ const Stats = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
-
-  @media only screen and (max-width: 600px) {
-    font-size: 3vw;
-  }
+  font-size: 14px;
 `;
 const Scrollable = styled.div`
   width: 800px;

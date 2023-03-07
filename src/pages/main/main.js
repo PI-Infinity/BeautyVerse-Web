@@ -30,6 +30,7 @@ const Main = (props) => {
     dispatch(setScroll(true));
     dispatch(setNavigatorActive(0));
     dispatch(setLoadFeed(true));
+    document.body.style.overflowY = "scroll";
   }, [rerender, changeFeed]);
 
   const currentUser = auth.currentUser;
@@ -93,14 +94,14 @@ export default Main;
 
 const Container = styled.div`
   width: 100%;
-  height: ${(props) => props.height}px;
-  max-heigth: ${(props) => props.height}px;
+  // height: ${(props) => props.height}px;
+  // max-heigth: ${(props) => props.height}px;
   padding-top: 3.4vw;
   box-sizing: border-box;
   overflow: hidden;
 
   @media only screen and (max-width: 600px) {
-    padding-top: 15vw;
+    padding-top: 5vw;
     min-height: auto;
   }
 `;
@@ -164,7 +165,6 @@ const CenterContainer = styled.div`
 
   @media only screen and (max-width: 600px) {
     height: auto;
-    overflow-y; scroll;
     max-height: auto;
     top: 0;
     left: 0;

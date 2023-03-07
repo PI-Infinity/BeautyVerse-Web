@@ -24,7 +24,7 @@ import useWindowDimensions from "../functions/dimensions";
 import { GiExitDoor } from "react-icons/gi";
 import { IsMobile } from "../functions/isMobile";
 import { makeStyles } from "@mui/styles";
-import DarkModeToggle from "react-dark-mode-toggle";
+import { DarkModeSwitch } from "react-toggle-dark-mode";
 import { Language } from "../context/language";
 
 export default function Menu(props) {
@@ -97,10 +97,10 @@ export default function Menu(props) {
           <div
             onClick={
               currentUser != undefined
-                ? async () => {
+                ? () => {
                     navigate(`/user/${currentUser?.uid}`);
                   }
-                : async () => {
+                : () => {
                     navigate("/login");
                   }
             }
@@ -131,7 +131,14 @@ export default function Menu(props) {
           >
             <RiShoppingCartFill className="icon" /> <span>მარკეტი</span>
           </Item> */}
-          <Item onClick={() => props?.setOpen(true)}>
+
+          <Item
+            onClick={
+              currentUser != undefined
+                ? () => props?.setOpen(true)
+                : () => navigate("/login")
+            }
+          >
             <Badge
               badgeContent={props?.notifLength}
               overlap="circular"
@@ -225,7 +232,7 @@ export default function Menu(props) {
               </LanguageBg>
             </Icons>
             <div>
-              <DarkModeToggle
+              <DarkModeSwitch
                 onChange={() => {
                   mainDispatch(setTheme(!theme));
                   localStorage.setItem(
@@ -234,7 +241,7 @@ export default function Menu(props) {
                   );
                 }}
                 checked={theme}
-                size={50}
+                size={30}
               />
             </div>
             <Languages>
@@ -305,7 +312,7 @@ export default function Menu(props) {
         boxShadow: "none",
 
         "@media only screen and (max-width: 1200px)": {
-          borderRadius: "15px 15px 0 0",
+          borderRadius: "10px 10px 0 0",
           boxShadow: "0 -0.2vw 1vw rgba(0,0,0,0.2)",
         },
       },
@@ -351,12 +358,15 @@ export default function Menu(props) {
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-end;
+
   .menuIcon {
     color: ${(props) => props.theme.icon};
     @media only screen and (max-width: 1200px) {
-      margin-left: 20px;
-      font-size: 7vw;
+      // margin-left: 5vw;
+      font-size: 6vw;
+      position: relative;
+      left: 1vw;
     }
   }
 `;
@@ -403,7 +413,7 @@ const Item = styled.div`
   margin: 0.25vw;
   gap: 0.5vw;
   max-width: 8vw;
-  font-size: 0.7vw;
+  font-size: 12px;
   text-align: center;
   cursor: pointer;
   transition: ease 200ms;
@@ -415,8 +425,7 @@ const Item = styled.div`
     width: 30vw;
     max-width: 30vw;
     margin: 1vw;
-    font-size: 2.4vw;
-    border-radius: 3vw;
+    border-radius: 1.5vw;
     gap: 1.5vw;
   }
 

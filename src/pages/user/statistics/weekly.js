@@ -160,29 +160,19 @@ export function Weekly(props) {
   return (
     <>
       <Stats>
-        <AiOutlineEye color="orange" /> Last week's visitors: {weekly?.length}
+        <AiOutlineEye color="orange" />{" "}
+        {props?.language?.language.User.userPage.lastWeekVisitors}:{" "}
+        {weekly?.length}
       </Stats>
       <Stats>
-        <ImCheckmark color="#2bdfd9" /> Last week's followers:{" "}
+        <ImCheckmark color="#2bdfd9" />{" "}
+        {props?.language?.language.User.userPage.lastWeekFollowers}:{" "}
         {followers?.length}
       </Stats>
       <Stats>
-        <BiStar color="#bb3394" /> Last week's stars: {stars?.length}
+        <BiStar color="#bb3394" />{" "}
+        {props?.language?.language.User.userPage.lastWeekStars}: {stars?.length}
       </Stats>
-      {/* <Stats>
-        Last 10 weeks stats <ShowChartIcon />
-      </Stats> */}
-      {/* <Scrollable> */}
-      {/* <div>
-          <Chart
-            chartType="AreaChart"
-            width={isMobile ? "1800px" : "950px"}
-            height="250px"
-            data={data}
-            options={options}
-          />
-        </div> */}
-      {/* </Scrollable> */}
     </>
   );
 }
@@ -193,10 +183,7 @@ const Stats = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
-
-  @media only screen and (max-width: 600px) {
-    font-size: 3vw;
-  }
+  font-size: 14px;
 `;
 const Scrollable = styled.div`
   width: 800px;

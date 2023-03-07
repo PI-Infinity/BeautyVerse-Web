@@ -24,6 +24,8 @@ import {
 } from "firebase/firestore";
 import { SetCurrentChat } from "../../redux/chat";
 import { useNavigate } from "react-router-dom";
+import Select from "react-select";
+import { countries } from "../../data/countryCodes";
 
 export const Links = ({ user }) => {
   const [edit, setEdit] = React.useState("");
@@ -36,7 +38,11 @@ export const Links = ({ user }) => {
     currentuser = JSON.parse(userUnparsed);
   }
 
-  const [changeEmail, setChangeEmail] = React.useState("");
+  const [countryCode, setCountryCode] = React.useState({
+    value: "+995",
+    label: "Georgia",
+  });
+  const [changePhone, setChangePhone] = React.useState("");
   const [changeWeb, setChangeWeb] = React.useState("");
   const [changeInstagram, setChangeInstagram] = React.useState("");
   const [changeFacebook, setChangeFacebook] = React.useState("");
@@ -46,11 +52,12 @@ export const Links = ({ user }) => {
 
   const UpdateLink = (newValue) => {
     const base = doc(db, "users", `${user?.id}`);
-    if (changeEmail?.length > 0) {
+    if (changePhone?.length > 0) {
       updateDoc(base, {
-        email: changeEmail,
+        phone: countryCode?.value + changePhone,
       });
-      setChangeEmail("");
+      setCountryCode({ value: "+995", label: "Georgia" });
+      setChangePhone("");
     }
     if (changeWeb?.length > 0) {
       updateDoc(base, {
@@ -211,16 +218,16 @@ export const Links = ({ user }) => {
 
   const LinkList = [
     {
-      id: "phone",
-      placeholder: user?.phone,
-      icon: <FaPhoneAlt />,
-    },
-    {
       id: "email",
       placeholder: user?.email,
       icon: <AiOutlineMail />,
-      onChange: (e) => setChangeEmail(e.target.value),
-      value: changeEmail,
+      value: changePhone,
+    },
+    {
+      id: "phone",
+      placeholder: user?.phone,
+      icon: <FaPhoneAlt />,
+      onChange: (e) => setChangePhone(e.target.value),
     },
     {
       id: "web",
@@ -283,8 +290,8 @@ export const Links = ({ user }) => {
           chatId: combinedId,
           ["userInfo"]: {
             id: user?.id,
-            name: user?.name,
-            cover: user?.cover != undefined ? user?.cover : null,
+            // name: user?.name,
+            // cover: user?.cover != undefined ? user?.cover : null,
           },
           ["date"]: serverTimestamp(),
         });
@@ -292,8 +299,8 @@ export const Links = ({ user }) => {
           chatId: combinedId,
           ["userInfo"]: {
             id: currentuser?.id,
-            name: currentuser?.name,
-            cover: currentuser?.cover != undefined ? currentuser?.cover : null,
+            // name: currentuser?.name,
+            // cover: currentuser?.cover != undefined ? currentuser?.cover : null,
           },
           ["date"]: serverTimestamp(),
         });
@@ -303,8 +310,8 @@ export const Links = ({ user }) => {
           chatId: combinedId,
           ["userInfo"]: {
             id: user?.id,
-            name: user?.name,
-            cover: user?.cover != undefined ? user?.cover : null,
+            // name: user?.name,
+            // cover: user?.cover != undefined ? user?.cover : null,
           },
           ["date"]: serverTimestamp(),
         });
@@ -312,8 +319,8 @@ export const Links = ({ user }) => {
           chatId: combinedId,
           ["userInfo"]: {
             id: currentuser?.id,
-            name: currentuser?.name,
-            cover: currentuser?.cover != undefined ? currentuser?.cover : null,
+            // name: currentuser?.name,
+            // cover: currentuser?.cover != undefined ? currentuser?.cover : null,
           },
           ["date"]: serverTimestamp(),
         });
@@ -322,8 +329,8 @@ export const Links = ({ user }) => {
           chatId: combinedId,
           ["userInfo"]: {
             id: user?.id,
-            name: user?.name,
-            cover: user?.cover != undefined ? user?.cover : null,
+            // name: user?.name,
+            // cover: user?.cover != undefined ? user?.cover : null,
           },
           ["date"]: serverTimestamp(),
         });
@@ -331,8 +338,8 @@ export const Links = ({ user }) => {
           chatId: combinedId,
           ["userInfo"]: {
             id: currentuser?.id,
-            name: currentuser?.name,
-            cover: currentuser?.cover != undefined ? currentuser?.cover : null,
+            // name: currentuser?.name,
+            // cover: currentuser?.cover != undefined ? currentuser?.cover : null,
           },
           ["date"]: serverTimestamp(),
         });
@@ -341,8 +348,8 @@ export const Links = ({ user }) => {
         SetCurrentChat([
           {
             chatId: combinedId,
-            cover: user?.cover != undefined ? user?.cover : null,
-            name: user?.name,
+            // cover: user?.cover != undefined ? user?.cover : null,
+            // name: user?.name,
             userId: user?.id,
           },
         ])
@@ -479,6 +486,81 @@ export const Links = ({ user }) => {
     telegram = false;
   }
 
+  // color mode
+  const theme = useSelector((state) => state.storeMain.theme);
+  const CustomStyle = {
+    singleValue: (base, state) => ({
+      ...base,
+      color: state.isSelected
+        ? theme
+          ? "#333"
+          : "#f3f3f3"
+        : theme
+        ? "#f3f3f3"
+        : "#333",
+    }),
+    placeholder: (base, state) => ({
+      ...base,
+      // height: "1000px",
+      color: state.isSelected
+        ? theme
+          ? "#333"
+          : "#f3f3f3"
+        : theme
+        ? "#f3f3f3"
+        : "#333",
+      maxHeight: "50px",
+    }),
+    input: (base, state) => ({
+      ...base,
+      color: theme ? "#f3f3f3" : "#333",
+      fontSize: "16px",
+      maxHeight: "100px",
+    }),
+    multiValue: (base, state) => ({
+      ...base,
+      backgroundColor: state.isDisabled ? null : "lightblue",
+      borderRadius: "20px",
+    }),
+    multiValueLabel: (base, state) => ({
+      ...base,
+    }),
+    menuList: (base, state) => ({
+      ...base,
+      backgroundColor: theme ? "#333" : "#f3f3f3",
+      zIndex: 1000,
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isSelected
+        ? theme
+          ? "#f3f3f3"
+          : "#333"
+        : theme
+        ? "#333"
+        : "#f3f3f3",
+      color: state.isSelected
+        ? theme
+          ? "#333"
+          : "#f3f3f3"
+        : theme
+        ? "#f3f3f3"
+        : "#333",
+    }),
+    control: (baseStyles, state) => ({
+      ...baseStyles,
+      backgroundColor: theme ? "#333" : "#fff",
+      borderColor: state.isFocused ? "rgba(0,0,0,0)" : "rgba(0,0,0,0.1)",
+      width: "5vw",
+      minHeight: "2vw",
+      cursor: "pointer",
+      "@media only screen and (max-width: 1200px)": {
+        width: "23vw",
+        fontSize: "16px",
+      },
+    }),
+  };
+
   return (
     <LinksContainer>
       {user?.id !== currentuser?.id && (
@@ -498,60 +580,85 @@ export const Links = ({ user }) => {
             return (
               <LinkContainer>
                 {item.icon}
-
-                <Link>
-                  <a
-                    style={{ color: "inherit", textDecoration: "none" }}
-                    href={`tel://${item.placeholder}`}
-                  >
-                    {item.placeholder}
-                  </a>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "15px",
-                    }}
-                  >
-                    {whatsapp && (
-                      <a
-                        style={{
-                          color: user?.socMedia?.whatsapp ? "inherit" : "gray",
-                          textDecoration: "none",
-                        }}
-                        onClick={
-                          user?.id === currentuser?.id
-                            ? () => AddWhatsapp()
-                            : false
-                        }
-                        href={
-                          user?.id !== currentuser?.id &&
-                          `https://wa.me/${item.placeholder}`
-                        }
-                      >
-                        <FaWhatsapp className="icons" />
-                      </a>
-                    )}
-                    {telegram && (
-                      <a
-                        style={{
-                          color: user?.socMedia?.telegram ? "inherit" : "gray",
-                          textDecoration: "none",
-                        }}
-                        onClick={
-                          user?.id === currentuser?.id
-                            ? () => AddTelegram()
-                            : false
-                        }
-                        href={
-                          user?.id !== currentuser?.id &&
-                          ` https://t.me/${item.placeholder}`
-                        }
-                      >
-                        <FaTelegram className="icons" />
-                      </a>
-                    )}
-                    {/* <a
+                {edit == item.id ? (
+                  <>
+                    <Select
+                      // placeholder={language?.language.Auth.auth.workingDays}
+                      defaultValue="+995"
+                      defaultInputValue="+995"
+                      placeholder="+995"
+                      value={countryCode}
+                      onChange={(value) => {
+                        setCountryCode(value);
+                      }}
+                      styles={CustomStyle}
+                      options={countries}
+                    />
+                    <LinkInput
+                      placeholder="Add phone number"
+                      type="tel"
+                      value={item.value}
+                      onChange={item.onChange}
+                    />
+                  </>
+                ) : (
+                  <Link>
+                    <a
+                      style={{ color: "inherit", textDecoration: "none" }}
+                      href={`tel://${item.placeholder}`}
+                    >
+                      {item.placeholder}
+                    </a>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "15px",
+                      }}
+                    >
+                      {whatsapp && (
+                        <a
+                          style={{
+                            color: user?.socMedia?.whatsapp
+                              ? "inherit"
+                              : "gray",
+                            textDecoration: "none",
+                          }}
+                          onClick={
+                            user?.id === currentuser?.id
+                              ? () => AddWhatsapp()
+                              : false
+                          }
+                          href={
+                            user?.id !== currentuser?.id &&
+                            `https://wa.me/${item.placeholder}`
+                          }
+                        >
+                          <FaWhatsapp className="icons" />
+                        </a>
+                      )}
+                      {telegram && (
+                        <a
+                          style={{
+                            color: user?.socMedia?.telegram
+                              ? "inherit"
+                              : "gray",
+                            textDecoration: "none",
+                          }}
+                          onClick={
+                            user?.id === currentuser?.id
+                              ? () => AddTelegram()
+                              : false
+                          }
+                          href={
+                            user?.id !== currentuser?.id &&
+                            ` https://t.me/${item.placeholder}`
+                          }
+                        >
+                          <FaTelegram className="icons" />
+                        </a>
+                      )}
+                      {/* <a
                   style={{
                       color: "inherit",
                       textDecoration: "none",
@@ -560,8 +667,24 @@ export const Links = ({ user }) => {
                   >
                     <FaViber className="icons" />
                   </a> */}
-                  </div>
-                </Link>
+                    </div>
+                  </Link>
+                )}
+                {user?.id === currentuser?.id && (
+                  <>
+                    {edit == item.id ? (
+                      <ImCheckmark
+                        className="confirmIcon"
+                        onClick={UpdateLink}
+                      />
+                    ) : (
+                      <RiEdit2Fill
+                        className="editIcon"
+                        onClick={() => setEdit(item.id)}
+                      />
+                    )}
+                  </>
+                )}
               </LinkContainer>
             );
           }
@@ -580,7 +703,7 @@ export const Links = ({ user }) => {
               ) : (
                 <Link>{item?.placeholder}</Link>
               )}
-              {user?.id === currentuser?.id && item.id != "phone" && (
+              {user?.id === currentuser?.id && item.id != "email" && (
                 <>
                   {edit == item.id ? (
                     <ImCheckmark className="confirmIcon" onClick={UpdateLink} />
@@ -615,7 +738,6 @@ const LinksContainer = styled.div`
   @media only screen and (max-width: 600px) {
     width: 90vw;
     box-sizing: border-box;
-    font-size: 3vw;
     max-width: 90vw;
   }
 
@@ -626,6 +748,7 @@ const LinksContainer = styled.div`
 
     @media only screen and (max-width: 600px) {
       font-size: 4vw;
+      margin-left: 10px;
     }
   }
 
@@ -636,6 +759,7 @@ const LinksContainer = styled.div`
 
     @media only screen and (max-width: 600px) {
       font-size: 4vw;
+      margin-left: 10px;
     }
   }
 `;
@@ -652,6 +776,7 @@ const SendMessage = styled.div`
   cursor: pointer;
   font-weight: bold;
   color: ${(props) => props.theme.font};
+  font-size: 14px;
 
   @media only screen and (max-width: 600px) {
     margin: 0 0 15px 0;
@@ -669,18 +794,17 @@ const LinkContainer = styled.div`
   display: flex;
   align-items: center;
   gap: 1vw;
-  font-size: 1.2vw;
-  height: 3vw;
+  font-size: 14px;
+  height: 2vw;
   color: ${(props) => props.theme.filterFontActive};
   width: auto;
-  max-width: 18vw;
+  max-width: 20vw;
   border-bottom: 1px solid ${(props) => props.theme.lineColor};
 
   @media only screen and (max-width: 600px) {
     width: 100vw;
     height: 9vw;
     box-sizing: border-box;
-    font-size: 4vw;
     max-width: 100vw;
   }
 `;
@@ -689,19 +813,17 @@ const LinkInput = styled.input`
   border: none;
   background: none;
   width: auto;
-  height: 1.5vw;
+  max-width: 8vw;
+  height: 90%;
   margin: 0;
-  background: white;
   border-radius: 0.5vw;
   text-align: start;
-
-  @media only screen and (max-width: 600px) {
-    font-size: 16px;
-  }
+  color: ${(props) => props.theme.font};
+  font-size: 16px;
 
   :placeholder {
     text-align: start;
-    font-size: 1vw;
+    font-size: 14px;
     font-weight: bold;
     padding-left: 0.5vw;
     color: green;
@@ -713,7 +835,7 @@ const LinkInput = styled.input`
 `;
 
 const Link = styled.span`
-  font-size: 1vw;
+  font-size: 14px;
   font-weight: bold;
   border: none;
   background: none;
@@ -728,7 +850,6 @@ const Link = styled.span`
   gap: 1vw;
 
   @media only screen and (max-width: 600px) {
-    font-size: 3vw;
     height: 5vw;
     max-width: 80vw;
     position: relative;
@@ -738,10 +859,7 @@ const Link = styled.span`
   }
 
   .icons {
-    font-size: 1.2vw;
+    font-size: 16px;
     margin-top: 0.25vw;
-    @media only screen and (max-width: 600px) {
-      font-size: 4vw;
-    }
   }
 `;

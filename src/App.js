@@ -4,6 +4,7 @@ import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import Main from "./pages/main/main";
 import { Feeds } from "./pages/main/feeds";
 import { Specialists } from "./pages/main/specialists";
+import { FilterMobile } from "./pages/main/filterMobile";
 import { Recomended } from "./pages/main/recomended";
 import AddFeed from "./pages/addFeed/addFeed";
 import Login from "./pages/login/login";
@@ -39,6 +40,7 @@ import {
   orderBy,
   serverTimestamp,
   updateDoc,
+  where,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import { useDispatch, useSelector } from "react-redux";
@@ -96,7 +98,7 @@ function App() {
         lastLogin: serverTimestamp(),
       });
     }
-  }, []);
+  }, [currentUser]);
 
   /**
    * define authentication requred routes
@@ -146,7 +148,7 @@ function App() {
   useEffect(() => {
     let activeTheme;
     if (theme) {
-      activeTheme = "#222";
+      activeTheme = "rgba(15,15,15,15)";
     } else {
       activeTheme = "#FCFDFF";
     }
@@ -208,6 +210,15 @@ function App() {
    * Import all type users from firestore
    * send to redux
    */
+
+  // useEffect(() => {
+  //   fetch(`http://localhost:5000/users`)
+  //     .then((response) => response.json())
+  //     .then((actualData) => dispatch(setUserList(JSON.stringify(actualData))));
+  //   setTimeout(() => {
+  //     dispatch(setLoading(false));
+  //   }, 300);
+  // }, [currentUser]);
   React.useEffect(() => {
     const usersRef = query(
       collection(db, "users"),
@@ -216,8 +227,11 @@ function App() {
     const data = onSnapshot(usersRef, (snapshot) => {
       const users = [];
       snapshot.forEach((doc) => {
-        users.push(doc.data());
+        if (doc.data().active) {
+          users.push(doc.data());
+        }
       });
+
       dispatch(setUserList(JSON.stringify(users)));
       // if localstorage user is active but not belongs to really beautyvers users, remove from localstorage
       const CurUser = JSON.parse(localStorage.getItem("BeautyVerse:user"));
@@ -263,6 +277,19 @@ function App() {
     nav = <Navigator />;
   }
 
+  // // body overflow hidden for some paths
+  // useEffect(() => {
+  //   let body;
+  //   if (
+  //     // window.location.pathname !== "" &&
+  //     window.location.pathname !== "/cards" &&
+  //     window.location.pathname !== "/recomended"
+  //   ) {
+  //     body = document.body.style.overflow = "hidden";
+  //   }
+  //   return body;
+  // }, [window.location.pathname]);
+
   return (
     <ThemeProvider theme={theme === false ? lightTheme : darkTheme}>
       <GlobalStyles />
@@ -282,8 +309,13 @@ function App() {
                 index
                 element={<Feeds height={height} filterOpen={filterOpen} />}
               />
-
+              <Route path="/:Id" element={<OpenedFeed />} />
               <Route path="cards" element={<Specialists />} direction="row" />
+              <Route
+                path="filterMobile"
+                element={<FilterMobile />}
+                direction="row"
+              />
               <Route path="add" element={<AddFeed />} direction="row" />
               <Route
                 path="recomended"
@@ -444,7 +476,8 @@ function App() {
             <Route path="*" element={<NotFound />} />
           </Routes>
           {!window.location.pathname?.includes("admin") && <Footer />}
-          {!window.location.pathname?.includes("admin") && <>{nav}</>}
+          {!window.location.pathname?.includes("admin") &&
+            !window.location.pathname?.includes("feed/") && <>{nav}</>}
         </Container>
       )}
     </ThemeProvider>
@@ -459,7 +492,7 @@ const Container = styled.div`
 
 const TopLine = styled.div`
   position: fixed;
-  top: 0 !important;
+  top: 0;
   left: 0;
   right: 0;
   width: 100%;
@@ -486,10 +519,8 @@ const TopLine = styled.div`
   z-index: 10;
 
   @media only screen and (max-width: 600px) {
-    height: 1vw;
-    z-index: 10000;
-    top: 0 !important;
-    position: absolute;
+    height: 0;
+    display: none;
   }
 
   -webkit-animation: AnimationName 30s ease infinite;

@@ -139,6 +139,7 @@ const Content = styled.div`
   height: auto;
   margin-bottom: 5vw;
   overflow-x: hidden;
+  box-sizing: border-box;
 
   .loadingIcon {
     font-size: 3vw;
@@ -162,7 +163,7 @@ const List = styled.div`
   & span {
     @media only screen and (max-width: 600px) {
       margin: 3vw;
-      font-size: 3.5vw;
+      font-size: 14px;
       font-weight: normal;
       font-style: italic;
       color: ${(props) => props.theme.disabled};

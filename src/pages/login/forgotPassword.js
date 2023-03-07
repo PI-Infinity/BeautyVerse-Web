@@ -31,7 +31,7 @@ export default function ForgotPass({
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            {phone ? "phone" : language?.language.Auth.auth.randomPasswordText}.
+            {language?.language.Auth.auth.randomPasswordText}.
           </DialogContentText>
           <TextField
             autoFocus
@@ -61,11 +61,10 @@ const ForgottPass = styled.p`
   padding: 0;
   margin: 0;
   letter-spacing: 0.05vw;
-  font-size: 0.8vw;
+  font-size: 14px;
   cursor: pointer;
 
   @media only screen and (max-width: 600px) {
-    font-size: 3.3vw;
     letter-spacing: 0.2vw;
   }
 

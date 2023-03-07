@@ -124,38 +124,38 @@ export const Message = ({ message, sameSender, prevMsg, nextMsg }) => {
       prevMsg?.senderId === nextMsg?.senderId &&
       prevMsg?.senderId === message?.senderId
     ) {
-      design = "50px 8px 8px 50px";
+      design = "30px 8px 8px 30px";
     } else if (
       prevMsg?.senderId !== message?.senderId &&
       message?.senderId === nextMsg?.senderId
     ) {
-      design = "50px 40px 8px 50px";
+      design = "30px 25px 8px 30px";
     } else if (
       prevMsg?.senderId === message?.senderId &&
       message?.senderId !== nextMsg?.senderId
     ) {
-      design = "50px 8px 40px 50px";
+      design = "30px 8px 25px 30px";
     } else {
-      design = "50px 50px 50px 50px";
+      design = "30px 30px 30px 30px";
     }
   } else {
     if (
       prevMsg?.senderId === nextMsg?.senderId &&
       prevMsg?.senderId === message?.senderId
     ) {
-      design = "8px 50px 50px 8px";
+      design = "8px 30px 30px 8px";
     } else if (
       prevMsg?.senderId !== message?.senderId &&
       message?.senderId === nextMsg?.senderId
     ) {
-      design = "40px 50px 50px 8px";
+      design = "25px 30px 30px 8px";
     } else if (
       prevMsg?.senderId === message?.senderId &&
       message?.senderId !== nextMsg?.senderId
     ) {
-      design = "8px 50px 50px 40px";
+      design = "8px 30px 30px 25px";
     } else {
-      design = "50px 50px 50px 50px";
+      design = "30px 30px 30px 30px";
     }
   }
 
@@ -170,11 +170,14 @@ export const Message = ({ message, sameSender, prevMsg, nextMsg }) => {
     lastMsg = true;
   }
 
+  console.log(sameSender);
+
   return (
     <MainContainer prop={message?.senderId === currentuser.id}>
       <MessageContainer
         ref={messageref}
-        prop={message?.senderId === currentuser.id}
+        prop={(message?.senderId === currentuser.id)?.toString()}
+        sameSender={sameSender?.toString()}
         design={design}
       >
         {message?.senderId !== currentuser.id && cover}
@@ -242,8 +245,9 @@ const MessageContainer = styled.div`
   align-items: center;
   gap: 15px;
   width: 100%;
-  flex-direction: ${(props) => (props.prop ? "row-reverse" : "row")};
-  justify-content: ${(props) => (props.prop ? "auto" : "start")};
+  flex-direction: ${(props) => (props.prop === "true" ? "row-reverse" : "row")};
+  justify-content: ${(props) => (props.prop === "true" ? "auto" : "start")};
+  margin-top: ${(props) => (props.sameSender === "true" ? "auto" : "5px")};
 
   @media only screen and (max-width: 600px) {
     gap: 10px;
@@ -260,10 +264,7 @@ const MessageContainer = styled.div`
   }
 
   & > span {
-    font-size: 0.5vw;
-    @media only screen and (max-width: 600px) {
-      font-size: 1.5vw;
-    }
+    font-size: 12px;
   }
 
   #img {
@@ -295,13 +296,16 @@ const Img = styled.img`
   }
 `;
 const MessageContent = styled.div`
-  padding: ${(props) => (props?.img ? "0" : "5px 14px 6px 14px")};
+  padding: ${(props) => (props?.img ? "0" : "10px 20px 10px 20px")};
   box-shadow: 0 0.1vw 0.3vw rgba(0, 0, 0, 0.1);
-  font-size: 15px;
+  font-size: 14px;
   cursor: pointer;
+  max-width: 500px;
 
   @media only screen and (max-width: 600px) {
-    padding: ${(props) => (props?.img ? "0" : "7px 15px 8px 15px")};
+    font-size: 14px;
+    max-width: 55vw;
+    padding: ${(props) => (props?.img ? "0" : "7px 20px 8px 20px")};
   }
 `;
 

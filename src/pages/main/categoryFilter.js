@@ -153,7 +153,7 @@ const CategoryItemContainer = styled.div`
   cursor: pointer;
   gap: 1vw;
   box-shadow: 0 0.1vw 0.2vw rgba(2, 2, 2, 0.1);
-  font-size: 0.8vw;
+  font-size: 14px;
   color: ${(props) => props.theme.font};
 
   & div > div {
@@ -163,30 +163,21 @@ const CategoryItemContainer = styled.div`
   }
 
   @media only screen and (max-width: 600px) {
-    font-size: 3vw;
     padding: 1.5vw 3vw 1.5vw 2vw;
     width: 100%;
-    gap: 1.5vw;
+    gap: 2.5vw;
     box-shadow: 0 0.3vw 0.6vw rgba(2, 2, 2, 0.1);
     box-sizing: border-box;
   }
 
   .icon {
-    font-size: 1vw;
+    font-size: 16px;
     color: #ccc;
-
-    @media only screen and (max-width: 600px) {
-      font-size: 3vw;
-    }
   }
   .allicon {
-    font-size: 1.1vw;
+    font-size: 16px;
     position: relative;
     top: 0.1vw;
-
-    @media only screen and (max-width: 600px) {
-      font-size: 3vw;
-    }
   }
 
   :hover {

@@ -97,10 +97,11 @@ const Title = styled.div`
   margin-top: 1.25vw;
   font-weight: bold;
   padding-bottom: 0.5vw;
+  font-size: 18px;
 
   .likedIcon {
     margin-right: 2vw;
-    font-size: 1.1vw;
+    font-size: 16px;
     color: orange;
   }
 `;

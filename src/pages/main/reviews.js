@@ -59,7 +59,7 @@ export const Reviews = () => {
                   <span
                     style={{
                       color: "#ddd",
-                      fontSize: "0.7vw",
+                      fontSize: "12px",
                       // fontWeight: "bold",
                       fontStyle: "italic",
                       marginLeft: "1vw",
@@ -79,12 +79,12 @@ export const Reviews = () => {
                   </Reviewer>
                   <MdOutlineArrowRight className="arrowIcon" />
                   <Reviewer
-                    onClick={() => navigate(`/user/${item?.reviewerId}`)}
+                    onClick={() => navigate(`/user/${item?.recieverId}`)}
                     style={{ color: "#46BCFF" }}
                   >
                     {item.reciever}
                   </Reviewer>
-                  <span id="text" style={{ fontSize: "0.7vw" }}>
+                  <span id="text" style={{ fontSize: "14px" }}>
                     {item.text}
                   </span>{" "}
                 </ReviewItem>
@@ -117,10 +117,10 @@ const Title = styled.div`
   margin-top: 1.25vw;
   font-weight: bold;
   padding-bottom: 0.5vw;
+  font-size: 18px;
 
   .likedIcon {
     margin-right: 2vw;
-    font-size: 1.1vw;
     color: orange;
   }
 `;
@@ -166,7 +166,7 @@ const ReviewItem = styled.div`
   align-items: center;
   flex-wrap: wrap;
   box-shadow: 0 0.1vw 0.2vw rgba(2, 2, 2, 0.1);
-  gap: 5px;
+  gap: 3px;
 
   .arrowIcon {
     font-size: 1.5vw;
@@ -183,7 +183,7 @@ const Reviewer = styled.span`
   transition: ease 200ms;
   cursor: pointer;
   color: brown;
-  font-size: 0.8vw;
+  font-size: 14px;
 
   :hover {
     text-decoration: underline;

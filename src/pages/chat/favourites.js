@@ -131,6 +131,11 @@ export const Favourites = (props) => {
     userList = JSON.parse(list);
   }
 
+  const defineFollowersList = followings?.map((item, index) => {
+    let us = userList?.find((itm, indx) => itm.id === item.id);
+    return us;
+  });
+
   React.useEffect(() => {
     setTimeout(() => {
       setLoading(false);
@@ -145,7 +150,7 @@ export const Favourites = (props) => {
         </LoadingContainer>
       ) : (
         <Container>
-          {followings
+          {defineFollowersList
             ?.filter((item, index) => {
               if (
                 item?.name?.toLowerCase()?.includes(props.search?.toLowerCase())
@@ -154,17 +159,15 @@ export const Favourites = (props) => {
               }
             })
             ?.map((item, index) => {
-              const targetUser = userList?.find((us) => us.id === item.id);
-
               return (
                 <UserItem onClick={() => handleSelect(item)} key={index}>
                   <Avatar
-                    alt={targetUser?.name}
-                    src={targetUser?.cover}
+                    alt={item?.name}
+                    src={item?.cover}
                     sx={{ width: 36, height: 36 }}
                   />
 
-                  <span>{targetUser?.name}</span>
+                  <h3>{item?.name}</h3>
                 </UserItem>
               );
             })}
@@ -221,12 +224,10 @@ const UserItem = styled.div`
   padding: 0 20px;
   color: ${(props) => props.theme.font};
 
-  p {
-    font-size: 0.7vw;
+  h3 {
+    font-size: 14px;
     color: ${(props) => props.theme.font};
-    @media only screen and (max-width: 600px) {
-      font-size: 2.5vw;
-    }
+    margin: 0;
   }
 
   :hover {

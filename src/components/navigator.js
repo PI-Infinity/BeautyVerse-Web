@@ -4,12 +4,14 @@ import { GiFlexibleStar } from "react-icons/gi";
 import { useNavigate, Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { AuthContext } from "../context/AuthContext";
-import { setLoadFeed, setRerender } from "../redux/main";
+import { setLoadFeed, setRerender, setFilterOpen } from "../redux/main";
+import { setFeedScrollY, setCardsScrollY } from "../redux/scroll";
 import { IsMobile } from "../functions/isMobile";
 import Badge from "@mui/material/Badge";
+import { BsSearch } from "react-icons/bs";
 import DynamicFeedIcon from "@mui/icons-material/DynamicFeed";
 import SwitchAccountIcon from "@mui/icons-material/SwitchAccount";
-import ForumOutlinedIcon from "@mui/icons-material/ForumOutlined";
+import { HiChatAlt } from "react-icons/hi";
 import { db } from "../firebase";
 import { collection, onSnapshot } from "firebase/firestore";
 import Avatar from "../components/avatar";
@@ -41,8 +43,8 @@ export const Navigator = (props) => {
     active = "main";
   } else if (window.location.pathname == "/cards") {
     active = "cards";
-  } else if (window.location.pathname == "/add") {
-    active = "add";
+  } else if (window.location.pathname == "/filtermobile") {
+    active = "filtermobile";
   } else if (window.location.pathname == "/chat") {
     active = "chat";
   } else if (window.location.pathname == "/recomended") {
@@ -52,7 +54,6 @@ export const Navigator = (props) => {
   } else {
     active = "main/user";
   }
-
   // referal of feeds wrapper div element to scrolling flexible
   const refDiv = document.getElementById("feed");
 
@@ -65,8 +66,16 @@ export const Navigator = (props) => {
     "& .MuiBadge-badge": {
       right: 15,
       top: 15,
-      border: `2px solid #fff`,
-      padding: "0 4px",
+      border: `1px solid #fff`,
+      padding: "0 3px",
+    },
+  }));
+  const StyledSearchBadge = styled(Badge)(({ theme }) => ({
+    "& .MuiBadge-badge": {
+      right: 10,
+      top: 10,
+      // border: `1px solid #fff`,
+      padding: "0 3px",
     },
   }));
 
@@ -93,6 +102,37 @@ export const Navigator = (props) => {
     currentUser?.uid && getChats();
   }, [currentUser]);
 
+  // define signed filter length
+  const filterMobile = useSelector((state) => state.storeFilter.filter);
+  let filterBadge;
+  if (filterMobile !== "") {
+    filterBadge = 1;
+  } else {
+    filterBadge = 0;
+  }
+  const search = useSelector((state) => state.storeFilter.search);
+  let searchBadge;
+  if (search !== "") {
+    searchBadge = 1;
+  } else {
+    searchBadge = 0;
+  }
+  const city = useSelector((state) => state.storeFilter.cityFilter);
+  let cityBadge;
+  if (city !== "City") {
+    cityBadge = 1;
+  } else {
+    cityBadge = 0;
+  }
+  const specialist = useSelector((state) => state.storeFilter.specialist);
+  const object = useSelector((state) => state.storeFilter.object);
+  let typeBadge;
+  if (!specialist || !object) {
+    typeBadge = 1;
+  } else {
+    typeBadge = 0;
+  }
+
   return (
     <>
       <NavigatorContainer
@@ -104,25 +144,28 @@ export const Navigator = (props) => {
           className={
             active === "main" || active === "main/user" ? "active" : "feedIcon"
           }
+          size={22}
           onClick={
             active === "main"
               ? () => {
-                  localStorage.setItem("BeautyVerse:scrollPosition", 0);
+                  window.scrollTo(0, 0);
+                  dispatch(setFeedScrollY(0));
                   dispatch(setRerender());
                 }
               : async () => {
                   // await dispatch(setNavigatorActive(0));
-                  localStorage.setItem("BeautyVerse:scrollPosition", 0);
-                  navigate("/");
                   await dispatch(setLoadFeed(true));
+                  dispatch(setFeedScrollY(0));
+                  dispatch(setRerender());
+                  navigate("/");
                   // await dispatch(setChangeFeed(true));
-                  await dispatch(setRerender());
                 }
           }
         />
         <SwitchAccountIcon
           className={active == "cards" ? "active" : "feedIcon"}
           onClick={() => {
+            dispatch(setCardsScrollY(0));
             dispatch(setRerender());
             navigate("cards");
           }}
@@ -142,12 +185,25 @@ export const Navigator = (props) => {
 
         <GiFlexibleStar
           className={active == "recomended" ? "active" : "feedIcon"}
-          style={{ color: "#f2cd38" }}
           onClick={() => {
             // dispatch(setNavigatorActive(2));
             navigate("recomended");
           }}
         />
+        <StyledSearchBadge
+          badgeContent={filterBadge + searchBadge + cityBadge + typeBadge}
+          overlap="circular"
+          color="secondary"
+        >
+          <BsSearch
+            className={active == "filtermobile" ? "active" : "feedIcon"}
+            onClick={() => {
+              // dispatch(setNavigatorActive(2));
+              navigate("filtermobile");
+            }}
+            size={19}
+          />
+        </StyledSearchBadge>
 
         {chats > 0 ? (
           <StyledBadge
@@ -155,21 +211,23 @@ export const Navigator = (props) => {
             overlap="circular"
             color="secondary"
           >
-            <ForumOutlinedIcon
+            <HiChatAlt
               className={active == "chat" ? "active" : "feedIcon"}
               onClick={() => {
                 // dispatch(setNavigatorActive(3));
                 navigate("chat");
               }}
+              size={24}
             />
           </StyledBadge>
         ) : (
-          <ForumOutlinedIcon
+          <HiChatAlt
             className={active == "chat" ? "active" : "feedIcon"}
             onClick={() => {
               // dispatch(setNavigatorActive(3));
               navigate("chat");
             }}
+            size={24}
           />
         )}
         <Link
@@ -218,7 +276,8 @@ const NavigatorContainer = styled.div`
     bottom: 0;
     align-items: center;
     z-index: 90;
-    background: ${(props) => props.theme.background};
+    backdrop-filter: blur(20px);
+    background: ${(props) => props.theme.header};
   }
 
   .filter {
@@ -258,7 +317,7 @@ const NavigatorContainer = styled.div`
     cursor: pointer;
 
     @media only screen and (max-width: 600px) {
-      font-size: 5.5vw;
+      font-size: 5vw;
       border-top: 2px solid rgba(0, 0, 0, 0);
       padding: 2vw;
       margin: 0;
@@ -270,9 +329,8 @@ const NavigatorContainer = styled.div`
     cursor: pointer;
 
     @media only screen and (max-width: 600px) {
-      font-size: 5.5vw;
-      border-top: 2px solid
-        ${(props) => (props.recomended === "true" ? "#f2cd38" : "#2bdfd9")};
+      font-size: 5vw;
+      border-top: 2px solid #2bdfd9;
       padding: 2vw;
       margin: 0;
     }

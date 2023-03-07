@@ -7,6 +7,8 @@ import {
   setDistrictFilter,
   setSpecialist,
   setObject,
+  setSearch,
+  setFilter,
 } from "../../redux/filter";
 import { setRerender } from "../../redux/main";
 import Select from "react-select";
@@ -16,6 +18,11 @@ import { Button } from "../../components/button";
 import useWindowDimensions from "../../functions/dimensions";
 import CheckBox from "@mui/material/Checkbox";
 import { Language } from "../../context/language";
+import { Search } from "../../pages/main/search";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import Badge from "@mui/material/Badge";
+import { MdDeleteForever } from "react-icons/md";
 
 export const FilterMobile = () => {
   const { height, width } = useWindowDimensions();
@@ -25,27 +32,140 @@ export const FilterMobile = () => {
 
   const language = Language();
 
+  const [value, setValue] = React.useState("filter");
+
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
+
+  const StyledTab = styled(Tab)({
+    "&.Mui-selected": {
+      color: "secondary",
+      fontSize: "14px",
+      "@media only screen and (max-width: 1200px)": {
+        fontSize: "12px",
+      },
+    },
+    "&.MuiTab-root": {
+      color: "#ee99fc",
+      fontSize: "14px",
+      "@media only screen and (max-width: 1200px)": {
+        fontSize: "12px",
+      },
+    },
+  });
+  const StyledSearchBadge = styled(Badge)(({ theme }) => ({
+    "& .MuiBadge-badge": {
+      right: 10,
+      top: 10,
+      // border: `1px solid #fff`,
+      padding: "0 3px",
+    },
+  }));
+
+  // define signed filter length
+  const filterMobile = useSelector((state) => state.storeFilter.filter);
+  let filterBadge;
+  if (filterMobile !== "") {
+    filterBadge = 1;
+  } else {
+    filterBadge = 0;
+  }
+  const search = useSelector((state) => state.storeFilter.search);
+  let searchBadge;
+  if (search !== "") {
+    searchBadge = 1;
+  } else {
+    searchBadge = 0;
+  }
+  const city = useSelector((state) => state.storeFilter.cityFilter);
+  let cityBadge;
+  if (city !== "City") {
+    cityBadge = 1;
+  } else {
+    cityBadge = 0;
+  }
+  const specialist = useSelector((state) => state.storeFilter.specialist);
+  const object = useSelector((state) => state.storeFilter.object);
+  let typeBadge;
+  if (!specialist || !object) {
+    typeBadge = 1;
+  } else {
+    typeBadge = 0;
+  }
+
   setTimeout(() => {
     setLoading(false);
   }, 1000);
 
   return (
     <Container loading={loading.toString()} height={height}>
-      <div style={{ margin: "3vw 0 0 0" }}>
-        <h3>{language?.language.Main.filter.title}</h3>
+      <div
+        style={{
+          margin: "3vw 0 0 0",
+          width: "94%",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <Tabs value={value} onChange={handleChange} centered>
+          <StyledTab
+            label={language?.language.Main.filter.title}
+            value="filter"
+          />
+          <StyledSearchBadge
+            badgeContent={filterBadge + cityBadge + typeBadge}
+            overlap="circular"
+            color="secondary"
+          />
+
+          <StyledTab
+            label={language?.language.Main.filter.search}
+            value="search"
+          />
+          <StyledSearchBadge
+            badgeContent={searchBadge}
+            overlap="circular"
+            color="secondary"
+          />
+        </Tabs>
+        <div
+          style={{ width: "50px", display: "flex", justifyContent: "center" }}
+        >
+          {filterBadge + cityBadge + typeBadge + searchBadge > 0 && (
+            <MdDeleteForever
+              color="red"
+              size={22}
+              onClick={() => {
+                dispatch(setCityFilter("City"));
+                dispatch(setFilter(""));
+                dispatch(setSearch(""));
+                dispatch(setSpecialist("true"));
+                dispatch(setObject("true"));
+              }}
+            />
+          )}
+        </div>
       </div>
-
-      <CategoryFilter />
-
-      <Filter />
-      <div style={{ margin: "5vw 0 10vw 0" }}>
+      {value === "filter" ? (
+        <>
+          <Filter />
+          <CategoryFilter />
+        </>
+      ) : (
+        <div style={{ width: "100%" }}>
+          <Search />
+        </div>
+      )}
+      {/* <div style={{ margin: "5vw 0 10vw 0" }}>
         <Button
           function={() => {
             dispatch(setFilterOpen(false));
           }}
           title={`${language?.language.Main.filter.search}`}
         />
-      </div>
+      </div> */}
     </Container>
   );
 };
@@ -54,8 +174,6 @@ const Container = styled.div`
   display: none;
 
   @media only screen and (max-width: 600px) {
-    opacity: ${(props) => (props.loading === "true" ? "0" : "1")};
-    transition: ease-in-out 300ms;
     background: ${(props) => props.theme.background};
     color: ${(props) => props.theme.font};
     backdrop-filter: blur(40px);
@@ -64,29 +182,14 @@ const Container = styled.div`
     align-items: center;
     justify-content: start;
     gap: 5vw;
-    position: fixed;
-    top: 1vw;
-    left: -100%;
-    bottom: 0;
-    padding-bottom: 15vw;
-    width: 100%;
-    height: ${(props) => props.height}px;
+    width: 100vw;
+    height: auto;
+    min-height: 100vh;
+    margin-top: 15vw;
+    padding-bottom: 20vw;
     z-index: 99999;
     overflow-x: hidden;
-    overflow-y: scroll;
-    -webkit-animation: slide 0.2s forwards;
-    animation: slide 0.2s forwards;
-    @-webkit-keyframes slide {
-      100% {
-        left: 0;
-      }
-    }
-
-    @keyframes slide {
-      100% {
-        left: 0;
-      }
-    }
+    overflow-y: visible;
   }
 `;
 
@@ -105,6 +208,7 @@ export const Filter = () => {
   // filter cities and not dublicate same cities in map
 
   const cityFilter = useSelector((state) => state.storeFilter.cityFilter);
+
   const districtFilter = useSelector(
     (state) => state.storeFilter.districtFilter
   );
@@ -198,16 +302,23 @@ export const Filter = () => {
       <Select
         classNamePrefix="select"
         defaultValue={cityFilter}
+        value={
+          cityFilter === "City"
+            ? language?.language.Main.filter.city
+            : cityFilter
+        }
         placeholder={
           cityFilter === "City"
             ? language?.language.Main.filter.city
+            : cityFilter === "T'bilisi"
+            ? "Tbilisi"
             : cityFilter
         }
         isDisabled={false}
         isLoading={false}
         className="react-select-container"
         onChange={(value) => {
-          dispatch(setCityFilter(value.label));
+          dispatch(setCityFilter(value.value));
           dispatch(
             setDistrictFilter(`${language?.language.Main.filter.district}`)
           );
@@ -215,7 +326,11 @@ export const Filter = () => {
         }}
         styles={CustomStyle}
         options={cities?.map((item, index) => {
-          return { value: item, label: item };
+          if (item === "T'bilisi") {
+            return { value: item, label: "Tbilisi" };
+          } else {
+            return { value: item, label: item };
+          }
         })}
       />
       {cityFilter.includes("bilisi") && (
@@ -310,11 +425,7 @@ const FilterContainer = styled.div`
 const CheckBoxContainer = styled.div`
   display: flex;
   align-items: center;
-  font-size: 0.8vw;
-
-  @media only screen and (max-width: 600px) {
-    font-size: 3vw;
-  }
+  font-size: 14px;
 `;
 // const CheckBox = styled.input`
 //   cursor: pointer;

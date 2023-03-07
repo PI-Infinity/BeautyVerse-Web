@@ -7,8 +7,9 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import { AiOutlineEyeInvisible, AiOutlineEye } from "react-icons/ai";
-import { db } from "../../firebase";
+import { db, auth } from "../../firebase";
 import { updateDoc, doc } from "firebase/firestore";
+import { updatePassword } from "firebase/auth";
 
 export default function ChangePassword(props) {
   const [open, setOpen] = React.useState(false);
@@ -21,10 +22,19 @@ export default function ChangePassword(props) {
 
   // change password
   const Changing = () => {
-    if (oldPassword === props?.user?.password) {
+    if (oldPassword === props?.password) {
       if (newPassword?.length > 7) {
         if (newPassword === confirmPassword) {
-          updateDoc(doc(db, "users", props?.user?.id), {
+          const authUser = auth.currentUser;
+          updatePassword(authUser, newPassword)
+            .then(() => {
+              // Update successful.
+            })
+            .catch((error) => {
+              // An error ocurred
+              // ...
+            });
+          updateDoc(doc(db, "users", authUser?.uid, "secret", "password"), {
             password: newPassword,
           });
         } else {
@@ -54,12 +64,18 @@ export default function ChangePassword(props) {
   return (
     <Container>
       {!props.forgot && (
-        <Button variant="outlined" onClick={handleClickOpen}>
-          Change Password
+        <Button
+          variant="outlined"
+          onClick={handleClickOpen}
+          sx={{ fontSize: "14px" }}
+        >
+          {props?.language?.language.User.userPage.changePassword}
         </Button>
       )}
       <Dialog open={open} onClose={handleClose} id="dialog">
-        <DialogTitle>Change Password</DialogTitle>
+        <DialogTitle>
+          {props?.language?.language.User.userPage.changePassword}
+        </DialogTitle>
         <DialogContent>
           <div
             style={{
@@ -73,7 +89,7 @@ export default function ChangePassword(props) {
               autoFocus
               margin="dense"
               id="name"
-              label="Old Password"
+              label={props?.language?.language.User.userPage.oldPassword}
               value={oldPassword}
               type={showPassword === "old" ? "text" : "password"}
               fullWidth
@@ -107,7 +123,7 @@ export default function ChangePassword(props) {
             <TextField
               margin="dense"
               id="name"
-              label="New Password"
+              label={props?.language?.language.User.userPage.newPassword}
               value={newPassword}
               type={showPassword === "new" ? "text" : "password"}
               fullWidth
@@ -141,7 +157,7 @@ export default function ChangePassword(props) {
             <TextField
               margin="dense"
               id="name"
-              label="Confirm Password"
+              label={props?.language?.language.User.userPage.confirmPassword}
               value={confirmPassword}
               type={showPassword === "confirm" ? "text" : "password"}
               fullWidth
@@ -166,8 +182,12 @@ export default function ChangePassword(props) {
           </div>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={Changing}>Change</Button>
+          <Button onClick={handleClose}>
+            {props?.language?.language.User.userPage.cancel}
+          </Button>
+          <Button onClick={Changing}>
+            {props?.language?.language.User.userPage.change}
+          </Button>
         </DialogActions>
       </Dialog>
     </Container>

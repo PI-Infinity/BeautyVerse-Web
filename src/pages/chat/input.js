@@ -82,41 +82,45 @@ export const Input = () => {
         alert("Unsuported File Format");
       }
     } else {
-      setImg(null);
-      setText("");
-      await updateDoc(doc(db, "chats", chatUser[0]?.chatId), {
-        messages: arrayUnion({
-          id: uuid(),
-          text,
-          senderId: currentUser.uid,
-          date: Timestamp.now(),
-        }),
-      });
+      if (text?.length < 2000) {
+        await updateDoc(doc(db, "chats", chatUser[0]?.chatId), {
+          messages: arrayUnion({
+            id: uuid(),
+            text,
+            senderId: currentUser.uid,
+            date: Timestamp.now(),
+          }),
+        });
 
-      await updateDoc(
-        doc(db, "users", currentUser?.uid, "chats", chatUser[0].userId),
-        {
-          lastMessage: text,
-          date: serverTimestamp(),
-          opened: false,
-          senderId: currentUser?.uid,
-          userInfo: {
-            id: chatUser[0]?.userId,
-          },
-        }
-      );
-      await updateDoc(
-        doc(db, "users", chatUser[0]?.userId, "chats", currentUser.uid),
-        {
-          lastMessage: text,
-          date: serverTimestamp(),
-          opened: false,
-          senderId: currentUser?.uid,
-          userInfo: {
-            id: currentUser?.uid,
-          },
-        }
-      );
+        await updateDoc(
+          doc(db, "users", currentUser?.uid, "chats", chatUser[0].userId),
+          {
+            lastMessage: text,
+            date: serverTimestamp(),
+            opened: false,
+            senderId: currentUser?.uid,
+            userInfo: {
+              id: chatUser[0]?.userId,
+            },
+          }
+        );
+        await updateDoc(
+          doc(db, "users", chatUser[0]?.userId, "chats", currentUser.uid),
+          {
+            lastMessage: text,
+            date: serverTimestamp(),
+            opened: false,
+            senderId: currentUser?.uid,
+            userInfo: {
+              id: currentUser?.uid,
+            },
+          }
+        );
+        setImg(null);
+        setText("");
+      } else {
+        alert("maximum symbols 2000");
+      }
     }
   };
 
@@ -250,27 +254,19 @@ const File = styled.div`
   gap: 15px;
 
   .send {
-    font-size: 1.5vw;
+    font-size: 20px;
     color: green;
     margin: 0 1vw;
     cursor: pointer;
-
-    @media only screen and (max-width: 600px) {
-      font-size: 7vw;
-    }
   }
 
   #file {
     display: none;
   }
   .label {
-    font-size: 1vw;
+    font-size: 20px;
     cursor: pointer;
     color: ${(props) => props.theme.font};
-
-    @media only screen and (max-width: 600px) {
-      font-size: 4vw;
-    }
 
     :hover {
       filter: brightness(1.1);

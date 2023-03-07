@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { useSelector, useDispatch } from "react-redux";
 import { AuthContext } from "../../context/AuthContext";
 import { setLoadFeed } from "../../redux/main";
+import { setCardsScrollY } from "../../redux/scroll";
 import { db } from "../../firebase";
 import { onSnapshot, collectionGroup } from "firebase/firestore";
 import { FaUser } from "react-icons/fa";
@@ -13,11 +14,13 @@ import { FaUserEdit } from "react-icons/fa";
 import { MdAddBusiness } from "react-icons/md";
 import { BsBrush } from "react-icons/bs";
 import Tooltip from "@mui/material/Tooltip";
+import { Language } from "../../context/language";
 
 export const SpecialistsCard = (props) => {
   const { currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const language = Language();
   const proceduresOptions = ProceduresOptions();
   const loadFeed = useSelector((state) => state.storeMain.loadFeed);
   const rerender = useSelector((state) => state.storeMain.rerender);
@@ -52,7 +55,13 @@ export const SpecialistsCard = (props) => {
   }
 
   const name = capitalizeFirstLetter(props?.name);
-  const userType = capitalizeFirstLetter(props?.type);
+  let type;
+  if (props?.type === "beautyCenter") {
+    type = language?.language.Main.feedCard.beautySalon;
+  } else if (props?.type === "specialist") {
+    type = language?.language.Main.feedCard.specialist;
+  }
+  const username = capitalizeFirstLetter(props?.username);
 
   /// define procedure title
   var mainCategory = props?.filterCategories[0]?.substring(
@@ -82,8 +91,16 @@ export const SpecialistsCard = (props) => {
   }
 
   // define full address
-  const fullAddress =
-    props?.address?.address + ", " + props?.address?.streetNumber;
+  const fullAddress = (
+    <div>
+      {props?.address?.region?.length > 0 && props?.address?.region}
+      {props?.address?.city?.length > 0 && ", " + props?.address?.city}
+      {props?.address?.district?.length > 0 && ", " + props?.address?.district}
+      {props?.address?.address?.length > 0 &&
+        ", " + props?.address?.address + " "}
+      {props?.address?.streetNumber}
+    </div>
+  );
 
   // define all procedures
   const allProcedures = props?.filterCategories
@@ -105,13 +122,23 @@ export const SpecialistsCard = (props) => {
 
   return (
     <Card>
-      <Title onClick={() => navigate(`/user/${props.id}`)}>
+      <Title
+        onClick={() => {
+          dispatch(setCardsScrollY(window.scrollY));
+          navigate(`/user/${props.id}`);
+        }}
+      >
         {icon}
         {name.substring(0, name.indexOf(" "))?.length > 0
           ? name.substring(0, name.indexOf(" "))
           : name}
       </Title>
-      <ImgContainer onClick={() => navigate(`/user/${props.id}`)}>
+      <ImgContainer
+        onClick={() => {
+          dispatch(setCardsScrollY(window.scrollY));
+          navigate(`/user/${props.id}`);
+        }}
+      >
         {props.cover != undefined ? (
           <Img src={props?.cover} />
         ) : (
@@ -122,20 +149,26 @@ export const SpecialistsCard = (props) => {
       </ImgContainer>
       <Tooltip title={fullAddress}>
         <City>
-          <div>{props?.address?.city}</div>
+          <div>
+            {props?.address?.city === "T'bilisi"
+              ? "Tbilisi"
+              : props?.address?.city}
+          </div>
         </City>
       </Tooltip>
       <Tooltip title={fullAddress}>
         <City>
           <div>
-            {props?.address?.district?.length > 0
-              ? props?.address?.district
-              : props?.address?.address}
+            {props?.address?.district?.length > 0 &&
+              props?.address?.district + " "}
+            {props?.address?.address?.length > 0 &&
+              props?.address?.address + " "}
+            {props?.address?.streetNumber}
           </div>
         </City>
       </Tooltip>
       <Tooltip title={allProcedures}>
-        <Category>{procedures?.label}</Category>
+        <Category>{props?.username !== undefined ? username : type}</Category>
       </Tooltip>
       <Review>
         {/* <Rating
@@ -153,10 +186,11 @@ export const SpecialistsCard = (props) => {
             display: "flex",
             alignItems: "center",
             marginBottom: "3px",
+            fontSize: "14px",
           }}
         >
           <BiStar className="likedIcon" />
-          <span>({stars})</span>
+          <span>{stars}</span>
           {/* <MdOutlineStarPurple500
             size={12}
             color="#ffa534"
@@ -201,7 +235,7 @@ const Card = styled.div`
 `;
 
 const Title = styled.h2`
-  font-size: 0.8vw;
+  font-size: 16px;
   margin: 0;
   font-weight: bold;
   padding: 0.5vw 0 0.3vw 0;
@@ -214,7 +248,7 @@ const Title = styled.h2`
   color: ${(props) => props.theme.font};
 
   @media only screen and (max-width: 600px) {
-    font-size: 3.7vw;
+    font-size: 16px;
     padding: 1.25vw;
   }
 
@@ -227,26 +261,30 @@ const City = styled.div`
   width: 85%;
   display: flex;
   justify-content: center;
+  align-items: center;
   min-height: 1.1vw;
   margin-top: 0.25vw;
   overflow: hidden;
   @media only screen and (max-width: 600px) {
     min-height: 5.2vw;
+    padding: 0 1vw;
   }
 
   & div {
+    box-sizing: border-box;
     background: #f3f3f3;
-    padding: 0 0 0.1vw 0;
+    padding: 0 0 0.1vw 0.3vw;
     border-radius: 50vw;
     color: #050505;
-    font-size: 0.7vw;
+    font-size: 12px;
     z-index: 9;
     width: 85%;
     white-space: nowrap;
     text-align: center;
+    overflow: hidden;
 
     @media only screen and (max-width: 600px) {
-      font-size: 3.2vw;
+      font-size: 12px;
       padding: 0.5vw 1.5vw;
       border-radius: 1vw;
     }
@@ -363,9 +401,9 @@ const Category = styled.div`
   display: flex;
   align-items: center;
   white-space: nowrap;
-  justify-content: start;
+  justify-content: center;
   padding: 0 0 0.5vw 0.3vw;
-  font-size: 0.6vw;
+  font-size: 12px;
   font-weight: bold;
   border-bottom: 1px solid #ccc;
   color: ${(props) => props.theme.font};
@@ -374,7 +412,7 @@ const Category = styled.div`
     width: 35vw;
     height: 6vw;
     padding: 0 0 0vw 1vw;
-    font-size: 3vw;
+    font-size: 12px;
   }
 `;
 

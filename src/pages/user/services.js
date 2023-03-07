@@ -214,6 +214,7 @@ export const Services = () => {
         : theme
         ? "#f3f3f3"
         : "#333",
+      fontSize: "14px",
     }),
     control: (baseStyles, state) => ({
       ...baseStyles,
@@ -223,8 +224,8 @@ export const Services = () => {
       minHeight: "2vw",
       cursor: "pointer",
       "@media only screen and (max-width: 1200px)": {
-        width: "85vw",
-        fontSize: "16px",
+        width: "80vw",
+        fontSize: "14px",
       },
     }),
   };
@@ -238,22 +239,23 @@ export const Services = () => {
       <WrapperOne>
         <WorkingDays>
           <span style={{ fontWeight: "bold" }}>
-            {language?.language.User.userPage.workingDays}:{" "}
+            {language?.language.User.userPage?.workingDays}:{" "}
             {user?.id === currentuser?.id && edit !== "days" && (
               <RiEdit2Fill className="edit" onClick={() => setEdit("days")} />
             )}
           </span>
           <div>
-            {user?.workingDays
-              ?.sort(function (a, b) {
-                return a.id - b.id;
-              })
-              ?.map((item, index) => {
-                let daysLang = workingDaysOpt?.find(
-                  (it) => it.value === item.value
-                );
-                return <div key={item.id}>{daysLang.label}</div>;
-              })}
+            {user?.workingDays?.length > 0 &&
+              user?.workingDays
+                ?.sort(function (a, b) {
+                  return a.id - b.id;
+                })
+                ?.map((item, index) => {
+                  let daysLang = workingDaysOpt?.find(
+                    (it) => it.value === item.value
+                  );
+                  return <div key={item.id}>{daysLang.label}</div>;
+                })}
           </div>
           {edit === "days" && (
             <SelectContainer
@@ -401,7 +403,7 @@ export const Services = () => {
                         ) : (
                           <InputContainer>
                             <Input
-                              type="text"
+                              type="number"
                               placeholder={
                                 language?.language.User.userPage.price
                               }
@@ -411,7 +413,9 @@ export const Services = () => {
 
                             <GiConfirmed
                               // className="remove"
-                              onClick={() => AddPrice(item.value)}
+                              onClick={
+                                addPrice > 0 ? () => AddPrice(item.value) : null
+                              }
                               style={{ color: "green", cursor: "pointer" }}
                               // onClick={() => Deleting(item.value)}
                             />
@@ -592,13 +596,13 @@ const WorkingDays = styled.div`
 
   & span {
     @media only screen and (max-width: 600px) {
-      font-size: 16px;
+      font-size: 14px;
     }
   }
 
   & div {
     @media only screen and (max-width: 600px) {
-      font-size: 16px;
+      font-size: 14px;
     }
   }
 
@@ -658,9 +662,9 @@ const ServicesContainer = styled.div`
       left: 0;
     }
 
-    :hover {
-      color: ${(props) => props.theme.secondLevel};
-    }
+    // :hover {
+    //   color: ${(props) => props.theme.secondLevel};
+    // }
   }
 
   @media only screen and (max-width: 600px) {
@@ -725,13 +729,13 @@ const ServiceItemContainer = styled.div`
   padding: 10px;
   display: flex;
   align-items: center;
-  font-size: 0.8vw;
+  font-size: 14px;
   transition: ease 200;
   color: ${(props) => props.theme.font};
 
-  :hover {
-    background: ${(props) => props.theme.background};
-  }
+  // :hover {
+  //   background: ${(props) => props.theme.background};
+  // }
 
   @media only screen and (max-width: 600px) {
     width: 87vw;
@@ -759,7 +763,6 @@ const ServiceItem = styled.div`
     height: 8vw;
     border-radius: 1vw;
     padding: 0 0 0 2vw;
-    font-size: 3vw;
   }
 
   // & span {
@@ -806,7 +809,6 @@ const InputContainer = styled.div`
     height: 7.5vw;
     width: 28vw;
     padding: 0 2vw;
-    font-size: 4vw;
   }
 `;
 
@@ -814,22 +816,22 @@ const Input = styled.input`
   border: none;
   border-radius: 50vw;
   background: white;
-  font-size: 0.8vw;
   width: 5vw;
   height: 70%;
   padding-left: 0.25vw;
   background: ${(props) => props.theme.secondLevel};
   color: ${(props) => props.theme.font};
+  font-size: 16px;
+
   @media only screen and (max-width: 600px) {
     width: 10vw;
     border-radius: 50vw;
-    font-size: 16px;
     padding-left: 3vw;
     height: 70%;
   }
 
   :placeholder {
-    font-size: 1vw;
+    font-size: 14px;
   }
 
   :focus {

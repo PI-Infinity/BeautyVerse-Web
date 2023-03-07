@@ -259,11 +259,7 @@ const Container = styled.div`
     }
 
     .icon {
-      font-size: 1vw;
-
-      @media only screen and (max-width: 600px) {
-        font-size: 4vw;
-      }
+      font-size: 16px;
     }
   }
 `;
@@ -279,13 +275,13 @@ const Button = styled.div`
   gap: 0.5vw;
   cursor: pointer;
   color: ${(props) => props.theme.font};
+  font-size: 14px;
 
   @media only screen and (max-width: 600px) {
     height: 6vw;
     gap: 1.5vw;
     padding: 0 1.5vw;
     border-radius: 1vw;
-    font-size: 3vw;
   }
 
   :hover {
@@ -293,10 +289,6 @@ const Button = styled.div`
   }
 
   .icon {
-    font-size: 1vw;
-
-    @media only screen and (max-width: 600px) {
-      font-size: 4vw;
-    }
+    font-size: 16px;
   }
 `;

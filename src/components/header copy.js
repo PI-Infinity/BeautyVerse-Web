@@ -6,6 +6,7 @@ import { setOpenMenu, setOpenMobileMenu } from "../redux/main";
 import Menu from "../components/menu";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import { TbMessages } from "react-icons/tb";
 import Badge from "@mui/material/Badge";
 import { IsMobile } from "../functions/isMobile";
 import { AuthContext } from "../context/AuthContext";
@@ -20,7 +21,6 @@ import {
 import { db } from "../firebase";
 import Notifications from "../components/notifications";
 import AppBar from "@mui/material/AppBar";
-import { HiChatAlt } from "react-icons/hi";
 
 export const Header = () => {
   const isMobile = IsMobile();
@@ -165,7 +165,7 @@ export const Header = () => {
               )}
               {chats > 0 ? (
                 <Badge badgeContent={chats} color="secondary">
-                  <HiChatAlt
+                  <TbMessages
                     className="notifIcon"
                     size={24}
                     style={{ cursor: "pointer" }}
@@ -173,7 +173,7 @@ export const Header = () => {
                   />
                 </Badge>
               ) : (
-                <HiChatAlt
+                <TbMessages
                   className="notifIcon"
                   size={24}
                   style={{ cursor: "pointer" }}
@@ -245,7 +245,7 @@ export const Header = () => {
   );
 };
 
-const Container = styled.header`
+const Container = styled.div`
   position: fixed;
   width: 100%;
   background: ${(props) => props.theme.background};
@@ -276,17 +276,17 @@ const Container = styled.header`
   }
 
   @media only screen and (max-width: 600px) {
+    // position: absolute;
+    // top: 1vw;
     position: fixed;
     flex-shrink: 0;
     top: 0;
-    left: 0;
-    height: 12vw;
+    height: 14vw;
     border-bottom: 0px solid #ddd;
     padding: 0;
     backdrop-filter: blur(20px);
     background: ${(props) => props.theme.header};
     box-sizing: border-box;
-    // tried those
     -webkit-flex-shrink: 0;
     transform: translateZ(0);
     -webkit-transform: translateZ(0);

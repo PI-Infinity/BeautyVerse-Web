@@ -163,7 +163,7 @@ const ReviewItem = styled.div`
   justify-content: start;
   align-items: center;
   gap: 0.5vw;
-  font-size: 0.8vw;
+  font-size: 12px;
   color: ${(props) => props.theme.font};
 
   @media only screen and (max-width: 600px) {
@@ -171,7 +171,6 @@ const ReviewItem = styled.div`
     padding: 1.5vw;
     border-radius: 1vw;
     margin-bottom: 1vw;
-    font-size: 3vw;
     gap: 2.5vw;
   }
 

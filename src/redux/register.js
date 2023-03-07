@@ -7,8 +7,9 @@ const initialState = {
   //register info
   name: "",
   map: "",
+  addressInput: "",
   addationalAddress: "",
-  countryCode: "",
+  countryCode: { value: "+995", label: "Georgia" },
   phoneNumber: "",
   email: "",
   password: "",
@@ -35,6 +36,9 @@ export const register = createSlice({
     },
     setMap: (state, action) => {
       state.map = action.payload;
+    },
+    setAddressInput: (state, action) => {
+      state.addressInput = action.payload;
     },
     setAddationalAddress: (state, action) => {
       state.addationalAddress = action.payload;
@@ -79,6 +83,7 @@ export const {
   setPassword,
   setConfirmPassowrd,
   setCategories,
+  setAddressInput,
   setWorkingDays,
 } = register.actions;
 export default register.reducer;

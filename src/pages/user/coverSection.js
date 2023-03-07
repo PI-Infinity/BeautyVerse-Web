@@ -26,6 +26,7 @@ import { BsArrowRightCircleFill, BsArrowLeftCircleFill } from "react-icons/bs";
 import AddAddress from "../../pages/user/addAddressPopup";
 import { IsMobile } from "../../functions/isMobile";
 import { setMap } from "../../redux/register";
+import TextField from "@mui/material/TextField";
 
 const CoverSection = React.memo(function ({ user, language }) {
   const dispatch = useDispatch();
@@ -40,21 +41,59 @@ const CoverSection = React.memo(function ({ user, language }) {
 
   // define user type
   const rerender = useSelector((state) => state.storeMain.rerender);
-
+  const theme = useSelector((state) => state.storeMain.theme);
   // edit name
   const [edit, setEdit] = React.useState(false);
 
   const [editName, setEditName] = React.useState("");
 
-  const UpdateLink = () => {
+  const UpdateName = () => {
     const base = doc(db, "users", `${user?.id}`);
     if (editName?.length > 0) {
       updateDoc(base, {
         name: editName,
       });
       setEditName("");
+      setTimeout(() => {
+        setEdit(false);
+      }, 300);
     }
     setEdit(false);
+  };
+  // edit type
+  const [editUsername, setEditUsername] = React.useState(false);
+
+  const [username, setUsername] = React.useState("");
+
+  const UpdateUsername = () => {
+    const base = doc(db, "users", `${user?.id}`);
+    if (username?.length > 0) {
+      updateDoc(base, {
+        username: username,
+      });
+      setEditName("");
+      setTimeout(() => {
+        setEditUsername(false);
+      }, 300);
+    }
+    setEditUsername(false);
+  };
+  // edit about
+  const [editAbout, setEditAbout] = React.useState(false);
+
+  const [about, setAbout] = React.useState(user?.about);
+
+  const UpdateAbout = async () => {
+    const base = doc(db, "users", `${user?.id}`);
+    await updateDoc(base, {
+      about: about,
+    });
+    setAbout("");
+    setTimeout(() => {
+      setEditAbout(false);
+    }, 300);
+
+    setEditAbout(false);
   };
 
   // capitilize firs letter
@@ -116,13 +155,14 @@ const CoverSection = React.memo(function ({ user, language }) {
     longitude = addresses[currentAddress]?.longitude;
     addressDefined = (
       <div>
-        {addresses[currentAddress]?.city}
+        {addresses[currentAddress]?.city === "T'bilisi"
+          ? "Tbilisi"
+          : addresses[currentAddress]?.city}
         {addresses[currentAddress]?.district?.length > 0 &&
           ", " + addresses[currentAddress]?.district}
         {addresses[currentAddress]?.address?.length > 0 &&
-          ", " + addresses[currentAddress]?.address}
-        {addresses[currentAddress]?.streetNumber?.length > 0 &&
-          ", " + addresses[currentAddress]?.streetNumber}
+          ", " + addresses[currentAddress]?.address + " "}
+        {addresses[currentAddress]?.streetNumber}
       </div>
     );
   }
@@ -215,24 +255,100 @@ const CoverSection = React.memo(function ({ user, language }) {
     <InfoSide>
       <CoverUploader cover="cover" user={user} />
       <TitleContainer>
-        <Type>{type}</Type>
+        {editUsername ? (
+          <Wrapper1>
+            <Wrapper2>
+              <div
+                style={{
+                  position: "fixed",
+                  height: "1.5vw",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <WhiteBorderTextField
+                  onChange={(e) => setUsername(e.target.value)}
+                  size="small"
+                  autoFocus
+                  placeholder={`Max. 30 letters`}
+                  value={username}
+                  sx={{
+                    input: { color: theme ? "#fff" : "#151515" },
+                    fontSize: "16px",
+                    fontWeight: "bold",
+                  }}
+                  id="standard-basic"
+                  label={`${username?.length}`}
+                  variant="outlined"
+                />
+              </div>
+            </Wrapper2>
+            <ImCheckmark
+              className="uploaderIcon"
+              color="green"
+              onClick={
+                username?.length < 31
+                  ? () => UpdateUsername()
+                  : () => alert("Max length 30 letters")
+              }
+            />
+          </Wrapper1>
+        ) : (
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <Type>{user?.username != undefined ? user?.username : type}</Type>
+            {currentuser?.id === user?.id && (
+              <RiEdit2Fill
+                className="editIcon"
+                onClick={() => setEditUsername(true)}
+              />
+            )}
+          </div>
+        )}
         <Title edit={edit} following={following?.id?.length?.toString()}>
           {coverIcon}
           {edit ? (
             <>
-              <div>
-                <NameInput
-                  placeholder={user?.name}
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
+              <Wrapper1>
+                <Wrapper2>
+                  <div>
+                    <WhiteBorderTextField
+                      size="small"
+                      autoFocus
+                      placeholder={`Max. 30 letters`}
+                      label={`${name?.length}`}
+                      value={editName}
+                      sx={{
+                        input: { color: theme ? "#fff" : "#151515" },
+                        fontSize: "16px",
+                        fontWeight: "bold",
+                      }}
+                      onChange={(e) => setEditName(e.target.value)}
+                      id="standard-basic"
+                      variant="outlined"
+                    />
+                  </div>
+                </Wrapper2>
+                <ImCheckmark
+                  className="uploaderIcon"
+                  color="green"
+                  onClick={
+                    name?.length < 31
+                      ? () => UpdateName()
+                      : () => alert("Max length 30 letters")
+                  }
                 />
-              </div>
-              <ImCheckmark className="editIcon" onClick={UpdateLink} />
+              </Wrapper1>
             </>
           ) : (
             <>
-              <div>
-                <span>{name}</span>{" "}
+              <div
+                style={{
+                  height: "1.5vw",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <h3 style={{ margin: 0 }}>{name}</h3>{" "}
                 {currentuser?.id !== user?.id && (
                   <>
                     {following?.id?.length > 0 ? (
@@ -263,12 +379,106 @@ const CoverSection = React.memo(function ({ user, language }) {
             </>
           )}
         </Title>
+
+        <About>
+          {editAbout ? (
+            <>
+              <Wrapper1>
+                <Wrapper2>
+                  <WhiteBorderTextField
+                    editAbout={editAbout?.toString()}
+                    id="standard-basic"
+                    multiline
+                    rows={2}
+                    autoFocus
+                    placeholder={`Max. 100 letters`}
+                    label={`${about?.length}`}
+                    value={about}
+                    sx={{
+                      inputStyle: { color: theme ? "#fff" : "#151515" },
+                      input: { color: theme ? "#fff" : "#151515" },
+                      fontSize: "16px",
+                      fontWeight: "normal",
+                      background: editAbout ? "#151515" : "none",
+                      width: isMobile ? "100%" : "300px",
+                    }}
+                    onChange={(e) => setAbout(e.target.value)}
+                    variant="outlined"
+                  />
+                </Wrapper2>
+              </Wrapper1>
+              <ImCheckmark
+                className="followIcon"
+                color="green"
+                onClick={
+                  about?.length < 101
+                    ? () => UpdateAbout()
+                    : () => alert("Max length 100 letters")
+                }
+              />
+            </>
+          ) : (
+            <div style={{ display: "flex" }}>
+              <div
+                style={{
+                  height: "1.5vw",
+                  display: "flex",
+                  alignItems: "center",
+                  whiteSpace: "normal",
+                  width: "100%",
+                }}
+              >
+                {user?.about?.length > 0 && (
+                  <div
+                    style={{
+                      margin: 0,
+                      whiteSpace: "normal",
+                      lineBreak: "auto",
+                    }}
+                  >
+                    {user?.about?.length < 1 ? (
+                      <span style={{ width: "80px" }}>About you</span>
+                    ) : (
+                      <span>{user?.about}</span>
+                    )}
+                  </div>
+                )}
+                {currentuser?.id !== user?.id && (
+                  <>
+                    {following?.id?.length > 0 ? (
+                      <ImCheckmark
+                        className="followIcon"
+                        following="true"
+                        onClick={UnFollowToUser}
+                      />
+                    ) : (
+                      <ImCheckmark
+                        className="followIcon"
+                        onClick={
+                          currentuser != undefined
+                            ? FollowToUser
+                            : () => navigate("/login")
+                        }
+                      />
+                    )}
+                  </>
+                )}
+              </div>
+              {currentuser?.id === user?.id && (
+                <RiEdit2Fill
+                  className="editIcon"
+                  onClick={() => setEditAbout(true)}
+                />
+              )}
+            </div>
+          )}
+        </About>
       </TitleContainer>
       <div
         style={{
           display: "flex",
           alignItems: "center",
-          gap: "15px",
+          gap: "1.5vw",
           width: "50%",
           minWidth: "50%",
         }}
@@ -368,7 +578,7 @@ const InfoSide = styled.div`
   width: 70%;
   box-shadow: 0 0.1vw 0.3vw ${(props) => props.theme.shadowColor};
   border-radius: 0 0 5px 5px;
-  padding: 1.5vw;
+  padding: 15px;
   display: flex;
   align-items: center;
   justify-content: start;
@@ -417,7 +627,7 @@ const AddImg = styled.div`
     left: 5vw;
 
     @media only screen and (max-width: 600px) {
-      font-size: 15vw;
+      font-size: 5vw;
     }
   }
 `;
@@ -426,50 +636,65 @@ const TitleContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: start;
-  justify-content: space-between;
+  justify-content: start;
   padding-left: 2vw;
   width: 30vw;
   white-space: nowrap;
   max-width: 60vw;
+  min-height: 130px;
 
   @media only screen and (max-width: 600px) {
+    position: relative;
+    top: 6vw;
     min-width: auto;
     width: auto;
+    height: auto;
     padding-left: 6vw;
+  }
+
+  .editIcon {
+    font-size: 1.1vw;
+    color: ${(props) => (props.following > 0 ? "#2bdfd9" : "#ddd")};
+    margin-left: 0.5vw;
+    cursor: pointer;
+
+    @media only screen and (max-width: 600px) {
+      font-size: 3.5vw;
+      margin-left: 15px;
+    }
   }
 `;
 
-const Title = styled.span`
-  font-size: 1.2vw;
+const Title = styled.h2`
+  font-size: 18px;
   font-weight: bold;
   letter-spacing: 0.03vw;
-  margin: 0.5vw 0;
+  margin: 10px 0 0 0;
+  height: 1.5vw;
   display: flex;
   align-items: center;
   justify-content: start;
   gap: 0.5vw;
   width: 100%;
   color: ${(props) => props.theme.font};
+  transition: ease 200ms;
 
   @media only screen and (max-width: 600px) {
-    font-size: 4vw;
-    margin: 1.5vw 0;
-    gap: 1.5vw;
+    font-size: 16px;
+    margin: 20px 0 0 10px;
+    gap: 15px;
     letter-spacing: 0.2vw;
   }
 
-  // & > div {
-  //   width: auto;
-  //   height: 2vw;
-
-  //   @media only screen and (max-width: 600px) {
-  //     height: 6vw;
-  //   }
-  // }
-
   .editIcon {
-    color: ${(props) => (props.edit ? "green" : "#ddd")};
+    font-size: 1.1vw;
+    color: ${(props) => (props.following > 0 ? "#2bdfd9" : "#ddd")};
+    margin-left: 0.5vw;
     cursor: pointer;
+
+    @media only screen and (max-width: 600px) {
+      font-size: 4.5vw;
+    }
   }
 
   .followIcon {
@@ -480,51 +705,56 @@ const Title = styled.span`
 
     @media only screen and (max-width: 600px) {
       font-size: 4.5vw;
-      margin-left: 1.5vw;
+      margin-left: 15px;
     }
   }
 `;
 
-const NameInput = styled.input`
-  border: none;
-  width: 15vw;
-  margin: 0;
-  background: white;
-  border-radius: 0.5vw;
-  font-size: 1.2vw;
-  font-weight: bold;
-  letter-spacing: 0.03vw;
-  padding: 0;
+const Wrapper1 = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .uploaderIcon {
+    font-size: 1vw;
+    color: color: ${(props) => props.theme.disabled};
+    cursor: pointer;
+
+    @media only screen and (max-width: 600px) {
+      font-size: 5vw;
+    }
+  }
+`;
+const Wrapper2 = styled.div`
+  width: 350px;
+  height: 1.5vw;
 
   @media only screen and (max-width: 600px) {
-    width: 35vw;
-    border-radisu: 1.5vw;
-    font-size: 16px;
-  }
-
-  :placeholder {
-    font-size: 1.2vw;
-    font-weight: bold;
-    letter-spacing: 0.03vw;
-    width: 100%;
-    color: #e5e5e5;
-
-    @media only screen and (max-width: 600px) {
-      font-size: 3.5vw;
-    }
-  }
-
-  :focus {
-    outline: none;
-
-    @media only screen and (max-width: 600px) {
-      box-shadow: 0 0.3vw 0.6vw #ccc;
-    }
+    width: 60vw;
   }
 `;
 
-const Name = styled.span`
-  font-size: 1vw;
+const WhiteBorderTextField = styled(TextField)`
+  & label.Mui-focused {
+    color: ${(props) => props.theme.font};
+  }
+  & .MuiOutlinedInput-root {
+    color: ${(props) => props.theme.font};
+    &.Mui-focused fieldset {
+      width: 300px;
+      @media only screen and (max-width: 600px) {
+        width: 55vw;
+      }
+      border-color: ${(props) => props.theme.secondLevel};
+    }
+  }
+  & multilineccolor: {
+    color: red;
+  }
+`;
+
+const Name = styled.h2`
+  font-size: 18px;
   font-weight: bold;
   border: none;
   background: none;
@@ -534,33 +764,57 @@ const Name = styled.span`
   margin: 0;
   overflow: hidden;
   cursor: pointer;
+  display: flex;
+  align-items: center;
 
   @media only screen and (max-width: 600px) {
-    font-size: 3vw;
+    font-size: 16px;
   }
 `;
 
-const Type = styled.span`
-  color: ${(props) => props.theme.secondLevel};
-  font-size: 1.1vw;
+const Type = styled.p`
+  color: ${(props) => props.theme.font};
+  font-size: 14px;
   font-weight: bold;
   letter-spacing: 0.03vw;
-
-  @media only screen and (max-width: 600px) {
-    font-size: 3.5vw;
-  }
+  height: 1.5vw;
+  margin: 0;
+  display: flex;
+  align-items: center;
 `;
 
-const Services = styled.span`
-  color: ${(props) => props.theme.filterFontActive};
-  font-size: 0.9vw;
+const About = styled.div`
+  margin: 1vw 0 0 0;
+  width: 400px;
+  height: auto;
+  white-space: normal;
+  color: ${(props) => props.theme.font};
+  font-size: 14px;
+  font-weight: normal;
   letter-spacing: 0.03vw;
+  gap: 10px;
+  display: flex;
+  justify-content: start;
+  align-items: start;
+
+  .editIcon {
+    font-size: 1.1vw;
+    color: ${(props) => (props.following > 0 ? "#2bdfd9" : "#ddd")};
+    margin-left: 0.5vw;
+    cursor: pointer;
+
+    @media only screen and (max-width: 600px) {
+      font-size: 3.5vw;
+      margin-left: 15px;
+    }
+  }
 
   @media only screen and (max-width: 600px) {
-    font-size: 3.5vw;
-    letter-spacing: 0.1vw;
+    width: 68vw;
+    margin-top: 5vw;
   }
 `;
+
 const WorkingInfo = styled.div`
   display: flex;
   flex-direction: column;
@@ -575,16 +829,16 @@ const WorkingInfo = styled.div`
   gap: 15px;
 
   @media only screen and (max-width: 600px) {
-    font-size: 3.5vw;
+    font-size: 14px;
     letter-spacing: 0.1vw;
     display: none;
   }
 
   .workingInfoIcon {
-    font-size: 1.5vw;
+    font-size: 15px;
 
     @media only screen and (max-width: 600px) {
-      font-size: 3.5vw;
+      font-size: 14px;
       letter-spacing: 0.1vw;
     }
   }
@@ -609,7 +863,7 @@ const StaticInfo = styled.div`
 
 const Location = styled.div`
   color: #444;
-  font-size: 0.75vw;
+  font-size: 14px;
   letter-spacing: 0.03vw;
   display: flex;
   align-items: center;

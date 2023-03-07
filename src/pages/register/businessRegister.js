@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import styled from "styled-components";
 import { Button } from "../../components/button";
 import { useSelector, useDispatch } from "react-redux";
@@ -15,11 +15,23 @@ import {
 } from "../../data/registerDatas";
 import { db, auth } from "../../firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import useWindowDimensions from "../../functions/dimensions";
 import { v4 } from "uuid";
 import { Language } from "../../context/language";
 import { IsMobile } from "../../functions/isMobile";
+import {
+  setName,
+  setEmail,
+  setPhoneNumber,
+  setPassword,
+  setMap,
+  setCountryCode,
+  setConfirmPassowrd,
+  setAddressInput,
+} from "../../redux/register";
+import VerifyEmail from "../../pages/register/verifyPopup";
+import Error from "../../snackBars/success";
 
 const animatedComponents = makeAnimated();
 
@@ -32,53 +44,11 @@ export const BusinessRegister = (props) => {
   const { dispatch } = useContext(AuthContext);
   const page = useSelector((state) => state.storeRegister.page);
   const proceduresOptions = ProceduresOptions();
+
   // define user type
   const type = useSelector((state) => state.storeRegister.userType);
   const registerFields = useSelector((state) => state.storeRegister);
   const map = useSelector((state) => state.storeRegister.map);
-
-  const HandleSubmit = async (e) => {
-    e.preventDefault();
-    if (registerFields?.categories?.length < 1) {
-      alert(`${language?.language.Auth.auth.pleaseInput}`);
-    } else {
-      GetOTP(e);
-    }
-  };
-
-  // otp register
-  const [otp, setOTP] = React.useState("");
-  const [flag, setFlag] = React.useState(false);
-  const [confirmObj, setConfirmObj] = React.useState("");
-  // send recaptcha
-  const SetupRecaptcha = (number) => {
-    const recaptchaVerifer = new RecaptchaVerifier(
-      "recaptcha-container",
-      {},
-      auth
-    );
-    recaptchaVerifer.render(number);
-    return signInWithPhoneNumber(auth, number, recaptchaVerifer);
-  };
-  // get otp
-  const GetOTP = async (e) => {
-    e.preventDefault();
-    if (
-      registerFields?.phoneNumber === "" ||
-      registerFields?.phoneNumber === undefined
-    ) {
-      return alert(`${language?.language.Auth.auth.valid}`);
-    } else {
-      try {
-        const num = registerFields?.countryCode + registerFields?.phoneNumber;
-        const response = await SetupRecaptcha(num);
-        setConfirmObj(response);
-        setFlag(true);
-      } catch (err) {
-        alert(err);
-      }
-    }
-  };
 
   let categories;
   if (registerFields?.categories?.length > 0) {
@@ -86,70 +56,85 @@ export const BusinessRegister = (props) => {
       return item.value;
     });
   }
+  const [alert, setAlert] = useState(false);
 
   //verify code
-  const VerifyOTP = async (e) => {
-    e.preventDefault();
-    if (otp === "" || otp === null) {
-      return;
-    } else {
-      try {
-        const userCredential = await confirmObj.confirm(otp);
-        const user = userCredential.user;
-        await dispatch({ type: "LOGIN", payload: user });
-        // create user database
-        await setDoc(doc(db, `users`, user.uid), {
-          id: user.uid,
-          type: type,
-          name: registerFields?.name,
-          password: registerFields?.password,
-          email: registerFields?.email,
-          phone: registerFields?.countryCode + registerFields?.phoneNumber,
-          address: {
-            number: 1,
-            country: map.country,
-            region: map.region,
-            city: map.city,
-            district: map.district,
-            address: map.street,
-            streetNumber: map.number,
-            latitude: map.latitude,
-            longitude: map.longitude,
-          },
-          workingDays:
-            registerFields?.workingDays?.length > 0
-              ? registerFields?.workingDays
-              : "",
-          lastPost: serverTimestamp(),
-          registerDate: serverTimestamp(),
-          filterCategories: categories,
-        });
-        let subcat;
-        if (type === "specialist" || type === "beautyCenter") {
-          await registerFields?.categories?.map((item, index) => {
-            setDoc(doc(db, `users`, user.uid, "procedures", item.value), {
-              value: item.value,
-            });
+  const Register = async (e) => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        registerFields?.email,
+        registerFields?.password
+      );
+      const user = userCredential.user;
+      await dispatch({ type: "LOGIN", payload: user });
+      // create user database
+      await setDoc(doc(db, `users`, user.uid), {
+        id: user.uid,
+        type: type,
+        name: registerFields?.name,
+        email: registerFields?.email,
+        phone: registerFields?.countryCode?.value + registerFields?.phoneNumber,
+        address: {
+          number: 1,
+          country: map.country,
+          region: map.region,
+          city: map.city,
+          district: map.district,
+          address: map.street,
+          streetNumber: map.number,
+          latitude: map.latitude,
+          longitude: map.longitude,
+        },
+        active: true,
+        workingDays:
+          registerFields?.workingDays?.length > 0
+            ? registerFields?.workingDays
+            : "",
+        lastPost: serverTimestamp(),
+        registerDate: serverTimestamp(),
+        filterCategories: categories,
+      });
+      await setDoc(doc(db, `users`, `${user.uid}`, "secret", `password`), {
+        password: registerFields?.password,
+      });
+      let subcat;
+      if (type === "specialist" || type === "beautyCenter") {
+        await registerFields?.categories?.map((item, index) => {
+          setDoc(doc(db, `users`, user.uid, "procedures", item.value), {
+            value: item.value,
           });
-        }
-        var actionId = v4();
-        await setDoc(
-          doc(db, `users`, `${user.uid}`, "notifications", `${actionId}`),
-          {
-            id: actionId,
-            senderId: "beautyVerse",
-            text: language?.language.Auth.auth.successRegister,
-            date: serverTimestamp(),
-            type: "welcome",
-            status: "unread",
-            feed: ``,
-          }
-        );
-        navigate(`/user/${user?.uid}`);
-      } catch (err) {
-        alert(err);
+        });
       }
+      var actionId = v4();
+      await setDoc(
+        doc(db, `users`, `${user.uid}`, "notifications", `${actionId}`),
+        {
+          id: actionId,
+          senderId: "beautyVerse",
+          text: language?.language.Auth.auth.successRegister,
+          date: serverTimestamp(),
+          type: "welcome",
+          status: "unread",
+          feed: ``,
+        }
+      );
+      navigate(`/user/${user?.uid}`);
+      mainDispatch(setMap(""));
+      mainDispatch(setPassword(""));
+      mainDispatch(setConfirmPassowrd(""));
+      mainDispatch(setName());
+      mainDispatch(setEmail(""));
+      mainDispatch(setPhoneNumber(""));
+    } catch (err) {
+      setAlert({
+        active: true,
+        title: err,
+      });
     }
+  };
+  const handleKey = (e) => {
+    e.code === "Enter" && Register();
   };
 
   // defined procedures which specialist or salon can to choise
@@ -175,6 +160,7 @@ export const BusinessRegister = (props) => {
         : theme
         ? "#f3f3f3"
         : "#333",
+      fontSize: "14px",
     }),
     placeholder: (base, state) => ({
       ...base,
@@ -223,17 +209,19 @@ export const BusinessRegister = (props) => {
         : theme
         ? "#f3f3f3"
         : "#333",
+      fontSize: "14px",
     }),
     control: (baseStyles, state) => ({
       ...baseStyles,
       backgroundColor: theme ? "#333" : "#fff",
       borderColor: state.isFocused ? "rgba(0,0,0,0)" : "rgba(0,0,0,0.1)",
       width: "38vw",
+      color: "#888",
       minHeight: "2vw",
       cursor: "pointer",
       "@media only screen and (max-width: 1200px)": {
         width: "85vw",
-        fontSize: "16px",
+        fontSize: "12px",
       },
     }),
   };
@@ -259,11 +247,64 @@ export const BusinessRegister = (props) => {
     }
   });
 
+  // import users
+  const usersList = useSelector((state) => state.storeMain.userList);
+  let users;
+  if (usersList?.length > 0) {
+    users = JSON.parse(usersList);
+  }
+
+  /**
+   * send identify email
+   */
+
+  const [verifyCode, setVerifyCode] = useState("");
+  const [verify, setVerify] = useState(false);
+
+  function SendEmail() {
+    const email = registerFields?.email;
+    if (
+      users?.find(
+        (item) => item.email.toLowerCase() === email.toLowerCase()
+      ) === undefined
+    ) {
+      fetch(`https://beautyverse.herokuapp.com/emails/verify?email=${email}`)
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("get");
+          setVerifyCode(data);
+          setVerify(true);
+        })
+        .catch((error) => {
+          console.log("Error fetching data:", error);
+        });
+    } else {
+      setAlert({
+        active: true,
+        title: language?.language.Auth.auth.emailUsed,
+      });
+    }
+  }
+
   return (
     <>
+      <Error
+        open={alert?.active}
+        setOpen={setAlert}
+        type="error"
+        title={alert?.title}
+      />
+      <VerifyEmail
+        open={verify}
+        setOpen={setVerify}
+        Register={Register}
+        verifyCode={verifyCode}
+        email={registerFields?.email}
+        language={language}
+      />
       <Container
         height={height}
-        style={{ display: !flag ? "visible" : "none" }}
+        // style={{ display: !flag ? "visible" : "none" }}
       >
         <Title>
           <AiOutlineProfile className="icon" />
@@ -271,7 +312,7 @@ export const BusinessRegister = (props) => {
             ? "ინფორმაცია მაღაზიის შესახებ"
             : language?.language.Auth.auth.aboutSalon}
         </Title>
-        <WrapperContainer onSubmit={HandleSubmit}>
+        <WrapperContainer onSubmit={SendEmail}>
           {!isMobile && (
             <Button
               title={language?.language.Auth.auth.back}
@@ -354,7 +395,7 @@ export const BusinessRegister = (props) => {
             <Button
               title={language?.language.Auth.auth.next}
               type="Submit"
-              function={HandleSubmit}
+              function={SendEmail}
             />
           )}
         </WrapperContainer>
@@ -366,13 +407,21 @@ export const BusinessRegister = (props) => {
             back={true}
           />
           <Button
-            title={language?.language.Auth.auth.next}
+            title={language?.language.Auth.auth.register}
             type="Submit"
-            function={HandleSubmit}
+            function={
+              registerFields?.categories?.length > 0
+                ? () => SendEmail()
+                : () =>
+                    setAlert({
+                      active: true,
+                      title: language?.language.Auth.auth.pleaseInput,
+                    })
+            }
           />
         </MobileButtons>
       </Container>
-      <Confirm
+      {/* <Confirm
         height={height}
         onSubmit={VerifyOTP}
         className="verify"
@@ -394,7 +443,7 @@ export const BusinessRegister = (props) => {
         <SubmitButton type="submit">
           {language?.language.Auth.auth.confirm}
         </SubmitButton>
-      </Confirm>
+      </Confirm> */}
     </>
   );
 };
@@ -413,7 +462,6 @@ const Container = styled.div`
 
   @media only screen and (max-width: 600px) {
     justify-content: start;
-    font-size: 3vw;
     padding-bottom: 15vw;
     padding-top: 40vw;
   }
@@ -440,7 +488,6 @@ const Confirm = styled.form`
   gap: 2vw;
 
   @media only screen and (max-width: 600px) {
-    font-size: 3vw;
     padding-top: 14vw;
     padding-bottom: 3vw;
   }
@@ -452,6 +499,7 @@ const Title = styled.h2`
   align-items: center;
   gap: 15px;
   color: ${(props) => props.theme.font};
+  font-size: 18px;
 
   @media only screen and (max-width: 600px) {
     margin-bottom: 7vw;
@@ -608,11 +656,8 @@ const Input = styled.input`
 
 const InputTitle = styled.span`
   flex: 1;
-
-  @media only screen and (max-width: 600px) {
-    text-align: start;
-    font-size: 3vw;
-  }
+  color: ${(props) => props.theme.font};
+  font-size: 14px;
 `;
 
 const SubmitButton = styled.button`
@@ -629,13 +674,13 @@ const SubmitButton = styled.button`
   font-weight: bold;
   background: rgba(255, 255, 255, 0.7);
   border: none;
+  font-size: 14px;
 
   @media only screen and (max-width: 600px) {
     width: 45vw;
     height: 8vw;
     border-radius: 1.5vw;
     box-shadow: 0 0.3vw 0.6vw rgba(2, 2, 2, 0.2);
-    font-size: 3.8vw;
   }
 
   :hover {

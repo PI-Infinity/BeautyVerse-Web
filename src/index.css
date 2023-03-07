@@ -8,12 +8,15 @@ body {
   background: #fcfdff;
   /* background-image: url("https://res.cloudinary.com/dmmumy2b1/image/upload/v1669579370/Beautyverse/4877182_dkkrni.jpg"); */
   box-sizing: border-box;
-  overflow: hidden;
+  /* overflow: hidden; */
+  overflow-x: hidden;
+  overflow-y: "visible";
   user-select: none;
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
   height: 100%;
+  width: 100%;
 }
 
 div {

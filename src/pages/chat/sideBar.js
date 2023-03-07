@@ -79,6 +79,7 @@ const Navigator = styled.div`
     cursor: pointer;
     border-bottom: 1px solid ${(props) => props.theme.secondLevel};
     gap: 0;
+    font-size: 16px;
 
     @media only screen and (max-width: 600px) {
       padding: 4vw 0;
@@ -88,10 +89,7 @@ const Navigator = styled.div`
   }
 
   .icon {
-    font-size: 1.2vw;
-    @media only screen and (max-width: 600px) {
-      font-size: 4vw;
-    }
+    font-size: 20px;
   }
 
   .active {

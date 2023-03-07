@@ -3,19 +3,17 @@ import styled from "styled-components";
 import { FeedCard } from "../../pages/main/feedCard/feedCard";
 import { useSelector, useDispatch } from "react-redux";
 import { setRerender } from "../../redux/main";
-import { setScroll } from "../../redux/scroll";
+import { setFeedScrollY } from "../../redux/scroll";
+// import { setScroll } from "../../redux/scroll";
 import useWindowDimensions from "../../functions/dimensions";
 import { IsMobile } from "../../functions/isMobile";
 import { ProceduresOptions } from "../../data/registerDatas";
 
 export const Feeds = (props) => {
-  const rerender = useSelector((state) => state.storeMain.rerender);
-
   const proceduresOptions = ProceduresOptions();
 
   const { height, width } = useWindowDimensions();
   const isMobile = IsMobile();
-  const ref = React.useRef();
   const dispatch = useDispatch();
 
   // import users
@@ -45,6 +43,16 @@ export const Feeds = (props) => {
   if (userUnparsed?.length > 0) {
     user = JSON.parse(userUnparsed);
   }
+
+  const scrollY = useSelector((state) => state.storeScroll.feedScrollY);
+  useEffect(() => {
+    const Scrolling = () => {
+      setTimeout(() => {
+        return window.scrollTo(0, scrollY);
+      }, 500);
+    };
+    return Scrolling();
+  }, [scrollY]);
 
   const DefineUserList = () => {
     let data;
@@ -154,50 +162,23 @@ export const Feeds = (props) => {
 
   const userList = DefineUserList();
 
-  // scrolling
-
-  const scrollref = React.useRef(null);
-  const getscroll = () => {
-    const scroll = Math.abs(
-      scrollref.current.getBoundingClientRect().top -
-        scrollref.current.offsetTop
-    );
-    if (scroll > 250) {
-      localStorage.setItem("BeautyVerse:scrollPosition", scroll);
-    } else {
-      localStorage.setItem("BeautyVerse:scrollPosition", 0);
-    }
-
-    if (isMobile) {
-      if (scroll < 50 && scroll > -1) {
-        dispatch(setScroll(true));
-      } else {
-        dispatch(setScroll(false));
-      }
-
-      if (Math.abs(scrollref.current.getBoundingClientRect().top > 230)) {
-        dispatch(setRerender());
-      }
-    }
-  };
-
-  // go back to saved scroll position
-  const Scrolling = () => {
-    const pos = localStorage.getItem("BeautyVerse:scrollPosition");
-    const w = document.getElementById("feed");
-    setTimeout(() => {
-      return (w.scrollTop = pos);
-    }, 500);
-  };
-  useEffect(() => {
-    Scrolling();
-  }, [userList]);
+  // const memorizeld = React.useMemo(() => Scrolling(), [userList]);
 
   return (
     <Container height={height}>
-      <Wrapper id="feed" onScroll={getscroll}>
-        <div className="empty"></div>
-        <div ref={scrollref}>{userList}</div>
+      <Wrapper id="feed">
+        {/* <button onClick={Scrolling}>scroll</button> */}
+        <div style={{ color: "orange", height: "auto" }}>
+          {userList?.length > 0 ? (
+            userList
+          ) : (
+            <div
+              style={{ height: "90vh", display: "flex", alignItems: "center" }}
+            >
+              Nothing found with this filter!
+            </div>
+          )}
+        </div>
       </Wrapper>
     </Container>
   );
@@ -205,11 +186,11 @@ export const Feeds = (props) => {
 
 const Container = styled.div`
   z-index: 800;
-  height: 83vh;
+  // height: 83vh;
   width: 100%;
 
   @media only screen and (max-width: 600px) {
-    height: ${(props) => props.height}px;
+    // height: ${(props) => props.height}px;
     width: 100vw;
   }
 `;
@@ -220,13 +201,13 @@ const Wrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: start;
-  overflow-y: scroll;
+  // overflow-y: scroll;
   overflow-x: hidden;
   box-sizing: border-box;
   padding: 1.5vw 0;
 
   @media only screen and (max-width: 600px) {
-    padding: 27vw 0 12vw 0;
+    padding: 13vw 0 12vw 0;
   }
 
   .empty {

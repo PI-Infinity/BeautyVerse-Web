@@ -338,6 +338,7 @@ const Container = styled.div`
   & > div > p {
     background: ${(props) => props.theme.background};
     color: ${(props) => props.theme.font};
+    font-size: 14px;
   }
 `;
 
@@ -530,6 +531,7 @@ const Review = styled.div`
   box-sizing: border-box;
   background: ${(props) => props.theme.background};
   color: ${(props) => props.theme.font};
+  font-size: 12px;
 
   @media only screen and (max-width: 600px) {
     height: 10vw;
@@ -569,11 +571,7 @@ const Review = styled.div`
 const Likes = styled.div`
   display: flex;
   align-items: center;
-  font-size: 0.8vw;
-
-  @media only screen and (max-width: 600px) {
-    font-size: 3vw;
-  }
+  font-size: 14px;
 `;
 
 const PostTime = styled.div`
@@ -583,11 +581,7 @@ const PostTime = styled.div`
 
   span {
     color: #ddd;
-    font-size: 0.8vw;
-
-    @media only screen and (max-width: 600px) {
-      font-size: 3vw;
-    }
+    font-size: 14px;
   }
 `;
 
@@ -595,12 +589,11 @@ const TextReview = styled.span`
   cursor: pointer;
   color: ${(props) => props.theme.font};
   transition: ease-in-out 200ms;
-  font-size: 0.8vw;
+  font-size: 14px;
   letter-spacing: 0;
   margin-bottom: 0.1vw;
 
   @media only screen and (max-width: 600px) {
-    font-size: 3vw;
     margin-bottom: 0.2vw;
   }
 
@@ -624,13 +617,13 @@ const Button = styled.div`
   font-weight: bold;
   background: rgba(255, 255, 255, 0.7);
   margin-top: 0.5vw;
+  font-size: 14px;
 
   @media only screen and (max-width: 600px) {
     width: 45vw;
     height: 8vw;
     border-radius: 1.5vw;
     box-shadow: 0 0.3vw 0.6vw rgba(2, 2, 2, 0.2);
-    font-size: 3.8vw;
     margin: 6vw 0 4vw 0;
   }
 

@@ -2,6 +2,7 @@ import styled from "styled-components";
 import { SideBar } from "../../pages/chat/sideBar";
 
 const Chat = () => {
+  document.body.style.overflowY = "hidden";
   return (
     <Bg>
       <Container>

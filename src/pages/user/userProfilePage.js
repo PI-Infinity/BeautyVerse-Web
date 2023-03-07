@@ -18,6 +18,11 @@ const UserProfile = () => {
   const { Id } = useParams();
   const language = Language();
 
+  useEffect(() => {
+    document.body.style.overflowY = "hidden";
+    window.scrollTo(0, 0);
+  }, []);
+
   /**
    *   // define user list
    */
@@ -34,7 +39,7 @@ const UserProfile = () => {
 
   return (
     <Container>
-      {user !== undefined && (
+      {user !== undefined && user?.id !== currentUser?.uid && (
         <VisitorId path="visitors-profile" targetUserId={Id} />
       )}
       <CoverSection language={language} user={user} />

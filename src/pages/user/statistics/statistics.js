@@ -104,11 +104,23 @@ export const UserStatistics = () => {
   let activeTab;
   if (value === 0) {
     activeTab = (
-      <Daily stats={stats} theme={theme} followers={followers} stars={stars} />
+      <Daily
+        stats={stats}
+        theme={theme}
+        followers={followers}
+        stars={stars}
+        language={language}
+      />
     );
   } else if (value === 1) {
     activeTab = (
-      <Weekly stats={stats} theme={theme} followers={followers} stars={stars} />
+      <Weekly
+        stats={stats}
+        theme={theme}
+        followers={followers}
+        stars={stars}
+        language={language}
+      />
     );
   } else if (value === 2) {
     activeTab = (
@@ -117,6 +129,7 @@ export const UserStatistics = () => {
         theme={theme}
         followers={followers}
         stars={stars}
+        language={language}
       />
     );
   } else {
@@ -127,6 +140,7 @@ export const UserStatistics = () => {
         followers={followers}
         stars={stars}
         user={user}
+        language={language}
       />
     );
   }
@@ -134,7 +148,7 @@ export const UserStatistics = () => {
   return (
     <Container height={height}>
       <div style={{ margin: "2% 0 0 2%", height: "60px" }}>
-        <CenteredTabs value={value} setValue={setValue} />
+        <CenteredTabs value={value} setValue={setValue} language={language} />
       </div>
       <Content>{activeTab}</Content>
     </Container>
@@ -148,19 +162,19 @@ const StyledTab = styled(Tab)({
     color: "secondary",
     fontSize: "14px",
     "@media only screen and (max-width: 1200px)": {
-      fontSize: "10px",
+      fontSize: "12px",
     },
   },
   "&.MuiTab-root": {
     color: "#ee99fc",
     fontSize: "14px",
     "@media only screen and (max-width: 1200px)": {
-      fontSize: "10px",
+      fontSize: "12px",
     },
   },
 });
 
-function CenteredTabs({ value, setValue }) {
+function CenteredTabs({ value, setValue, language }) {
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
@@ -173,10 +187,10 @@ function CenteredTabs({ value, setValue }) {
         indicatorColor="secondary"
         textColor="secondary"
       >
-        <StyledTab label="Daily" />
-        <StyledTab label="Weekly" />
-        <StyledTab label="Monthly" />
-        <StyledTab label="All" />
+        <StyledTab label={language?.language.User.userPage.daily} />
+        <StyledTab label={language?.language.User.userPage.weekly} />
+        <StyledTab label={language?.language.User.userPage.monthly} />
+        <StyledTab label={language?.language.User.userPage.all} />
       </Tabs>
     </Box>
   );

@@ -35,18 +35,22 @@ export function Yearly(props) {
   return (
     <>
       <Stats>
-        <ImCheckmark color="#2bdfd9" /> Followers: {props?.followers?.length}
+        <ImCheckmark color="#2bdfd9" />{" "}
+        {props?.language?.language.User.userPage.followers}:{" "}
+        {props?.followers?.length}
       </Stats>
       <Stats>
-        <ImCheckmark color="orange" /> Followings: {followings?.length}
+        <ImCheckmark color="orange" />{" "}
+        {props?.language?.language.User.userPage.followings}:{" "}
+        {followings?.length}
       </Stats>
       <Stats>
         <BiStar color="#bb3394" />
-        Stars: {props?.stars?.length}
+        {props?.language?.language.User.userPage.stars}: {props?.stars?.length}
       </Stats>
       <Stats>
         <MdDynamicFeed color="orange" />
-        Feeds: {count}
+        {props?.language?.language.User.userPage.feeds}: {count}
       </Stats>
     </>
   );
@@ -58,10 +62,7 @@ const Stats = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
-
-  @media only screen and (max-width: 600px) {
-    font-size: 3vw;
-  }
+  font-size: 14px;
 `;
 const Scrollable = styled.div`
   width: 800px;

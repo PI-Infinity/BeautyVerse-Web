@@ -25,9 +25,9 @@ export const Header = () => {
           sx={{ width: 36, height: 36 }}
         />
 
-        <h4 onClick={() => navigate(`/user/${currentuser?.id}`)}>
+        <h3 onClick={() => navigate(`/user/${currentuser?.id}`)}>
           {currentuser?.name}
-        </h4>
+        </h3>
       </div>
 
       <h3>{language?.language.Chat.chat.title}</h3>
@@ -48,9 +48,9 @@ const Container = styled.div`
   gap: 10px;
   // background: #fff;
 
-  h4 {
+  h3 {
     cursor: pointer;
-    font-weight: normal;
+    font-size: 14px;
     :hover {
       text-decoration: underline;
     }

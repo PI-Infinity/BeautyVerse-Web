@@ -6,7 +6,7 @@ export const Ads = () => {
 
   return (
     <>
-      <div style={{ margin: "1vw", fontWeight: "bold" }}>
+      <div style={{ margin: "1vw", fontWeight: "bold", fontSize: "18px" }}>
         {language?.language.Main.ads.title}
       </div>
       <Container>

@@ -9,6 +9,7 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import TextField from "@mui/material/TextField";
 import DialogTitle from "@mui/material/DialogTitle";
+import { updatePassword } from "firebase/auth";
 
 export default function ChangePassword(props) {
   const [showPassword, setShowPassword] = React.useState("");
@@ -22,7 +23,16 @@ export default function ChangePassword(props) {
     if (oldPassword === props?.randomPass) {
       if (newPassword?.length > 7) {
         if (newPassword === confirmPassword) {
-          updateDoc(doc(db, "users", props.targetUser?.id), {
+          const authUser = auth.currentUser;
+          updatePassword(authUser, newPassword)
+            .then(() => {
+              // Update successful.
+            })
+            .catch((error) => {
+              // An error ocurred
+              // ...
+            });
+          updateDoc(doc(db, "users", authUser?.uid, "secret", "password"), {
             password: newPassword,
           });
           setOldPassword("");

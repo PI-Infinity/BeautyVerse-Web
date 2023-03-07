@@ -27,8 +27,8 @@ export const LineLoader = (props) => {
       speed={1}
       width={isMobile ? 700 : 700}
       height={isMobile ? 15 : 15}
-      backgroundColor={theme ? "#333" : "#f3f3f3"}
-      foregroundColor={theme ? "#222" : "#F7E6FF"}
+      backgroundColor={theme ? "#222" : "#f3f3f3"}
+      foregroundColor={theme ? "#151515" : "#F7E6FF"}
       {...props}
     >
       <rect
@@ -50,8 +50,8 @@ export const IconLoader = (props) => {
       speed={1}
       width={isMobile ? 25 : 50}
       height={isMobile ? 15 : 15}
-      backgroundColor={theme ? "#333" : "#f3f3f3"}
-      foregroundColor={theme ? "#222" : "#F7E6FF"}
+      backgroundColor={theme ? "#222" : "#f3f3f3"}
+      foregroundColor={theme ? "#151515" : "#F7E6FF"}
       {...props}
     >
       <rect
@@ -73,8 +73,8 @@ export const TextLoader = (props) => {
       speed={1}
       width={isMobile ? 300 : 300}
       height={isMobile ? 15 : 18}
-      backgroundColor={theme ? "#333" : "#f3f3f3"}
-      foregroundColor={theme ? "#222" : "#F7E6FF"}
+      backgroundColor={theme ? "#222" : "#f3f3f3"}
+      foregroundColor={theme ? "#151515" : "#F7E6FF"}
       {...props}
     >
       <rect
@@ -96,8 +96,8 @@ export const TitleLoader = (props) => {
       speed={1}
       width={isMobile ? 150 : 150}
       height={isMobile ? 15 : 18}
-      backgroundColor={theme ? "#333" : "#f3f3f3"}
-      foregroundColor={theme ? "#222" : "#F7E6FF"}
+      backgroundColor={theme ? "#222" : "#f3f3f3"}
+      foregroundColor={theme ? "#151515" : "#F7E6FF"}
       {...props}
     >
       <rect
@@ -119,8 +119,8 @@ export const TypeLoader = (props) => {
       speed={1}
       width={isMobile ? 100 : 100}
       height={isMobile ? 12 : 15}
-      backgroundColor={theme ? "#333" : "#f3f3f3"}
-      foregroundColor={theme ? "#222" : "#F7E6FF"}
+      backgroundColor={theme ? "#222" : "#f3f3f3"}
+      foregroundColor={theme ? "#151515" : "#F7E6FF"}
       {...props}
     >
       <rect
@@ -142,8 +142,8 @@ export const CoverLoader = (props) => {
       speed={1}
       width={isMobile ? 80 : 150}
       height={isMobile ? 80 : 150}
-      backgroundColor={theme ? "#333" : "#f3f3f3"}
-      foregroundColor={theme ? "#222" : "#F7E6FF"}
+      backgroundColor={theme ? "#222" : "#f3f3f3"}
+      foregroundColor={theme ? "#151515" : "#F7E6FF"}
       {...props}
     >
       <circle
@@ -162,8 +162,8 @@ export const ImgLoader = (props) => {
       speed={1}
       width={isMobile ? 800 : 800}
       height={isMobile ? 250 : 400}
-      backgroundColor={theme ? "#333" : "#f3f3f3"}
-      foregroundColor={theme ? "#222" : "#F7E6FF"}
+      backgroundColor={theme ? "#222" : "#f3f3f3"}
+      foregroundColor={theme ? "#151515" : "#F7E6FF"}
       {...props}
     >
       <rect

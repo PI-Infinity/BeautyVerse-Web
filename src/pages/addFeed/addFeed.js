@@ -34,6 +34,8 @@ const AddFeed = () => {
     user = JSON.parse(userUnparsed);
   }
 
+  document.body.style.overflowY = "hidden";
+
   // add text
 
   const [text, setText] = React.useState("");
@@ -158,7 +160,8 @@ const AddFeed = () => {
     await setFile(null);
     await setResizedObj("");
     await setText("");
-    dispatch(setBackdropOpen(false));
+    await dispatch(setBackdropOpen(false));
+    navigate("/");
   }
 
   // emojies
@@ -327,7 +330,12 @@ const Wrapper = styled.div`
 `;
 
 const Title = styled.h3`
+  font-size: 18px;
   color: ${(props) => props.theme.font};
+
+  @media only screen and (max-width: 600px) {
+    font-size: 16px;
+  }
 `;
 
 const Info = styled.div`
@@ -440,6 +448,7 @@ const Img = styled.img`
 `;
 
 const Name = styled.div`
+  font-size: 14px;
   color: ${(props) => props.theme.font};
   font-weight: bold;
 `;
@@ -450,11 +459,12 @@ const Text = styled.textarea`
   border: 1px solid #ccc;
   border-radius: 10px;
   padding: 15px;
-  font-size: 16px;
+  font-size: 14px;
   box-sizing: border-box;
   white-space: pre-wrap;
 
   @media only screen and (max-width: 600px) {
+    font-size: 16px;
     height: 20vw;
   }
 

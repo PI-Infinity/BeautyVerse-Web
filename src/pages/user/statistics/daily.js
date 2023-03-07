@@ -76,7 +76,14 @@ export function Daily(props) {
   // cretate chart
 
   const DefineData = () => {
-    const dat = [["Days", "Visitors", "Followers", "Stars"]];
+    const dat = [
+      [
+        "Days",
+        `${props?.language?.language.User.userPage.visitors}`,
+        `${props?.language?.language.User.userPage.followers}`,
+        `${props?.language?.language.User.userPage.stars}`,
+      ],
+    ];
     for (var i = 1; i <= parseInt(new Date()?.toString().slice(8, 10)); i++) {
       let obj = DefineVisitoris(i - 1);
       let visitors = parseInt(obj?.length);
@@ -129,16 +136,21 @@ export function Daily(props) {
   return (
     <>
       <Stats>
-        <AiOutlineEye color="orange" /> Today visitors: {daily?.length}
+        <AiOutlineEye color="orange" />{" "}
+        {props?.language?.language.User.userPage.todayVisitors}: {daily?.length}
       </Stats>
       <Stats>
-        <ImCheckmark color="#2bdfd9" /> Today followers: {followers?.length}
+        <ImCheckmark color="#2bdfd9" />{" "}
+        {props?.language?.language.User.userPage.todayFollowers}:{" "}
+        {followers?.length}
       </Stats>
       <Stats>
-        <BiStar color="#bb3394" /> Today stars: {stars?.length}
+        <BiStar color="#bb3394" />{" "}
+        {props?.language?.language.User.userPage.todayStars}: {stars?.length}
       </Stats>
       <Stats>
-        Last month's stats <ShowChartIcon />
+        {props?.language?.language.User.userPage.lastMonthStats}{" "}
+        <ShowChartIcon />
       </Stats>
       <Scrollable>
         <div>
@@ -161,10 +173,7 @@ const Stats = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
-
-  @media only screen and (max-width: 600px) {
-    font-size: 3vw;
-  }
+  font-size: 14px;
 `;
 const Scrollable = styled.div`
   width: 800px;

@@ -205,6 +205,7 @@ export const Team = () => {
         : theme
         ? "#f3f3f3"
         : "#333",
+      fontSize: "14px",
     }),
     control: (baseStyles, state) => ({
       ...baseStyles,
@@ -216,7 +217,7 @@ export const Team = () => {
       color: "red",
       "@media only screen and (max-width: 1200px)": {
         width: "80vw",
-        fontSize: "16px",
+        fontSize: "14px",
       },
     }),
   };
@@ -552,13 +553,13 @@ const InputContainer = styled.div`
   gap: 0.5vw;
   transition: ease-in 200ms;
   box-sizing: border-box;
+  font-size: 14px;
 
   @media only screen and (max-width: 600px) {
     box-shadow: 0 0.2vw 0.4vw ${(props) => props.theme.shadowColor};
     width: 45vw;
     height: 10vw;
     border-radius: 1.5vw;
-    font-size: 16px;
   }
 `;
 
@@ -606,13 +607,13 @@ const Button = styled.button`
   background: ${(props) => props.theme.categoryItem};
   border: none;
   margin-top: 1vw;
+  font-size: 14px;
 
   @media only screen and (max-width: 600px) {
     width: 45vw;
     height: 8vw;
     border-radius: 1.5vw;
     box-shadow: 0 0.3vw 0.6vw ${(props) => props.theme.shadowColor};
-    font-size: 3vw;
   }
 
   :hover {
@@ -625,13 +626,12 @@ const MemberRow = styled.div`
   border-bottom: 1px solid ${(props) => props.theme.lineColor};
   padding: 15px;
   display: flex;
-  font-size: 0.8vw;
+  font-size: 14px;
   transition: ease 200;
   gap: 10px;
 
   @media only screen and (max-width: 600px) {
     width: 90vw;
-    font-size: 2.7vw;
   }
 
   :hover {

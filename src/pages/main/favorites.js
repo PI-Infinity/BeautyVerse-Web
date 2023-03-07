@@ -73,10 +73,11 @@ const Title = styled.div`
   align-items: center;
   margin-top: 1.25vw;
   font-weight: bold;
+  font-size: 18px;
 
   .likedIcon {
     margin-right: 2vw;
-    font-size: 1.1vw;
+    font-size: 16px;
     color: #2c976d;
   }
 `;
@@ -104,6 +105,7 @@ const Item = styled.div`
   color: ${(props) => props.theme.font};
   background: ${(props) => props.theme.categoryItem};
   box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.05);
+  font-size: 14px;
 
   &:hover {
     filter: brightness(0.8);

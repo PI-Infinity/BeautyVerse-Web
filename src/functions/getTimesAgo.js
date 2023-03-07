@@ -13,7 +13,7 @@ export default function GetTimesAgo(x) {
     if (new Date().getTime() - x * 1000 > 86400000) {
       currentPostTime = {
         numbers: "",
-        title: new Date(x * 1000).toString().slice(4, 15),
+        title: new Date(x * 1000).toString().slice(4, 10),
       };
     } else {
       if (hoursAgo < 1 && definedTitle === "min") {
@@ -21,7 +21,12 @@ export default function GetTimesAgo(x) {
       } else if (hoursAgo >= 1 && definedTitle === "min") {
         currentPostTime = { numbers: hoursAgo, title: definedTitle };
       } else {
-        currentPostTime = { numbers: hoursAgo, title: definedTitle };
+        if (definedTitle[4] === "0") {
+          var timeTitle = definedTitle?.replace(definedTitle[4], "");
+          currentPostTime = { numbers: hoursAgo, title: timeTitle };
+        } else {
+          currentPostTime = { numbers: hoursAgo, title: definedTitle };
+        }
       }
     }
     return currentPostTime;

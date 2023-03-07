@@ -85,13 +85,13 @@ const FirstPageContainer = styled.div`
   gap: 1.5vw;
 
   @media only screen and (max-width: 600px) {
-    font-size: 3vw;
     padding-top: 14vw;
     padding-bottom: 3vw;
   }
 `;
 
 const Title = styled.h2`
+  font-size: 18px;
   margin-bottom: 1vw;
   color: ${(props) => props.theme.font};
 
@@ -124,7 +124,7 @@ const Card = styled.div`
   padding: 1vw;
   transition: ease-in 200ms;
   cursor: pointer;
-  font-size: 0.7vw;
+  font-size: 14px;
   background: ${(props) => props.theme.categoryItem};
   box-sizing: border-box;
   color: ${(props) => props.theme.font};
@@ -170,13 +170,9 @@ const Card = styled.div`
   }
 
   span {
-    @media only screen and (max-width: 600px) {
-      font-size: 2.6vw;
-    }
+    font-size: 12px;
   }
   h2 {
-    @media only screen and (max-width: 600px) {
-      font-size: 3vw;
-    }
+    font-size: 14px;
   }
 `;

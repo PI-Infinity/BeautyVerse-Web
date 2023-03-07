@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import { collection, doc, getDoc } from "firebase/firestore";
+import { db, auth } from "../../firebase";
 import { AuthContext } from "../../context/AuthContext";
 import { IsMobile } from "../../functions/isMobile";
 import { useOutletContext, useNavigate } from "react-router-dom";
 import { AiOutlineEyeInvisible, AiOutlineEye } from "react-icons/ai";
 import ChangePassword from "../../pages/user/changePassword";
 import Success from "../../snackBars/success";
+import { updatePassword } from "firebase/auth";
 
 export const Settings = () => {
   const [user, language] = useOutletContext();
@@ -19,19 +22,34 @@ export const Settings = () => {
     }
   }, []);
 
-  const [showPassword, setShowPassword] = React.useState(false);
-
   // success messaage open
   const [open, setOpen] = React.useState(false);
+
+  const [password, setPassword] = useState("");
+  useEffect(() => {
+    const GetUserPass = async () => {
+      const passRef = doc(db, "users", currentUser?.uid, "secret", "password");
+      const usr = await getDoc(passRef);
+      if (usr.exists()) {
+        setPassword(usr.data().password);
+      } else {
+        // doc.data() will be undefined in this case
+        console.log("No such document!");
+      }
+    };
+    GetUserPass();
+  }, [open]);
+
+  const [showPassword, setShowPassword] = React.useState(false);
 
   return (
     <Content>
       <Password>
         {language?.language.User.userPage.password}:{" "}
         {showPassword ? (
-          <div id="password">{user?.password}</div>
+          <div id="password">{password}</div>
         ) : (
-          <div id="blur">{user?.password}</div>
+          <div id="blur">{password}</div>
         )}{" "}
         {showPassword ? (
           <AiOutlineEye
@@ -50,7 +68,12 @@ export const Settings = () => {
         setOpen={setOpen}
         title={language?.language.User.userPage.succesChange}
       />
-      <ChangePassword user={user} setOpen={setOpen} />
+      <ChangePassword
+        user={user}
+        password={password}
+        setOpen={setOpen}
+        language={language}
+      />
     </Content>
   );
 };
@@ -70,6 +93,7 @@ const Content = styled.div`
   height: auto;
   margin-bottom: 5vw;
   overflow-x: hidden;
+  box-sizing: border-box;
 
   .loadingIcon {
     font-size: 3vw;
@@ -88,11 +112,7 @@ const Password = styled.div`
   display: flex;
   align-items: center;
   gap: 15px;
-  font-size: 0.9vw;
-
-  @media only screen and (max-width: 600px) {
-    font-size: 3.5vw;
-  }
+  font-size: 14px;
 
   #blur {
     color: transparent;

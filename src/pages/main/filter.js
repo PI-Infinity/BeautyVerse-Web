@@ -101,6 +101,7 @@ export const Filter = (props) => {
     }),
     option: (base, state) => ({
       ...base,
+      fontSize: "14px",
       backgroundColor: state.isSelected
         ? theme
           ? "#f3f3f3"
@@ -125,6 +126,7 @@ export const Filter = (props) => {
       backgroundColor: theme ? "#333" : "#fff",
       color: theme ? "auto" : "#f3f3f3",
       cursor: "pointer",
+      fontSize: "14px",
       "@media only screen and (max-width: 1200px)": {
         display: "none",
       },
@@ -159,7 +161,11 @@ export const Filter = (props) => {
         //     state.isFocused ? "border-red-400" : "border-grey-400",
         // }}
         options={cities?.map((item, index) => {
-          return { value: item, label: item };
+          if (item === "T'bilisi") {
+            return { value: item, label: "Tbilisi" };
+          } else {
+            return { value: item, label: item };
+          }
         })}
       />
       {cityFilter.includes("bilisi") && (
@@ -278,32 +284,34 @@ const FilterContainer = styled.div`
   z-index: 15;
 
   @media only screen and (max-width: 600px) {
-    position: fixed;
-    // transition: ease-in 150ms;
-    top: ${(props) => (props.scroll === "true" ? "calc(15vw - 1px)" : "-15vw")};
-    height: auto;
-    border-bottom: 0px solid #ddd;
-    padding: 5px 0 10px 0;
-    box-sizing: border-box;
-    justify-content: center;
-    background: ${(props) => props.theme.background};
+    display: none;
+    // position: fixed;
+    // // transition: ease-in 150ms;
+    // top: ${(props) => (props.scroll === "true" ? "calc(14vw - 1px)" : "-15vw")};
+    // height: auto;
+    // border-bottom: 0px solid #ddd;
+    // padding: 5px 0 10px 0;
+    // box-sizing: border-box;
+    // justify-content: center;
+    // background: ${(props) => props.theme.background};
 
-    backdrop-filter: blur(30px);
-    box-shadow: none;
-    z-index: 900;
+    // backdrop-filter: blur(30px);
+    // box-shadow: none;
+    // z-index: 900;
   }
 `;
 
 const CheckBoxContainer = styled.div`
   display: flex;
   align-items: center;
-  font-size: 0.8vw;
+  font-size: 14px;
 
   @media only screen and (max-width: 600px) {
     display: none;
   }
   .checkbox {
     color: ${(props) => props.theme.logo};
+    font-size: 14px;
   }
 `;
 
