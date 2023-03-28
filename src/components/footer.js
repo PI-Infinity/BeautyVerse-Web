@@ -1,9 +1,9 @@
-import React from "react";
-import styled from "styled-components";
-import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
-import Flag from "react-world-flags";
-import { setLanguage } from "../redux/main";
-import { useSelector, useDispatch } from "react-redux";
+import React from 'react';
+import styled from 'styled-components';
+import { FaFacebook, FaInstagram, FaYoutube } from 'react-icons/fa';
+import Flag from 'react-world-flags';
+import { setLanguage } from '../redux/main';
+import { useSelector, useDispatch } from 'react-redux';
 
 export const Footer = () => {
   const mainDispatch = useDispatch();
@@ -26,28 +26,31 @@ export const Footer = () => {
           <FaYoutube />
         </LanguageBg>
       </Icons>
-      <Copyright>&#169; beautyverse</Copyright>{" "}
+      <Copyright>&#169; Beautyverse</Copyright>{' '}
       <Languages>
         <LanguageBg
-          active={active === "ka" ? "true" : "false"}
+          active={active === 'ka' ? 'true' : 'false'}
           onClick={() => {
-            mainDispatch(setLanguage("ka"));
+            mainDispatch(setLanguage('ka'));
+            localStorage.setItem('BeautyVerse:Language', JSON.stringify('ka'));
           }}
         >
           <Flag code="geo" className="lang" />
         </LanguageBg>
         <LanguageBg
-          active={active === "en" ? "true" : "false"}
+          active={active === 'en' ? 'true' : 'false'}
           onClick={() => {
-            mainDispatch(setLanguage("en"));
+            mainDispatch(setLanguage('en'));
+            localStorage.setItem('BeautyVerse:Language', JSON.stringify('en'));
           }}
         >
           <Flag code="usa" className="lang" />
         </LanguageBg>
         <LanguageBg
-          active={active === "ru" ? "true" : "false"}
+          active={active === 'ru' ? 'true' : 'false'}
           onClick={() => {
-            mainDispatch(setLanguage("ru"));
+            mainDispatch(setLanguage('ru'));
+            localStorage.setItem('BeautyVerse:Language', JSON.stringify('ru'));
           }}
         >
           <Flag code="rus" className="lang" />
@@ -87,7 +90,7 @@ const LanguageBg = styled.div`
   border-radius: 100px;
   box-shadow: 0 0.1vw 0.2vw ${(props) => props.theme.shadowColor};
   background: ${(props) =>
-    props.active === "true" ? props.theme.secondLevel : "none"};
+    props.active === 'true' ? props.theme.secondLevel : 'none'};
   cursor: pointer;
 `;
 

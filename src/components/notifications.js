@@ -1,22 +1,21 @@
-import * as React from "react";
-import styled from "styled-components";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import Divider from "@mui/material/Divider";
-import ListItemText from "@mui/material/ListItemText";
-import ListItemAvatar from "@mui/material/ListItemAvatar";
-import Avatar from "@mui/material/Avatar";
-import Typography from "@mui/material/Typography";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
-import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { updateDoc, doc } from "firebase/firestore";
-import { db } from "../firebase";
-import { BsStars } from "react-icons/bs";
-import AgreementDialog from "../components/agreementDialog";
-import { Language } from "../context/language";
+import * as React from 'react';
+import styled from 'styled-components';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import Divider from '@mui/material/Divider';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import Avatar from '@mui/material/Avatar';
+import Typography from '@mui/material/Typography';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { BsStars } from 'react-icons/bs';
+import AgreementDialog from '../components/agreementDialog';
+import { Language } from '../context/language';
+import axios from 'axios';
+import { setRerenderNotifications } from '../redux/rerenders';
 
 export default function Notifications(props) {
   const language = Language();
@@ -24,83 +23,94 @@ export default function Notifications(props) {
     props?.setOpen(false);
   };
 
+  document.body.style.overflowY = 'hidden';
   return (
-    <div>
-      <Dialog open={props?.open} onClose={handleClose}>
+    <div
+      style={{
+        position: 'absolute',
+        top: '0',
+        left: 0,
+        width: '100%',
+        height: '100vh',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 10000,
+        background: 'rgba(0,0,0,0.5)',
+      }}
+      onClick={handleClose}
+    >
+      <div>
         <DialogTitle>{language?.language.Main.menu.notifications}</DialogTitle>
         <DialogContent>
-          <AlignItemsList notifications={props.notifications} />
+          <AlignItemsList
+            notifications={props.notifications}
+            setOpen={props.setOpen}
+          />
         </DialogContent>
-      </Dialog>
+      </div>
     </div>
   );
 }
 
 function AlignItemsList(props) {
   const navigate = useNavigate();
-
+  const dispatch = useDispatch();
   // import current user from redux state
-  const userUnparsed = useSelector((state) => state.storeMain.user);
+  const currentUser = JSON.parse(
+    localStorage.getItem('Beautyverse:currentUser')
+  );
 
-  let currentuser;
-  if (userUnparsed?.length > 0) {
-    currentuser = JSON.parse(userUnparsed);
-  }
+  document.body.style.overflowY = 'hidden';
 
-  // read notification
   const ReadNotification = async (id) => {
-    await updateDoc(doc(db, "users", currentuser?.id, "notifications", id), {
-      status: "read",
-    });
+    try {
+      const response = await axios.patch(
+        `/api/v1/users/${currentUser?._id}/notifications/${id}`,
+        {
+          status: 'read',
+        }
+      );
+      const data = await response.data;
+      dispatch(setRerenderNotifications());
+    } catch (error) {}
   };
 
   // agreement dialog
   const [agreementDialog, setAgreementDialog] = React.useState(false);
 
-  const UpdateOffer = async (senderId) => {
-    await updateDoc(doc(db, "users", senderId, "team", currentuser?.id), {
-      confirm: true,
-    });
-  };
-
-  /**
-   *   // define user list
-   */
-
-  const usersList = useSelector((state) => state.storeMain.userList);
-  let users;
-  if (usersList?.length > 0) {
-    users = JSON.parse(usersList);
-  }
-
   return (
-    <List sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper" }}>
+    <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
       {props?.notifications?.map((item, index) => {
-        const user = users?.find((it) => it?.id === item?.senderId);
+        // const user = users?.find((it) => it?.id === item?.senderId);
         return (
           <>
             <Container>
               <ListItem
                 alignItems="flex-start"
                 className="item"
-                onClick={() => {
-                  if (item?.status === "unread") {
-                    if (item?.type === "offer") {
+                onClick={(event) => {
+                  event.stopPropagation();
+                  // handle list item click logic here
+
+                  if (item?.status === 'unread') {
+                    if (item?.type === 'offer') {
                       setAgreementDialog(true);
-                      ReadNotification(item?.id);
-                    } else {
-                      return ReadNotification(item?.id);
                     }
+                    return ReadNotification(item?._id);
                   } else {
+                    props.setOpen(false);
                     return navigate(item?.feed);
                   }
                 }}
               >
                 <ListItemAvatar>
-                  {item?.senderId === "beautyVerse" ? (
-                    <BsStars className="logo" onClick={() => navigate("/")} />
+                  {item?.senderId === 'beautyVerse' ? (
+                    <BsStars className="logo" onClick={() => navigate('/')} />
                   ) : (
-                    <Avatar alt="Remy Sharp" src={user?.cover} />
+                    <Avatar alt="Remy Sharp" src={currentUser?.cover} />
                   )}
                 </ListItemAvatar>
 
@@ -109,32 +119,32 @@ function AlignItemsList(props) {
                     <span
                       style={{
                         fontWeight:
-                          item?.status === "unread" ? "bold" : "normal",
+                          item?.status === 'unread' ? 'bold' : 'normal',
                       }}
                     >
-                      {item?.type === "welcome"
-                        ? "მოგესალმებით!"
-                        : "შეტყობინება"}
+                      {item?.type === 'welcome'
+                        ? 'მოგესალმებით!'
+                        : 'შეტყობინება'}
                     </span>
                   }
                   secondary={
                     <React.Fragment>
                       <Typography
                         sx={{
-                          display: "inline",
+                          display: 'inline',
                           fontWeight:
-                            item?.status === "unread" ? "bold" : "normal",
+                            item?.status === 'unread' ? 'bold' : 'normal',
                         }}
                         component="span"
                         variant="body2"
                         color="text.primary"
                       >
-                        {item?.type !== "welcome" && user?.name}{" "}
+                        {item?.type !== 'welcome' && currentUser?.name}{' '}
                       </Typography>
                       <span
                         style={{
                           fontWeight:
-                            item?.status === "unread" ? "bold" : "normal",
+                            item?.status === 'unread' ? 'bold' : 'normal',
                         }}
                       >
                         {item?.text}
@@ -142,16 +152,16 @@ function AlignItemsList(props) {
                     </React.Fragment>
                   }
                 />
-                {item?.type === "offer" ? (
+                {item?.type === 'offer' ? (
                   <AgreementDialog
                     title="დაადასტურეთ!"
                     text="გსურთ შეთავაზებულ გუნდში გაწევრიანება?"
                     setOpen={setAgreementDialog}
                     open={agreementDialog}
-                    function={() => UpdateOffer(item.senderId)}
+                    // function={() => UpdateOffer(item.senderId)}
                   />
                 ) : (
-                  ""
+                  ''
                 )}
               </ListItem>
             </Container>

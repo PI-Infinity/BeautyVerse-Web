@@ -1,43 +1,55 @@
-import React, { useContext, useEffect, useState } from "react";
-import styled from "styled-components";
-import { BiStar } from "react-icons/bi";
-import { useSelector, useDispatch } from "react-redux";
-import {
-  setDoc,
-  doc,
-  collection,
-  deleteDoc,
-  onSnapshot,
-  serverTimestamp,
-  getDocs,
-  query,
-  orderBy,
-  getCountFromServer,
-  limit,
-} from "firebase/firestore";
-import { setFeedScrollY } from "../../../redux/scroll";
-import { TopSection } from "../../../pages/main/feedCard/topSection";
-import { Reports } from "../../../pages/main/feedCard/reports";
-import { db } from "../../../firebase";
-import { Link, useNavigate } from "react-router-dom";
-import { AuthContext } from "../../../context/AuthContext";
-import useWindowDimensions from "../../../functions/dimensions";
-import { ImgLoader, TextLoader, LineLoader } from "../../../components/loader";
-import { IsMobile } from "../../../functions/isMobile";
-import { isWebpSupported } from "react-image-webp/dist/utils";
-import { v4 } from "uuid";
-import { Language } from "../../../context/language";
-import GetTimesAgo from "../../../functions/getTimesAgo";
-import { SiGoogletranslate } from "react-icons/si";
-import { SlReload } from "react-icons/sl";
+import React, { useEffect, useState } from 'react';
+import styled from 'styled-components';
+import { BiStar } from 'react-icons/bi';
+import { useSelector, useDispatch } from 'react-redux';
+import { setFeedScrollY } from '../../../redux/scroll';
+import { TopSection } from '../../../pages/main/feedCard/topSection';
+import { Reports } from '../../../pages/main/feedCard/reports';
+import { useNavigate } from 'react-router-dom';
+import useWindowDimensions from '../../../functions/dimensions';
+import { ImgLoader, TextLoader, LineLoader } from '../../../components/loader';
+import { IsMobile } from '../../../functions/isMobile';
+import { isWebpSupported } from 'react-image-webp/dist/utils';
+import { Language } from '../../../context/language';
+import GetTimesAgo from '../../../functions/getTimesAgo';
+import { SiGoogletranslate } from 'react-icons/si';
+import { SlReload } from 'react-icons/sl';
+import axios from 'axios';
 
 export const FeedCard = (props) => {
-  const { currentUser } = useContext(AuthContext);
+  const currentUser = JSON.parse(
+    localStorage.getItem('Beautyverse:currentUser')
+  );
   const { height, width } = useWindowDimensions();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isMobile = IsMobile();
   const language = Language();
+
+  const [render, setRender] = useState(false);
+
+  useEffect(() => {
+    if (props?._id) {
+      GetStars();
+    }
+  }, [props._id, render]);
+
+  const [stars, setStars] = React.useState([]);
+
+  async function GetStars() {
+    const response = await fetch(
+      `https://beautyverse.herokuapp.com/api/v1/users/${props?._id}/feeds/${props?.feed?._id}/stars/check/${currentUser?._id}`
+    )
+      .then((response) => response.json())
+      .then(async (data) => {
+        setStars(data.data.stars);
+      })
+      .catch((error) => {
+        console.log('Error fetching data:', error);
+      });
+  }
+
+  let isStarGiven = stars?.checkIfStared;
 
   // loading feeds
   const [loading, setLoading] = React.useState(true);
@@ -45,7 +57,10 @@ export const FeedCard = (props) => {
   const loadFeed = useSelector((state) => state.storeMain.loadFeed);
   const openFeed = useSelector((state) => state.storeFeed.openFeed);
 
-  const rerender = useSelector((state) => state.storeMain.rerender);
+  const rerenderUserList = useSelector(
+    (state) => state.storeRerenders.rerenderUserList
+  );
+  const country = useSelector((state) => state.storeMain.country);
 
   const cityFilter = useSelector((state) => state.storeFilter.cityFilter);
   const districtFilter = useSelector(
@@ -64,128 +79,51 @@ export const FeedCard = (props) => {
   React.useEffect(() => {
     setLoading(true);
     setOpenReview(false);
-  }, [rerender, props?.id]);
-
-  /** user gallery slider in feed */
-
-  // define imgs with url and name from cloude storage
-  const [feed, setFeed] = React.useState([]);
-  const [stars, setStars] = React.useState([]);
-
-  // const scrollYP = useSelector((state) => state.storeScroll.feedScrollY);
-  // console.log(scrollYP);
-  // useEffect(() => {
-  //   Go();
-  // }, [feed, stars]);
-
-  // const Go = () => {
-  //   window.scrollTo({
-  //     top: 300,
-  //     behavior: "smooth",
-  //   });
-  // };
-
-  //get user feeds from storage
-  const userList = useSelector((state) => state.storeMain.userList);
-
-  const fnc = async () => {
-    // define feeds collection
-    const feedsRef = collection(db, "users", `${props?.id}`, "feeds");
-    // get last post
-    const feedRef = query(feedsRef, orderBy("addTime", "desc"), limit(1));
-    const querySnapshot = await getDocs(feedRef);
-    const feed = querySnapshot?.docs[0]?.data();
-    // get reviews length
-    const reviewsRef = collection(
-      db,
-      "users",
-      `${props?.id}`,
-      "feeds",
-      `${feed?.id}`,
-      "reviews"
-    );
-    const reviewsLengthRef = await getCountFromServer(reviewsRef);
-    const reviewsLength = reviewsLengthRef.data().count;
-
-    // get stars
-    onSnapshot(
-      collection(
-        db,
-        "users",
-        `${props?.id}`,
-        "feeds",
-        `${feed?.id}`,
-        `${props.id}+stars`
-      ),
-      (snapshot) => {
-        setStars(snapshot.docs.map((doc) => doc.data()));
-      }
-    );
-
-    // define feed object
-    setFeed({
-      feed: feed,
-      reviewsLength: reviewsLength,
-      userName: capitalizeFirstLetter(props?.name),
-      userType: capitalizeFirstLetter(props?.type),
-      userCover: props?.cover,
-    });
-  };
-
-  React.useEffect(() => {
-    fnc();
-  }, [rerender, props?.id, currentUser, userList]);
+  }, [props?._id, rerenderUserList]);
 
   // give heart to user
   const SetStar = async () => {
-    var actionId = v4();
-    await setDoc(
-      doc(
-        db,
-        `users`,
-        `${props.id}`,
-        "feeds",
-        `${feed?.feed?.id}`,
-        `${props.id}+stars`,
-        currentUser?.uid
-      ),
-      {
-        id: currentUser?.uid,
-        date: serverTimestamp(),
-      }
-    );
-    if (props?.id !== currentUser?.uid) {
-      await setDoc(
-        doc(db, `users`, `${props?.id}`, "notifications", `${actionId}`),
+    try {
+      await axios.post(
+        `https://beautyverse.herokuapp.com/api/v1/users/${props?._id}/feeds/${props?.feed?._id}/stars`,
         {
-          id: actionId,
-          senderId: currentUser?.uid,
-          text: `მიანიჭა ვარსკვლავი თქვენ პოსტს!`,
-          date: serverTimestamp(),
-          type: "star",
-          status: "unread",
-          feed: `${props?.id}/feed/${feed?.feed?.id}/0`,
+          staredBy: currentUser?._id,
+          createdAt: new Date(),
         }
       );
+      if (currentUser?.uid !== props?._id) {
+        await axios.post(`/api/v1/users/${props?._id}/notifications`, {
+          senderId: currentUser?._id,
+          text: `მიანიჭა ვარსკვლავი თქვენ პოსტს!`,
+          date: new Date(),
+          type: 'star',
+          status: 'unread',
+          feed: `/api/v1/users/${props?._id}/feeds/${props.feed?._id}`,
+        });
+      }
+      const { length, checkIfStared } = stars;
+      setStars({
+        length: length + 1,
+        checkIfStared: { staredBy: currentUser?._id, createdAt: new Date() },
+      });
+    } catch (error) {
+      console.error(error);
     }
   };
 
-  // define star already given to user or not
-  const isStarGiven = stars?.find((item) => item.id === currentUser?.uid);
-
   // remove heart
   const RemoveStar = async () => {
-    await deleteDoc(
-      doc(
-        db,
-        "users",
-        `${props?.id}`,
-        "feeds",
-        `${feed?.feed?.id}`,
-        `${props?.id}+stars`,
-        currentUser?.uid
-      )
-    );
+    const url = `https://beautyverse.herokuapp.com/api/v1/users/${props?._id}/feeds/${props?.feed?._id}/stars/${isStarGiven?._id}`;
+    const response = await fetch(url, { method: 'DELETE' })
+      .then((response) => response.json())
+      .then(async (data) => {
+        const { length, checkIfStared } = stars;
+        setStars({ length: length - 1, checkIfStared: undefined });
+      })
+
+      .catch((error) => {
+        console.log('Error fetching data:', error);
+      });
   };
 
   // define post img added time
@@ -195,92 +133,39 @@ export const FeedCard = (props) => {
   const [reports, setReports] = React.useState(false);
 
   // define shown post added time
-  const currentPostTime = GetTimesAgo(feed?.feed?.addTime?.seconds);
+
+  const currentPostTime = GetTimesAgo(
+    new Date(props.feed?.createdAt)?.getTime()
+  );
+
   let timeTitle;
-  if (currentPostTime?.title === "h") {
+  if (currentPostTime?.title === 'h') {
     timeTitle = language?.language.Main.feedCard.h;
-  } else if (currentPostTime?.title === "min") {
+  } else if (currentPostTime?.title === 'min') {
     timeTitle = language?.language.Main.feedCard.min;
   } else {
-    timeTitle = currentPostTime?.title;
+    timeTitle = language?.language.Main.feedCard.justNow;
   }
-  /** Define following to user or not
-   * //
-   */
-
-  // import current user & parse it
-  const userUnparsed = useSelector((state) => state.storeMain.user);
-  let currentuser;
-  if (userUnparsed?.length > 0) {
-    currentuser = JSON.parse(userUnparsed);
-  }
-  // import followings
-  const folls = useSelector((state) => state.storeMain.followings);
-  let followings;
-  if (folls?.length > 0) {
-    followings = JSON.parse(folls);
-  }
-
-  // define if props user is in your followings list
-  const following = followings?.find((item) => item?.id == props?.id);
-
-  const userToFollow = props;
-
-  // function to follow user
-  const FollowToUser = async () => {
-    var actionId = v4();
-    await setDoc(
-      doc(db, `users`, `${currentUser?.uid}`, "followings", `${props?.id}`),
-      {
-        id: props?.id,
-        date: serverTimestamp(),
-      }
-    );
-    await setDoc(
-      doc(db, `users`, `${props?.id}`, "followers", `${currentUser?.uid}`),
-      {
-        id: currentuser?.id,
-        date: serverTimestamp(),
-      }
-    );
-    if (props?.id !== currentUser?.uid) {
-      setDoc(doc(db, `users`, `${props?.id}`, "notifications", `${actionId}`), {
-        id: actionId,
-        senderId: currentUser?.uid,
-        text: `ჩაინიშნა თქვენი პერსონალური გვერდი!`,
-        date: serverTimestamp(),
-        type: "following",
-        status: "unread",
-      });
-    }
-  };
-
-  // function to unfollow user
-  const UnFollowToUser = async () => {
-    await deleteDoc(
-      doc(db, `users`, `${currentUser?.uid}`, "followings", `${props?.id}`)
-    );
-  };
 
   // open post
   const [openPost, setOpenPost] = React.useState(false);
 
   // translate feed
-  const [translated, setTranslated] = React.useState("");
+  const [translated, setTranslated] = React.useState('');
 
   const lang = useSelector((state) => state.storeMain.language);
 
   // translate feed text
   const GetLanguages = (x) => {
-    const API_KEY = "AIzaSyAuSnUmGlptL0E4m4wP-1XzlqL_iv_y3g8";
+    const API_KEY = 'AIzaSyAuSnUmGlptL0E4m4wP-1XzlqL_iv_y3g8';
 
     let url = `https://translation.googleapis.com/language/translate/v2?q=${x}&target=${lang}&key=${API_KEY}`;
 
     fetch(url, {
-      method: "GET",
+      method: 'GET',
       headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
       },
     })
       .then((res) => res.json())
@@ -289,92 +174,94 @@ export const FeedCard = (props) => {
         setTranslated(response.data.translations[0].translatedText);
       })
       .catch((error) => {
-        console.log("There was an error with the translation request: ", error);
+        console.log('There was an error with the translation request: ', error);
       });
   };
 
   setTimeout(() => {
     setLoading(false);
-  }, 600);
-
-  // const [scrollY, setScrollY] = useState(0);
-
-  // useEffect(() => {
-  //   const handleScroll = () => {
-  //     setScrollY(window.scrollY);
-  //   };
-
-  //   window.addEventListener("scroll", handleScroll, { passive: true });
-
-  //   return () => {
-  //     window.removeEventListener("scroll", handleScroll);
-  //   };
-  // }, []);
-  // console.log(scrollY);
+  }, 200);
 
   return (
-    <Main feed={feed?.feed?.name}>
+    <Main feed={props?.feed?.name}>
       {/* {loading ? (
         <Loader />
       ) : ( */}
       <Container
         onClick={
-          feed?.feed?.name?.toLowerCase()?.endsWith("mp4")
+          props?.feed?.fileFormat === 'video'
             ? () => {
-                navigate(`${props?.id}/feed/${feed?.feed?.id}/0`);
+                navigate(
+                  `api/v1/users/${props?._id}/feeds/${props?.feed?._id}`
+                );
                 dispatch(setFeedScrollY(window.scrollY));
               }
-            : false
+            : undefined
         }
       >
         <Divider id="divider" loading={loading.toString()}></Divider>
         <TopSection
           cover={props.cover}
-          following={following}
-          id={props.id}
-          name={feed?.userName}
+          id={props._id}
+          name={props?.name}
           username={props?.username}
-          userType={feed?.userType}
-          UnFollowToUser={UnFollowToUser}
-          FollowToUser={FollowToUser}
+          userType={props?.type}
           reports={reports}
           setReports={setReports}
           loading={loading}
         />
-        {feed?.feed?.post?.length > 0 && (
+        {props?.feed?.post && (
           <>
             <PostContainer openPost={openPost}>
+              {/* {country === props?.address?.country ? ( */}
               <p
                 style={{
-                  whiteSpace: "pre-line",
-                  margin: "0 15px 5px 15px",
-                  fontSize: "14px",
+                  whiteSpace: 'pre-line',
+                  margin: '0 15px 5px 15px',
+                  fontSize: '14px',
                 }}
               >
                 {loading ? (
                   <TextLoader />
                 ) : (
-                  <>{translated?.length > 0 ? translated : feed?.feed?.post}</>
+                  <>{translated ? translated : props?.feed?.post}</>
                 )}
               </p>
-              {feed?.feed?.post?.length > 0 && (
-                <Translater style={{ cursor: "pointer" }}>
+              {/* ) : (
+                <p
+                  style={{
+                    whiteSpace: 'pre-line',
+                    margin: '0 15px 5px 15px',
+                    fontSize: '14px',
+                    color: '#ccc',
+                  }}
+                >
+                  {loading ? (
+                    <TextLoader />
+                  ) : (
+                    'Your profile is not shown in this area, visible only for you'
+                  )}
+                </p>
+              )} */}
+              {props?.feed?.post && (
+                // country === props?.address?.country && (
+                <Translater style={{ cursor: 'pointer' }}>
                   {translated?.length < 1 ? (
-                    <div style={{ padding: "2px" }}>
+                    <div style={{ padding: '2px' }}>
                       <SiGoogletranslate
-                        onClick={() => GetLanguages(feed?.feed?.post)}
+                        onClick={() => GetLanguages(props?.feed?.post)}
                         size={15}
                         color="#ddd"
-                        style={{ cursor: "pointer" }}
+                        style={{ cursor: 'pointer' }}
                       />
                     </div>
                   ) : (
-                    <div style={{ padding: "2px" }}>
+                    <div style={{ padding: '2px' }}>
                       <SlReload
-                        onClick={() => setTranslated("")}
+                        onClick={() => setTranslated('')}
                         size={15}
                         color="#ddd"
-                        style={{ cursor: "pointer" }}
+                        style={{ cursor: 'pointer' }}
                       />
                     </div>
                   )}
@@ -385,26 +272,22 @@ export const FeedCard = (props) => {
         )}
         <div>
           {reports && (
-            <Reports path={`${props?.id}/feed/${feed?.feed?.id}/0`} />
+            <Reports path={`${props?._id}/feed/${props.feed?._id}/0`} />
           )}
-          {feed?.feed?.name.length > 0 && (
+          {props?.feed && (
             <>
-              {feed?.feed?.name?.toLowerCase()?.endsWith("mp4") ? (
+              {props?.feed?.fileFormat === 'video' ? (
                 <FileContainer>
                   {loading ? (
                     <ImgLoader />
                   ) : (
                     <Video width="100%" height="auto" controls autoplay muted>
-                      <source src={feed?.feed?.videoUrl} type="video/mp4" />
+                      <source src={props?.feed?.videoUrl} type="video/mp4" />
                     </Video>
                   )}
                 </FileContainer>
               ) : (
-                <FileContainer
-                // onClick={() =>
-                //   navigate(`${props?.id}/feed/${feed?.feed?.id}/0`)
-                // }
-                >
+                <FileContainer>
                   {loading ? (
                     <ImgLoader />
                   ) : (
@@ -412,30 +295,36 @@ export const FeedCard = (props) => {
                       {isMobile ? (
                         isWebpSupported() ? (
                           <Cover
-                            src={feed?.feed?.mobileWEBPurl}
+                            src={props?.feed?.mobileWebp}
                             active={props.active}
                             onClick={() => {
                               dispatch(setFeedScrollY(window.scrollY));
-                              navigate(`${props?.id}/feed/${feed?.feed?.id}/0`);
+                              navigate(
+                                `api/v1/users/${props?._id}/feeds/${props?.feed?._id}`
+                              );
                             }}
                           />
                         ) : (
                           <Cover
-                            src={feed?.feed?.mobileJPEGurl}
+                            src={props?.feed?.mobileJpeg}
                             active={props.active}
                             onClick={() => {
                               dispatch(setFeedScrollY(window.scrollY));
-                              navigate(`${props?.id}/feed/${feed?.feed?.id}/0`);
+                              navigate(
+                                `api/v1/users/${props?._id}/feeds/${props?.feed?._id}`
+                              );
                             }}
                           />
                         )
                       ) : (
                         <Cover
-                          src={feed?.feed?.desktopJPEGurl}
+                          src={props?.feed?.desktopUrl}
                           active={props.active}
                           onClick={() => {
                             dispatch(setFeedScrollY(window.scrollY));
-                            navigate(`${props?.id}/feed/${feed?.feed?.id}/0`);
+                            navigate(
+                              `api/v1/users/${props?._id}/feeds/${props?.feed?._id}`
+                            );
                           }}
                         />
                       )}
@@ -455,7 +344,7 @@ export const FeedCard = (props) => {
             <>
               <div style={{ flex: 1 }}>
                 <Likes>
-                  {isStarGiven != undefined ? (
+                  {isStarGiven ? (
                     <BiStar className="likedIcon" onClick={RemoveStar} />
                   ) : (
                     <BiStar
@@ -463,7 +352,7 @@ export const FeedCard = (props) => {
                       onClick={
                         currentUser != undefined
                           ? SetStar
-                          : () => navigate("/login")
+                          : () => navigate('/login')
                       }
                     />
                   )}
@@ -472,30 +361,23 @@ export const FeedCard = (props) => {
               </div>
 
               <div
-                style={{ flex: 1, display: "flex", justifyContent: "center" }}
+                style={{ flex: 1, display: 'flex', justifyContent: 'center' }}
               >
-                <Link
-                  style={{ color: "inherit", textDecoration: "none" }}
-                  to={`${props?.id}/feed/${feed?.feed?.id}/0`}
+                <TextReview
+                  open={openReview}
+                  onClick={() => {
+                    dispatch(setFeedScrollY(window.scrollY));
+                    navigate(
+                      `api/v1/users/${props?._id}/feeds/${props?.feed?._id}`
+                    );
+                  }}
                 >
-                  <TextReview
-                    open={openReview}
-                    onClick={() => {
-                      dispatch(setFeedScrollY(window.scrollY));
-                      navigate(`${props?.id}/feed/${feed?.feed?.id}/0`);
-                    }}
-                  >
-                    {feed?.reviewsLength}{" "}
-                    {language?.language.Main.feedCard.reviews}
-                  </TextReview>
-                </Link>
+                  {props?.feed?.reviewLength}{' '}
+                  {language?.language.Main.feedCard.reviews}
+                </TextReview>
               </div>
               <PostTime>
-                <span>
-                  {currentPostTime === "Just now"
-                    ? language?.language.Main.feedCard.justNow
-                    : currentPostTime?.numbers + " " + timeTitle}
-                </span>
+                <span>{currentPostTime?.numbers + ' ' + timeTitle}</span>
               </PostTime>
             </>
           )}
@@ -507,7 +389,7 @@ export const FeedCard = (props) => {
 };
 
 const Main = styled.div`
-  display: ${(props) => (props.feed === undefined ? "none" : "auto")};
+  // display: ${(props) => (props.feed === undefined ? 'none' : 'auto')};
 `;
 
 const Divider = styled.div`
@@ -620,9 +502,9 @@ const Container = styled.div`
 const PostContainer = styled.div`
   padding: 0 25px 10px 20px;
   margin: 0;
-  max-height: ${(props) => (props.openPost ? "100%" : "55px")};
+  max-height: ${(props) => (props.openPost ? '100%' : '55px')};
   height: auto,
-  overflow: ${(props) => (props.openPost ? "visible" : "hidden")};
+  overflow: ${(props) => (props.openPost ? 'visible' : 'hidden')};
   cursor: pointer;
   background: ${(props) => props.theme.background};
   display: flex;
@@ -648,7 +530,7 @@ const Translater = styled.div`
 
 const FileContainer = styled.div`
   width: 100%;
-  height: 100%;
+  height: ${(props) => props.imageHeight}px;
   min-height: 400px;
   display: flex;
   aling-items: center;
@@ -859,7 +741,7 @@ const Review = styled.div`
 const Likes = styled.div`
   display: flex;
   align-items: center;
-  font-size: 14px;
+  font-size: 12px;
   color: ${(props) => props.theme.font};
 `;
 
@@ -870,7 +752,7 @@ const PostTime = styled.div`
 
   span {
     color: ${(props) => props.theme.font};
-    font-size: 14px;
+    font-size: 12px;
   }
 `;
 
@@ -878,7 +760,7 @@ const TextReview = styled.span`
   cursor: pointer;
   color: ${(props) => props.theme.font};
   transition: ease-in-out 100ms;
-  font-size: 14px;
+  font-size: 12px;
   letter-spacing: 0;
   // margin-bottom: 0.1vw;
 

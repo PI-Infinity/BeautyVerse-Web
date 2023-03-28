@@ -1,23 +1,21 @@
-import React from "react";
-import styled from "styled-components";
-import { useSelector, useDispatch } from "react-redux";
-import { Result } from "../../pages/addFeed/result";
-import { AiOutlineCloseSquare } from "react-icons/ai";
-import { setDoc, doc, serverTimestamp, updateDoc } from "firebase/firestore";
-import { db, storage } from "../../firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { useNavigate } from "react-router-dom";
-import { setRerender, setBackdropOpen } from "../../redux/main";
-import { v4 } from "uuid";
-import useWindowDimensions from "../../functions/dimensions";
-import Success from "../../snackBars/success";
-import Avatar from "@mui/material/Avatar";
-import { Language } from "../../context/language";
-import EmojiPicker from "emoji-picker-react";
-import { FaRegSmileBeam } from "react-icons/fa";
-import { Theme } from "emoji-picker-react";
-import { IsMobile } from "../../functions/isMobile";
-import axios from "axios";
+import React from 'react';
+import styled from 'styled-components';
+import { useSelector, useDispatch } from 'react-redux';
+import { Result } from '../../pages/addFeed/result';
+import { AiOutlineCloseSquare } from 'react-icons/ai';
+import { storage } from '../../firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useNavigate } from 'react-router-dom';
+import { setRerender, setBackdropOpen, UpdateUserList } from '../../redux/main';
+import { v4 } from 'uuid';
+import useWindowDimensions from '../../functions/dimensions';
+import Success from '../../snackBars/success';
+import Avatar from '@mui/material/Avatar';
+import { Language } from '../../context/language';
+import EmojiPicker from 'emoji-picker-react';
+import { FaRegSmileBeam } from 'react-icons/fa';
+import { IsMobile } from '../../functions/isMobile';
+import axios from 'axios';
 
 const AddFeed = () => {
   const language = Language();
@@ -25,22 +23,21 @@ const AddFeed = () => {
   const isMobile = IsMobile();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  // import current user from redux state
-  const rerender = useSelector((state) => state.storeMain.user);
-  const userUnparsed = useSelector((state) => state.storeMain.user);
-  const [active, setActive] = React.useState("Mobile");
-  let user;
-  if (userUnparsed?.length > 0) {
-    user = JSON.parse(userUnparsed);
-  }
 
-  document.body.style.overflowY = "hidden";
+  // user list and currentUser
+  const userList = useSelector((state) => state.storeMain.userList);
+
+  const currentUser = JSON.parse(
+    localStorage.getItem('Beautyverse:currentUser')
+  );
+  const [active, setActive] = React.useState('Mobile');
+
+  document.body.style.overflowY = 'hidden';
 
   // add text
+  const [text, setText] = React.useState('');
 
-  const [text, setText] = React.useState("");
   // add file
-
   const [file, setFile] = React.useState(null);
 
   const onImageChange = async (event) => {
@@ -55,113 +52,121 @@ const AddFeed = () => {
   const [openSuccess, setOpenSuccess] = React.useState(false);
 
   // resized image
-  const [resizedObj, setResizedObj] = React.useState("");
+  const [resizedObj, setResizedObj] = React.useState('');
 
   // add feed in firebase
   async function FileUpload() {
     await dispatch(setBackdropOpen(true));
     //create id
+    let folderId = resizedObj.desktopJPEG?.name + v4();
     let imageId = resizedObj.desktopJPEG?.name + v4();
+    let imageId2 = resizedObj.mobileJPEG?.name + v4();
+    let imageId3 = resizedObj.mobileWEBP?.name + v4();
     // check file
-    if (resizedObj !== null && !resizedObj?.name?.endsWith("mp4")) {
+    if (resizedObj !== null && !resizedObj?.name?.endsWith('mp4')) {
       let desktopRefs = ref(
         storage,
-        `images/${user?.id}/feeds/${imageId}/${imageId}/`
+        `images/${currentUser?._id}/feeds/${folderId}/${imageId}/`
       );
-      if (desktopRefs != undefined) {
+      let mobileJpegRef = ref(
+        storage,
+        `images/${currentUser?._id}/feeds/${folderId}/${imageId2}/`
+      );
+      let mobileWebpRef = ref(
+        storage,
+        `images/${currentUser?._id}/feeds/${folderId}/${imageId3}/`
+      );
+      if (desktopRefs) {
         // add desktop version
 
         await uploadBytes(desktopRefs, resizedObj.desktopJPEG).then(
           (snapshot) => {
-            getDownloadURL(snapshot.ref).then((url) => {
-              setDoc(doc(db, `users`, `${user?.id}`, "feeds", `${imageId}`), {
-                id: imageId,
-                name: resizedObj.desktopJPEG.name,
-                addTime: serverTimestamp(),
-                post: text,
-                desktopJPEGurl: url,
-                owner: user?.id,
-              });
-              updateDoc(doc(db, `users`, `${user?.id}`), {
-                lastPost: serverTimestamp(),
-              });
+            getDownloadURL(snapshot.ref).then(async (url) => {
+              await uploadBytes(mobileJpegRef, resizedObj.mobileJPEG).then(
+                (snapshot2) => {
+                  getDownloadURL(snapshot2.ref).then(async (url2) => {
+                    await uploadBytes(
+                      mobileWebpRef,
+                      resizedObj.mobileWEBP
+                    ).then((snapshot3) => {
+                      getDownloadURL(snapshot3.ref).then(async (url3) => {
+                        try {
+                          const newFeed = {
+                            desktopUrl: url,
+                            mobileJpeg: url2,
+                            mobileWebp: url3,
+                            name: folderId,
+                            createdAt: new Date().toISOString(),
+                            post: text,
+                            fileFormat: 'img',
+                          };
+                          const response = await axios.post(
+                            `https://beautyverse.herokuapp.com/api/v1/users/${currentUser?._id}/feeds`,
+                            newFeed
+                          );
+                          await axios.patch(
+                            `https://beautyverse.herokuapp.com/api/v1/users/${currentUser?._id}`,
+                            {
+                              lastPostCreatedAt: new Date(),
+                            }
+                          );
+                          dispatch(
+                            UpdateUserList({ ...currentUser, feed: newFeed })
+                          );
+                        } catch (error) {
+                          console.error(error);
+                        }
+                      });
+                    });
+                  });
+                }
+              );
             });
           }
         );
-
-        // add mobile jpeg
-        let sizedId = resizedObj.mobileJPEG?.name + v4();
-        let mobileJpegRefs = ref(
-          storage,
-          `images/${user?.id}/feeds/${imageId}/${sizedId}/`
-        );
-        // add mobile jpeg for webp unspuported devices
-        if (mobileJpegRefs != undefined) {
-          await uploadBytes(mobileJpegRefs, resizedObj.mobileJPEG).then(
-            (snapshot) => {
-              getDownloadURL(snapshot.ref).then((url) => {
-                updateDoc(
-                  doc(db, `users`, `${user?.id}`, "feeds", `${imageId}`),
-                  {
-                    mobileJPEGurl: url,
-                  }
-                );
-                updateDoc(doc(db, `users`, `${user?.id}`), {
-                  lastPost: serverTimestamp(),
-                });
-              });
-            }
-          );
-        }
-        let sizedIdWebp = resizedObj.mobileWEBP?.name + v4();
-        let mobileWebpRefs = ref(
-          storage,
-          `images/${user?.id}/feeds/${imageId}/${sizedIdWebp}/`
-        );
-        if (mobileWebpRefs != undefined) {
-          await uploadBytes(mobileWebpRefs, resizedObj.mobileWEBP).then(
-            (snapshot) => {
-              getDownloadURL(snapshot.ref).then((url) => {
-                updateDoc(
-                  doc(db, `users`, `${user?.id}`, "feeds", `${imageId}`),
-                  {
-                    mobileWEBPurl: url,
-                  }
-                );
-                updateDoc(doc(db, `users`, `${user?.id}`), {
-                  lastPost: serverTimestamp(),
-                });
-              });
-            }
-          );
-        }
       }
-    } else if (resizedObj !== null && resizedObj?.name?.endsWith("mp4")) {
+    } else if (resizedObj?.name?.endsWith('mp4')) {
       let videoId = resizedObj?.name + v4();
-      let videoRef = ref(storage, `videos/${user?.id}/feeds/${videoId}/`);
-      await uploadBytes(videoRef, resizedObj).then((snapshot) => {
-        getDownloadURL(snapshot.ref).then((url) => {
-          setDoc(doc(db, `users`, `${user?.id}`, "feeds", `${videoId}`), {
-            id: videoId,
-            name: resizedObj.name,
-            addTime: serverTimestamp(),
-            post: text,
-            videoUrl: url,
-            owner: user?.id,
-          });
-          updateDoc(doc(db, `users`, `${user?.id}`), {
-            lastPost: serverTimestamp(),
-          });
+      let videosRef = ref(
+        storage,
+        `videos/${currentUser?._id}/feeds/${videoId}/`
+      );
+      await uploadBytes(videosRef, resizedObj).then((snapshot) => {
+        getDownloadURL(snapshot.ref).then(async (url) => {
+          try {
+            const newFeed = {
+              videoUrl: url,
+              name: videoId,
+              name: folderId,
+              createdAt: new Date().toISOString(),
+              post: text,
+              fileFormat: 'video',
+            };
+            const response = await axios.post(
+              `https://beautyverse.herokuapp.com/api/v1/users/${currentUser?._id}/feeds`,
+              newFeed
+            );
+            await axios.patch(
+              `https://beautyverse.herokuapp.com/api/v1/users/${currentUser?._id}`,
+              {
+                lastPostCreatedAt: new Date(),
+              }
+            );
+            dispatch(UpdateUserList({ ...currentUser, feed: newFeed }));
+          } catch (error) {
+            console.error(error);
+          }
         });
       });
     }
-    await setOpenSuccess(true);
-    await dispatch(setRerender());
-    await setFile(null);
-    await setResizedObj("");
-    await setText("");
-    await dispatch(setBackdropOpen(false));
-    navigate("/");
+    setTimeout(async () => {
+      await setFile(null);
+      await setResizedObj('');
+      await setText('');
+      await setOpenSuccess(true);
+      await dispatch(setBackdropOpen(false));
+      navigate('/');
+    }, 3000);
   }
 
   // emojies
@@ -170,7 +175,7 @@ const AddFeed = () => {
   return (
     <Container height={height}>
       <SecondLevelContainer>
-        <div style={{ marginLeft: "auto" }} onClick={() => navigate("/")}>
+        <div style={{ marginLeft: 'auto' }} onClick={() => navigate('/')}>
           <AiOutlineCloseSquare className="icon" />
         </div>
         <Wrapper>
@@ -178,21 +183,21 @@ const AddFeed = () => {
           <Info>
             <Profile>
               <Avatar
-                onClick={() => navigate(`/user/${user?.id}`)}
-                alt={user?.name}
-                src={user?.cover !== undefined ? user?.cover : ""}
+                onClick={() => navigate(`/user/${currentUser?._id}`)}
+                alt={currentUser?.name}
+                src={currentUser?.cover ? currentUser?.cover : ''}
                 sx={{
                   width: 42,
                   height: 42,
-                  cursor: "pointer",
-                  "@media only screen and (max-width: 1200px)": {
+                  cursor: 'pointer',
+                  '@media only screen and (max-width: 1200px)': {
                     width: 40,
                     height: 40,
                   },
                 }}
               />
             </Profile>
-            <Name>{user?.name}</Name>
+            <Name>{currentUser?.name}</Name>
           </Info>
           <Text
             value={text}
@@ -213,14 +218,14 @@ const AddFeed = () => {
               className="label"
               color="yellow"
               size={20}
-              style={{ marginTop: "10px", cursor: "pointer" }}
+              style={{ marginTop: '10px', cursor: 'pointer' }}
             />
           )}
         </Wrapper>
         <Result
           file={file}
-          {...user}
-          id={user?.id}
+          {...currentUser}
+          id={currentUser?._id}
           active={active}
           text={text}
           onImageChange={onImageChange}
@@ -244,7 +249,7 @@ const AddFeed = () => {
 export default AddFeed;
 
 const Emojies = styled.div`
-  zindex: 10000;
+  zindex: 100000;
   margin-left: 4vw;
   position: absolute;
 `;

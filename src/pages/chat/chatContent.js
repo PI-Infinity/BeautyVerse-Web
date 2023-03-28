@@ -1,9 +1,12 @@
-import styled from "styled-components";
-import { TopSection } from "../../pages/chat/topSection";
-import { Messages } from "../../pages/chat/messages";
-import { Input } from "../../pages/chat/input";
-import { useParams, useLocation } from "react-router-dom";
-import useWindowDimensions from "../../functions/dimensions";
+import { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import { TopSection } from '../../pages/chat/topSection';
+import { Messages } from '../../pages/chat/messages';
+import { Input } from '../../pages/chat/input';
+import { useParams, useLocation } from 'react-router-dom';
+import useWindowDimensions from '../../functions/dimensions';
+import { io } from 'socket.io-client';
+import TestChat from '../../pages/chat/test';
 
 export const ChatContent = (props) => {
   const { id } = useParams();
@@ -13,16 +16,27 @@ export const ChatContent = (props) => {
   return (
     <Bg
       style={{
-        width: "100vw",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
+        width: '100vw',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
       }}
     >
       <Container height={height}>
+        {/* <TestChat /> */}
         <TopSection />
-        <Messages height={height} />
-        <Input />
+        <Messages
+          height={height}
+          messages={props.messages}
+          setMessages={props.setMessages}
+          socket={props.socket}
+        />
+        <Input
+          room={props.room}
+          messages={props.messages}
+          socket={props.socket}
+          setMessages={props.setMessages}
+        />
       </Container>
     </Bg>
   );
@@ -30,7 +44,7 @@ export const ChatContent = (props) => {
 
 const Bg = styled.div`
   width: 100%;
-  height: 100.1vh;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -39,8 +53,6 @@ const Bg = styled.div`
   @media only screen and (max-width: 600px) {
     align-items: start;
     overflow: hidden;
-    // height: calc(100vh - 14vw);
-    height: 100%;
     margin-top: 14vw;
   }
 `;
@@ -50,8 +62,8 @@ const Container = styled.div`
   flex-direction: column;
   justify-content: space-between;
   box-sizing: border-box;
-  height: 80vh;
-  width: 70%;
+  height: 100%;
+  width: 100%;
   border-radius: 0.5vw;
   overflow: hidden;
   border: 1px solid ${(props) => props.theme.lineColor};
@@ -62,8 +74,8 @@ const Container = styled.div`
     top: 15vw;
     left: 0;
     width: 100vw;
-    height: calc(${(props) => props.height}px - 15vw);
-    min-height: calc(${(props) => props.height}px - 15vw);
+    height: calc(${(props) => props.height}px - 27vw);
+    min-height: calc(${(props) => props.height}px - 27vw);
     overflow: hidden;
     border: none;
     border-radius: none;

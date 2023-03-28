@@ -1,33 +1,32 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   enterSearch: false,
   openMenu: false,
   openMobileMenu: false,
-  user: "",
+  targetUser: [],
   coverToGallery: true,
-  cover: "",
-  coverInfo: "",
+  coverUrl: undefined,
   rerender: 1,
   loading: true,
-  userList: "",
-  followings: "",
+  userList: [],
+  followings: [],
   openImg: false,
-  imgTargetId: "",
+  imgTargetId: '',
   currentImgNumber: 0,
   mobileFilter: false,
   loadFeed: true,
+  loadFeeds: true,
   changeFeed: true,
   navigatorActive: 0,
   backdrop: false,
   theme: true,
-  language: "en",
+  language: '',
+  country: '',
 };
 
-console.log(initialState.language);
-
 export const main = createSlice({
-  name: "main",
+  name: 'main',
   initialState,
   reducers: {
     setEnterSearch: (state, action) => {
@@ -39,14 +38,14 @@ export const main = createSlice({
     setOpenMobileMenu: (state, action) => {
       state.openMobileMenu = action.payload;
     },
-    setUser: (state, action) => {
-      state.user = action.payload;
+    setTargetUser: (state, action) => {
+      state.targetUser = action.payload;
     },
     setCoverToGallery: (state, action) => {
       state.coverToGallery = action.payload;
     },
-    setCover: (state, action) => {
-      state.cover = action.payload;
+    setCoverUrl: (state, action) => {
+      state.coverUrl = action.payload;
     },
     setCoverInfo: (state, action) => {
       state.coverInfo = action.payload;
@@ -63,6 +62,10 @@ export const main = createSlice({
     setUserList: (state, action) => {
       state.userList = action.payload;
     },
+    UpdateUserList: (state, action) => {
+      state.userList.pop();
+      state.userList.unshift(action.payload);
+    },
     setOpenImg: (state, action) => {
       state.openImg = action.payload;
     },
@@ -77,6 +80,9 @@ export const main = createSlice({
     },
     setLoadFeed: (state, action) => {
       state.loadFeed = action.payload;
+    },
+    setLoadFeeds: (state, action) => {
+      state.loadFeeds = action.payload;
     },
     setChangeFeed: (state, action) => {
       state.changeFeed = action.payload;
@@ -93,6 +99,9 @@ export const main = createSlice({
     setLanguage: (state, action) => {
       state.language = action.payload;
     },
+    setCountry: (state, action) => {
+      state.country = action.payload;
+    },
   },
 });
 
@@ -101,11 +110,13 @@ export const {
   setOpenMenu,
   setOpenMobileMenu,
   setUser,
+  setTargetUser,
   setCoverToGallery,
-  setCover,
+  setCoverUrl,
   setRerender,
   setLoading,
   setUserList,
+  UpdateUserList,
   setCoverInfo,
   setFollowings,
   setOpenImg,
@@ -113,10 +124,12 @@ export const {
   setCurrentImgNumber,
   setFilterOpen,
   setLoadFeed,
+  setLoadFeeds,
   setChangeFeed,
   setNavigatorActive,
   setBackdropOpen,
   setTheme,
   setLanguage,
+  setCountry,
 } = main.actions;
 export default main.reducer;

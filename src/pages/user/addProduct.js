@@ -1,30 +1,27 @@
-import { useState } from "react";
-import styled from "styled-components";
-import { AiOutlineCloseCircle } from "react-icons/ai";
-import Select from "react-select";
-import makeAnimated from "react-select/animated";
-import { categoriesOptions } from "../../data/registerDatas";
-import { useSelector } from "react-redux";
-import { doc, serverTimestamp, setDoc } from "firebase/firestore";
-import { db } from "../../firebase";
-import { v4 } from "uuid";
-import useWindowDimensions from "../../functions/dimensions";
+import { useState } from 'react';
+import styled from 'styled-components';
+import { AiOutlineCloseCircle } from 'react-icons/ai';
+import Select from 'react-select';
+import makeAnimated from 'react-select/animated';
+import { categoriesOptions } from '../../data/registerDatas';
+import { useSelector } from 'react-redux';
+import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { db } from '../../firebase';
+import { v4 } from 'uuid';
+import useWindowDimensions from '../../functions/dimensions';
 
 const animatedComponents = makeAnimated();
 
 export const AddProduct = (props) => {
   const { height, width } = useWindowDimensions();
   // current user
-  const userUnparsed = useSelector((state) => state.storeMain.user);
-
-  let user;
-  if (userUnparsed?.length > 0) {
-    user = JSON.parse(userUnparsed);
-  }
+  const user = useSelector(
+    (state) => state.storeMain.user?.length > 0 && state.storeMain.user
+  );
 
   //
 
-  const [categories, setCategories] = useState("");
+  const [categories, setCategories] = useState('');
   const [variantes, setVariantes] = useState([]);
   //import products from redux
   const ps = useSelector((state) => state.storeMarket.currentShopProducts);
@@ -69,8 +66,8 @@ export const AddProduct = (props) => {
   const AddInFirebase = async (prop) => {
     // var imgs = await FileConverter(prop.title);
     // console.log(imgs);
-    let Id = prop.title.replace(/\s/g, "") + "." + v4();
-    await setDoc(doc(db, "users", `${user?.id}`, "products", Id), {
+    let Id = prop.title.replace(/\s/g, '') + '.' + v4();
+    await setDoc(doc(db, 'users', `${user?._id}`, 'products', Id), {
       id: Id,
       title: prop?.title,
       brand: prop?.brand,
@@ -83,10 +80,10 @@ export const AddProduct = (props) => {
       fullDescription: prop.fullDescription,
       usage: prop?.usage,
       ingredients: prop?.ingredients,
-      status: "Not Published",
+      status: 'Not Published',
       addTime: serverTimestamp(),
       variantes: variantes,
-      shop: user?.id,
+      shop: user?._id,
     });
     props.setAdd(false);
   };
@@ -123,13 +120,13 @@ export const AddProduct = (props) => {
               control: (baseStyles, state) => ({
                 ...baseStyles,
                 borderColor: state.isFocused
-                  ? "rgba(0,0,0,0)"
-                  : "rgba(0,0,0,0.1)",
-                width: "33vw",
-                minHeight: "2vw",
-                cursor: "pointer",
-                "@media only screen and (max-width: 1200px)": {
-                  width: "100%",
+                  ? 'rgba(0,0,0,0)'
+                  : 'rgba(0,0,0,0.1)',
+                width: '33vw',
+                minHeight: '2vw',
+                cursor: 'pointer',
+                '@media only screen and (max-width: 1200px)': {
+                  width: '100%',
                 },
               }),
             }}
@@ -142,17 +139,17 @@ export const AddProduct = (props) => {
         </ShortDescription>
         <ShortDescription>
           <h4>
-            მახასიათებლები (ზომა/ფერი/წონა/რაოდენობა){" "}
-            <span style={{ color: "#ccc", fontWeight: "normal" }}>
+            მახასიათებლები (ზომა/ფერი/წონა/რაოდენობა){' '}
+            <span style={{ color: '#ccc', fontWeight: 'normal' }}>
               (optional)
             </span>
-          </h4>{" "}
+          </h4>{' '}
           <InputTextArea type="text" placeholder="ზომა/ფერი/წონა/რაოდენობა" />
         </ShortDescription>
         <InStock>
           <h4>
-            რაოდენობა მარაგში{" "}
-            <span style={{ color: "#ccc", fontWeight: "normal" }}>
+            რაოდენობა მარაგში{' '}
+            <span style={{ color: '#ccc', fontWeight: 'normal' }}>
               (optional)
             </span>
           </h4>
@@ -165,8 +162,8 @@ export const AddProduct = (props) => {
         </Price>
         <Sale>
           <h4>
-            ფასი ფასდაკლებით{" "}
-            <span style={{ color: "#ccc", fontWeight: "normal" }}>
+            ფასი ფასდაკლებით{' '}
+            <span style={{ color: '#ccc', fontWeight: 'normal' }}>
               (optional)
             </span>
           </h4>
@@ -174,8 +171,8 @@ export const AddProduct = (props) => {
         </Sale>
         <Desciption>
           <h4>
-            სრული აღწერა{" "}
-            <span style={{ color: "#ccc", fontWeight: "normal" }}>
+            სრული აღწერა{' '}
+            <span style={{ color: '#ccc', fontWeight: 'normal' }}>
               (optional)
             </span>
           </h4>
@@ -183,8 +180,8 @@ export const AddProduct = (props) => {
         </Desciption>
         <HowToUse>
           <h4>
-            გამოყენების ინსტრუქცია{" "}
-            <span style={{ color: "#ccc", fontWeight: "normal" }}>
+            გამოყენების ინსტრუქცია{' '}
+            <span style={{ color: '#ccc', fontWeight: 'normal' }}>
               (optional)
             </span>
           </h4>
@@ -193,8 +190,8 @@ export const AddProduct = (props) => {
         </HowToUse>
         <Ingredients>
           <h4>
-            ინგრედიენტები{" "}
-            <span style={{ color: "#ccc", fontWeight: "normal" }}>
+            ინგრედიენტები{' '}
+            <span style={{ color: '#ccc', fontWeight: 'normal' }}>
               (optional)
             </span>
           </h4>
@@ -203,14 +200,14 @@ export const AddProduct = (props) => {
         </Ingredients>
         <Variants>
           <h4>
-            ვარიანტები{" "}
-            <span style={{ color: "#ccc", fontWeight: "normal" }}>
+            ვარიანტები{' '}
+            <span style={{ color: '#ccc', fontWeight: 'normal' }}>
               (optional)
             </span>
           </h4>
 
           <Select
-            placeholder={"დაამატე პროდუქტის ვარიანტები"}
+            placeholder={'დაამატე პროდუქტის ვარიანტები'}
             isMulti
             components={animatedComponents}
             onChange={(value) => {
@@ -220,13 +217,13 @@ export const AddProduct = (props) => {
               control: (baseStyles, state) => ({
                 ...baseStyles,
                 borderColor: state.isFocused
-                  ? "rgba(0,0,0,0)"
-                  : "rgba(0,0,0,0.1)",
-                width: "33vw",
-                minHeight: "2vw",
-                cursor: "pointer",
-                "@media only screen and (max-width: 1200px)": {
-                  width: "85vw",
+                  ? 'rgba(0,0,0,0)'
+                  : 'rgba(0,0,0,0.1)',
+                width: '33vw',
+                minHeight: '2vw',
+                cursor: 'pointer',
+                '@media only screen and (max-width: 1200px)': {
+                  width: '85vw',
                 },
               }),
             }}

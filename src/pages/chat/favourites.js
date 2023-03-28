@@ -1,140 +1,55 @@
-import React from "react";
-import { useSelector, useDispatch } from "react-redux";
-import styled from "styled-components";
+import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import styled from 'styled-components';
 import {
   getDoc,
   doc,
   serverTimestamp,
   setDoc,
   updateDoc,
-} from "firebase/firestore";
-import { db } from "../../firebase";
-import { setRerender, SetCurrentChat } from "../../redux/chat";
-import { useNavigate } from "react-router-dom";
-import { Spinner } from "../../components/loader";
-import Avatar from "@mui/material/Avatar";
+} from 'firebase/firestore';
+import { db } from '../../firebase';
+import { setRerender, setCurrentChat, setActiveTab } from '../../redux/chat';
+import { useNavigate } from 'react-router-dom';
+import { Spinner } from '../../components/loader';
+import Avatar from '@mui/material/Avatar';
 
 export const Favourites = (props) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [loading, setLoading] = React.useState(true);
   // import current user & parse it
-  const userUnparsed = useSelector((state) => state.storeMain.user);
-  let currentuser;
-  if (userUnparsed?.length > 0) {
-    currentuser = JSON.parse(userUnparsed);
-  }
+  const currentuser = useSelector((state) => state.storeMain.user);
+
+  const chats = useSelector((state) => state.storeChat.userChats);
 
   // import followings
-  const folls = useSelector((state) => state.storeMain.followings);
-  let followings;
-  if (folls?.length > 0) {
-    followings = JSON.parse(folls);
-  }
-
-  const handleSelect = async (user) => {
-    const combinedId =
-      currentuser?.id > user?.id
-        ? currentuser?.id + user?.id
-        : user?.id + currentuser?.id;
-
-    try {
-      const res = await getDoc(doc(db, "chats", combinedId));
-      const chatId = await getDoc(
-        doc(db, "users", currentuser?.id, "chats", combinedId)
-      );
-      const chatIdT = await getDoc(
-        doc(db, "users", user?.id, "chats", combinedId)
-      );
-      // if chat not exists
-      if (!res.exists() && !chatId.exists() && !chatIdT.exists()) {
-        await setDoc(doc(db, "chats", combinedId), { messages: [] });
-        await setDoc(doc(db, "users", currentuser?.id, "chats", user?.id), {
-          chatId: combinedId,
-          ["userInfo"]: {
-            id: user?.id,
-            // name: user?.name,
-            // cover: user?.cover != undefined ? user?.cover : "",
-          },
-          ["date"]: serverTimestamp(),
+  const [followings, setFollowings] = useState([]);
+  useEffect(() => {
+    async function GetAudience(userId) {
+      const response = await fetch(
+        `https://beautyverse.herokuapp.com/api/v1/users/${currentuser?._id}/followings`
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          setFollowings(data.data.followings);
+        })
+        .catch((error) => {
+          console.log('Error fetching data:', error);
         });
-        await setDoc(doc(db, "users", user?.id, "chats", currentuser?.id), {
-          chatId: combinedId,
-          ["userInfo"]: {
-            id: currentuser?.id,
-            // name: currentuser?.name,
-            // cover: currentuser?.cover != undefined ? currentuser?.cover : "",
-          },
-          ["date"]: serverTimestamp(),
-        });
-        // if chat already exists
-      } else if (res.exists() && (!chatId.exists() || !chatIdT.exists())) {
-        await setDoc(doc(db, "users", currentuser?.id, "chats", user?.id), {
-          chatId: combinedId,
-          ["userInfo"]: {
-            id: user?.id,
-            // name: user?.name,
-            // cover: user?.cover != undefined ? user?.cover : "",
-          },
-          ["date"]: serverTimestamp(),
-        });
-        await setDoc(doc(db, "users", user?.id, "chats", currentuser?.id), {
-          chatId: combinedId,
-          ["userInfo"]: {
-            id: currentuser?.id,
-            // name: currentuser?.name,
-            // cover: currentuser?.cover != undefined ? currentuser?.cover : "",
-          },
-          ["date"]: serverTimestamp(),
-        });
-      } else {
-        await updateDoc(doc(db, "users", currentuser?.id, "chats", user?.id), {
-          chatId: combinedId,
-          ["userInfo"]: {
-            id: user?.id,
-            // name: user?.name,
-            // cover: user?.cover != undefined ? user?.cover : "",
-          },
-          ["date"]: serverTimestamp(),
-        });
-        await updateDoc(doc(db, "users", user?.id, "chats", currentuser?.id), {
-          chatId: combinedId,
-          ["userInfo"]: {
-            id: currentuser?.id,
-            // name: currentuser?.name,
-            // cover: currentuser?.cover != undefined ? currentuser?.cover : "",
-          },
-          ["date"]: serverTimestamp(),
-        });
-      }
-      await dispatch(
-        SetCurrentChat([
-          {
-            chatId: combinedId,
-            // cover: user?.cover != undefined ? user?.cover : "",
-            // name: user?.name,
-            userId: user?.id,
-          },
-        ])
-      );
-      navigate(`/chat/${combinedId}`);
-      dispatch(setRerender());
-    } catch (err) {
-      alert(err);
     }
+    if (currentuser) {
+      GetAudience();
+    }
+  }, [currentuser]);
+
+  // define chat number includes in user chat list or it is new.
+  const GetRoom = (roomMember) => {
+    let chatRoom = chats.find((item) =>
+      item.room.toLowerCase().includes(roomMember)
+    );
+    return chatRoom;
   };
-
-  /// define user list
-  const list = useSelector((state) => state.storeMain.userList);
-  let userList;
-  if (list?.length > 0) {
-    userList = JSON.parse(list);
-  }
-
-  const defineFollowersList = followings?.map((item, index) => {
-    let us = userList?.find((itm, indx) => itm.id === item.id);
-    return us;
-  });
 
   React.useEffect(() => {
     setTimeout(() => {
@@ -150,24 +65,56 @@ export const Favourites = (props) => {
         </LoadingContainer>
       ) : (
         <Container>
-          {defineFollowersList
+          {followings
             ?.filter((item, index) => {
               if (
-                item?.name?.toLowerCase()?.includes(props.search?.toLowerCase())
+                item?.followingName
+                  ?.toLowerCase()
+                  ?.includes(props.search?.toLowerCase())
               ) {
                 return item;
               }
             })
             ?.map((item, index) => {
               return (
-                <UserItem onClick={() => handleSelect(item)} key={index}>
+                <UserItem
+                  onClick={async () => {
+                    let room = await GetRoom(item.followingId);
+                    if (room) {
+                      props.handleRoomChange(room.room);
+                    } else {
+                      props.handleRoomChange(
+                        currentuser?._id + '&' + item.followingId
+                      );
+                    }
+                    // navigate(
+                    //   `/chat/${item.followingId + '&' + currentuser?._id}`
+                    // );
+                    dispatch(
+                      setCurrentChat({
+                        room: room
+                          ? room.room
+                          : currentuser?._id + '&' + item.followingId,
+                        curentChatUser: currentuser?._id,
+                        targetChatUser: {
+                          authId: item?.followingAuthId,
+                          id: item?.followingId,
+                          name: item.followingName,
+                          cover: item.followingCover,
+                        },
+                      })
+                    );
+                  }}
+                  key={index}
+                >
+                  {/* <UserItem onClick={() => handleSelect(item)} key={index}> */}
                   <Avatar
-                    alt={item?.name}
-                    src={item?.cover}
+                    alt={item?.followingName}
+                    src={item?.followingCover}
                     sx={{ width: 36, height: 36 }}
                   />
 
-                  <h3>{item?.name}</h3>
+                  <h3>{item?.followingName}</h3>
                 </UserItem>
               );
             })}
@@ -178,7 +125,7 @@ export const Favourites = (props) => {
 };
 
 const LoadingContainer = styled.div`
-  height: 60vh;
+  height: 59vh;
   display: flex;
   align-items: center;
   justify-content: center;

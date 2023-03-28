@@ -1,9 +1,9 @@
-import React from "react";
-import styled from "styled-components";
-import { FaUser } from "react-icons/fa";
+import styled from 'styled-components';
+import { FaUser } from 'react-icons/fa';
 
 export default function Avatar({ link, size, name }) {
-  if (size === "small") {
+  console.log(link);
+  if (size === 'small') {
     return (
       <Small>
         {link?.length > 0 ? (
@@ -13,7 +13,7 @@ export default function Avatar({ link, size, name }) {
         )}
       </Small>
     );
-  } else if (size === "medium") {
+  } else if (size === 'medium') {
     return (
       <Medium>
         <LargeImg src={link} alt={name} />

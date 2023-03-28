@@ -1,14 +1,14 @@
-import React from "react";
-import styled from "styled-components";
-import { BiStar } from "react-icons/bi";
-import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { setRerender } from "../../redux/main";
-import { TopSection } from "../../pages/main/feedCard/topSection";
-import { IsMobile } from "../../functions/isMobile";
-import { IoMdImages } from "react-icons/io";
-import Resizer from "react-image-file-resizer";
-import { isWebpSupported } from "react-image-webp/dist/utils";
+import React from 'react';
+import styled from 'styled-components';
+import { BiStar } from 'react-icons/bi';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { TopSection } from '../../pages/main/feedCard/topSection';
+import { IsMobile } from '../../functions/isMobile';
+import { IoMdImages } from 'react-icons/io';
+import Resizer from 'react-image-file-resizer';
+import { isWebpSupported } from 'react-image-webp/dist/utils';
+import { setRerenderUserList } from '../../redux/rerenders';
 
 export const Result = (props) => {
   const navigate = useNavigate();
@@ -31,13 +31,13 @@ export const Result = (props) => {
         file,
         1080,
         1080,
-        "JPEG",
+        'JPEG',
         100,
         0,
         (uri) => {
           resolve(uri);
         },
-        "file"
+        'file'
       );
     });
   const resizeFileMobileWebp = (file) =>
@@ -46,13 +46,13 @@ export const Result = (props) => {
         file,
         640,
         640,
-        "WEBP",
+        'WEBP',
         100,
         0,
         (uri) => {
           resolve(uri);
         },
-        "file"
+        'file'
       );
     });
   const resizeFileMobileJpeg = (file) =>
@@ -61,26 +61,26 @@ export const Result = (props) => {
         file,
         640,
         640,
-        "JPEG",
+        'JPEG',
         100,
         0,
         (uri) => {
           resolve(uri);
         },
-        "file"
+        'file'
       );
     });
 
   const DefineUrl = async () => {
     try {
       if (props?.file?.name?.length > 0) {
-        if (props?.file?.name?.toLowerCase()?.endsWith("mp4")) {
+        if (props?.file?.name?.toLowerCase()?.endsWith('mp4')) {
           props?.setResizedObj(props?.file);
         } else if (
-          props?.file?.name?.toLowerCase()?.endsWith("jpeg") ||
-          props?.file?.name?.toLowerCase()?.endsWith("png") ||
-          props?.file?.name?.toLowerCase()?.endsWith("jpg") ||
-          props?.file?.name?.toLowerCase()?.endsWith("webp")
+          props?.file?.name?.toLowerCase()?.endsWith('jpeg') ||
+          props?.file?.name?.toLowerCase()?.endsWith('png') ||
+          props?.file?.name?.toLowerCase()?.endsWith('jpg') ||
+          props?.file?.name?.toLowerCase()?.endsWith('webp')
         ) {
           const imageDesktop = await resizeFileDekstop(props?.file);
           const imageMobile = await resizeFileMobileWebp(props?.file);
@@ -93,7 +93,7 @@ export const Result = (props) => {
             });
           }
         } else {
-          alert("File Not Suported");
+          alert('File Not Suported');
         }
       }
     } catch (err) {
@@ -106,10 +106,10 @@ export const Result = (props) => {
   return (
     <div
       style={{
-        overfloY: "scroll",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
+        overfloY: 'scroll',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
       }}
     >
       <Container active={props.active}>
@@ -122,48 +122,48 @@ export const Result = (props) => {
         />
         <div
           style={{
-            width: "100%",
-            heght: "100%",
+            width: '100%',
+            heght: '100%',
             // padding: "0px 15px",
             // margin: "0 0 25px 0",
-            overflowY: "scroll",
+            overflowY: 'scroll',
             // maxHeight: "15vw",
           }}
         >
           {props.text?.length > 0 && (
             <p
               style={{
-                whiteSpace: "pre-line",
-                margin: "0",
-                padding: "10px 25px 20px 25px",
-                boxSizing: "border-box",
+                whiteSpace: 'pre-line',
+                margin: '0',
+                padding: '10px 25px 20px 25px',
+                boxSizing: 'border-box',
               }}
             >
               {props.text}
             </p>
           )}
         </div>
-        <div>
+        <di style={{ zIndex: 1000 }}>
           {props.file ? (
             <div
               style={{
                 // height: "100%",
                 // width: "100%",
-                position: "relative",
+                position: 'relative',
               }}
             >
-              {props.file?.type?.endsWith("mp4") ? (
+              {props.file?.type?.endsWith('mp4') ? (
                 <>
                   <input
                     type="file"
                     id="img"
                     accept=".jpg, .jpeg, .png, .mp4, .webp"
-                    style={{ display: "none" }}
+                    style={{ display: 'none' }}
                     onChange={props.onImageChange}
                   />
                   <label
                     htmlFor="img"
-                    style={{ display: "flex", alignItems: "center" }}
+                    style={{ display: 'flex', alignItems: 'center' }}
                   >
                     <Video width="100%" height="auto" controls autoplay muted>
                       <source
@@ -178,13 +178,13 @@ export const Result = (props) => {
                   <input
                     type="file"
                     id="img"
-                    style={{ display: "none" }}
+                    style={{ display: 'none' }}
                     accept=".jpg, .jpeg, .png, .mp4, .webp"
                     onChange={props.onImageChange}
                   />
                   <label
                     htmlFor="img"
-                    style={{ display: "flex", alignItems: "center" }}
+                    style={{ display: 'flex', alignItems: 'center' }}
                   >
                     {isMobile ? (
                       isWebpSupported() ? (
@@ -220,30 +220,30 @@ export const Result = (props) => {
           ) : (
             <div
               style={{
-                width: "100%",
-                height: "auto",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "150px 0",
+                width: '100%',
+                height: 'auto',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '150px 0',
               }}
             >
               <input
                 type="file"
                 id="img"
-                style={{ display: "none" }}
+                style={{ display: 'none' }}
                 onChange={props.onImageChange}
               />
               <label
                 htmlFor="img"
-                style={{ display: "flex", alignItems: "center" }}
+                style={{ display: 'flex', alignItems: 'center' }}
               >
                 <IoMdImages className="icon" />
-                <span style={{ color: "#ccc" }}>(JPG / JPEG / PNG / MP4)</span>
+                <span style={{ color: '#ccc' }}>(JPG / JPEG / PNG / MP4)</span>
               </label>
             </div>
           )}
-        </div>
+        </di>
 
         <Review>
           <div style={{ flex: 1 }}>
@@ -252,13 +252,13 @@ export const Result = (props) => {
             </Likes>
           </div>
 
-          <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
             <TextReview>
               0 {props?.language?.language.User.addFeed.reviews}
             </TextReview>
           </div>
           <PostTime>
-            <span>1hr ago</span>
+            <span>Just now</span>
           </PostTime>
         </Review>
       </Container>
@@ -267,9 +267,9 @@ export const Result = (props) => {
           props.file != null
             ? async () => {
                 await props.FileUpload();
-                dispatch(setRerender());
+                dispatch(setRerenderUserList());
               }
-            : () => alert("Add File")
+            : () => alert('Add File')
         }
       >
         {props?.language?.language.User.addFeed.addFeed}
@@ -345,9 +345,9 @@ const Container = styled.div`
 const PostContainer = styled.div`
   padding: 0 20px 10px 20px;
   margin: 0;
-  max-height: ${(props) => (props.openPost ? "100%" : "55px")};
+  max-height: ${(props) => (props.openPost ? '100%' : '55px')};
   height: auto,
-  overflow: ${(props) => (props.openPost ? "visible" : "hidden")};
+  overflow: ${(props) => (props.openPost ? 'visible' : 'hidden')};
   cursor: pointer;
   background: ${(props) => props.theme.background};
 
@@ -613,7 +613,7 @@ const Button = styled.div`
   justify-content: center;
   cursor: pointer;
   transition: ease-in 200ms;
-  color: ${(props) => (props.back ? "#ccc" : "green")};
+  color: ${(props) => (props.back ? '#ccc' : 'green')};
   font-weight: bold;
   background: rgba(255, 255, 255, 0.7);
   margin-top: 0.5vw;

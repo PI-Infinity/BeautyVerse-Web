@@ -1,24 +1,23 @@
-import React, { useState, useContext } from "react";
-import styled from "styled-components";
-import { AiOutlineDelete } from "react-icons/ai";
-import { useSelector, useDispatch } from "react-redux";
-import { ref, listAll, deleteObject } from "firebase/storage";
-import { db, storage } from "../../firebase";
-import { collection, deleteDoc, doc, onSnapshot } from "firebase/firestore";
-import { AuthContext } from "../../context/AuthContext";
-import useWindowDimensions from "../../functions/dimensions";
-import { IsMobile } from "../../functions/isMobile";
-import { useNavigate } from "react-router-dom";
-import { HiOutlineViewGridAdd } from "react-icons/hi";
-import { useOutletContext } from "react-router-dom";
-import { isWebpSupported } from "react-image-webp/dist/utils";
-import AlertDialog from "../../components/dialog";
-import { Language } from "../../context/language";
+import { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import { AiOutlineDelete } from 'react-icons/ai';
+import { useDispatch } from 'react-redux';
+import { ref, listAll, deleteObject } from 'firebase/storage';
+import { storage } from '../../firebase';
+import useWindowDimensions from '../../functions/dimensions';
+import { IsMobile } from '../../functions/isMobile';
+import { useNavigate } from 'react-router-dom';
+import { HiOutlineViewGridAdd } from 'react-icons/hi';
+import { useOutletContext } from 'react-router-dom';
+import { isWebpSupported } from 'react-image-webp/dist/utils';
+import AlertDialog from '../../components/dialog';
+import { Language } from '../../context/language';
+import { Spinner } from '../../components/loader';
 
 export const UserFeeds = () => {
   const language = Language();
-  const [user] = useOutletContext();
-  const { currentUser } = useContext(AuthContext);
+  const [loading, setLoading] = useState(true);
+  const [targetUser] = useOutletContext();
   const isMobile = IsMobile();
   const { height, width } = useWindowDimensions();
   const dispatch = useDispatch();
@@ -26,33 +25,39 @@ export const UserFeeds = () => {
 
   // alert dialog
   const [openDialog, setOpenDialog] = useState(false);
-  const [feedData, setFeedData] = useState("");
-
-  // import user gallery images from firestore
-  const [feeds, setFeeds] = useState("");
-
-  React.useEffect(() => {
-    const data = onSnapshot(
-      collection(db, "users", `${user?.id}`, "feeds"),
-      (snapshot) => {
-        setFeeds(snapshot.docs.map((doc) => doc.data()));
-      }
-    );
-    return data;
-  }, []);
+  const [feedData, setFeedData] = useState('');
 
   // current user info from redux
-  const userUnparsed = useSelector((state) => state.storeMain.user);
+  const currentUser = JSON.parse(
+    localStorage.getItem('Beautyverse:currentUser')
+  );
 
-  // loading images
-  const [loadingImg, setLoadingImg] = useState(true);
+  const [render, setRender] = useState(false);
 
   // remove confirming window
-  const [confirm, setConfirm] = useState("");
+  const [confirm, setConfirm] = useState('');
+  const [feeds, setFeeds] = useState('');
+  useEffect(() => {
+    async function GetUser(userId) {
+      const response = await fetch(
+        `https://beautyverse.herokuapp.com/api/v1/users/${userId}/feeds`
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          setFeeds(data.data.feeds);
+        })
+        .catch((error) => {
+          console.log('Error fetching data:', error);
+        });
+    }
+    if (targetUser) {
+      GetUser(targetUser?._id);
+    }
+  }, [targetUser, render]);
 
   /** after getting files from firestore define list */
   const DefineList = (gall) => {
-    if (gall?.length > 0 && user?.type !== "user") {
+    if (gall?.length > 0 && currentUser?.type !== 'user') {
       let list = gall
         ?.sort((a, b) => {
           return b?.addTime?.seconds - a?.addTime?.seconds;
@@ -60,14 +65,18 @@ export const UserFeeds = () => {
         .map((item, index) => {
           return (
             <GalleryImg key={index}>
-              {user?.id === currentUser?.uid && (
+              {currentUser?._id === currentUser?._id && (
                 <div
-                  style={{ height: 0, display: "flex", justifyContent: "end" }}
+                  style={{ height: 0, display: 'flex', justifyContent: 'end' }}
                 >
                   <RemoveIconContainer
                     onClick={() => {
                       setOpenDialog(true);
-                      setFeedData({ id: item.id, name: item.name });
+                      setFeedData({
+                        id: item._id,
+                        name: item.name,
+                        fileFormat: item.fileFormat,
+                      });
                     }}
                   >
                     <AiOutlineDelete className="removeIcon" />
@@ -77,54 +86,71 @@ export const UserFeeds = () => {
                     open={openDialog}
                     setOpen={setOpenDialog}
                     text={language?.language.User.userPage.removeText}
-                    function={() => Deleting(feedData?.id, feedData?.name)}
+                    function={() =>
+                      Deleting(
+                        feedData?.id,
+                        feedData?.name,
+                        feedData?.fileFormat
+                      )
+                    }
+                    language={language}
                   />
                 </div>
               )}
-              {item?.name?.endsWith("mp4") ? (
+              {item.fileFormat === 'video' ? (
                 <Video
                   width="100%"
                   height="auto"
                   controls
                   onClick={() =>
-                    navigate(`/user/${user?.id}/feed/${item?.id}/${index}`)
+                    navigate(
+                      `/api/v1/users/${currentUser?._id}/feeds/${item?._id}/profile`
+                    )
                   }
                 >
-                  <source src={item?.url} type="video/mp4" />
+                  <source src={item?.videoUrl} type="video/mp4" />
                 </Video>
               ) : (
                 <>
                   {isMobile ? (
                     isWebpSupported() ? (
                       <Img
-                        src={item?.mobileWEBPurl}
+                        src={item?.mobileWebp}
                         alt="item"
                         style={{ zIndex: 5 }}
                         onClick={() =>
                           navigate(
-                            `/user/${user?.id}/feed/${item?.id}/${index}`
+                            `/api/v1/users/${currentUser?._id}/feeds/${item?._id}/profile`
                           )
                         }
                       />
                     ) : (
                       <Img
-                        src={item?.mobileJPEGurl}
+                        src={item?.mobileJpeg}
                         alt="item"
                         style={{ zIndex: 5 }}
                         onClick={() =>
                           navigate(
-                            `/user/${user?.id}/feed/${item?.id}/${index}`
+                            `/api/v1/users/${currentUser?._id}/feeds/${item?._id}/profile`
                           )
                         }
                       />
                     )
                   ) : (
                     <Img
-                      src={item?.desktopJPEGurl}
+                      src={item?.desktopUrl}
                       alt="item"
                       style={{ zIndex: 5 }}
                       onClick={() =>
-                        navigate(`/user/${user?.id}/feed/${item?.id}/${index}`)
+                        navigate(
+                          `/api/v1/users/${currentUser?._id}/feeds/${item?._id}/profile`,
+                          {
+                            state: {
+                              data: item,
+                              targetUser: targetUser,
+                            },
+                          }
+                        )
                       }
                     />
                   )}
@@ -140,82 +166,90 @@ export const UserFeeds = () => {
   const list = DefineList(feeds);
 
   /** delete image from firestore and cloud */
-  const Deleting = async (deleteItem, itemName) => {
+  const Deleting = async (itemId, itemName, itemFormat) => {
     const values = [];
-    /** delete from firestore
+    /** delete from mongodb
      */
-    const coll = collection(db, `users/${user?.id}/feeds/`);
-    setConfirm("");
-    await deleteDoc(doc(coll, `${deleteItem}`));
+    // remove feed
+    const url = `https://beautyverse.herokuapp.com/api/v1/users/${currentUser?._id}/feeds/${itemId}`;
+    const response = await fetch(url, { method: 'DELETE' })
+      .then((response) => response.json())
+      .then(async (data) => {
+        setRender(!render);
+      })
+      .catch((error) => {
+        console.log('Error fetching data:', error);
+      });
+
     /** delete from cloude
      */
     // Create a reference to the file to delete
-    let desertRef;
-    if (itemName?.endsWith("mp4")) {
-      desertRef = await ref(storage, `videos/${user?.id}/feeds/${deleteItem}/`);
+    let fileRef;
+    if (itemFormat === 'video') {
+      fileRef = ref(storage, `videos/${currentUser?._id}/feeds/${itemName}/`);
     } else {
-      desertRef = await ref(storage, `images/${user?.id}/feeds/${deleteItem}/`);
+      fileRef = ref(storage, `images/${currentUser?._id}/feeds/${itemName}/`);
     }
+
     // Delete the file
-    listAll(desertRef)
-      .then((res) => {
-        res.items.forEach((itemRef) => {
-          values?.push(itemRef);
-        });
-        if (values !== "") {
-          values?.map((item) => {
-            if (item?.name.includes(".mp4")) {
-              deleteObject(
-                ref(
-                  storage,
-                  `videos/${user?.id}/feeds/${deleteItem}/${item.name}`
-                )
-              ).then(() => {
-                console.log("storage success");
-              });
-            } else {
-              deleteObject(
-                ref(
-                  storage,
-                  `images/${user?.id}/feeds/${deleteItem}/${item.name}`
-                )
-              ).then(() => {
-                console.log("storage success");
-              });
-            }
-          });
-        }
-      })
-      .catch((error) => {
-        console.log("error : " + error);
+    if (itemFormat === 'video') {
+      deleteObject(fileRef).then(() => {
+        console.log('object deleted');
       });
+    } else {
+      listAll(fileRef)
+        .then((res) => {
+          res.items.forEach((itemRef) => {
+            deleteObject(itemRef).then(() => {
+              console.log('storage success');
+            });
+          });
+        })
+        .catch((error) => {
+          console.log('error : ' + error);
+        });
+    }
     // window.location.reload();
   };
 
-  React.useEffect(() => {
-    setTimeout(() => {
-      setLoadingImg(false);
-    }, 300);
-  }, []);
+  setTimeout(() => {
+    setLoading(false);
+  }, 300);
 
   return (
-    <Container height={height}>
-      <Content listLength={list?.length}>
-        {user?.id === currentUser?.uid && user?.type != "user" && (
-          <GalleryImg
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            onClick={() => navigate("/add")}
-          >
-            <HiOutlineViewGridAdd id="add" />
-          </GalleryImg>
-        )}
-        {list?.length > 0 == true ? list : ""}
-      </Content>
-    </Container>
+    <>
+      {loading ? (
+        <Container
+          height={height}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Spinner />
+        </Container>
+      ) : (
+        <Container height={height}>
+          <Content listLength={list?.length}>
+            {currentUser?._id === currentUser?._id &&
+              currentUser?.type != 'user' && (
+                <GalleryImg
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  onClick={() => navigate('/add')}
+                >
+                  <HiOutlineViewGridAdd id="add" />
+                </GalleryImg>
+              )}
+            {list?.length > 0 == true ? list : ''}
+          </Content>
+        </Container>
+      )}
+    </>
   );
 };
 
@@ -326,7 +360,7 @@ const Answers = styled.div`
 const Answer = styled.div`
   border-radius: 0.5vw;
   box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
-  background: ${(props) => (props.name != "yes" ? "#35B453" : "#de4360")};
+  background: ${(props) => (props.name != 'yes' ? '#35B453' : '#de4360')};
   color: #fff;
   display: flex;
   align-items: center;
@@ -343,7 +377,7 @@ const Answer = styled.div`
 
   :hover {
     filter: ${(props) =>
-      props.name === "yes" ? "brightness(1.05)" : "brightness(0.95)"};
+      props.name === 'yes' ? 'brightness(1.05)' : 'brightness(0.95)'};
   }
 `;
 
@@ -354,7 +388,7 @@ const Container = styled.div`
   box-sizing: border-box;
   overflow-y: scroll;
   overflow-x: hidden;
-  height: 28vw;
+  height: 29vw;
   padding-bottom: 5vw;
 
   @media only screen and (max-width: 600px) {

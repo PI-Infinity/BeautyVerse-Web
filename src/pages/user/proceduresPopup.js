@@ -1,10 +1,10 @@
-import * as React from "react";
-import styled from "styled-components";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
-import { BsListCheck } from "react-icons/bs";
-import { ProceduresOptions } from "../../data/registerDatas";
+import * as React from 'react';
+import styled from 'styled-components';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import { BsListCheck } from 'react-icons/bs';
+import { ProceduresOptions } from '../../data/registerDatas';
 
 export default function ProceduresPopup(props) {
   const [open, setOpen] = React.useState(false);
@@ -17,7 +17,7 @@ export default function ProceduresPopup(props) {
       <div>
         <BsListCheck
           size={20}
-          style={{ cursor: "pointer" }}
+          style={{ cursor: 'pointer' }}
           onClick={() => setOpen(true)}
         />
       </div>
@@ -33,7 +33,7 @@ export default function ProceduresPopup(props) {
             return (
               <div
                 key={index}
-                style={{ padding: "10px", borderBottom: "1px solid #f3f3f3" }}
+                style={{ padding: '10px', borderBottom: '1px solid #f3f3f3' }}
               >
                 {langProc?.label}
               </div>

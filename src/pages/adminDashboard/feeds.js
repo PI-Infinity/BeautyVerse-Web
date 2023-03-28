@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from "react";
-import styled from "styled-components";
+import React, { useEffect, useState } from 'react';
+import styled from 'styled-components';
 import {
   collectionGroup,
   query,
   getDocs,
   orderBy,
   limit,
-} from "firebase/firestore";
-import { db } from "../../firebase";
-import { useSelector, useDispatch } from "react-redux";
-import { AiTwotoneEdit, AiFillDelete } from "react-icons/ai";
-import AlertDialog from "../../components/dialog";
-import { Language } from "../../context/language";
-import { Spinner } from "../../components/loader";
+} from 'firebase/firestore';
+import { db } from '../../firebase';
+import { useSelector, useDispatch } from 'react-redux';
+import { AiTwotoneEdit, AiFillDelete } from 'react-icons/ai';
+import AlertDialog from '../../components/dialog';
+import { Language } from '../../context/language';
+import { Spinner } from '../../components/loader';
 
 export default function AllFeeds() {
   const [loading, setLoading] = React.useState(true);
@@ -22,7 +22,7 @@ export default function AllFeeds() {
   const [lim, setLim] = useState(50);
   useEffect(() => {
     const Getting = async () => {
-      const ref = query(collectionGroup(db, "feeds"), limit(lim));
+      const ref = query(collectionGroup(db, 'feeds'), limit(lim));
       const docs = await getDocs(ref);
       let list = [];
       docs.forEach((doc) => {
@@ -35,11 +35,7 @@ export default function AllFeeds() {
   }, [lim]);
 
   // users
-  const users = useSelector((state) => state.storeMain.userList);
-  let Data;
-  if (users?.length > 0) {
-    Data = JSON.parse(users);
-  }
+  const Data = useSelector((state) => state.storeMain.userList);
 
   // open delete dialog
   const [openDelete, setOpenDelete] = useState(false);
@@ -60,10 +56,10 @@ export default function AllFeeds() {
         <>
           <div
             style={{
-              padding: "20px 20px 10px 20px",
-              boxSizing: "border-box",
-              display: "flex",
-              gap: "10px",
+              padding: '20px 20px 10px 20px',
+              boxSizing: 'border-box',
+              display: 'flex',
+              gap: '10px',
             }}
           >
             <AlertDialog
@@ -78,17 +74,17 @@ export default function AllFeeds() {
           </div>
           <div
             style={{
-              overflowY: "scroll",
-              height: "100vh",
-              padding: "20px 20px 50px 20px",
-              boxSizing: "border-box",
+              overflowY: 'scroll',
+              height: '100vh',
+              padding: '20px 20px 50px 20px',
+              boxSizing: 'border-box',
             }}
           >
             {feeds?.map((item, index) => {
               let user = Data?.find((it) => it.id === item?.owner);
               return (
                 <div key={index}>
-                  <div style={{ display: "flex", gap: "10px" }}>
+                  <div style={{ display: 'flex', gap: '10px' }}>
                     <img
                       src={item.desktopJPEGurl}
                       alt={item.name}
@@ -96,9 +92,9 @@ export default function AllFeeds() {
                     />
                     <div
                       style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "10px",
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '10px',
                       }}
                     >
                       <b>{user?.name}</b>
@@ -119,9 +115,9 @@ export default function AllFeeds() {
                   </div>
                   <div
                     style={{
-                      height: "0.3vw",
-                      background: "#333",
-                      width: "100%",
+                      height: '0.3vw',
+                      background: '#333',
+                      width: '100%',
                     }}
                   ></div>
                 </div>

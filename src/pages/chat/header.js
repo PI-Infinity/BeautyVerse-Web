@@ -1,32 +1,28 @@
-import styled from "styled-components";
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import Avatar from "@mui/material/Avatar";
-import { Language } from "../../context/language";
+import styled from 'styled-components';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import Avatar from '@mui/material/Avatar';
+import { Language } from '../../context/language';
 
 export const Header = () => {
   const navigate = useNavigate();
 
   const language = Language();
   // import current user & parse it
-  const userUnparsed = useSelector((state) => state.storeMain.user);
-  let currentuser;
-  if (userUnparsed?.length > 0) {
-    currentuser = JSON.parse(userUnparsed);
-  }
-  const cover = useSelector((state) => state.storeMain.cover);
+  const user = JSON.parse(localStorage.getItem('Beautyverse:currentUser'));
+
   return (
     <Container>
       <div>
         <Avatar
-          onClick={() => navigate(`/user/${currentuser?.id}`)}
-          alt={currentuser?.name}
-          src={currentuser?.cover !== undefined ? currentuser?.cover : ""}
+          onClick={() => navigate(`/api/v1/users/${user?._id}`)}
+          alt={user?.name}
+          src={user?.cover ? user?.cover : ''}
           sx={{ width: 36, height: 36 }}
         />
 
-        <h3 onClick={() => navigate(`/user/${currentuser?.id}`)}>
-          {currentuser?.name}
+        <h3 onClick={() => navigate(`/api/v1/users/${user?._id}`)}>
+          {user?.name}
         </h3>
       </div>
 

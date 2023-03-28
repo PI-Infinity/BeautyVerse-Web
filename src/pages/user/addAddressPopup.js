@@ -1,24 +1,22 @@
-import React from "react";
-import styled from "styled-components";
-import { db } from "../../firebase";
-import { useDispatch, useSelector } from "react-redux";
-import { updateDoc, doc, deleteField, deleteDoc } from "firebase/firestore";
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import { Language } from "../../context/language";
-import { BiLocationPlus } from "react-icons/bi";
-import { GrMapLocation, GrLocation } from "react-icons/gr";
-import MapAutocomplete from "../../components/mapAutocomplete";
-import { MdDeleteForever } from "react-icons/md";
-import { setMap } from "../../redux/register";
-
+import React from 'react';
+import styled from 'styled-components';
+import { useDispatch, useSelector } from 'react-redux';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import { BiLocationPlus } from 'react-icons/bi';
+import { GrMapLocation, GrLocation } from 'react-icons/gr';
+import MapAutocomplete from '../../components/mapAutocomplete';
+import { MdDeleteForever } from 'react-icons/md';
+import { setMap } from '../../redux/register';
+import axios from 'axios';
+import { setRerenderCurrentUser } from '../../redux/rerenders';
+import { setTargetUserAddressRemove } from '../../redux/user';
 export default function AddAddress({
   language,
-  currentuser,
+  targetUser,
   type,
   address,
   setAddress,
@@ -38,59 +36,54 @@ export default function AddAddress({
 
   // address
 
-  function findValueByPrefix(object, prefix) {
-    let addressesList = [];
-    for (var property in object) {
-      if (
-        object.hasOwnProperty(property) &&
-        property.toString().startsWith(prefix)
-      ) {
-        addressesList?.push(object[property]);
-      }
-    }
-    return addressesList?.sort((a, b) => a?.number - b?.number);
-  }
-
-  const addresses = findValueByPrefix(currentuser, "address");
-
   const Add = async () => {
-    if (address?.length > 0) {
-      await updateDoc(doc(db, "users", currentuser?.id), {
-        [`address${addresses[addresses?.length - 1]?.number + 1}`]: {
-          number: addresses[addresses?.length - 1]?.number + 1,
-          country: map.country,
-          region: map.region,
-          city: map.city,
-          district: map.district,
-          address: map.street,
-          streetNumber: map.number,
-          latitude: map.latitude,
-          longitude: map.longitude,
-        },
-      });
-      setAddress("");
-      dispatch(setMap(""));
-    } else {
-      alert("Add address...");
-      setAddress("");
-      dispatch(setMap(""));
+    try {
+      if (address?.length > 0) {
+        const response = await axios.post(
+          `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}/address`,
+          {
+            country: map.country,
+            region: map.region,
+            city: map.city,
+            district: map.district,
+            street: map.street,
+            number: map.number,
+            latitude: map.latitude,
+            longitude: map.longitude,
+          }
+        );
+        const data = await response.data;
+        dispatch(setRerenderCurrentUser());
+        dispatch(setAddress(''));
+        dispatch(setMap(''));
+      } else {
+        alert('Add address...');
+        dispatch(setAddress(''));
+        dispatch(setMap(''));
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
 
-  const DeleteDoc = async (x) => {
-    const docRef = doc(db, "users", currentuser?.id);
-    const data = {
-      [`address${x}`]: deleteField(),
-    };
+  console.log(targetUser);
 
-    updateDoc(docRef, data)
-      .then(() => {
-        console.log("Code Field has been deleted successfully");
-      })
-      .catch(() => {
-        console.log("error");
-      });
+  // delete address
+  const DeleteAddress = async (itemId) => {
+    if (targetUser?.address?.length > 1) {
+      try {
+        const url = `https://beautyverse.herokuapp.com/api/v1/users/${targetUser._id}/address/${itemId}`;
+        const response = await axios.delete(url);
+        dispatch(setTargetUserAddressRemove(itemId));
+      } catch (error) {
+        console.log('Error fetching data:', error);
+      }
+    } else {
+      alert('cant delete last address');
+    }
   };
+
+  console.log(targetUser?.address);
 
   return (
     <Container>
@@ -100,10 +93,10 @@ export default function AddAddress({
       <Dialog
         PaperProps={{
           style: {
-            width: "100%",
-            height: "50vh",
-            display: "flex",
-            justifyContent: "center",
+            width: '100%',
+            height: '50vh',
+            display: 'flex',
+            justifyContent: 'center',
           },
         }}
         open={open}
@@ -115,55 +108,47 @@ export default function AddAddress({
           <GrMapLocation /> {language?.language.User.userPage.address}
         </DialogTitle>
         <DialogContent>
-          <p style={{ margin: "0 auto 10px auto", fontSize: "14px" }}>
-            {language?.language.User.userPage.addAddress}{" "}
-            {addresses?.length + 1}
+          <p style={{ margin: '0 auto 10px auto', fontSize: '14px' }}>
+            {language?.language.User.userPage.addAddress}{' '}
+            {/* {targetUser?.address?.length + 1} */}
           </p>
-          <MapAutocomplete
-            language={language}
-            address={address}
-            setAddress={setAddress}
-            userMobile={type}
-          />
+          <MapAutocomplete language={language} userMobile={type} />
           <List>
-            {addresses?.map((item, index) => {
+            {targetUser?.address?.map((item, index) => {
               return (
                 <div
                   key={index}
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    margin: "5px 0",
-                    gap: "5px",
+                    display: 'flex',
+                    alignItems: 'center',
+                    margin: '5px 0',
+                    gap: '5px',
                   }}
                 >
                   <GrLocation />
                   <b>
                     {language?.language.User.userPage.address}
-                    {index === 0 ? "" : index}:
+                    {index === 0 ? '' : index}:
                   </b>
                   <div
                     style={{
-                      borderRadius: "5px",
-                      boxShadow: "0 0.1vw 0.2vw rgba(0,0,0,0.1)",
+                      borderRadius: '5px',
+                      boxShadow: '0 0.1vw 0.2vw rgba(0,0,0,0.1)',
                     }}
                   >
                     {item?.city}
-                    {item?.district?.length > 0 && ", " + item?.district}
-                    {item?.address?.length > 0 && ", " + item?.address}
-                    {item?.streetNumber?.length > 0 &&
-                      ", " + item?.streetNumber}
+                    {item?.district?.length > 0 && ', ' + item?.district}
+                    {item?.street?.length > 0 && ', ' + item?.street}
+                    {item?.number?.length > 0 && ', ' + item?.number}
                   </div>
-                  {item?.number !== 1 && (
-                    <MdDeleteForever
-                      size={20}
-                      style={{
-                        cursor: "pointer",
-                        color: "red",
-                      }}
-                      onClick={() => DeleteDoc(item?.number)}
-                    />
-                  )}
+                  <MdDeleteForever
+                    size={20}
+                    style={{
+                      cursor: 'pointer',
+                      color: 'red',
+                    }}
+                    onClick={() => DeleteAddress(item?._id)}
+                  />
                 </div>
               );
             })}

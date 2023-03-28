@@ -1,7 +1,7 @@
-import React from "react";
-import styled from "styled-components";
-import { CategoryFilter } from "../../pages/main/categoryFilter";
-import { useSelector, useDispatch } from "react-redux";
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import { CategoryFilter } from '../../pages/main/categoryFilter';
+import { useSelector, useDispatch } from 'react-redux';
 import {
   setCityFilter,
   setDistrictFilter,
@@ -9,89 +9,102 @@ import {
   setObject,
   setSearch,
   setFilter,
-} from "../../redux/filter";
-import { setRerender } from "../../redux/main";
-import Select from "react-select";
-import { useNavigate } from "react-router-dom";
-import { setFilterOpen } from "../../redux/main";
-import { Button } from "../../components/button";
-import useWindowDimensions from "../../functions/dimensions";
-import CheckBox from "@mui/material/Checkbox";
-import { Language } from "../../context/language";
-import { Search } from "../../pages/main/search";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
-import Badge from "@mui/material/Badge";
-import { MdDeleteForever } from "react-icons/md";
+} from '../../redux/filter';
+import Select from 'react-select';
+import { useNavigate } from 'react-router-dom';
+import useWindowDimensions from '../../functions/dimensions';
+import CheckBox from '@mui/material/Checkbox';
+import { Language } from '../../context/language';
+import { Search } from '../../pages/main/search';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Badge from '@mui/material/Badge';
+import { MdDeleteForever } from 'react-icons/md';
+import { MdClear } from 'react-icons/md';
 
 export const FilterMobile = () => {
   const { height, width } = useWindowDimensions();
   const [loading, setLoading] = React.useState(true);
   const dispatch = useDispatch();
   const reiting = useSelector((state) => state.storeFilter.reiting);
+  const theme = useSelector((state) => state.storeMain.theme);
 
   const language = Language();
 
-  const [value, setValue] = React.useState("filter");
+  const [value, setValue] = React.useState('filter');
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
 
   const StyledTab = styled(Tab)({
-    "&.Mui-selected": {
-      color: "secondary",
-      fontSize: "14px",
-      "@media only screen and (max-width: 1200px)": {
-        fontSize: "12px",
+    '&.Mui-selected': {
+      color: '#fff',
+      fontSize: '14px',
+      '@media only screen and (max-width: 1200px)': {
+        fontSize: '12px',
       },
     },
-    "&.MuiTab-root": {
-      color: "#ee99fc",
-      fontSize: "14px",
-      "@media only screen and (max-width: 1200px)": {
-        fontSize: "12px",
+    '&.MuiTab-root': {
+      color: theme ? '#fff' : '111',
+      fontSize: '14px',
+      '@media only screen and (max-width: 1200px)': {
+        fontSize: '12px',
       },
     },
   });
   const StyledSearchBadge = styled(Badge)(({ theme }) => ({
-    "& .MuiBadge-badge": {
+    '& .MuiBadge-badge': {
       right: 10,
       top: 10,
       // border: `1px solid #fff`,
-      padding: "0 3px",
+      padding: '0 3px',
     },
   }));
 
   // define signed filter length
   const filterMobile = useSelector((state) => state.storeFilter.filter);
   let filterBadge;
-  if (filterMobile !== "") {
+  if (filterMobile !== '') {
     filterBadge = 1;
   } else {
     filterBadge = 0;
   }
   const search = useSelector((state) => state.storeFilter.search);
   let searchBadge;
-  if (search !== "") {
+  if (search !== '') {
     searchBadge = 1;
   } else {
     searchBadge = 0;
   }
   const city = useSelector((state) => state.storeFilter.cityFilter);
   let cityBadge;
-  if (city !== "City") {
+  if (city !== '') {
     cityBadge = 1;
   } else {
     cityBadge = 0;
   }
-  const specialist = useSelector((state) => state.storeFilter.specialist);
-  const object = useSelector((state) => state.storeFilter.object);
-  let typeBadge;
-  if (!specialist || !object) {
-    typeBadge = 1;
+  const district = useSelector((state) => state.storeFilter.districtFilter);
+  let districtBadge;
+  if (district !== '') {
+    districtBadge = 1;
   } else {
-    typeBadge = 0;
+    districtBadge = 0;
+  }
+  const specialist = useSelector((state) => state.storeFilter.specialist);
+  let specialistBadge;
+  if (!specialist) {
+    specialistBadge = 1;
+  } else {
+    specialistBadge = 0;
+  }
+
+  const object = useSelector((state) => state.storeFilter.object);
+  let objectBadge;
+  if (!object) {
+    objectBadge = 1;
+  } else {
+    objectBadge = 0;
   }
 
   setTimeout(() => {
@@ -102,11 +115,11 @@ export const FilterMobile = () => {
     <Container loading={loading.toString()} height={height}>
       <div
         style={{
-          margin: "3vw 0 0 0",
-          width: "94%",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          margin: '3vw 0 0 0',
+          width: '94%',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
         }}
       >
         <Tabs value={value} onChange={handleChange} centered>
@@ -115,7 +128,13 @@ export const FilterMobile = () => {
             value="filter"
           />
           <StyledSearchBadge
-            badgeContent={filterBadge + cityBadge + typeBadge}
+            badgeContent={
+              filterBadge +
+              cityBadge +
+              districtBadge +
+              specialistBadge +
+              objectBadge
+            }
             overlap="circular"
             color="secondary"
           />
@@ -131,30 +150,37 @@ export const FilterMobile = () => {
           />
         </Tabs>
         <div
-          style={{ width: "50px", display: "flex", justifyContent: "center" }}
+          style={{ width: '50px', display: 'flex', justifyContent: 'center' }}
         >
-          {filterBadge + cityBadge + typeBadge + searchBadge > 0 && (
+          {filterBadge +
+            cityBadge +
+            districtBadge +
+            specialistBadge +
+            objectBadge +
+            searchBadge >
+            0 && (
             <MdDeleteForever
               color="red"
               size={22}
               onClick={() => {
-                dispatch(setCityFilter("City"));
-                dispatch(setFilter(""));
-                dispatch(setSearch(""));
-                dispatch(setSpecialist("true"));
-                dispatch(setObject("true"));
+                dispatch(setCityFilter(''));
+                dispatch(setDistrictFilter(''));
+                dispatch(setFilter(''));
+                dispatch(setSearch(''));
+                dispatch(setSpecialist(true));
+                dispatch(setObject(true));
               }}
             />
           )}
         </div>
       </div>
-      {value === "filter" ? (
+      {value === 'filter' ? (
         <>
           <Filter />
           <CategoryFilter />
         </>
       ) : (
-        <div style={{ width: "100%" }}>
+        <div style={{ width: '100%' }}>
           <Search />
         </div>
       )}
@@ -199,54 +225,69 @@ export const Filter = () => {
   const language = Language();
 
   // import users
-  const usersList = useSelector((state) => state.storeMain.userList);
-  let users;
-  if (usersList?.length > 0) {
-    users = JSON.parse(usersList);
-  }
+  const users = useSelector((state) => state.storeMain.userList);
 
   // filter cities and not dublicate same cities in map
 
   const cityFilter = useSelector((state) => state.storeFilter.cityFilter);
-
   const districtFilter = useSelector(
     (state) => state.storeFilter.districtFilter
   );
+
+  const rerenderUserList = useSelector(
+    (state) => state.storeRerenders.rerenderUserList
+  );
+
   const specialist = useSelector((state) => state.storeFilter.specialist);
   const physicalObject = useSelector((state) => state.storeFilter.object);
   const shop = useSelector((state) => state.storeFilter.shop);
+  const reiting = useSelector((state) => state.storeFilter.reiting);
 
-  const cities = [`${language?.language.Main.filter.city}`];
+  const [cities, setCities] = useState([]);
 
-  const Cities = users?.filter((obj) => {
-    const isDuplicate = cities.includes(obj.address.city);
+  async function GetCities() {
+    const response = await fetch(
+      `https://beautyverse.herokuapp.com/api/v1/cities`
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        setCities([
+          // `${language?.language.Main.filter.city}`,
+          ...data.data.cities,
+        ]);
+      })
+      .then(() => {})
+      .catch((error) => {
+        console.log('Error fetching data:', error);
+      });
+  }
 
-    if (!isDuplicate) {
-      cities.push(obj.address.city);
+  useEffect(() => {
+    GetCities();
+  }, [rerenderUserList]);
 
-      return true;
-    }
+  const [districts, setDistricts] = useState([]);
 
-    return false;
-  });
+  async function GetDistricts() {
+    const response = await fetch(
+      `https://beautyverse.herokuapp.com/api/v1/districts`
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        setDistricts([
+          // `${language?.language.Main.filter.district}`,
+          ...data.data.districts,
+        ]);
+      })
+      .then(() => {})
+      .catch((error) => {
+        console.log('Error fetching data:', error);
+      });
+  }
 
-  // filter districts and not dublicate same districts in map
-
-  const distr = [`${language?.language.Main.filter.district}`];
-
-  const Districts = users?.filter((obj) => {
-    const isDuplicate = distr.includes(obj.address.district);
-
-    if (!isDuplicate) {
-      distr.push(obj.address.district);
-
-      return true;
-    }
-
-    return false;
-  });
-
-  const districts = distr?.filter((item) => item != "");
+  useEffect(() => {
+    GetDistricts();
+  }, [rerenderUserList]);
 
   // color mode
   const theme = useSelector((state) => state.storeMain.theme);
@@ -255,107 +296,114 @@ export const Filter = () => {
       ...base,
       color: state.isSelected
         ? theme
-          ? "#333"
-          : "#f3f3f3"
+          ? '#333'
+          : '#f3f3f3'
         : theme
-        ? "#f3f3f3"
-        : "#333",
+        ? '#f3f3f3'
+        : '#333',
     }),
     menuList: (base, state) => ({
       ...base,
-      backgroundColor: theme ? "#333" : "#f3f3f3",
+      backgroundColor: theme ? '#333' : '#f3f3f3',
     }),
     input: (base, state) => ({
       ...base,
-      color: theme ? "#f3f3f3" : "#333",
-      fontSize: "16px",
+      color: theme ? '#f3f3f3' : '#333',
+      fontSize: '16px',
     }),
     option: (base, state) => ({
       ...base,
       backgroundColor: state.isSelected
         ? theme
-          ? "#f3f3f3"
-          : "#333"
+          ? '#f3f3f3'
+          : '#333'
         : theme
-        ? "#333"
-        : "#f3f3f3",
+        ? '#333'
+        : '#f3f3f3',
       color: state.isSelected
         ? theme
-          ? "#333"
-          : "#f3f3f3"
+          ? '#333'
+          : '#f3f3f3'
         : theme
-        ? "#f3f3f3"
-        : "#333",
+        ? '#f3f3f3'
+        : '#333',
     }),
     control: (baseStyles, state) => ({
       ...baseStyles,
-      cursor: "pointer",
-      backgroundColor: theme ? "#333" : "#fff",
-      // "@media only screen and (max-width: 1200px)": {
-      //   display: "none",
-      // },
+      cursor: 'pointer',
+      backgroundColor: theme ? '#333' : '#fff',
+      '@media only screen and (max-width: 1200px)': {
+        width: '75vw',
+      },
     }),
   };
 
   return (
     <FilterContainer>
-      <Select
-        classNamePrefix="select"
-        defaultValue={cityFilter}
-        value={
-          cityFilter === "City"
-            ? language?.language.Main.filter.city
-            : cityFilter
-        }
-        placeholder={
-          cityFilter === "City"
-            ? language?.language.Main.filter.city
-            : cityFilter === "T'bilisi"
-            ? "Tbilisi"
-            : cityFilter
-        }
-        isDisabled={false}
-        isLoading={false}
-        className="react-select-container"
-        onChange={(value) => {
-          dispatch(setCityFilter(value.value));
-          dispatch(
-            setDistrictFilter(`${language?.language.Main.filter.district}`)
-          );
-          dispatch(setRerender());
-        }}
-        styles={CustomStyle}
-        options={cities?.map((item, index) => {
-          if (item === "T'bilisi") {
-            return { value: item, label: "Tbilisi" };
-          } else {
-            return { value: item, label: item };
-          }
-        })}
-      />
-      {cityFilter.includes("bilisi") && (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         <Select
-          className="react-select-container"
           classNamePrefix="select"
-          defaultValue={districtFilter}
+          value={cityFilter}
           placeholder={
-            districtFilter === "District"
-              ? language?.language.Main.filter.district
-              : districtFilter
+            cityFilter === '' ? language?.language.Main.filter.city : cityFilter
           }
           isDisabled={false}
           isLoading={false}
+          className="react-select-container"
           onChange={(value) => {
-            dispatch(setDistrictFilter(value.value));
-            dispatch(setRerender());
+            dispatch(setCityFilter(value.value));
           }}
           styles={CustomStyle}
-          options={districts?.map((item, index) => {
+          options={cities?.map((item, index) => {
             return { value: item, label: item };
           })}
         />
-      )}
-      <div style={{ marginTop: "3vw" }}>
+        {cityFilter?.length > 0 && (
+          <MdClear
+            className="clearicon"
+            onClick={() => {
+              dispatch(setCityFilter(''));
+              dispatch(setDistrictFilter(''));
+            }}
+          />
+        )}
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+        }}
+      >
+        {cityFilter.includes('bilisi') && (
+          <Select
+            className="react-select-container"
+            classNamePrefix="select"
+            value={districtFilter}
+            placeholder={
+              districtFilter === ''
+                ? language?.language.Main.filter.district
+                : districtFilter
+            }
+            isDisabled={false}
+            isLoading={false}
+            onChange={(value) => {
+              dispatch(setDistrictFilter(value.value));
+            }}
+            styles={CustomStyle}
+            options={districts?.map((item, index) => {
+              return { value: item, label: item };
+            })}
+          />
+        )}
+        {districtFilter?.length > 0 && (
+          <MdClear
+            className="clearicon"
+            onClick={() => dispatch(setDistrictFilter(''))}
+          />
+        )}
+      </div>
+      <div style={{ marginTop: '3vw' }}>
         <CheckBoxContainer>
           <CheckBox
             id="specialists"
@@ -363,7 +411,6 @@ export const Filter = () => {
             name="Specialists"
             checked={specialist}
             onChange={() => {
-              dispatch(setRerender());
               dispatch(setSpecialist(!specialist));
             }}
           />
@@ -378,7 +425,6 @@ export const Filter = () => {
             name="physical"
             checked={physicalObject}
             onChange={() => {
-              dispatch(setRerender());
               dispatch(setObject(!physicalObject));
             }}
           />
@@ -415,6 +461,16 @@ const FilterContainer = styled.div`
     gap: 3vw;
     margin-top: 4vw;
     z-index: 10000;
+  }
+
+  .clearicon {
+    font-size: 1.3vw;
+    color: red;
+    cursor: pointer;
+
+    @media only screen and (max-width: 600px) {
+      font-size: 4vw;
+    }
   }
 
   .react-select-container {

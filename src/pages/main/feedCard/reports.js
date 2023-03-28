@@ -1,49 +1,30 @@
-import { useState } from "react";
-import styled from "styled-components";
-import { useSelector } from "react-redux";
-import FormDialog from "../../../components/formDialog";
-import { setDoc, doc, serverTimestamp } from "firebase/firestore";
-import { db } from "../../../firebase";
-import Success from "../../../snackBars/success";
-import { Language } from "../../../context/language";
+import { useState } from 'react';
+import styled from 'styled-components';
+import { useSelector } from 'react-redux';
+import FormDialog from '../../../components/formDialog';
+import Success from '../../../snackBars/success';
+import { Language } from '../../../context/language';
 
 export const Reports = (props) => {
   const [openList, setOpenList] = useState(false);
   const language = Language();
 
   const [openDialog, setOpenDialog] = useState(false);
-  const [inputText, setInputText] = useState("");
+  const [inputText, setInputText] = useState('');
   const [openSuccess, setOpenSuccess] = useState(false);
   // import current user from redux state
-  const userUnparsed = useSelector((state) => state.storeMain.user);
-
-  let user;
-  if (userUnparsed?.length > 0) {
-    user = JSON.parse(userUnparsed);
-  }
+  const user = useSelector((state) => state.storeMain?.user);
 
   // send report
-  const SendReport = async (reason) => {
-    await setOpenDialog(false);
-    var docId = reason + "-" + user?.id + "-" + new Date().toString();
-    await setDoc(doc(db, `reports`, docId), {
-      id: docId,
-      userId: user?.id,
-      feed: props?.path,
-      text: reason,
-      date: serverTimestamp(),
-    });
-    await setInputText("");
-    setOpenSuccess(true);
-  };
+  const SendReport = async (reason) => {};
 
   return (
     <>
       <div
         style={{
-          position: "relative",
-          display: "flex",
-          justifyContent: "flex-end",
+          position: 'relative',
+          display: 'flex',
+          justifyContent: 'flex-end',
         }}
       >
         <Container onClick={() => setOpenList(!openList)}>
@@ -52,10 +33,10 @@ export const Reports = (props) => {
           </div>
           {openList && (
             <ReportList>
-              <div onClick={() => SendReport("Spam")}>
+              <div onClick={() => SendReport('Spam')}>
                 {language?.language.Main.feedCard.spam}
               </div>
-              <div onClick={() => SendReport("No Thematical Feed")}>
+              <div onClick={() => SendReport('No Thematical Feed')}>
                 {language?.language.Main.feedCard.noThematical}
               </div>
               <div onClick={() => setOpenDialog(true)}>

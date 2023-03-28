@@ -1,10 +1,10 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  search: "",
-  filter: "",
-  cityFilter: "City",
-  districtFilter: "District",
+  search: '',
+  filter: '',
+  cityFilter: '',
+  districtFilter: '',
   specialist: true,
   object: true,
   shop: true,
@@ -12,7 +12,7 @@ const initialState = {
 };
 
 export const filter = createSlice({
-  name: "filter",
+  name: 'filter',
   initialState,
   reducers: {
     setSearch: (state, action) => {

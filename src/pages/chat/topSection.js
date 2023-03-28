@@ -1,38 +1,32 @@
-import { useContext } from "react";
-import { ChatContext } from "../../context/ChatContext";
-import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
-import { ImList2 } from "react-icons/im";
-import Avatar from "@mui/material/Avatar";
-import { useSelector } from "react-redux";
+import { useContext } from 'react';
+import { ChatContext } from '../../context/ChatContext';
+import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
+import { ImList2 } from 'react-icons/im';
+import Avatar from '@mui/material/Avatar';
+import { useSelector } from 'react-redux';
 
 export const TopSection = (props) => {
   const navigate = useNavigate();
-  const { data } = useContext(ChatContext);
 
-  const chatUser = useSelector((state) => state.storeChat.currentChat);
-
-  const list = useSelector((state) => state.storeMain.userList);
-  let userList;
-  if (list?.length > 0) {
-    userList = JSON.parse(list);
-  }
-  const targetUser = userList?.find((item) => item.id === chatUser[0]?.userId);
+  const chatUser = useSelector(
+    (state) => state.storeChat.currentChat.targetChatUser
+  );
 
   return (
     <Container>
-      <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
         <Avatar
-          onClick={() => navigate(`/user/${chatUser[0]?.userId}`)}
-          alt={targetUser?.name}
-          src={targetUser?.cover !== undefined ? targetUser?.cover : ""}
+          onClick={() => navigate(`/api/v1/users/${chatUser.authId}`)}
+          alt={chatUser?.name}
+          src={chatUser?.cover !== undefined ? chatUser?.cover : ''}
           sx={{ width: 36, height: 36 }}
         />
-        <h4 onClick={() => navigate(`/user/${chatUser[0]?.userId}`)}>
-          {targetUser?.name}
+        <h4 onClick={() => navigate(`/api/v1/users/${chatUser.authId}`)}>
+          {chatUser?.name}
         </h4>
       </div>
-      <ImList2 id="closeIcon" onClick={() => navigate("/chat")} />
+      <ImList2 id="closeIcon" onClick={() => navigate('/chat')} />
     </Container>
   );
 };

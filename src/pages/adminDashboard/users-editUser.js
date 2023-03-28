@@ -1,16 +1,14 @@
-import React, { useContext } from "react";
-import { AuthContext } from "../../context/AuthContext";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import { AiTwotoneEdit, AiFillDelete } from "react-icons/ai";
+import React from 'react';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import { AiTwotoneEdit, AiFillDelete } from 'react-icons/ai';
 
 export default function EditUser() {
-  const { currentUser } = useContext(AuthContext);
   const [open, setOpen] = React.useState(false);
 
   const handleClickOpen = () => {

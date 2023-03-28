@@ -1,74 +1,90 @@
-import styled from "styled-components";
-import { ImCheckmark } from "react-icons/im";
-import { RiUserHeartFill } from "react-icons/ri";
-import { SiHomeassistantcommunitystore } from "react-icons/si";
-import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { Language } from "../../context/language";
-import Avatar from "@mui/material/Avatar";
+import { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import { ImCheckmark } from 'react-icons/im';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { Language } from '../../context/language';
+import Avatar from '@mui/material/Avatar';
 
 export const Favorites = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  // import followings
-  const folls = useSelector((state) => state.storeMain.followings);
-  let followings;
-  if (folls?.length > 0) {
-    followings = JSON.parse(folls);
-  }
+
   const language = Language();
 
-  const usersList = useSelector((state) => state.storeMain.userList);
-  let users;
-  if (usersList?.length > 0) {
-    users = JSON.parse(usersList);
-  }
+  const currentUser = JSON.parse(
+    localStorage.getItem('Beautyverse:currentUser')
+  );
+
+  const [followings, setFollowings] = useState();
+
+  useEffect(() => {
+    async function GetAudience() {
+      const response = await fetch(
+        `https://beautyverse.herokuapp.com/api/v1/users/${currentUser?._id}/followings`
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          setFollowings(data.data.followings);
+        })
+        .catch((error) => {
+          console.log('Error fetching data:', error);
+        });
+    }
+    if (currentUser) {
+      GetAudience();
+    }
+  }, [currentUser?._id]);
 
   return (
     <Container>
       <Title>
-        {language?.language?.Main?.favourites?.title}{" "}
+        {language?.language?.Main?.favourites?.title}{' '}
         <ImCheckmark className="likedIcon" />
       </Title>
       <List>
-        {followings?.map((item, index) => {
-          let us = users?.find((it) => it.id === item.id);
-          return (
-            <Item
-              key={index}
-              // onClick={() =>
-              //   dispatch(setTargetUser({ id: item.id, name: item.name }))
-              // }
-              onClick={() => navigate(`/user/${item.id}`)}
-            >
-              <Avatar
-                alt={us?.name}
-                src={us?.cover !== undefined ? us?.cover : ""}
-                sx={{ width: 30, height: 30 }}
-              />
-              <span>{us?.name}</span>
-            </Item>
-          );
-        })}
+        {followings?.length > 0 &&
+          followings?.map((item, index) => {
+            return (
+              <Item
+                key={index}
+                // onClick={() =>
+                //   dispatch(setTargetUser({ id: item.id, name: item.name }))
+                // }
+                onClick={() =>
+                  navigate(`/api/v1/users/${item.followingAuthId}`)
+                }
+              >
+                <Avatar
+                  alt={item?.followingName}
+                  src={item?.followingCover && item?.followingCover}
+                  sx={{ width: 30, height: 30 }}
+                />
+                <span>{item?.followingName}</span>
+              </Item>
+            );
+          })}
       </List>
     </Container>
   );
 };
 
 const Container = styled.div`
-  width: 100%;
+  width: 24vw;
   height: 22vw;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  padding-right: 2vw;
   padding-bottom: 0.5vw;
+  padding-right: 2vw;
   overflow-y: scroll;
+  margin-top: 30px;
 `;
 
 const Title = styled.div`
   color: ${(props) => props.theme.font};
   display: flex;
+  justify-content: flex-end;
   gap: 0.25vw;
   align-items: center;
   margin-top: 1.25vw;
@@ -76,7 +92,6 @@ const Title = styled.div`
   font-size: 18px;
 
   .likedIcon {
-    margin-right: 2vw;
     font-size: 16px;
     color: #2c976d;
   }
@@ -87,7 +102,7 @@ const List = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-end;
   gap: 0.3vw;
 `;
 

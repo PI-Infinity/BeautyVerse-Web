@@ -1,27 +1,17 @@
-import React from "react";
-import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
-import { useSelector } from "react-redux";
+import React from 'react';
+import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
 
 function Map(props) {
-  // import current user from redux state
-  const userUnparsed = useSelector((state) => state.storeMain.user);
-
-  let user;
-  if (userUnparsed?.length > 0) {
-    user = JSON.parse(userUnparsed);
-  }
-
   // define mobile or desktop
-
   const [width, setWidth] = React.useState(window.innerWidth);
 
   function handleWindowSizeChange() {
     setWidth(window.innerWidth);
   }
   React.useEffect(() => {
-    window.addEventListener("resize", handleWindowSizeChange);
+    window.addEventListener('resize', handleWindowSizeChange);
     return () => {
-      window.removeEventListener("resize", handleWindowSizeChange);
+      window.removeEventListener('resize', handleWindowSizeChange);
     };
   }, []);
 
@@ -30,13 +20,13 @@ function Map(props) {
   let containerStyle;
   if (isMobile) {
     containerStyle = {
-      width: "90vw",
-      height: "50vw",
+      width: '90vw',
+      height: '50vw',
     };
   } else {
     containerStyle = {
-      width: "35vw",
-      height: "20vw",
+      width: '35vw',
+      height: '20vw',
     };
   }
 
@@ -46,8 +36,8 @@ function Map(props) {
   };
   //
   const { isLoaded } = useJsApiLoader({
-    id: "google-map-script",
-    googleMapsApiKey: process.env.MAP_APIKEY,
+    id: 'google-map-script',
+    // googleMapsApiKey: process.env.MAP_APIKEY,
   });
 
   return isLoaded ? (

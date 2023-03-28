@@ -1,12 +1,85 @@
-import styled from "styled-components";
-import { SideBar } from "../../pages/chat/sideBar";
+import { useState, useEffect, useRef } from 'react';
+import styled from 'styled-components';
+import { SideBar } from '../../pages/chat/sideBar';
+import { ChatContent } from '../../pages/chat/chatContent';
+import TestChat from '../../pages/chat/test';
+import { useSelector, useDispatch } from 'react-redux';
+import socketIOClient from 'socket.io-client';
+import { setUserChats } from '../../redux/chat';
 
-const Chat = () => {
-  document.body.style.overflowY = "hidden";
+const Chat = ({ socket, handleRoomChange, room }) => {
+  const dispatch = useDispatch();
+
+  document.body.style.overflowY = 'hidden';
+
+  const messagesEndRef = useRef(null);
+  const currentuser = useSelector((state) => state.storeMain.user);
+  const rerenderChatList = useSelector(
+    (state) => state.storeChat.rerenderChatList
+  );
+
+  const [messages, setMessages] = useState([]);
+  useEffect(() => {
+    socket.on('message', (message) => {
+      console.log(message);
+      setMessages((messages) => [...messages, message]);
+    });
+
+    return () => {
+      socket.off();
+    };
+  }, [socket]);
+
+  /**
+   * remove message
+   *  */
+
+  function removeMessageFromUI(messageId) {
+    setMessages((prevMessages) => {
+      return prevMessages.filter((message) => message.uniqueId !== messageId);
+    });
+  }
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on('messageDeleted', (deletedMessage) => {
+      console.log('Message deleted:', deletedMessage);
+
+      // Update the UI to remove the deleted message from the list
+      removeMessageFromUI(deletedMessage.uniqueId);
+    });
+
+    return () => {
+      socket.off('messageDeleted');
+    };
+  }, [socket]);
+
+  /**
+   * scroll to bottom in chat
+   *  */
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
   return (
     <Bg>
       <Container>
-        <SideBar />
+        {room === '' ? (
+          <SideBar
+            socket={socket}
+            handleRoomChange={handleRoomChange}
+            room={room}
+          />
+        ) : (
+          <ChatContent
+            socket={socket}
+            room={room}
+            messages={messages}
+            setMessages={setMessages}
+          />
+        )}
       </Container>
     </Bg>
   );

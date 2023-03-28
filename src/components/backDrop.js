@@ -1,7 +1,7 @@
-import Backdrop from "@mui/material/Backdrop";
-import CircularProgress from "@mui/material/CircularProgress";
-import { setBackdropOpen } from "../redux/main";
-import { useSelector, useDispatch } from "react-redux";
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress';
+import { setBackdropOpen } from '../redux/main';
+import { useSelector, useDispatch } from 'react-redux';
 
 export default function SimpleBackdrop(props) {
   const dispatch = useDispatch();
@@ -16,7 +16,7 @@ export default function SimpleBackdrop(props) {
     <div>
       <Backdrop
         sx={{
-          color: "#fff",
+          color: '#fff',
           zIndex: (theme) => theme.zIndex.drawer + 1,
         }}
         open={backdropOpen}

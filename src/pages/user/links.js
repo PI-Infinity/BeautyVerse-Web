@@ -1,7 +1,7 @@
-import React from "react";
-import styled from "styled-components";
-import { RiEdit2Fill } from "react-icons/ri";
-import { ImCheckmark } from "react-icons/im";
+import React from 'react';
+import styled from 'styled-components';
+import { RiEdit2Fill } from 'react-icons/ri';
+import { ImCheckmark } from 'react-icons/im';
 import {
   FaFacebook,
   FaInstagram,
@@ -11,463 +11,212 @@ import {
   FaChrome,
   FaWhatsapp,
   FaTelegram,
-} from "react-icons/fa";
-import { AiOutlineMail } from "react-icons/ai";
-import { useSelector, useDispatch } from "react-redux";
-import { db } from "../../firebase";
-import {
-  getDoc,
-  doc,
-  serverTimestamp,
-  setDoc,
-  updateDoc,
-} from "firebase/firestore";
-import { SetCurrentChat } from "../../redux/chat";
-import { useNavigate } from "react-router-dom";
-import Select from "react-select";
-import { countries } from "../../data/countryCodes";
+} from 'react-icons/fa';
+import { AiOutlineMail } from 'react-icons/ai';
+import { useSelector, useDispatch } from 'react-redux';
+import { db } from '../../firebase';
+import { doc } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
+import Select from 'react-select';
+import { countries } from '../../data/countryCodes';
+import { IsMobile } from '../../functions/isMobile';
+import axios from 'axios';
+import { setRerenderCurrentUser } from '../../redux/rerenders';
+import { LinkLoader } from '../../components/loader';
 
-export const Links = ({ user }) => {
-  const [edit, setEdit] = React.useState("");
+export const Links = ({ targetUser, loading }) => {
+  const [edit, setEdit] = React.useState('');
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const isMobile = IsMobile();
   // import current user & parse it
-  const userUnparsed = useSelector((state) => state.storeMain.user);
-  let currentuser;
-  if (userUnparsed?.length > 0) {
-    currentuser = JSON.parse(userUnparsed);
-  }
+  const currentUser = JSON.parse(
+    localStorage.getItem('Beautyverse:currentUser')
+  );
 
+  const [changePhone, setChangePhone] = React.useState('');
   const [countryCode, setCountryCode] = React.useState({
-    value: "+995",
-    label: "Georgia",
+    value: '+995',
+    label: 'Georgia',
   });
-  const [changePhone, setChangePhone] = React.useState("");
-  const [changeWeb, setChangeWeb] = React.useState("");
-  const [changeInstagram, setChangeInstagram] = React.useState("");
-  const [changeFacebook, setChangeFacebook] = React.useState("");
-  const [changeTiktok, setChangeTiktok] = React.useState("");
-  const [changeYoutube, setChangeYoutube] = React.useState("");
-  const [changeOtherMedia, setChangeOtherMedia] = React.useState("");
+  const [changeField, setChangeField] = React.useState('');
 
-  const UpdateLink = (newValue) => {
-    const base = doc(db, "users", `${user?.id}`);
-    if (changePhone?.length > 0) {
-      updateDoc(base, {
-        phone: countryCode?.value + changePhone,
-      });
-      setCountryCode({ value: "+995", label: "Georgia" });
-      setChangePhone("");
+  const UpdateLink = async (field, value) => {
+    try {
+      if (edit === 'web') {
+        let parseLink;
+        if (
+          value?.toLowerCase()?.startsWith('https://') ||
+          value?.toLowerCase()?.startsWith('http://')
+        ) {
+          parseLink = value;
+        } else if (value?.toLowerCase()?.startsWith('www')) {
+          parseLink = `https://${value?.slice(4)}`;
+        } else {
+          if (value?.length > 0) {
+            parseLink = `https://${value}`;
+          } else {
+            parseLink = '';
+          }
+        }
+        const response = await axios.patch(
+          `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}`,
+          {
+            media: {
+              ...targetUser?.media,
+              web: parseLink,
+            },
+          }
+        );
+        const data = await response.data;
+        dispatch(setRerenderCurrentUser());
+      } else if (edit === 'phone') {
+        const response = await axios.patch(
+          `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}`,
+          {
+            [`${field}`]: value,
+          }
+        );
+        const data = await response.data;
+        dispatch(setRerenderCurrentUser());
+      } else {
+        const response = await axios.patch(
+          `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}`,
+          {
+            media: {
+              ...targetUser?.media,
+              [`${field}`]: value,
+            },
+          }
+        );
+        const data = await response.data;
+        dispatch(setRerenderCurrentUser());
+      }
+    } catch (error) {
+      console.error(error);
     }
-    if (changeWeb?.length > 0) {
-      updateDoc(base, {
-        socMedia: {
-          web: changeWeb,
-          facebook:
-            user?.socMedia?.facebook?.length > 0
-              ? user?.socMedia?.facebook
-              : "",
-          instagram:
-            user?.socMedia?.instagram?.length > 0
-              ? user?.socMedia?.instagram
-              : "",
-          tiktok:
-            user?.socMedia?.tiktok?.length > 0 ? user?.socMedia?.tiktok : "",
-          youtube:
-            user?.socMedia?.youtube?.length > 0 ? user?.socMedia?.youtube : "",
-          telegram:
-            user?.socMedia?.telegram === true
-              ? user?.socMedia?.telegram
-              : false,
-          whatsapp:
-            user?.socMedia?.whatsapp === true
-              ? user?.socMedia?.whatsapp
-              : false,
-        },
-      });
-      setChangeWeb("");
-    }
-    if (changeInstagram?.length > 0) {
-      updateDoc(base, {
-        socMedia: {
-          web: user?.socMedia?.web?.length > 0 ? user?.socMedia?.web : "",
-          facebook:
-            user?.socMedia?.facebook?.length > 0
-              ? user?.socMedia?.facebook
-              : "",
-          instagram: changeInstagram,
-          tiktok:
-            user?.socMedia?.tiktok?.length > 0 ? user?.socMedia?.tiktok : "",
-          youtube:
-            user?.socMedia?.youtube?.length > 0 ? user?.socMedia?.youtube : "",
-          telegram:
-            user?.socMedia?.telegram === true
-              ? user?.socMedia?.telegram
-              : false,
-          whatsapp:
-            user?.socMedia?.whatsapp === true
-              ? user?.socMedia?.whatsapp
-              : false,
-        },
-      });
-      setChangeInstagram("");
-    }
-    if (changeFacebook?.length > 0) {
-      updateDoc(base, {
-        socMedia: {
-          web: user?.socMedia?.web?.length > 0 ? user?.socMedia?.web : "",
-          facebook: changeFacebook,
-          instagram:
-            user?.socMedia?.instagram?.length > 0
-              ? user?.socMedia?.instagram
-              : "",
-          tiktok:
-            user?.socMedia?.tiktok?.length > 0 ? user?.socMedia?.tiktok : "",
-          youtube:
-            user?.socMedia?.youtube?.length > 0 ? user?.socMedia?.youtube : "",
-          telegram:
-            user?.socMedia?.telegram === true
-              ? user?.socMedia?.telegram
-              : false,
-          whatsapp:
-            user?.socMedia?.whatsapp === true
-              ? user?.socMedia?.whatsapp
-              : false,
-        },
-      });
-      setChangeFacebook("");
-    }
-    if (changeTiktok?.length > 0) {
-      updateDoc(base, {
-        socMedia: {
-          web: user?.socMedia?.web?.length > 0 ? user?.socMedia?.web : "",
-          facebook:
-            user?.socMedia?.facebook?.length > 0
-              ? user?.socMedia?.facebook
-              : "",
-          instagram:
-            user?.socMedia?.instagram?.length > 0
-              ? user?.socMedia?.instagram
-              : "",
-          tiktok: changeTiktok,
-          youtube:
-            user?.socMedia?.youtube?.length > 0 ? user?.socMedia?.youtube : "",
-          telegram:
-            user?.socMedia?.telegram === true
-              ? user?.socMedia?.telegram
-              : false,
-          whatsapp:
-            user?.socMedia?.whatsapp === true
-              ? user?.socMedia?.whatsapp
-              : false,
-        },
-      });
-      setChangeTiktok("");
-    }
-    if (changeYoutube?.length > 0) {
-      updateDoc(base, {
-        socMedia: {
-          web: user?.socMedia?.web?.length > 0 ? user?.socMedia?.web : "",
-          facebook:
-            user?.socMedia?.facebook?.length > 0
-              ? user?.socMedia?.facebook
-              : "",
-          instagram:
-            user?.socMedia?.instagram?.length > 0
-              ? user?.socMedia?.instagram
-              : "",
-          tiktok:
-            user?.socMedia?.tiktok?.length > 0 ? user?.socMedia?.tiktok : "",
-          youtube:
-            user?.socMedia?.youtube?.length > 0 ? user?.socMedia?.youtube : "",
-          telegram:
-            user?.socMedia?.telegram === true
-              ? user?.socMedia?.telegram
-              : false,
-          whatsapp:
-            user?.socMedia?.whatsapp === true
-              ? user?.socMedia?.whatsapp
-              : false,
-        },
-      });
-      setChangeYoutube("");
-    }
-    if (changeOtherMedia?.length > 0) {
-      updateDoc(base, {
-        socMedia: {
-          web: user?.socMedia?.web?.length > 0 ? user?.socMedia?.web : "",
-          facebook:
-            user?.socMedia?.facebook?.length > 0
-              ? user?.socMedia?.facebook
-              : "",
-          instagram:
-            user?.socMedia?.instagram?.length > 0
-              ? user?.socMedia?.instagram
-              : "",
-          tiktok:
-            user?.socMedia?.tiktok?.length > 0 ? user?.socMedia?.tiktok : "",
-          youtube:
-            user?.socMedia?.youtube?.length > 0 ? user?.socMedia?.youtube : "",
-          otherMedia: user?.socMedia?.changeOtherMedia,
-        },
-      });
-      setChangeOtherMedia("");
-    }
-    setEdit("");
+    setChangeField('');
+    setEdit('');
   };
 
   const LinkList = [
     {
-      id: "email",
-      placeholder: user?.email,
+      id: 'email',
+      placeholder: targetUser?.email,
       icon: <AiOutlineMail />,
-      value: changePhone,
+      value: targetUser?.email,
     },
     {
-      id: "phone",
-      placeholder: user?.phone,
+      id: 'phone',
+      placeholder: 'example: 555 555 555',
       icon: <FaPhoneAlt />,
       onChange: (e) => setChangePhone(e.target.value),
+      value: targetUser?.phone,
     },
     {
-      id: "web",
-      placeholder: user?.socMedia?.web,
+      id: 'web',
+      placeholder: 'web.com',
       icon: <FaChrome />,
-      value: changeWeb,
-      onChange: (e) => setChangeWeb(e.target.value),
+      value: targetUser?.media?.web,
+      onChange: (e) => setChangeField(e.target.value),
     },
     {
-      id: "facebook",
-      placeholder:
-        user?.socMedia?.facebook?.length > 0 ? user?.socMedia?.facebook : "",
+      id: 'facebook',
+      placeholder: 'example Id: 123456789012345',
       icon: <FaFacebook />,
-      value: changeFacebook,
-      onChange: (e) => setChangeFacebook(e.target.value),
+      value: targetUser?.media?.facebook,
+      onChange: (e) => setChangeField(e.target.value),
     },
     {
-      id: "instagram",
-      placeholder: user?.socMedia?.instagram,
+      id: 'instagram',
+      placeholder: 'example: @username',
       icon: <FaInstagram />,
-      value: changeInstagram,
-      onChange: (e) => setChangeInstagram(e.target.value),
+      value: targetUser?.media?.instagram,
+      onChange: (e) => setChangeField(e.target.value),
     },
 
     {
-      id: "tiktok",
-      placeholder: user?.socMedia?.tiktok,
+      id: 'tiktok',
+      placeholder: 'example: @tiktok',
       icon: <FaTiktok />,
-      value: changeTiktok,
-      onChange: (e) => setChangeTiktok(e.target.value),
+      value: targetUser?.media?.tiktok,
+      onChange: (e) => setChangeField(e.target.value),
     },
     {
-      id: "youtube",
-      placeholder: user?.socMedia?.youtube,
+      id: 'youtube',
+      placeholder: 'example: @youtube',
       icon: <FaYoutube />,
-      value: changeYoutube,
-      onChange: (e) => setChangeYoutube(e.target.value),
+      value: targetUser?.media?.youtube,
+      onChange: (e) => setChangeField(e.target.value),
     },
   ];
 
-  // send message and navigate to chat
-  const handleSelect = async (user) => {
-    const combinedId =
-      currentuser?.id > user?.id
-        ? currentuser?.id + user?.id
-        : user?.id + currentuser?.id;
-
-    try {
-      const res = await getDoc(doc(db, "chats", combinedId));
-      const chatId = await getDoc(
-        doc(db, "users", currentuser?.id, "chats", combinedId)
-      );
-      const chatIdT = await getDoc(
-        doc(db, "users", user?.id, "chats", combinedId)
-      );
-      // if chat not exists
-      if (!res.exists() && !chatId.exists() && !chatIdT.exists()) {
-        await setDoc(doc(db, "chats", combinedId), { messages: [] });
-        await setDoc(doc(db, "users", currentuser?.id, "chats", user?.id), {
-          chatId: combinedId,
-          ["userInfo"]: {
-            id: user?.id,
-            // name: user?.name,
-            // cover: user?.cover != undefined ? user?.cover : null,
-          },
-          ["date"]: serverTimestamp(),
-        });
-        await setDoc(doc(db, "users", user?.id, "chats", currentuser?.id), {
-          chatId: combinedId,
-          ["userInfo"]: {
-            id: currentuser?.id,
-            // name: currentuser?.name,
-            // cover: currentuser?.cover != undefined ? currentuser?.cover : null,
-          },
-          ["date"]: serverTimestamp(),
-        });
-        // if chat already exists
-      } else if (res.exists() && (!chatId.exists() || !chatIdT.exists())) {
-        await setDoc(doc(db, "users", currentuser?.id, "chats", user?.id), {
-          chatId: combinedId,
-          ["userInfo"]: {
-            id: user?.id,
-            // name: user?.name,
-            // cover: user?.cover != undefined ? user?.cover : null,
-          },
-          ["date"]: serverTimestamp(),
-        });
-        await setDoc(doc(db, "users", user?.id, "chats", currentuser?.id), {
-          chatId: combinedId,
-          ["userInfo"]: {
-            id: currentuser?.id,
-            // name: currentuser?.name,
-            // cover: currentuser?.cover != undefined ? currentuser?.cover : null,
-          },
-          ["date"]: serverTimestamp(),
-        });
-      } else {
-        await updateDoc(doc(db, "users", currentuser?.id, "chats", user?.id), {
-          chatId: combinedId,
-          ["userInfo"]: {
-            id: user?.id,
-            // name: user?.name,
-            // cover: user?.cover != undefined ? user?.cover : null,
-          },
-          ["date"]: serverTimestamp(),
-        });
-        await updateDoc(doc(db, "users", user?.id, "chats", currentuser?.id), {
-          chatId: combinedId,
-          ["userInfo"]: {
-            id: currentuser?.id,
-            // name: currentuser?.name,
-            // cover: currentuser?.cover != undefined ? currentuser?.cover : null,
-          },
-          ["date"]: serverTimestamp(),
-        });
-      }
-      await dispatch(
-        SetCurrentChat([
-          {
-            chatId: combinedId,
-            // cover: user?.cover != undefined ? user?.cover : null,
-            // name: user?.name,
-            userId: user?.id,
-          },
-        ])
-      );
-      navigate(`/chat/${combinedId}`);
-    } catch (err) {
-      alert(err);
-    }
-  };
-
   /// add whatsapp and telegram
 
-  const AddWhatsapp = () => {
-    const base = doc(db, "users", `${user?.id}`);
-    if (user?.socMedia?.whatsapp === true) {
-      updateDoc(base, {
-        socMedia: {
-          web: user?.socMedia?.web?.length > 0 ? user?.socMedia?.web : "",
-          facebook:
-            user?.socMedia?.facebook?.length > 0
-              ? user?.socMedia?.facebook
-              : "",
-          instagram:
-            user?.socMedia?.instagram?.length > 0
-              ? user?.socMedia?.instagram
-              : "",
-          tiktok:
-            user?.socMedia?.tiktok?.length > 0 ? user?.socMedia?.tiktok : "",
-          youtube:
-            user?.socMedia?.youtube?.length > 0 ? user?.socMedia?.youtube : "",
-          telegram:
-            user?.socMedia?.telegram === true
-              ? user?.socMedia?.telegram
-              : false,
-          whatsapp: false,
-        },
-      });
+  const AddWhatsapp = async () => {
+    const base = doc(db, 'users', `${targetUser?._id}`);
+    if (targetUser?.media?.whatsapp === true) {
+      const response = await axios.patch(
+        `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}`,
+        {
+          media: {
+            ...targetUser?.media,
+            whatsapp: false,
+          },
+        }
+      );
+      const data = await response.data;
+      dispatch(setRerenderCurrentUser());
     } else {
-      updateDoc(base, {
-        socMedia: {
-          web: user?.socMedia?.web?.length > 0 ? user?.socMedia?.web : "",
-          facebook:
-            user?.socMedia?.facebook?.length > 0
-              ? user?.socMedia?.facebook
-              : "",
-          instagram:
-            user?.socMedia?.instagram?.length > 0
-              ? user?.socMedia?.instagram
-              : "",
-          tiktok:
-            user?.socMedia?.tiktok?.length > 0 ? user?.socMedia?.tiktok : "",
-          youtube:
-            user?.socMedia?.youtube?.length > 0 ? user?.socMedia?.youtube : "",
-          telegram:
-            user?.socMedia?.telegram === true
-              ? user?.socMedia?.telegram
-              : false,
-          whatsapp: true,
-        },
-      });
+      const response = await axios.patch(
+        `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}`,
+        {
+          media: {
+            ...targetUser?.media,
+            whatsapp: true,
+          },
+        }
+      );
+      const data = await response.data;
+      dispatch(setRerenderCurrentUser());
     }
   };
-  const AddTelegram = () => {
-    const base = doc(db, "users", `${user?.id}`);
-    if (user?.socMedia?.telegram === true) {
-      updateDoc(base, {
-        socMedia: {
-          web: user?.socMedia?.web?.length > 0 ? user?.socMedia?.web : "",
-          facebook:
-            user?.socMedia?.facebook?.length > 0
-              ? user?.socMedia?.facebook
-              : "",
-          instagram:
-            user?.socMedia?.instagram?.length > 0
-              ? user?.socMedia?.instagram
-              : "",
-          tiktok:
-            user?.socMedia?.tiktok?.length > 0 ? user?.socMedia?.tiktok : "",
-          youtube:
-            user?.socMedia?.youtube?.length > 0 ? user?.socMedia?.youtube : "",
-          telegram: false,
-          whatsapp:
-            user?.socMedia?.whatsapp == true ? user?.socMedia?.whatsapp : false,
-        },
-      });
+  const AddTelegram = async () => {
+    console.log('run');
+    if (targetUser?.media?.telegram === true) {
+      const response = await axios.patch(
+        `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}`,
+        {
+          media: {
+            ...targetUser?.media,
+            telegram: false,
+          },
+        }
+      );
+      const data = await response.data;
+      dispatch(setRerenderCurrentUser());
     } else {
-      updateDoc(base, {
-        socMedia: {
-          web: user?.socMedia?.web?.length > 0 ? user?.socMedia?.web : "",
-          facebook:
-            user?.socMedia?.facebook?.length > 0
-              ? user?.socMedia?.facebook
-              : "",
-          instagram:
-            user?.socMedia?.instagram?.length > 0
-              ? user?.socMedia?.instagram
-              : "",
-          tiktok:
-            user?.socMedia?.tiktok?.length > 0 ? user?.socMedia?.tiktok : "",
-          youtube:
-            user?.socMedia?.youtube?.length > 0 ? user?.socMedia?.youtube : "",
-          telegram: true,
-          whatsapp:
-            user?.socMedia?.whatsapp === true
-              ? user?.socMedia?.whatsapp
-              : false,
-        },
-      });
+      const response = await axios.patch(
+        `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}`,
+        {
+          media: {
+            ...targetUser?.media,
+            telegram: true,
+          },
+        }
+      );
+      const data = await response.data;
+      dispatch(setRerenderCurrentUser());
     }
   };
 
   // define who can see whatsapp
   let whatsapp;
-  if (user?.socMedia?.whatsapp) {
+  if (targetUser?.whatsapp) {
     whatsapp = true;
   } else if (
-    user?.socMedia?.whatsapp !== true &&
-    user?.id === currentuser?.id
+    targetUser?.whatsapp !== true &&
+    targetUser?._id === currentUser?._id
   ) {
     whatsapp = true;
   } else {
@@ -475,11 +224,11 @@ export const Links = ({ user }) => {
   }
   // define who can see telegram
   let telegram;
-  if (user?.socMedia?.telegram) {
+  if (targetUser?.telegram) {
     telegram = true;
   } else if (
-    user?.socMedia?.telegram !== true &&
-    user?.id === currentuser?.id
+    targetUser?.telegram !== true &&
+    targetUser?._id === currentUser?._id
   ) {
     telegram = true;
   } else {
@@ -493,232 +242,444 @@ export const Links = ({ user }) => {
       ...base,
       color: state.isSelected
         ? theme
-          ? "#333"
-          : "#f3f3f3"
+          ? '#333'
+          : '#f3f3f3'
         : theme
-        ? "#f3f3f3"
-        : "#333",
+        ? '#f3f3f3'
+        : '#333',
     }),
     placeholder: (base, state) => ({
       ...base,
       // height: "1000px",
       color: state.isSelected
         ? theme
-          ? "#333"
-          : "#f3f3f3"
+          ? '#333'
+          : '#f3f3f3'
         : theme
-        ? "#f3f3f3"
-        : "#333",
-      maxHeight: "50px",
+        ? '#f3f3f3'
+        : '#333',
+      maxHeight: '50px',
     }),
     input: (base, state) => ({
       ...base,
-      color: theme ? "#f3f3f3" : "#333",
-      fontSize: "16px",
-      maxHeight: "100px",
+      color: theme ? '#f3f3f3' : '#333',
+      fontSize: '16px',
+      maxHeight: '100px',
     }),
     multiValue: (base, state) => ({
       ...base,
-      backgroundColor: state.isDisabled ? null : "lightblue",
-      borderRadius: "20px",
+      backgroundColor: state.isDisabled ? null : 'lightblue',
+      borderRadius: '20px',
     }),
     multiValueLabel: (base, state) => ({
       ...base,
     }),
     menuList: (base, state) => ({
       ...base,
-      backgroundColor: theme ? "#333" : "#f3f3f3",
+      backgroundColor: theme ? '#333' : '#f3f3f3',
       zIndex: 1000,
     }),
     option: (base, state) => ({
       ...base,
       backgroundColor: state.isSelected
         ? theme
-          ? "#f3f3f3"
-          : "#333"
+          ? '#f3f3f3'
+          : '#333'
         : theme
-        ? "#333"
-        : "#f3f3f3",
+        ? '#333'
+        : '#f3f3f3',
       color: state.isSelected
         ? theme
-          ? "#333"
-          : "#f3f3f3"
+          ? '#333'
+          : '#f3f3f3'
         : theme
-        ? "#f3f3f3"
-        : "#333",
+        ? '#f3f3f3'
+        : '#333',
     }),
     control: (baseStyles, state) => ({
       ...baseStyles,
-      backgroundColor: theme ? "#333" : "#fff",
-      borderColor: state.isFocused ? "rgba(0,0,0,0)" : "rgba(0,0,0,0.1)",
-      width: "5vw",
-      minHeight: "2vw",
-      cursor: "pointer",
-      "@media only screen and (max-width: 1200px)": {
-        width: "23vw",
-        fontSize: "16px",
+      backgroundColor: theme ? '#333' : '#fff',
+      borderColor: state.isFocused ? 'rgba(0,0,0,0)' : 'rgba(0,0,0,0.1)',
+      width: '5vw',
+      minHeight: '2vw',
+      cursor: 'pointer',
+      '@media only screen and (max-width: 1200px)': {
+        width: '23vw',
+        fontSize: '16px',
       },
     }),
   };
 
   return (
     <LinksContainer>
-      {user?.id !== currentuser?.id && (
-        <SendMessage
-          onClick={
-            currentuser !== undefined
-              ? () => handleSelect(user)
-              : () => navigate("/login")
-          }
-        >
-          Send Message
-        </SendMessage>
-      )}
-      {LinkList?.map((item, index) => {
-        if (item.id === "phone") {
-          if (user?.type !== "user") {
-            return (
-              <LinkContainer>
-                {item.icon}
-                {edit == item.id ? (
-                  <>
-                    <Select
-                      // placeholder={language?.language.Auth.auth.workingDays}
-                      defaultValue="+995"
-                      defaultInputValue="+995"
-                      placeholder="+995"
-                      value={countryCode}
-                      onChange={(value) => {
-                        setCountryCode(value);
-                      }}
-                      styles={CustomStyle}
-                      options={countries}
-                    />
-                    <LinkInput
-                      placeholder="Add phone number"
-                      type="tel"
-                      value={item.value}
-                      onChange={item.onChange}
-                    />
-                  </>
-                ) : (
-                  <Link>
-                    <a
-                      style={{ color: "inherit", textDecoration: "none" }}
-                      href={`tel://${item.placeholder}`}
-                    >
-                      {item.placeholder}
-                    </a>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "15px",
-                      }}
-                    >
-                      {whatsapp && (
-                        <a
-                          style={{
-                            color: user?.socMedia?.whatsapp
-                              ? "inherit"
-                              : "gray",
-                            textDecoration: "none",
-                          }}
-                          onClick={
-                            user?.id === currentuser?.id
-                              ? () => AddWhatsapp()
-                              : false
-                          }
-                          href={
-                            user?.id !== currentuser?.id &&
-                            `https://wa.me/${item.placeholder}`
-                          }
-                        >
-                          <FaWhatsapp className="icons" />
-                        </a>
-                      )}
-                      {telegram && (
-                        <a
-                          style={{
-                            color: user?.socMedia?.telegram
-                              ? "inherit"
-                              : "gray",
-                            textDecoration: "none",
-                          }}
-                          onClick={
-                            user?.id === currentuser?.id
-                              ? () => AddTelegram()
-                              : false
-                          }
-                          href={
-                            user?.id !== currentuser?.id &&
-                            ` https://t.me/${item.placeholder}`
-                          }
-                        >
-                          <FaTelegram className="icons" />
-                        </a>
-                      )}
-                      {/* <a
-                  style={{
-                      color: "inherit",
-                      textDecoration: "none",
-                    }}
-                    href={`https://wa.me/${item.placeholder}`}
+      {loading ? (
+        <LinkLoader />
+      ) : (
+        <>
+          {/* {targetUser?._id !== currentUser?._id && (
+            <SendMessage
+              onClick={
+                currentUser !== undefined
+                  ? () => handleSelect(targetUser)
+                  : () => navigate('/login')
+              }
+            >
+              Send Message
+            </SendMessage>
+          )} */}
+          {LinkList?.map((item, index) => {
+            if (item?.id === 'email') {
+              return (
+                <LinkContainer key={index} edit={edit}>
+                  {item.icon}
+                  <Link
+                    style={{ textDecoration: 'none', color: 'inherit' }}
+                    href={`mailto:${item?.value}`}
+                    target="_blank"
                   >
-                    <FaViber className="icons" />
-                  </a> */}
-                    </div>
+                    {item?.value}
                   </Link>
-                )}
-                {user?.id === currentuser?.id && (
-                  <>
+                </LinkContainer>
+              );
+            } else if (item.id === 'phone') {
+              if (targetUser?.type !== 'user') {
+                return (
+                  <LinkContainer>
+                    {item.icon}
                     {edit == item.id ? (
-                      <ImCheckmark
-                        className="confirmIcon"
-                        onClick={UpdateLink}
-                      />
+                      <>
+                        <Select
+                          // placeholder={language?.language.Auth.auth.workingDays}
+                          defaultValue="+995"
+                          defaultInputValue="+995"
+                          placeholder="+995"
+                          value={countryCode}
+                          onChange={(value) => {
+                            setCountryCode(value);
+                          }}
+                          styles={CustomStyle}
+                          options={countries}
+                        />
+                        <LinkInput
+                          placeholder="Add phone number"
+                          type="tel"
+                          value={changeField}
+                          onChange={(e) => setChangeField(e.target.value)}
+                        />
+                      </>
                     ) : (
-                      <RiEdit2Fill
-                        className="editIcon"
-                        onClick={() => setEdit(item.id)}
-                      />
+                      <Link>
+                        <a
+                          style={{ color: 'inherit', textDecoration: 'none' }}
+                          href={`tel://${item.placeholder}`}
+                        >
+                          {item.value}
+                        </a>
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '15px',
+                          }}
+                        >
+                          {whatsapp && (
+                            <a
+                              style={{
+                                color: targetUser?.media?.whatsapp
+                                  ? 'inherit'
+                                  : 'gray',
+                                textDecoration: 'none',
+                              }}
+                              onClick={
+                                targetUser?._id === currentUser?._id
+                                  ? () => AddWhatsapp()
+                                  : false
+                              }
+                              href={
+                                targetUser?._id !== currentUser?._id &&
+                                `https://wa.me/${item.placeholder}`
+                              }
+                            >
+                              <FaWhatsapp className="icons" />
+                            </a>
+                          )}
+                          {telegram && (
+                            <a
+                              style={{
+                                color: targetUser?.media?.telegram
+                                  ? 'inherit'
+                                  : 'gray',
+                                textDecoration: 'none',
+                              }}
+                              onClick={
+                                targetUser?._id === currentUser?._id
+                                  ? () => AddTelegram()
+                                  : false
+                              }
+                              href={
+                                targetUser?._id !== currentUser?._id &&
+                                ` https://t.me/${item.placeholder}`
+                              }
+                            >
+                              <FaTelegram className="icons" />
+                            </a>
+                          )}
+                        </div>
+                      </Link>
                     )}
-                  </>
-                )}
-              </LinkContainer>
-            );
-          }
-        } else {
-          return (
-            <LinkContainer key={index} edit={edit}>
-              {item.icon}
-              {edit == item.id ? (
-                <LinkInput
-                  placeholder={
-                    item.placeholder?.length > 0 ? item.placeholder : item.id
-                  }
-                  value={item.value}
-                  onChange={item.onChange}
-                />
-              ) : (
-                <Link>{item?.placeholder}</Link>
-              )}
-              {user?.id === currentuser?.id && item.id != "email" && (
-                <>
+                    {targetUser?._id === currentUser?._id && (
+                      <>
+                        {edit == item.id ? (
+                          <ImCheckmark
+                            className="confirmIcon"
+                            onClick={() =>
+                              UpdateLink(
+                                'phone',
+                                countryCode?.value + changeField
+                              )
+                            }
+                          />
+                        ) : (
+                          <RiEdit2Fill
+                            className="editIcon"
+                            onClick={() => {
+                              setEdit(item.id);
+                              setChangeField(item.value?.slice(4));
+                            }}
+                          />
+                        )}
+                      </>
+                    )}
+                  </LinkContainer>
+                );
+              }
+            } else if (item?.id === 'web') {
+              return (
+                <LinkContainer key={index} edit={edit}>
+                  {item.icon}
                   {edit == item.id ? (
-                    <ImCheckmark className="confirmIcon" onClick={UpdateLink} />
-                  ) : (
-                    <RiEdit2Fill
-                      className="editIcon"
-                      onClick={() => setEdit(item.id)}
+                    <LinkInput
+                      placeholder={item.placeholder}
+                      value={changeField}
+                      onChange={(e) => setChangeField(e.target.value)}
                     />
+                  ) : (
+                    <Link
+                      style={{ textDecoration: 'none', color: 'inherit' }}
+                      href={`${item?.value}`}
+                      target="blank"
+                    >
+                      {item?.value?.slice(8)}
+                    </Link>
                   )}
-                </>
-              )}
-            </LinkContainer>
-          );
-        }
-      })}
+                  {targetUser?._id === currentUser?._id &&
+                    item.id != 'email' && (
+                      <>
+                        {edit == item.id ? (
+                          <ImCheckmark
+                            className="confirmIcon"
+                            onClick={() => UpdateLink('web', changeField)}
+                          />
+                        ) : (
+                          <RiEdit2Fill
+                            className="editIcon"
+                            onClick={() => {
+                              setEdit(item.id);
+                              setChangeField(item?.value);
+                            }}
+                          />
+                        )}
+                      </>
+                    )}
+                </LinkContainer>
+              );
+            } else if (item?.id === 'facebook') {
+              return (
+                <LinkContainer key={index} edit={edit}>
+                  {item.icon}
+                  {edit == item.id ? (
+                    <LinkInput
+                      type="number"
+                      placeholder={item.placeholder}
+                      value={changeField}
+                      onChange={(e) => setChangeField(e.target.value)}
+                    />
+                  ) : (
+                    <Link
+                      style={{
+                        textDecoration: 'none',
+                        color: 'inherit',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                      }}
+                      href={
+                        isMobile
+                          ? `fb://profile/${item?.value}`
+                          : `https://facebook.com/profile/${item?.value}`
+                      }
+                      target="_blank"
+                    >
+                      {item?.value?.length > 0 ? 'Facebook' : item?.value}
+                    </Link>
+                  )}
+                  {targetUser?._id === currentUser?._id && (
+                    <>
+                      {edit == item.id ? (
+                        <ImCheckmark
+                          className="confirmIcon"
+                          onClick={() => UpdateLink('facebook', changeField)}
+                        />
+                      ) : (
+                        <RiEdit2Fill
+                          className="editIcon"
+                          onClick={() => {
+                            setEdit(item.id);
+                            setChangeField(item?.value);
+                          }}
+                        />
+                      )}
+                    </>
+                  )}
+                </LinkContainer>
+              );
+            } else if (item?.id === 'instagram') {
+              return (
+                <LinkContainer key={index} edit={edit}>
+                  {item.icon}
+                  {edit == item.id ? (
+                    <LinkInput
+                      placeholder={item.placeholder}
+                      value={changeField}
+                      onChange={(e) => setChangeField(e.target.value)}
+                    />
+                  ) : (
+                    <Link
+                      style={{
+                        textDecoration: 'none',
+                        color: 'inherit',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                      }}
+                      href={`https://www.instagram.com/${item?.value?.slice(
+                        1
+                      )}/`}
+                      target="_blank"
+                    >
+                      {item?.value}
+                    </Link>
+                  )}
+                  {targetUser?._id === currentUser?._id && (
+                    <>
+                      {edit == item.id ? (
+                        <ImCheckmark
+                          className="confirmIcon"
+                          onClick={() => UpdateLink('instagram', changeField)}
+                        />
+                      ) : (
+                        <RiEdit2Fill
+                          className="editIcon"
+                          onClick={() => {
+                            setEdit(item.id);
+                            setChangeField(item?.value);
+                          }}
+                        />
+                      )}
+                    </>
+                  )}
+                </LinkContainer>
+              );
+            } else if (item?.id === 'tiktok') {
+              return (
+                <LinkContainer key={index} edit={edit}>
+                  {item.icon}
+                  {edit == item.id ? (
+                    <LinkInput
+                      placeholder={item.placeholder}
+                      value={changeField}
+                      onChange={(e) => setChangeField(e.target.value)}
+                    />
+                  ) : (
+                    <Link
+                      style={{
+                        textDecoration: 'none',
+                        color: 'inherit',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                      }}
+                      href={`https://www.tiktok.com/${item.value}`}
+                      target="_blank"
+                    >
+                      {item?.value}
+                    </Link>
+                  )}
+                  {targetUser?._id === currentUser?._id && (
+                    <>
+                      {edit == item.id ? (
+                        <ImCheckmark
+                          className="confirmIcon"
+                          onClick={() => UpdateLink('tiktok', changeField)}
+                        />
+                      ) : (
+                        <RiEdit2Fill
+                          className="editIcon"
+                          onClick={() => {
+                            setEdit(item.id);
+                            setChangeField(item?.value);
+                          }}
+                        />
+                      )}
+                    </>
+                  )}
+                </LinkContainer>
+              );
+            } else if (item?.id === 'youtube') {
+              return (
+                <LinkContainer key={index} edit={edit}>
+                  {item.icon}
+                  {edit == item.id ? (
+                    <LinkInput
+                      placeholder={item.placeholder}
+                      value={changeField}
+                      onChange={(e) => setChangeField(e.target.value)}
+                    />
+                  ) : (
+                    <Link
+                      style={{
+                        textDecoration: 'none',
+                        color: 'inherit',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                      }}
+                      href={`https://www.youtube.com/${item?.value}/`}
+                      target="_blank"
+                    >
+                      {item?.value}
+                    </Link>
+                  )}
+                  {targetUser?._id === currentUser?._id && (
+                    <>
+                      {edit == item.id ? (
+                        <ImCheckmark
+                          className="confirmIcon"
+                          onClick={() => UpdateLink('youtube', changeField)}
+                        />
+                      ) : (
+                        <RiEdit2Fill
+                          className="editIcon"
+                          onClick={() => {
+                            setEdit(item.id);
+                            setChangeField(item?.value);
+                          }}
+                        />
+                      )}
+                    </>
+                  )}
+                </LinkContainer>
+              );
+            }
+          })}
+        </>
+      )}
     </LinksContainer>
   );
 };
@@ -834,7 +795,7 @@ const LinkInput = styled.input`
   }
 `;
 
-const Link = styled.span`
+const Link = styled.a`
   font-size: 14px;
   font-weight: bold;
   border: none;

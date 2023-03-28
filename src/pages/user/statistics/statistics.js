@@ -1,31 +1,34 @@
-import React, { useEffect, useState } from "react";
-import styledcomponent from "styled-components";
-import { useSelector, useDispatch } from "react-redux";
-import { AuthContext } from "../../../context/AuthContext";
-import { IsMobile } from "../../../functions/isMobile";
-import { useOutletContext, useNavigate } from "react-router-dom";
-import { AiOutlineEyeInvisible, AiOutlineEye } from "react-icons/ai";
-import ChangePassword from "../../../pages/user/changePassword";
-import Success from "../../../snackBars/success";
-import { db } from "../../../firebase";
-import { collection, onSnapshot, collectionGroup } from "firebase/firestore";
-import Box from "@mui/material/Box";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
-import { styled } from "@mui/material/styles";
-import { Daily } from "../../../pages/user/statistics/daily";
-import { Weekly } from "../../../pages/user/statistics/weekly";
-import { Monthly } from "../../../pages/user/statistics/monthly";
-import { Yearly } from "../../../pages/user/statistics/yearly";
-import useWindowDimensions from "../../../functions/dimensions";
+import React, { useEffect, useState } from 'react';
+import styledcomponent from 'styled-components';
+import { useSelector, useDispatch } from 'react-redux';
+import { IsMobile } from '../../../functions/isMobile';
+import { useOutletContext, useNavigate } from 'react-router-dom';
+import { db } from '../../../firebase';
+import { collection, onSnapshot, collectionGroup } from 'firebase/firestore';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import { styled } from '@mui/material/styles';
+import { Daily } from '../../../pages/user/statistics/daily';
+import { Weekly } from '../../../pages/user/statistics/weekly';
+import { Monthly } from '../../../pages/user/statistics/monthly';
+import { Yearly } from '../../../pages/user/statistics/yearly';
+import useWindowDimensions from '../../../functions/dimensions';
+import { Spinner } from '../../../components/loader';
 
 export const UserStatistics = () => {
   const [user, language] = useOutletContext();
+  const [loading, setLoading] = React.useState(true);
+
+  // import current user from redux state
+  const currentUser = JSON.parse(
+    localStorage.getItem('Beautyverse:currentUser')
+  );
+
   const { height, width } = useWindowDimensions();
   const isMobile = IsMobile();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { currentUser } = React.useContext(AuthContext);
 
   // define theme
   const theme = useSelector((state) => state.storeMain.theme);
@@ -40,7 +43,7 @@ export const UserStatistics = () => {
 
   useEffect(() => {
     const data = onSnapshot(
-      collection(db, "users", `${currentUser?.uid}`, "visitors-profile"),
+      collection(db, 'users', `${currentUser?._id}`, 'visitors-profile'),
       (snapshot) => {
         setStats(snapshot.docs.map((doc) => doc.data()));
       }
@@ -52,7 +55,7 @@ export const UserStatistics = () => {
   const [followers, setFollowers] = useState([]);
   React.useEffect(() => {
     const data = onSnapshot(
-      collection(db, "users", `${user?.id}`, "followers"),
+      collection(db, 'users', `${user?.id}`, 'followers'),
       (snapshot) => {
         setFollowers(snapshot.docs.map((doc) => doc.data()));
       }
@@ -64,7 +67,7 @@ export const UserStatistics = () => {
   const [stars, setStars] = useState([]);
   const DefineStars = () => {
     const starsGroupRef = onSnapshot(
-      collectionGroup(db, `${user?.id + "+stars"}`),
+      collectionGroup(db, `${user?.id + '+stars'}`),
       (snapshot) => {
         setStars(snapshot.docs.map((doc) => doc.data()));
       }
@@ -145,31 +148,54 @@ export const UserStatistics = () => {
     );
   }
 
+  setTimeout(() => {
+    setLoading(false);
+  }, 300);
+
   return (
-    <Container height={height}>
-      <div style={{ margin: "2% 0 0 2%", height: "60px" }}>
-        <CenteredTabs value={value} setValue={setValue} language={language} />
-      </div>
-      <Content>{activeTab}</Content>
-    </Container>
+    <>
+      {loading ? (
+        <Container
+          height={height}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Spinner />
+        </Container>
+      ) : (
+        <Container height={height}>
+          <div style={{ margin: '2% 0 0 2%', height: '60px' }}>
+            <CenteredTabs
+              value={value}
+              setValue={setValue}
+              language={language}
+            />
+          </div>
+          <Content>{activeTab}</Content>
+        </Container>
+      )}
+    </>
   );
 };
 
 // create tab navigator
 
 const StyledTab = styled(Tab)({
-  "&.Mui-selected": {
-    color: "secondary",
-    fontSize: "14px",
-    "@media only screen and (max-width: 1200px)": {
-      fontSize: "12px",
+  '&.Mui-selected': {
+    color: 'secondary',
+    fontSize: '14px',
+    '@media only screen and (max-width: 1200px)': {
+      fontSize: '12px',
     },
   },
-  "&.MuiTab-root": {
-    color: "#ee99fc",
-    fontSize: "14px",
-    "@media only screen and (max-width: 1200px)": {
-      fontSize: "12px",
+  '&.MuiTab-root': {
+    color: '#ee99fc',
+    fontSize: '14px',
+    '@media only screen and (max-width: 1200px)': {
+      fontSize: '12px',
     },
   },
 });
@@ -180,12 +206,12 @@ function CenteredTabs({ value, setValue, language }) {
   };
 
   return (
-    <Box sx={{ width: "100%", color: "#fff" }}>
+    <Box sx={{ width: '100%', color: '#fff' }}>
       <Tabs
         value={value}
         onChange={handleChange}
         indicatorColor="secondary"
-        textColor="secondary"
+        textcolor="secondary"
       >
         <StyledTab label={language?.language.User.userPage.daily} />
         <StyledTab label={language?.language.User.userPage.weekly} />
@@ -204,7 +230,7 @@ const Container = styledcomponent.div`
   overflow-x: hidden;
   
   @media only screen and (max-width: 600px) {
-    height: calc(${(props) => props.height}px - 40vw);
+    height: calc(${(props) => props.height}px - 70vw);
   }
 `;
 

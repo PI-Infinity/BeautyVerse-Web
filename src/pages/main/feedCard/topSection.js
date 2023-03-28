@@ -1,27 +1,22 @@
-import React, { useContext } from "react";
-import styled from "styled-components";
-import { AuthContext } from "../../../context/AuthContext";
-import { useSelector, useDispatch } from "react-redux";
-import { useNavigate, Link } from "react-router-dom";
-import { ImCheckmark } from "react-icons/im";
-import { BsThreeDots } from "react-icons/bs";
+import React from 'react';
+import styled from 'styled-components';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { BsThreeDots } from 'react-icons/bs';
 import {
   CoverLoader,
   TitleLoader,
   TypeLoader,
   IconLoader,
-} from "../../../components/loader";
-import { setFeedScrollY } from "../../../redux/scroll";
-import Avatar from "@mui/material/Avatar";
-import { Language } from "../../../context/language";
+} from '../../../components/loader';
+import { setFeedScrollY } from '../../../redux/scroll';
+import Avatar from '@mui/material/Avatar';
+import { Language } from '../../../context/language';
 
 export const TopSection = (props) => {
-  const { currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const lang = useSelector((state) => state.storeMain.language);
-
-  const followingLength = props.following?.id?.length;
 
   // scroll to top href
   const scrollPosition = useSelector(
@@ -29,35 +24,35 @@ export const TopSection = (props) => {
   );
 
   const AddScrollPositionToLocalStorage = () => {
-    localStorage.setItem("BeautyVerse:feedsScrollPosition:", scrollPosition);
+    localStorage.setItem('BeautyVerse:feedsScrollPosition:', scrollPosition);
   };
 
   // const define type
-  const [type, setType] = React.useState("");
+  const [type, setType] = React.useState('');
   const language = Language();
 
   React.useEffect(() => {
-    setType("");
-    if (props?.userType === "Specialist") {
+    setType('');
+    if (props?.userType.toLowerCase() === 'specialist') {
       setType(language?.language.Main.feedCard.specialist);
-    } else if (props?.userType === "BeautyCenter") {
+    } else if (props?.userType.toLowerCase() === 'beautycenter') {
       setType(language?.language.Main.feedCard.beautySalon);
     }
-  }, [lang, props.id, props.type, props]);
+  }, [lang, props._id]);
 
   return (
-    <TopSectionContainer following={followingLength?.toString()}>
+    <TopSectionContainer>
       <Profile
         onClick={() => {
           dispatch(setFeedScrollY(window.scrollY));
-          navigate(`/user/${props?.id}`);
+          navigate(`/api/v1/users/${props?.id}`);
         }}
       >
         {props.loading ? (
           <div
             style={{
-              width: "100%",
-              height: "100%",
+              width: '100%',
+              height: '100%',
             }}
           >
             <CoverLoader />
@@ -65,16 +60,16 @@ export const TopSection = (props) => {
         ) : (
           <Avatar
             onClick={() => {
-              navigate(`/user/${props?.id}`);
+              navigate(`/api/v1/users/${props?.id}`);
               dispatch(setFeedScrollY(window.scrollY));
             }}
             alt={props?.name}
-            src={props?.cover !== undefined ? props?.cover : ""}
+            src={props?.cover !== undefined ? props?.cover : ''}
             sx={{
               width: 42,
               height: 42,
-              cursor: "pointer",
-              "@media only screen and (max-width: 1200px)": {
+              cursor: 'pointer',
+              '@media only screen and (max-width: 1200px)': {
                 width: 40,
                 height: 40,
               },
@@ -83,43 +78,22 @@ export const TopSection = (props) => {
         )}
       </Profile>
       <div className="link">
-        <div style={{ display: "flex", alignItems: "center" }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           <div
             onClick={() => {
-              navigate(`/user/${props?.id}`);
+              navigate(`/api/v1/users/${props?.id}`);
               dispatch(setFeedScrollY(window.scrollY));
             }}
-            style={{ color: "inherit", textDecoration: "none" }}
+            style={{ color: 'inherit', textDecoration: 'none' }}
           >
             {props.loading ? <TitleLoader /> : <Name>{props.name}</Name>}
           </div>
-
-          {currentUser?.uid !== props?.id && !props.loading && (
-            <>
-              {props.following?.id?.length > 0 ? (
-                <ImCheckmark
-                  className="followIcon"
-                  following="true"
-                  onClick={props.UnFollowToUser}
-                />
-              ) : (
-                <ImCheckmark
-                  className="followIcon"
-                  onClick={
-                    currentUser != undefined
-                      ? props.FollowToUser
-                      : () => navigate("/login")
-                  }
-                />
-              )}
-            </>
-          )}
         </div>
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-end",
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
           }}
         >
           <Category>
@@ -156,19 +130,6 @@ const TopSectionContainer = styled.div`
   @media only screen and (max-width: 600px) {
     height: 16vw;
     padding: 0 4vw 0 4vw;
-  }
-
-  .followIcon {
-    font-size: 1.1vw;
-    color: ${(props) => (props.following > 0 ? "#2bdfd9" : "#ddd")};
-    margin-left: 0.5vw;
-    cursor: pointer;
-
-    @media only screen and (max-width: 600px) {
-      font-size: 4.5vw;
-      margin-left: 1.5vw;
-      margin-bottom: 1vw;
-    }
   }
 
   .link {

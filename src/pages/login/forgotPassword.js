@@ -1,11 +1,11 @@
-import styled from "styled-components";
-import MuiButton from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import TextField from "@mui/material/TextField";
+import styled from 'styled-components';
+import MuiButton from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import TextField from '@mui/material/TextField';
 
 export default function ForgotPass({
   emailInput,
@@ -61,7 +61,7 @@ const ForgottPass = styled.p`
   padding: 0;
   margin: 0;
   letter-spacing: 0.05vw;
-  font-size: 14px;
+  font-size: 12px;
   cursor: pointer;
 
   @media only screen and (max-width: 600px) {

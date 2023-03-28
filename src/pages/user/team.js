@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
-import styled from "styled-components";
-import { useOutletContext, useNavigate } from "react-router-dom";
-import useWindowDimensions from "../../functions/dimensions";
-import makeAnimated from "react-select/animated";
-import Select from "react-select";
-import "react-calendar/dist/Calendar.css";
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import { useOutletContext, useNavigate } from 'react-router-dom';
+import useWindowDimensions from '../../functions/dimensions';
+import makeAnimated from 'react-select/animated';
+import Select from 'react-select';
+import 'react-calendar/dist/Calendar.css';
 import {
   collection,
   doc,
@@ -12,18 +12,17 @@ import {
   onSnapshot,
   deleteDoc,
   serverTimestamp,
-} from "firebase/firestore";
-import { db } from "../../firebase";
-import { useSelector } from "react-redux";
-import Avatar from "@mui/material/Avatar";
-import Success from "../../snackBars/success";
-import { IoMdPersonAdd, IoMdClose } from "react-icons/io";
-import AlertDialog from "../../components/dialog";
-import { HiUserRemove } from "react-icons/hi";
-import { ProceduresOptions } from "../../data/registerDatas";
-import { v4 } from "uuid";
-import ProceduresPopup from "../../pages/user/proceduresPopup";
-import VisitorId from "../../functions/deviceUniqueId";
+} from 'firebase/firestore';
+import { db } from '../../firebase';
+import { useSelector } from 'react-redux';
+import Avatar from '@mui/material/Avatar';
+import Success from '../../snackBars/success';
+import { IoMdPersonAdd, IoMdClose } from 'react-icons/io';
+import AlertDialog from '../../components/dialog';
+import { HiUserRemove } from 'react-icons/hi';
+import { ProceduresOptions } from '../../data/registerDatas';
+import { v4 } from 'uuid';
+import ProceduresPopup from '../../pages/user/proceduresPopup';
 
 const animatedComponents = makeAnimated();
 
@@ -34,26 +33,25 @@ export const Team = () => {
   /// open add member
   const [add, setAdd] = useState(false);
 
-  const [member, setMember] = useState("");
-  const [procedures, setProcedures] = useState("");
+  const [member, setMember] = useState('');
+  const [procedures, setProcedures] = useState('');
   const [user, language] = useOutletContext();
 
   const navigate = useNavigate();
   // define current user
   // import current user from redux state
-  const userUnparsed = useSelector((state) => state.storeMain.user);
-  let currentuser;
-  if (userUnparsed?.length > 0) {
-    currentuser = JSON.parse(userUnparsed);
-  }
+  const currentuser = useSelector(
+    (state) => state.storeMain.user?.length > 0 && state.storeMain.user
+  );
 
   // define user list
-  const list = useSelector((state) => state.storeMain.userList);
-  let userList;
-  if (list?.length > 0) {
-    userList = JSON.parse(list);
-  }
-  const specialists = userList?.filter((item) => item.type === "specialist");
+  const userList = useSelector(
+    (state) =>
+      state.storeMain?.userList?.length > 0 &&
+      JSON.parse(state.storeMain?.userList)
+  );
+
+  const specialists = userList?.filter((item) => item.type === 'specialist');
   const optionList = specialists?.map((item, index) => {
     return { value: item?.id, label: item?.name, cover: item?.cover };
   });
@@ -64,7 +62,7 @@ export const Team = () => {
   const AddingMember = async (e) => {
     e.preventDefault();
     if (member?.value?.length > 0) {
-      await setDoc(doc(db, "users", currentuser?.id, "team", member?.value), {
+      await setDoc(doc(db, 'users', currentuser?.id, 'team', member?.value), {
         name: member?.label,
         id: member?.value,
         procedures: procedures,
@@ -73,7 +71,7 @@ export const Team = () => {
       });
       var actionId = v4();
       await setDoc(
-        doc(db, `users`, `${member?.value}`, "notifications", `${actionId}`),
+        doc(db, `users`, `${member?.value}`, 'notifications', `${actionId}`),
         {
           id: actionId,
           senderId: currentuser?.id,
@@ -81,46 +79,46 @@ export const Team = () => {
           senderCover: currentuser?.cover,
           text: language?.language.User.userPage.invite,
           date: serverTimestamp(),
-          type: "offer",
-          status: "unread",
+          type: 'offer',
+          status: 'unread',
           feed: ``,
         }
       );
       await setOpen(true);
-      setMember("");
-      setProcedures("");
-      setExperience("");
+      setMember('');
+      setProcedures('');
+      setExperience('');
     } else {
       alert(language?.language.User.userPage.addMember);
     }
   };
 
   // master experience
-  const [experience, setExperience] = useState("");
+  const [experience, setExperience] = useState('');
 
   const experienceOption = [
     {
-      value: "beginner",
+      value: 'beginner',
       label: `0-1`,
     },
     {
-      value: "intermediate",
+      value: 'intermediate',
       label: `1-2`,
     },
     {
-      value: "advanced",
+      value: 'advanced',
       label: `2-3`,
     },
     {
-      value: "advanced2",
+      value: 'advanced2',
       label: `3-4`,
     },
     {
-      value: "advanced3",
+      value: 'advanced3',
       label: `4-5`,
     },
     {
-      value: "advanced3",
+      value: 'advanced3',
       label: `5+`,
     },
   ];
@@ -129,7 +127,7 @@ export const Team = () => {
   const [team, setTeam] = useState([]);
   useEffect(() => {
     const data = onSnapshot(
-      collection(db, "users", `${user?.id}`, "team"),
+      collection(db, 'users', `${user?.id}`, 'team'),
       (snapshot) => {
         setTeam(snapshot.docs.map((doc) => doc.data()));
       }
@@ -139,7 +137,7 @@ export const Team = () => {
 
   // delet member
   const DeleteMember = async (id) => {
-    await deleteDoc(doc(db, "users", currentuser?.id, "team", id));
+    await deleteDoc(doc(db, 'users', currentuser?.id, 'team', id));
   };
 
   // alert dialog
@@ -149,7 +147,7 @@ export const Team = () => {
   let option = proceduresOptions?.filter((item) => {
     let symbolCount = 0;
     for (let i = 0; i < item.value.length; i++) {
-      if (item.value[i] === "-") {
+      if (item.value[i] === '-') {
         symbolCount++;
       }
     }
@@ -163,61 +161,61 @@ export const Team = () => {
       ...base,
       color: state.isSelected
         ? theme
-          ? "#333"
-          : "#f3f3f3"
+          ? '#333'
+          : '#f3f3f3'
         : theme
-        ? "#f3f3f3"
-        : "#333",
+        ? '#f3f3f3'
+        : '#333',
     }),
     placeholder: (base, state) => ({
       ...base,
-      fontSize: "16px",
+      fontSize: '16px',
       color: state.isSelected
         ? theme
-          ? "#333"
-          : "#f3f3f3"
+          ? '#333'
+          : '#f3f3f3'
         : theme
-        ? "#f3f3f3"
-        : "#333",
+        ? '#f3f3f3'
+        : '#333',
     }),
     menuList: (base, state) => ({
       ...base,
-      backgroundColor: theme ? "#333" : "#fff",
+      backgroundColor: theme ? '#333' : '#fff',
     }),
     input: (base, state) => ({
       ...base,
-      color: theme ? "#f3f3f3" : "#333",
-      fontSize: "16px",
+      color: theme ? '#f3f3f3' : '#333',
+      fontSize: '16px',
     }),
     option: (base, state) => ({
       ...base,
       backgroundColor: state.isSelected
         ? theme
-          ? "#f3f3f3"
-          : "#333"
+          ? '#f3f3f3'
+          : '#333'
         : theme
-        ? "#333"
-        : "#f3f3f3",
+        ? '#333'
+        : '#f3f3f3',
       color: state.isSelected
         ? theme
-          ? "#333"
-          : "#f3f3f3"
+          ? '#333'
+          : '#f3f3f3'
         : theme
-        ? "#f3f3f3"
-        : "#333",
-      fontSize: "14px",
+        ? '#f3f3f3'
+        : '#333',
+      fontSize: '14px',
     }),
     control: (baseStyles, state) => ({
       ...baseStyles,
-      backgroundColor: theme ? "#333" : "#fff",
-      borderColor: state.isFocused ? "rgba(0,0,0,0)" : "rgba(0,0,0,0.1)",
-      width: "38vw",
-      minHeight: "2vw",
-      cursor: "pointer",
-      color: "red",
-      "@media only screen and (max-width: 1200px)": {
-        width: "80vw",
-        fontSize: "14px",
+      backgroundColor: theme ? '#333' : '#fff',
+      borderColor: state.isFocused ? 'rgba(0,0,0,0)' : 'rgba(0,0,0,0.1)',
+      width: '38vw',
+      minHeight: '2vw',
+      cursor: 'pointer',
+      color: 'red',
+      '@media only screen and (max-width: 1200px)': {
+        width: '80vw',
+        fontSize: '14px',
       },
     }),
   };
@@ -231,22 +229,22 @@ export const Team = () => {
               <IoMdClose
                 className="icon"
                 size={24}
-                style={{ cursor: "pointer" }}
+                style={{ cursor: 'pointer' }}
                 onClick={() => setAdd(false)}
               />
             ) : (
               <div
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  cursor: "pointer",
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  cursor: 'pointer',
                 }}
                 onClick={() => setAdd(true)}
               >
                 <IoMdPersonAdd
                   size={24}
-                  style={{ cursor: "pointer" }}
+                  style={{ cursor: 'pointer' }}
                   className="icon"
                 />
                 <Title>{language?.language.User.userPage.memberOffer}</Title>
@@ -272,30 +270,30 @@ export const Team = () => {
           />
           <div
             style={{
-              display: "flex",
-              alignItems: "start",
-              flexDirection: "column",
-              gap: "15px",
-              marginTop: "15px",
-              background: "#f3f3f3",
-              padding: "15px",
-              borderRadius: "5px",
+              display: 'flex',
+              alignItems: 'start',
+              flexDirection: 'column',
+              gap: '15px',
+              marginTop: '15px',
+              background: '#f3f3f3',
+              padding: '15px',
+              borderRadius: '5px',
             }}
           >
             <div
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "15px",
+                display: 'flex',
+                alignItems: 'center',
+                gap: '15px',
               }}
             >
               <Avatar
                 alt={member?.label}
-                src={member?.cover !== undefined ? member?.cover : ""}
+                src={member?.cover !== undefined ? member?.cover : ''}
                 sx={{ width: 38, height: 38 }}
               />
               <span
-                style={{ cursor: "pointer" }}
+                style={{ cursor: 'pointer' }}
                 onClick={() => navigate(`/user/${member?.value}`)}
               >
                 {member?.label}
@@ -303,10 +301,10 @@ export const Team = () => {
             </div>
             <div
               style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "15px",
-                marginTop: "5px",
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '15px',
+                marginTop: '5px',
               }}
             >
               {member?.value?.length > 0 && (
@@ -362,13 +360,13 @@ export const Team = () => {
       {team?.filter((item) => item.confirm === true)?.length > 0 && (
         <MemberList>
           <MemberRow>
-            <div style={{ flex: 1, fontWeight: "bold" }}>
+            <div style={{ flex: 1, fontWeight: 'bold' }}>
               {language?.language.User.userPage.name}
             </div>
-            <div style={{ flex: 1, fontWeight: "bold" }}>
+            <div style={{ flex: 1, fontWeight: 'bold' }}>
               {language?.language.User.userPage.service}
-            </div>{" "}
-            <div style={{ flex: 1, fontWeight: "bold" }}>
+            </div>{' '}
+            <div style={{ flex: 1, fontWeight: 'bold' }}>
               {language?.language.User.userPage.experience}
             </div>
           </MemberRow>
@@ -379,43 +377,43 @@ export const Team = () => {
                   <div
                     style={{
                       flex: 1,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "10px",
-                      cursor: "pointer",
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      cursor: 'pointer',
                     }}
                     onClick={() => navigate(`/user/${item.id}`)}
                   >
                     <Avatar
                       alt={item?.name}
-                      src={item?.cover !== undefined ? item?.cover : ""}
+                      src={item?.cover !== undefined ? item?.cover : ''}
                       sx={{ width: 24, height: 24 }}
                     />
                     {item.name}
                   </div>
                   <div
-                    style={{ flex: 1, display: "flex", alignItems: "center" }}
+                    style={{ flex: 1, display: 'flex', alignItems: 'center' }}
                   >
                     <ProceduresPopup
                       procedures={item?.procedures}
                       language={language}
                     />
-                  </div>{" "}
+                  </div>{' '}
                   <div
                     style={{
                       flex: 1,
                       flex: 1,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
                     }}
                   >
-                    {item.experience?.label}{" "}
+                    {item.experience?.label}{' '}
                     {language?.language.User.userPage.year}
                     {currentuser?.id === user?.id && (
                       <HiUserRemove
                         size={22}
-                        style={{ cursor: "pointer", color: "#333" }}
+                        style={{ cursor: 'pointer', color: '#333' }}
                         onClick={() => setOpenDialog(true)}
                       />
                     )}
@@ -602,7 +600,7 @@ const Button = styled.button`
   justify-content: center;
   cursor: pointer;
   transition: ease-in 200ms;
-  color: ${(props) => (props.back ? "#ccc" : "green")};
+  color: ${(props) => (props.back ? '#ccc' : 'green')};
   font-weight: bold;
   background: ${(props) => props.theme.categoryItem};
   border: none;

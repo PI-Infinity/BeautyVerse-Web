@@ -1,119 +1,198 @@
-import { useContext, useState, useEffect } from "react";
-import styled from "styled-components";
-import { useNavigate } from "react-router-dom/";
-import { Link } from "react-router-dom/";
-import { AuthContext } from "../../context/AuthContext";
-import { auth } from "../../firebase";
-import { useDispatch, useSelector } from "react-redux";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { Button } from "../../components/button";
-import useWindowDimensions from "../../functions/dimensions";
-import { Language } from "../../context/language";
-import ForgotPass from "../../pages/login/forgotPassword";
-import ChangePassword from "../../pages/login/changePassword";
-import Error from "../../snackBars/success";
+import { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom/';
+import { Link } from 'react-router-dom/';
+import { useDispatch, useSelector } from 'react-redux';
+import { Button } from '../../components/button';
+import useWindowDimensions from '../../functions/dimensions';
+import { Language } from '../../context/language';
+import ForgotPass from '../../pages/login/forgotPassword';
+import ChangePassword from '../../pages/login/changePassword';
+import Error from '../../snackBars/success';
+import { setCountry } from '../../redux/main';
+import Select from 'react-select';
+import makeAnimated from 'react-select/animated';
+import { FaGlobeEurope } from 'react-icons/fa';
+import { countries } from '../../data/countries';
+import { IsMobile } from '../../functions/isMobile';
+import { auth } from '../../firebase';
+import axios from 'axios';
+import { sendPasswordResetEmail } from 'firebase/auth';
+
+const animatedComponents = makeAnimated();
 
 export default function Login() {
   const language = Language();
   const { height, width } = useWindowDimensions();
   const mainDispatch = useDispatch();
+  const isMobile = IsMobile();
 
-  document.body.style.overflowY = "hidden";
+  document.body.style.overflowY = 'hidden';
+  const country = useSelector((state) => state.storeMain.country);
+  // color mode
+  const theme = useSelector((state) => state.storeMain.theme);
 
-  // import users
-  const usersList = useSelector((state) => state.storeMain.userList);
-  let users;
-  if (usersList?.length > 0) {
-    users = JSON.parse(usersList);
-  }
+  const CustomStyle = {
+    singleValue: (base, state) => ({
+      ...base,
+      color: state.isSelected
+        ? theme
+          ? '#333'
+          : '#f3f3f3'
+        : theme
+        ? '#f3f3f3'
+        : '#333',
+      fontSize: '14px',
+    }),
+    placeholder: (base, state) => ({
+      ...base,
+      // height: "1000px",
+      color: state.isSelected
+        ? theme
+          ? '#333'
+          : '#f3f3f3'
+        : theme
+        ? '#f3f3f3'
+        : '#333',
+      maxHeight: '50px',
+    }),
+    input: (base, state) => ({
+      ...base,
+      color: theme ? '#f3f3f3' : '#333',
+      fontSize: '16px',
+      maxHeight: '100px',
+    }),
+    multiValue: (base, state) => ({
+      ...base,
+      backgroundColor: state.isDisabled ? null : 'lightblue',
+      borderRadius: '20px',
+    }),
+    multiValueLabel: (base, state) => ({
+      ...base,
+    }),
+    menuList: (base, state) => ({
+      ...base,
+      backgroundColor: theme ? '#333' : '#f3f3f3',
+      zIndex: 1000,
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isSelected
+        ? theme
+          ? '#f3f3f3'
+          : '#333'
+        : theme
+        ? '#333'
+        : '#f3f3f3',
+      color: state.isSelected
+        ? theme
+          ? '#333'
+          : '#f3f3f3'
+        : theme
+        ? '#f3f3f3'
+        : '#333',
+      fontSize: '14px',
+    }),
+    control: (baseStyles, state) => ({
+      ...baseStyles,
+      backgroundColor: theme ? '#333' : '#fff',
+      borderColor: state.isFocused ? 'rgba(0,0,0,0)' : 'rgba(0,0,0,0.1)',
+      width: '10vw',
+      color: '#888',
+      minHeight: '2vw',
+      cursor: 'pointer',
+      '@media only screen and (max-width: 1200px)': {
+        width: '30vw',
+        fontSize: '12px',
+      },
+    }),
+  };
 
   //signin with email and password
-  const [code, setCode] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [code, setCode] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const navigate = useNavigate();
-  const { dispatch } = useContext(AuthContext);
 
   const [alert, setAlert] = useState(false);
 
   useEffect(() => {
     window.scrollTo({
       top: 0,
-      behavior: "smooth",
+      behavior: 'smooth',
     });
   }, []);
 
-  const Handlelogin = async (e) => {
-    signInWithEmailAndPassword(auth, email, password)
-      .then(async (userCredential) => {
-        // Signed in
-        const user = userCredential.user;
-        await dispatch({ type: "LOGIN", payload: user });
-        navigate("/");
-        setPassword("");
-        // ...
-      })
-      .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        setAlert({
-          active: true,
-          title: language?.language.Auth.auth.wrongEmailOrPass,
+  const Login = async () => {
+    try {
+      await axios
+        .post('https://beautyverse.herokuapp.com/api/v1/login', {
+          email: email,
+          password: password,
+        })
+        .then(async (data) => {
+          await localStorage.setItem(
+            'Beautyverse:currentUser',
+            JSON.stringify(data.data.filteredUser)
+          );
+        })
+        .then(() => {
+          navigate('/');
         });
-        setPassword("");
+    } catch (err) {
+      setAlert({
+        active: true,
+        title: err.response.data.message,
       });
+    }
   };
 
   const handleKey = (e) => {
-    e.code === "Enter" && Handlelogin();
+    e.code === 'Enter' && Login();
   };
 
   /**
    * send email for define random passowrd
    */
 
-  const [emailInput, setEmailInput] = useState("");
+  const [emailInput, setEmailInput] = useState('');
   // open change passwords
   const [openChange, setOpenChange] = useState(false);
   const [openInput, setOpenInput] = useState(false);
-  const [randomPass, setRandomPass] = useState("");
+  const [randomPass, setRandomPass] = useState('');
 
-  const targetUser = users?.find((item) => item.email === emailInput);
+  const [targetUser, setTargetUser] = useState('');
 
   /**
    * send email to reset password
    */
 
-  function SendEmail() {
-    const email = emailInput;
-    if (
-      users?.find(
-        (item) => item.email.toLowerCase() === emailInput.toLowerCase()
-      ) !== undefined
-    ) {
-      fetch(
-        `https://beautyverse.herokuapp.com/emails/forgotPassword?email=${email}`
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          setRandomPass(data);
-          if (openInput) {
-            setOpenInput(false);
-            setOpenChange(true);
-          } else {
-            return;
-          }
-        })
-        .catch((error) => {
-          console.log("Error fetching data:", error);
-        });
-    } else {
-      setAlert({
-        active: true,
-        title: language?.language.Auth.auth.wrongEmail,
-      });
-    }
+  async function SendEmail(email) {
+    await sendPasswordResetEmail(auth, emailInput);
+    console.log('Password reset email sent');
+    // const email = 'tornike.pirtakhia@gmail.com';
+    // // if (targetUser?.email?.toLowerCase() === emailInput.toLowerCase()) {
+    // fetch(`/api/v1/emails/forgotPassword?email=${email}`)
+    //   .then((response) => response.json())
+    //   .then((data) => {
+    //     setRandomPass(data);
+    //     if (openInput) {
+    //       setOpenInput(false);
+    //       setOpenChange(true);
+    //     } else {
+    //       return;
+    //     }
+    //   })
+    //   .catch((error) => {
+    //     console.log('Error fetching data:', error);
+    //   });
+    // } else {
+    //   setAlert({
+    //     active: true,
+    //     title: language?.language.Auth.auth.wrongEmail,
+    //   });
+    // }
   }
 
   return (
@@ -126,7 +205,7 @@ export default function Login() {
       />
       <Container height={height}>
         <Title>{language?.language.Auth.auth.login}</Title>
-        <Form onSubmit={Handlelogin} method="post" action="/form">
+        <Form onSubmit={Login} method="post" action="/form">
           <InputWrapper>
             <Input
               type="email"
@@ -152,7 +231,7 @@ export default function Login() {
           <Button
             type="submit"
             title={language?.language.Auth.auth.login}
-            function={Handlelogin}
+            function={Login}
           />
           <ForgotPass
             title={language?.language.Auth.auth.forgot}
@@ -166,15 +245,41 @@ export default function Login() {
           />
 
           <SignupText>
-            {language?.language.Auth.auth.dontHave}{" "}
+            {language?.language.Auth.auth.dontHave}{' '}
             <Link
               to="/register"
               id="signup"
-              style={{ color: "orange", textDecoration: "none" }}
+              style={{ color: 'orange', textDecoration: 'none' }}
             >
               {language?.language.Auth.auth.register}
             </Link>
           </SignupText>
+
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              marginTop: '30px',
+              marginRight: '20px',
+            }}
+          >
+            <FaGlobeEurope size={20} color={theme ? '#fff' : '#111'} />
+            <Select
+              placeholder={country}
+              components={animatedComponents}
+              onChange={(value) => {
+                mainDispatch(setCountry(value?.value));
+                localStorage.setItem(
+                  'BeautyVerse:Country',
+                  JSON.stringify(value?.value)
+                );
+              }}
+              // value={registerFields?.categories}
+              styles={CustomStyle}
+              options={countries}
+            />
+          </div>
         </Form>
       </Container>
       <ChangePassword
@@ -327,8 +432,12 @@ const Input = styled.input`
 
 const SignupText = styled.p`
   text-decoration: none;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: bold;
+  color: ${(props) => props.theme.font};
+  display: flex;
+  justify-content: center;
+  gap: 5px;
 
   @media only screen and (max-width: 600px) {
     letter-spacing: 0.2vw;
@@ -345,7 +454,7 @@ const SubmitButton = styled.button`
   justify-content: center;
   cursor: pointer;
   transition: ease-in 200ms;
-  color: ${(props) => (props.back ? "#ccc" : "green")};
+  color: ${(props) => (props.back ? '#ccc' : 'green')};
   font-weight: bold;
   background: rgba(255, 255, 255, 0.7);
   border: none;

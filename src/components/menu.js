@@ -1,60 +1,45 @@
-import React, { useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
-import styled from "styled-components";
-import Box from "@mui/material/Box";
-import Drawer from "@mui/material/Drawer";
-import Button from "@mui/material/Button";
-import { CgMenuGridO, CgMenuGridR } from "react-icons/cg";
-import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { FaUser } from "react-icons/fa";
-import Badge from "@mui/material/Badge";
-import { MdSecurity, MdCircleNotifications } from "react-icons/md";
-import { FcRules, FcWorkflow } from "react-icons/fc";
-import { BsQuestionLg } from "react-icons/bs";
-import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
-import Flag from "react-world-flags";
-import {
-  setOpenMobileMenu,
-  setTheme,
-  setUser,
-  setLanguage,
-} from "../redux/main";
-import useWindowDimensions from "../functions/dimensions";
-import { GiExitDoor } from "react-icons/gi";
-import { IsMobile } from "../functions/isMobile";
-import { makeStyles } from "@mui/styles";
-import { DarkModeSwitch } from "react-toggle-dark-mode";
-import { Language } from "../context/language";
+import React, { useContext } from 'react';
+import styled from 'styled-components';
+import Box from '@mui/material/Box';
+import Drawer from '@mui/material/Drawer';
+import Button from '@mui/material/Button';
+import { CgMenuGridO, CgMenuGridR } from 'react-icons/cg';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { FaUser } from 'react-icons/fa';
+import Badge from '@mui/material/Badge';
+import { MdSecurity, MdCircleNotifications } from 'react-icons/md';
+import { FcRules, FcWorkflow } from 'react-icons/fc';
+import { BsQuestionLg } from 'react-icons/bs';
+import { FaFacebook, FaInstagram, FaYoutube } from 'react-icons/fa';
+import Flag from 'react-world-flags';
+import { setTheme, setLanguage } from '../redux/main';
+import useWindowDimensions from '../functions/dimensions';
+import { GiExitDoor } from 'react-icons/gi';
+import { IsMobile } from '../functions/isMobile';
+import { makeStyles } from '@mui/styles';
+import { DarkModeSwitch } from 'react-toggle-dark-mode';
+import { Language } from '../context/language';
 
 export default function Menu(props) {
   const { height, width } = useWindowDimensions();
   const language = Language();
 
   const Logout = async () => {
-    await mainDispatch(setOpenMobileMenu(false));
-    await dispatch({ type: "LOGOUT" });
-    await mainDispatch(setUser(""));
-    await localStorage.removeItem("BeautyVerse:user");
-    navigate("/login");
+    await localStorage.removeItem('Beautyverse:currentUser');
+    navigate('/login');
   };
 
   const theme = useSelector((state) => state.storeMain.theme);
 
-  const { currentUser } = useContext(AuthContext);
-  // import current user & parse it
-  const userUnparsed = useSelector((state) => state.storeMain.user);
-  let currentuser;
-  if (userUnparsed?.length > 0) {
-    currentuser = JSON.parse(userUnparsed);
-  }
+  const currentUser = JSON.parse(
+    localStorage.getItem('Beautyverse:currentUser')
+  );
 
   const isMobile = IsMobile();
 
   const navigate = useNavigate();
   const mainDispatch = useDispatch();
-
-  const { dispatch } = useContext(AuthContext);
 
   // define material menu state
   const [state, setState] = React.useState({
@@ -66,8 +51,8 @@ export default function Menu(props) {
 
   const toggleDrawer = (anchor, open) => (event) => {
     if (
-      event.type === "keydown" &&
-      (event.key === "Tab" || event.key === "Shift")
+      event.type === 'keydown' &&
+      (event.key === 'Tab' || event.key === 'Shift')
     ) {
       return;
     }
@@ -86,7 +71,7 @@ export default function Menu(props) {
   const list = (anchor) => (
     <Box
       sx={{
-        width: anchor === "top" || anchor === "bottom" ? "auto" : 500,
+        width: anchor === 'top' || anchor === 'bottom' ? 'auto' : 360,
       }}
       role="presentation"
       onClick={toggleDrawer(anchor, false)}
@@ -96,47 +81,38 @@ export default function Menu(props) {
         <Items>
           <div
             onClick={
-              currentUser != undefined
+              currentUser
                 ? () => {
-                    navigate(`/user/${currentUser?.uid}`);
+                    navigate(`/api/v1/users/${currentUser?._id}`);
                   }
                 : () => {
-                    navigate("/login");
+                    navigate('/login');
                   }
             }
             style={{
-              color: "inherit",
-              display: "flex",
-              alignItems: "center",
-              textDecoration: "none",
+              color: 'inherit',
+              display: 'flex',
+              alignItems: 'center',
+              textDecoration: 'none',
             }}
           >
             <Item>
               <Profile>
-                {currentuser?.cover === undefined ? (
+                {!currentUser?.cover ? (
                   <FaUser className="user" />
                 ) : (
-                  <Img src={currentuser?.cover} alt="cover" />
+                  <Img src={currentUser?.cover} alt="cover" />
                 )}
               </Profile>
               <span>{language?.language.Main.menu.profile}</span>
             </Item>
           </div>
-          {/* <Item
-            onClick={async () => {
-              await mainDispatch(setOpenMobileMenu(false));
-              await mainDispatch(setOpenMenu("-25vw"));
-              navigate("/marketplace");
-            }}
-          >
-            <RiShoppingCartFill className="icon" /> <span>მარკეტი</span>
-          </Item> */}
 
           <Item
             onClick={
-              currentUser != undefined
+              currentUser
                 ? () => props?.setOpen(true)
-                : () => navigate("/login")
+                : () => navigate('/login')
             }
           >
             <Badge
@@ -144,47 +120,13 @@ export default function Menu(props) {
               overlap="circular"
               color="secondary"
             >
-              <MdCircleNotifications className="icon" />{" "}
+              <MdCircleNotifications className="icon" />{' '}
             </Badge>
             <span>{language?.language.Main.menu.notifications}</span>
           </Item>
-          {/* <Item
-          onClick={async () => {
-            navigate("/chat");
-          }}
-        >
-          <Badge badgeContent={999} overlap="circular" color="secondary">
-            <TbMessages className="icon" />
-          </Badge>
-          <span>ჩატი</span>
-        </Item> */}
-          {/* {currentuser?.type != "user" && (
-            <Item
-              onClick={async () => {
-                navigate("/advertisments");
-              }}
-            >
-              <FcAdvertising className="icon" />
-              რეკლამა
-            </Item>
-          )} */}
-          {/* <Item>
-            <GiShop className="icon" />
-            მაღაზიის დამატება
-          </Item> */}
-          {/* <Item
-            onClick={async () => {
-              await mainDispatch(setOpenMobileMenu(false));
-              await mainDispatch(setOpenMenu("-25vw"));
-              navigate("/prices");
-            }}
-          >
-            <MdAttachMoney className="icon" />
-            ფასები
-          </Item> */}
           <Item
             onClick={async () => {
-              navigate("/rules");
+              navigate('/rules');
             }}
           >
             <FcRules className="icon" />
@@ -192,17 +134,17 @@ export default function Menu(props) {
           </Item>
           <Item
             onClick={async () => {
-              navigate("/privacy");
+              navigate('/privacy');
             }}
-            style={{ flexDirection: "column" }}
+            style={{ flexDirection: 'column' }}
           >
             <MdSecurity className="icon" />
-            {language?.language.Main.menu.privacy?.split("", 9)}
-            {!language?.language.Main.menu.privacy?.includes("Pr") && "."}
+            {language?.language.Main.menu.privacy?.split('', 9)}
+            {!language?.language.Main.menu.privacy?.includes('Pr') && '.'}
           </Item>
           <Item
             onClick={async () => {
-              navigate("/howwokrs");
+              navigate('/howwokrs');
             }}
           >
             <FcWorkflow className="icon" />
@@ -210,14 +152,33 @@ export default function Menu(props) {
           </Item>
           <Item
             onClick={async () => {
-              navigate("/questions");
+              navigate('/questions');
             }}
           >
             <BsQuestionLg className="icon" />
             {language?.language.Main.menu.qa}
           </Item>
         </Items>
-
+        <div
+          style={{
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            marginTop: '30px',
+          }}
+        >
+          <DarkModeSwitch
+            onChange={() => {
+              mainDispatch(setTheme(!theme));
+              localStorage.setItem(
+                'BeautyVerse:ThemeMode',
+                JSON.stringify(!theme)
+              );
+            }}
+            checked={theme}
+            size={30}
+          />
+        </div>
         <FooterContainer>
           <FooterContent>
             <Icons>
@@ -231,51 +192,39 @@ export default function Menu(props) {
                 <FaYoutube />
               </LanguageBg>
             </Icons>
-            <div>
-              <DarkModeSwitch
-                onChange={() => {
-                  mainDispatch(setTheme(!theme));
-                  localStorage.setItem(
-                    "BeautyVerse:ThemeMode",
-                    JSON.stringify(!theme)
-                  );
-                }}
-                checked={theme}
-                size={30}
-              />
-            </div>
+
             <Languages>
               <LanguageBg
-                active={active === "ka" ? "true" : "false"}
+                active={active === 'ka' ? 'true' : 'false'}
                 onClick={() => {
-                  mainDispatch(setLanguage("ka"));
+                  mainDispatch(setLanguage('ka'));
                   localStorage.setItem(
-                    "BeautyVerse:Language",
-                    JSON.stringify("ka")
+                    'BeautyVerse:Language',
+                    JSON.stringify('ka')
                   );
                 }}
               >
                 <Flag code="geo" className="lang" />
               </LanguageBg>
               <LanguageBg
-                active={active === "en" ? "true" : "false"}
+                active={active === 'en' ? 'true' : 'false'}
                 onClick={() => {
-                  mainDispatch(setLanguage("en"));
+                  mainDispatch(setLanguage('en'));
                   localStorage.setItem(
-                    "BeautyVerse:Language",
-                    JSON.stringify("en")
+                    'BeautyVerse:Language',
+                    JSON.stringify('en')
                   );
                 }}
               >
                 <Flag code="usa" className="lang" />
               </LanguageBg>
               <LanguageBg
-                active={active === "ru" ? "true" : "false"}
+                active={active === 'ru' ? 'true' : 'false'}
                 onClick={() => {
-                  mainDispatch(setLanguage("ru"));
+                  mainDispatch(setLanguage('ru'));
                   localStorage.setItem(
-                    "BeautyVerse:Language",
-                    JSON.stringify("ru")
+                    'BeautyVerse:Language',
+                    JSON.stringify('ru')
                   );
                 }}
               >
@@ -291,7 +240,7 @@ export default function Menu(props) {
           ) : (
             <LogoutBtn
               onClick={async () => {
-                navigate("/login");
+                navigate('/login');
               }}
             >
               <GiExitDoor />
@@ -306,14 +255,14 @@ export default function Menu(props) {
 
   const useStyles = makeStyles((theme) => ({
     root: {
-      "& .MuiPaper-root": {
-        borderRadius: "0.5vw 0 0 0.5vw",
-        background: "none",
-        boxShadow: "none",
+      '& .MuiPaper-root': {
+        borderRadius: '0.5vw 0 0 0.5vw',
+        background: 'none',
+        boxShadow: 'none',
 
-        "@media only screen and (max-width: 1200px)": {
-          borderRadius: "10px 10px 0 0",
-          boxShadow: "0 -0.2vw 1vw rgba(0,0,0,0.2)",
+        '@media only screen and (max-width: 1200px)': {
+          borderRadius: '10px 10px 0 0',
+          boxShadow: '0 -0.2vw 1vw rgba(0,0,0,0.2)',
         },
       },
     },
@@ -327,11 +276,11 @@ export default function Menu(props) {
         <Button
           onClick={
             isMobile
-              ? toggleDrawer("bottom", true)
-              : toggleDrawer("right", true)
+              ? toggleDrawer('bottom', true)
+              : toggleDrawer('right', true)
           }
           sx={{
-            width: "10px",
+            width: '10px',
             padding: 0,
           }}
           className="menuIcon"
@@ -339,16 +288,16 @@ export default function Menu(props) {
           {state?.right || state?.bottom ? <CgMenuGridR /> : <CgMenuGridO />}
         </Button>
         <Drawer
-          anchor={isMobile ? "bottom" : "right"}
-          open={state[isMobile ? "bottom" : "right"]}
+          anchor={isMobile ? 'bottom' : 'right'}
+          open={state[isMobile ? 'bottom' : 'right']}
           className={classes.root}
           onClose={
             isMobile
-              ? toggleDrawer("bottom", false)
-              : toggleDrawer("right", false)
+              ? toggleDrawer('bottom', false)
+              : toggleDrawer('right', false)
           }
         >
-          {list(isMobile ? "bottom" : "right")}
+          {list(isMobile ? 'bottom' : 'right')}
         </Drawer>
       </React.Fragment>
     </Container>
@@ -372,19 +321,20 @@ const Container = styled.div`
 `;
 
 const Cont = styled.div`
-  height: 100%;
+  height: 100vh;
   width: 100%;
   background: ${(props) => props.theme.background};
   margin-top: 0.2vw;
   border-radius: 0 0 0 0.5vw;
   @media only screen and (max-width: 1200px) {
+    height: 100%;
     margin-top: 0;
   }
 `;
 
 const Items = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   transition: ease-in-out 200ms;
   padding: 0.25vw;
   box-sizing: border-box;
@@ -409,10 +359,9 @@ const Item = styled.div`
   justify-content: center;
   padding: 1vw;
   width: 100%;
-  height: 7vw;
-  margin: 0.25vw;
-  gap: 0.5vw;
-  max-width: 8vw;
+  height: 8.5vw;
+  margin: 0.3vw;
+  max-width: 8.5vw;
   font-size: 12px;
   text-align: center;
   cursor: pointer;
@@ -508,10 +457,12 @@ const FooterContainer = styled.div`
 `;
 
 const FooterContent = styled.div`
-  width: 80%;
+  width: 85%;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 30px;
+
   @media only screen and (max-width: 600px) {
     display: flex;
     align-items: center;
@@ -532,7 +483,7 @@ const LanguageBg = styled.div`
   border-radius: 100px;
   box-shadow: 0 0.1vw 0.2vw ${(props) => props.theme.shadowColor};
   background: ${(props) =>
-    props.active === "true" ? props.theme.secondLevel : "none"};
+    props.active === 'true' ? props.theme.secondLevel : 'none'};
   cursor: pointer;
 `;
 

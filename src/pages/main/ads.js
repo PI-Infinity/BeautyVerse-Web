@@ -1,32 +1,36 @@
-import styled from "styled-components";
-import { Language } from "../../context/language";
+import styled from 'styled-components';
+import { Language } from '../../context/language';
 
-export const Ads = () => {
+export const Ads = (props) => {
   const language = Language();
 
   return (
-    <>
-      <div style={{ margin: "1vw", fontWeight: "bold", fontSize: "18px" }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: props.left ? 'start' : 'flex-end',
+        marginTop: props.left ? 0 : '20px',
+      }}
+    >
+      <div style={{ margin: '1vw', fontWeight: 'bold', fontSize: '18px' }}>
         {language?.language.Main.ads.title}
       </div>
       <Container>
-        {/* <React.Suspense fallback={<FallbackComponent />}>
-          <EmailForm />
-        </React.Suspense> */}
         <Ad>
           <img
-            src="https://res.cloudinary.com/dmmumy2b1/image/upload/v1668849735/Beautyverse/shop_ggr6lu.jpg"
-            style={{ width: "10vw", height: "8vw", objectFit: "cover" }}
+            src={props.leftAd}
+            style={{ width: '10vw', height: '8vw', objectFit: 'cover' }}
           />
         </Ad>
         <Ad>
           <img
-            src="https://res.cloudinary.com/dmmumy2b1/image/upload/v1668849826/Beautyverse/konkurspost_fn7zqk.png"
-            style={{ width: "10vw", height: "8vw", objectFit: "cover" }}
+            src={props.rightAd}
+            style={{ width: '10vw', height: '8vw', objectFit: 'cover' }}
           />
         </Ad>
       </Container>
-    </>
+    </div>
   );
 };
 
@@ -34,13 +38,11 @@ const Container = styled.div`
   border-radius: 0.5vw;
   width: 80%;
   height: 9vw;
-  box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
+  box-shadow: 0 0.1vw 0.3vw ${(props) => props.theme.lineColor};
   display: flex;
   gap: 0.7vw;
   align-items: center;
   padding: 0 0.7vw;
-  justify-content: start;
-  background: none;
 `;
 
 const Ad = styled.div`

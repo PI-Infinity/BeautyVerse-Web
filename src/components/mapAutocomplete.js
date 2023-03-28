@@ -1,84 +1,83 @@
-import React from "react";
-import PlacesAutocomplete from "react-places-autocomplete";
-import { geocodeByAddress, getLatLng } from "react-places-autocomplete";
-import { setMap, setAddressInput } from "../redux/register";
-import styled from "styled-components";
-import { useDispatch } from "react-redux";
+import PlacesAutocomplete from 'react-places-autocomplete';
+import { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
+import { setMap, setAddress } from '../redux/register';
+import styled from 'styled-components';
+import { useDispatch, useSelector } from 'react-redux';
 
-const MapAutocomplete = ({ language, userMobile, address, setAddress }) => {
+const MapAutocomplete = ({ language, userMobile }) => {
   const dispatch = useDispatch();
   const handleSelect = async (value) => {
     const result = await geocodeByAddress(value);
     const ll = await getLatLng(result[0]);
-    setAddress(value);
+    dispatch(setAddress(value));
     // country
     let countr;
     if (
       result[0]?.address_components?.find(
-        (item) => item?.types[0] == "country"
+        (item) => item?.types[0] == 'country'
       ) != undefined
     ) {
       countr = result[0]?.address_components?.find(
-        (item) => item?.types[0] == "country"
+        (item) => item?.types[0] == 'country'
       )?.long_name;
     } else {
-      countr = "";
+      countr = '';
     }
 
     //region
     let reg;
     if (
       result[0]?.address_components?.find(
-        (item) => item?.types[0] == "administrative_area_level_1"
+        (item) => item?.types[0] == 'administrative_area_level_1'
       ) != undefined
     ) {
       reg = result[0]?.address_components?.find(
-        (item) => item?.types[0] == "administrative_area_level_1"
+        (item) => item?.types[0] == 'administrative_area_level_1'
       )?.long_name;
     } else {
-      reg = "";
+      reg = '';
     }
 
     // city
     let cit;
     if (
       result[0]?.address_components?.find(
-        (item) => item?.types[0] == "locality"
+        (item) => item?.types[0] == 'locality'
       ) != undefined
     ) {
       cit = result[0]?.address_components?.find(
-        (item) => item?.types[0] == "locality"
+        (item) => item?.types[0] == 'locality'
       )?.long_name;
     } else {
-      cit = "";
+      cit = '';
     }
 
     // ubani
     let destr;
     if (
       result[0]?.address_components?.find((item) =>
-        item.types?.includes("sublocality_level_1")
+        item.types?.includes('sublocality_level_1')
       ) != undefined
     ) {
       destr = result[0]?.address_components?.find((item) =>
-        item.types?.includes("sublocality_level_1")
+        item.types?.includes('sublocality_level_1')
       )?.long_name;
     } else {
-      destr = "";
+      destr = '';
     }
 
     // street
     let str;
     if (
       result[0]?.address_components?.find(
-        (item) => item?.types[0] == "route"
+        (item) => item?.types[0] == 'route'
       ) != undefined
     ) {
       str = result[0]?.address_components?.find(
-        (item) => item?.types[0] == "route"
+        (item) => item?.types[0] == 'route'
       )?.long_name;
     } else {
-      str = "";
+      str = '';
     }
 
     // street number
@@ -86,15 +85,15 @@ const MapAutocomplete = ({ language, userMobile, address, setAddress }) => {
     if (
       result[0]?.address_components?.find(
         (item) =>
-          item?.types[0] == "street_number" || item?.types[0] == "premise"
+          item?.types[0] == 'street_number' || item?.types[0] == 'premise'
       ) !== undefined
     ) {
       nmb = result[0]?.address_components?.find(
         (item) =>
-          item?.types[0] == "street_number" || item?.types[0] == "premise"
+          item?.types[0] == 'street_number' || item?.types[0] == 'premise'
       )?.long_name;
     } else {
-      nmb = "";
+      nmb = '';
     }
     // lantitude && logitude
     const lat = ll.lat;
@@ -109,6 +108,7 @@ const MapAutocomplete = ({ language, userMobile, address, setAddress }) => {
       number: nmb,
       latitude: lat,
       longitude: lng,
+      address: address,
     });
 
     dispatch(
@@ -121,15 +121,18 @@ const MapAutocomplete = ({ language, userMobile, address, setAddress }) => {
         number: nmb,
         latitude: lat,
         longitude: lng,
+        address: address,
       })
     );
   };
+
+  const address = useSelector((state) => state.storeRegister.address);
 
   return (
     <MainContainer userMobile={userMobile}>
       <PlacesAutocomplete
         value={address}
-        onChange={setAddress}
+        onChange={(v) => dispatch(setAddress(v))}
         onSelect={handleSelect}
         googleCallbackName="myCallbackFunc"
       >
@@ -141,7 +144,7 @@ const MapAutocomplete = ({ language, userMobile, address, setAddress }) => {
                 value={address}
                 {...getInputProps({
                   placeholder: language?.language.User.userPage.findAddress,
-                  className: "location-search-input",
+                  className: 'location-search-input',
                 })}
               />
             </Container>
@@ -149,8 +152,8 @@ const MapAutocomplete = ({ language, userMobile, address, setAddress }) => {
               {/* {loading && <div>Loading...</div>} */}
               {suggestions?.map((suggestion, index) => {
                 const className = suggestion.active
-                  ? "suggestion-item--active"
-                  : "suggestion-item";
+                  ? 'suggestion-item--active'
+                  : 'suggestion-item';
                 // inline style for demonstration purpose
                 // const style = suggestion?.active
                 //   ? { backgroundColor: "#fafafa", cursor: "pointer" }
@@ -197,11 +200,12 @@ const MainContainer = styled.div`
 
     @media only screen and (max-width: 600px) {
       position: ${(props) =>
-        props.userMobile === "true" ? "relative" : "absolute"};
+        props.userMobile === 'true' ? 'relative' : 'absolute'};
       box-shadow: 0 0.2vw 0.6vw rgba(2, 2, 2, 0.1);
-      width: ${(props) => (props.userMobile === "true" ? "100%" : "45vw")};
+      width: ${(props) => (props.userMobile === 'true' ? '100%' : '45vw')};
       height: auto;
-      margin-top: ${(props) => (props.userMobile === "true" ? "1vw" : "3vw")};
+      max-width: 70vw;
+      margin-top: ${(props) => (props.userMobile === 'true' ? '1vw' : '3vw')};
       border-radius: 1vw;
     }
   }
@@ -245,10 +249,10 @@ const Container = styled.div`
   background: ${(props) => props.theme.categoryItem};
 
   @media only screen and (max-width: 600px) {
-    width: ${(props) => (props.userMobile === "true" ? "70vw" : "45vw")};
-    height: ${(props) => (props.userMobile === "true" ? "8vw" : "10vw")};
+    width: ${(props) => (props.userMobile === 'true' ? '70vw' : '45vw')};
+    height: ${(props) => (props.userMobile === 'true' ? '8vw' : '10vw')};
     justify-content: ${(props) =>
-      props.userMobile === "true" ? "start" : "space-between"};
+      props.userMobile === 'true' ? 'start' : 'space-between'};
     border-radius: 1.5vw;
     font-size: 16px;
   }

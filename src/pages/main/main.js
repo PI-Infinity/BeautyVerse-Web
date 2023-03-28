@@ -1,20 +1,18 @@
-import React, { useEffect } from "react";
-import styled from "styled-components";
-import { Filter } from "../../pages/main/filter";
-import { CategoryFilter } from "../../pages/main/categoryFilter";
-import { Ads } from "../../pages/main/ads";
-import { Favorites } from "../../pages/main/favorites";
-import { Reviews } from "../../pages/main/reviews";
-import { Chat } from "../../pages/main/chat";
-import { useSelector, useDispatch } from "react-redux";
-import { setRegisterPage } from "../../redux/register";
-import { FilterMobile } from "../../pages/main/filterMobile";
-import { useNavigate, Outlet } from "react-router-dom";
-import { auth } from "../../firebase";
-import { setLoadFeed, setNavigatorActive } from "../../redux/main";
-import { setScroll } from "../../redux/scroll";
-import useWindowDimensions from "../../functions/dimensions";
-import { IsMobile } from "../../functions/isMobile";
+import React, { useEffect } from 'react';
+import styled from 'styled-components';
+import { Filter } from '../../pages/main/filter';
+import { CategoryFilter } from '../../pages/main/categoryFilter';
+import { Ads } from '../../pages/main/ads';
+import { Favorites } from '../../pages/main/favorites';
+import { Chat } from '../../pages/main/chat';
+import { useSelector, useDispatch } from 'react-redux';
+import { setRegisterPage } from '../../redux/register';
+import { FilterMobile } from '../../pages/main/filterMobile';
+import { useNavigate, Outlet } from 'react-router-dom';
+import { setNavigatorActive } from '../../redux/main';
+import { setScroll } from '../../redux/scroll';
+import useWindowDimensions from '../../functions/dimensions';
+import { IsMobile } from '../../functions/isMobile';
 
 const Main = (props) => {
   const dispatch = useDispatch();
@@ -29,33 +27,15 @@ const Main = (props) => {
   React.useEffect(() => {
     dispatch(setScroll(true));
     dispatch(setNavigatorActive(0));
-    dispatch(setLoadFeed(true));
-    document.body.style.overflowY = "scroll";
   }, [rerender, changeFeed]);
 
-  const currentUser = auth.currentUser;
-
-  // import current user from redux state
-  const userUnparsed = useSelector((state) => state.storeMain.user);
-
-  let user;
-  if (userUnparsed?.length > 0) {
-    user = JSON.parse(userUnparsed);
-  }
-
-  const openMobileMenu = useSelector((state) => state.storeMain.openMenu);
+  document.body.style.overflowY = 'scroll';
 
   // open mobile filter
   const filterOpen = useSelector((state) => state.storeMain.mobileFilter);
 
   useEffect(() => {
     dispatch(setRegisterPage(1));
-  }, []);
-
-  useEffect(() => {
-    // if (userList?.length < 1) {
-    dispatch(setLoadFeed(false));
-    // }
   }, []);
 
   return (
@@ -72,14 +52,22 @@ const Main = (props) => {
         <MainSection>
           <FilterContainer>
             <CategoryFilter />
-            <Ads />
+            <Ads
+              left={true}
+              leftAd="https://res.cloudinary.com/dmmumy2b1/image/upload/v1668849735/Beautyverse/shop_ggr6lu.jpg"
+              rightAd="https://res.cloudinary.com/dmmumy2b1/image/upload/v1668849826/Beautyverse/konkurspost_fn7zqk.png"
+            />
           </FilterContainer>
           <CenterContainer height={height}>
             <Outlet />
           </CenterContainer>
           <RightSide>
+            <Ads
+              leftAd="https://res.cloudinary.com/mimino/image/upload/v1673281470/ELAN/products/detox-mousse-3-900x900-min_as8ysq.jpg"
+              rightAd="https://res.cloudinary.com/mimino/image/upload/v1673281471/ELAN/products/smart-skin-colour-remover-1-900x900-min_a0oruf.jpg"
+            />
             <FavoritesContainer>
-              <Reviews />
+              {/* <Reviews /> */}
               <Favorites />
               <Chat />
             </FavoritesContainer>
@@ -173,7 +161,7 @@ const CenterContainer = styled.div`
 `;
 
 const MobileFilter = styled.div`
-  display: ${(props) => (props.filterOpen ? "flex" : "none")};
+  display: ${(props) => (props.filterOpen ? 'flex' : 'none')};
   position: absolute;
   top: 18vw;
   left: 0;
@@ -195,6 +183,13 @@ const RightSide = styled.div`
   width: 25vw;
   height: 100vh;
   z-index: 9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  & > div {
+    color: ${(props) => props.theme.font};
+  }
 
   @media only screen and (max-width: 600px) {
     right: -100%;

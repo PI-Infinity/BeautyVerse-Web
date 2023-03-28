@@ -1,84 +1,52 @@
-import React from "react";
-import styled from "styled-components";
-import { useSelector, useDispatch } from "react-redux";
+import React from 'react';
+import styled from 'styled-components';
+import { useSelector, useDispatch } from 'react-redux';
 import {
   collection,
   doc,
   updateDoc,
   onSnapshot,
   deleteDoc,
-} from "firebase/firestore";
-import { db } from "../../firebase";
-import { SetCurrentChat } from "../../redux/chat";
-import { useNavigate } from "react-router-dom";
-import { TiUserDelete } from "react-icons/ti";
-import { Spinner } from "../../components/loader";
-import Avatar from "@mui/material/Avatar";
-import AlertDialog from "../../components/dialog";
-import { Language } from "../../context/language";
+} from 'firebase/firestore';
+import { db } from '../../firebase';
+import { setCurrentChat, setRerenderChatList } from '../../redux/chat';
+import { useNavigate } from 'react-router-dom';
+import { TiUserDelete } from 'react-icons/ti';
+import { Spinner } from '../../components/loader';
+import Avatar from '@mui/material/Avatar';
+import AlertDialog from '../../components/dialog';
+import { Language } from '../../context/language';
+import axios from 'axios';
+import GetTimesAgo from '../../functions/getTimesAgo';
 
 export const ChatUsers = (props) => {
   const [loading, setLoading] = React.useState(true);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   // import current user & parse it
-  const chatRerender = useSelector((state) => state.storeChat.rerender);
-  const userUnparsed = useSelector((state) => state.storeMain.user);
-  let currentuser;
-  if (userUnparsed?.length > 0) {
-    currentuser = JSON.parse(userUnparsed);
-  }
+  const currentuser = useSelector((state) => state.storeMain?.user);
 
-  const [chats, setChats] = React.useState([]);
+  const definedChatUsers = useSelector((state) => state.storeChat.userChats);
 
-  React.useEffect(() => {
-    const getChats = () => {
-      const unsub = onSnapshot(
-        collection(db, "users", currentuser?.id, "chats"),
-        (snapshot) => {
-          let result = snapshot.docs.map((doc) => doc.data());
-          setChats(result?.sort((a, b) => b?.date - a?.date));
+  // update chat info. if user ve changed name, here will be show new name, after user who changed name opens target user chat.
+  const UpdateChat = async (userNumber, roomId) => {
+    try {
+      const response = await axios.patch(
+        `https://beautyverse.herokuapp.com/api/v1/chats/${roomId}`,
+        {
+          // Wrap property names in quotes
+          [`user${userNumber}name`]: currentuser?.name,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
         }
       );
-      return () => {
-        unsub();
-      };
-    };
-    currentuser?.id && getChats();
-  }, [currentuser?.id]);
-
-  // define userList
-  const list = useSelector((state) => state.storeMain.userList);
-  let userList;
-  if (list?.length > 0) {
-    userList = JSON.parse(list);
-  }
-
-  let definedChatUsers;
-  if (chats?.length > 0) {
-    definedChatUsers = chats?.map((item, index) => {
-      let us = userList?.find((it) => it.id === item.userInfo.id);
-      return {
-        chatId: item?.chatId,
-        date: item?.date,
-        lastMessage: item?.lastMessage,
-        opened: item?.opened,
-        senderId: item?.senderId,
-        chatId: item?.chatId,
-        userInfo: {
-          id: item?.userInfo?.id,
-          name: us?.name,
-          cover: us?.cover,
-        },
-      };
-    });
-  }
-
-  // open message
-  const Opening = async (chatid) => {
-    await updateDoc(doc(db, "users", currentuser?.id, "chats", chatid), {
-      opened: true,
-    });
+      const data = await response.data;
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   React.useEffect(() => {
@@ -96,37 +64,60 @@ export const ChatUsers = (props) => {
       ) : (
         <Container>
           {definedChatUsers
-            ?.filter((item, index) => item?.lastMessage !== undefined)
+            // ?.filter((item, index) => item?.lastMessage !== undefined)
             ?.filter((item, index) => {
+              let currentUserNumber = item.user1id === currentuser?._id;
+              let targetName;
               if (
-                item?.userInfo?.name
+                item[`${currentUserNumber ? 'user2name' : 'user1name'}`]
                   ?.toLowerCase()
                   ?.includes(props.search?.toLowerCase())
               ) {
                 return item;
               }
             })
-            ?.map((chat, index) => (
-              <FoundedUser
-                key={chat.chatId}
-                chat={chat}
-                currentuser={currentuser}
-                onClick={() => {
-                  Opening(chat?.userInfo?.id);
-                  navigate(`/chat/${chat.chatId}`);
-                  // dispatch(setCounter(30));
-                  // dispatch(setScrollY(500));
-                  dispatch(
-                    SetCurrentChat([
-                      {
-                        chatId: chat.chatId,
-                        userId: chat.userInfo?.id,
-                      },
-                    ])
-                  );
-                }}
-              ></FoundedUser>
-            ))}
+            ?.map((chat, index) => {
+              // define targetUser info from chat
+              let room = chat?.room?.startsWith(currentuser._id);
+              let targetUser;
+              if (!room) {
+                targetUser = 'user1';
+              } else {
+                targetUser = 'user2';
+              }
+              let currentUserNumber = chat.user1id === currentuser?._id;
+              return (
+                <FoundedUser
+                  key={chat.room}
+                  chat={chat}
+                  currentuser={currentuser}
+                  targetUser={{
+                    authId: chat[`${targetUser}authId`],
+                    id: chat[`${targetUser}id`],
+                    name: chat[`${targetUser}name`],
+                    cover: chat[`${targetUser}cover`],
+                  }}
+                  onClick={() => {
+                    // enter to room
+                    props.handleRoomChange(chat.room);
+                    // add currentchat in redux
+                    dispatch(
+                      setCurrentChat({
+                        room: chat.room,
+                        curentChatUser: currentuser?._id,
+                        targetChatUser: {
+                          authId: chat[`${targetUser}authId`],
+                          id: chat[`${targetUser}id`],
+                          name: chat[`${targetUser}name`],
+                          cover: chat[`${targetUser}cover`],
+                        },
+                      })
+                    );
+                    UpdateChat(currentUserNumber ? 1 : 2, chat?.room);
+                  }}
+                ></FoundedUser>
+              );
+            })}
         </Container>
       )}
     </>
@@ -134,7 +125,7 @@ export const ChatUsers = (props) => {
 };
 
 const LoadingContainer = styled.div`
-  height: 60vh;
+  height: 59vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -161,31 +152,34 @@ const Container = styled.div`
 const FoundedUser = (props) => {
   const dispatch = useDispatch();
   // define open message
-  const openMessage = useSelector((state) => state.storeChat.openMessage);
+  // const openMessage = useSelector((state) => state.storeChat.openMessage);
   const language = Language();
 
-  const newMessage = openMessage?.some(
-    (item) => item == props.chat?.userInfo?.id
-  );
-
-  const [open, setOpen] = React.useState(false);
-
-  const DeleteChat = async () => {
-    const chatDoc = doc(
-      db,
-      "users",
-      props.currentuser?.id,
-      "chats",
-      props.chat?.userInfo.id
-    );
-    await deleteDoc(chatDoc);
+  const UpdateChat = async () => {
+    try {
+      const response = await axios.patch(
+        `https://beautyverse.herokuapp.com/api/v1/chats/${props.chat.room}`,
+        {
+          // Wrap property names in quotes
+          lastMessageStatus: 'read',
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      const data = await response.data;
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   // define BOLD
   let bold;
   if (
-    props?.chat?.opened === false &&
-    props?.chat?.senderId !== props?.currentuser?.id
+    props?.chat?.lastMessageStatus === 'unread' &&
+    props?.chat?.lastMessageSenderId !== props?.currentuser?._id
     // props.currentuser?.id == lastSender?.senderId
   ) {
     bold = true;
@@ -193,45 +187,67 @@ const FoundedUser = (props) => {
     bold = false;
   }
 
+  // define shown post added time
+
+  const currentPostTime = GetTimesAgo(
+    new Date(props.chat?.lastMessageSentAt)?.getTime()
+  );
+
+  let timeTitle;
+  if (currentPostTime?.title === 'h') {
+    timeTitle = language?.language.Main.feedCard.h;
+  } else if (currentPostTime?.title === 'min') {
+    timeTitle = language?.language.Main.feedCard.min;
+  } else {
+    timeTitle = language?.language.Main.feedCard.justNow;
+  }
+
   return (
-    <UserContainer style={{ display: "flex", alignItems: "center" }}>
-      <FoundedUserContainer onClick={props.onClick} bold={bold?.toString()}>
+    <UserContainer style={{ display: 'flex', alignItems: 'center' }}>
+      <FoundedUserContainer
+        onClick={() => {
+          props.onClick();
+          UpdateChat();
+        }}
+        bold={bold?.toString()}
+      >
         <Avatar
-          alt={props?.chat?.userInfo?.name}
-          src={props?.chat?.userInfo?.cover}
+          alt={props.targetUser.name}
+          src={props.targetUser.cover}
           sx={{ width: 36, height: 36 }}
         />
-        <h3 style={{ whiteSpace: "nowrap", width: "auto" }}>
-          {props?.chat?.userInfo?.name}
+        <h3 style={{ whiteSpace: 'nowrap', width: 'auto' }}>
+          {props.targetUser.name}
         </h3>
         <p
           style={{
-            color: "#666",
-            width: "100px",
-
-            overflow: "hidden",
-            whiteSpace: "nowrap",
+            maxWidth: '100px',
+            width: 'auto',
+            overflow: 'hidden',
+            whiteSpace: 'nowrap',
           }}
         >
-          {props.chat?.lastMessage}
+          {props.chat?.lastMessage.content}
         </p>
         <p
           style={{
-            color: "#666",
-            width: "15px",
-            marginRight: "5px",
+            width: '15px',
+            marginRight: '5px',
           }}
         >
           ...
         </p>
       </FoundedUserContainer>
-      <TiUserDelete id="removeIcon" onClick={() => setOpen(true)} />
+      <div style={{ fontSize: '12px', width: 'auto', width: '50px' }}>
+        {currentPostTime?.numbers + ' ' + timeTitle}
+      </div>
+      {/* <TiUserDelete id="removeIcon" onClick={() => setOpen(true)} /> */}
       <AlertDialog
         title={language?.language.Chat.chat.confirm}
         text={language?.language.Chat.chat.deletChatText}
-        open={open}
-        setOpen={setOpen}
-        function={() => DeleteChat()}
+        // open={open}
+        // setOpen={setOpen}
+        // function={() => DeleteChat()}
         language={language}
       />
     </UserContainer>
@@ -256,7 +272,7 @@ const FoundedUserContainer = styled.div`
   cursor: pointer;
   width: 100%;
   padding: 0 20px;
-  font-weight: ${(props) => (props.bold === "true" ? "bold" : "normal")};
+  font-weight: ${(props) => (props.bold === 'true' ? 'bold' : 'normal')};
 
   h3 {
     margin: 0;
@@ -266,7 +282,7 @@ const FoundedUserContainer = styled.div`
 
   p {
     font-size: 12px;
-    color: ${(props) => props.theme.secondLevel};
+    color: ${(props) => (props.bold === 'true' ? 'green' : '#666')};
   }
 
   :hover {

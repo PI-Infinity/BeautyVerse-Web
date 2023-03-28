@@ -1,34 +1,51 @@
-import React, { useEffect, useState, useRef } from "react";
-import styled from "styled-components";
-import { db } from "../../firebase";
-import { onSnapshot, doc } from "firebase/firestore";
-import { Message } from "../../pages/chat/message";
-import { useSelector, useDispatch } from "react-redux";
-import { Spinner } from "../../components/loader";
-import SimpleBackdrop from "../../components/backDrop";
+import React, { useEffect, useState, useRef } from 'react';
+import styled from 'styled-components';
+import { db } from '../../firebase';
+import { onSnapshot, doc } from 'firebase/firestore';
+import { Message } from '../../pages/chat/message';
+import { useSelector, useDispatch } from 'react-redux';
+import { Spinner } from '../../components/loader';
+import SimpleBackdrop from '../../components/backDrop';
+import axios from 'axios';
 
 export const Messages = (props) => {
   const [loading, setLoading] = React.useState(true);
   const dispatch = useDispatch();
   const ref = useRef();
-  const [messages, setMessages] = useState([]);
   const currentChat = useSelector((state) => state.storeChat.currentChat);
   const counter = useSelector((state) => state.storeChat.counter);
   const scrollY = useSelector((state) => state.storeChat.scrollY);
 
+  // useEffect(() => {
+  //   async function GetChat(userId) {
+  //     const response = await fetch(
+  //       `/api/v1/chats/chathistory/${currentChat?.room}`
+  //     )
+  //       .then((response) => response.json())
+  //       .then((data) => {
+  //         props.setMessages(data.data.chats);
+  //       })
+  //       .catch((error) => {
+  //         console.log('Error fetching data:', error);
+  //       });
+  //   }
+  //   if (currentChat?.room) {
+  //     GetChat();
+  //   }
+  // }, []);
+
   useEffect(() => {
-    if (currentChat?.length > 0) {
-      const unSub = onSnapshot(
-        doc(db, "chats", currentChat[0]?.chatId),
-        (doc) => {
-          doc.exists() && setMessages(doc.data()?.messages);
-        }
-      );
-      return () => {
-        unSub();
-      };
-    }
-  }, [currentChat[0]?.chatId, counter]);
+    if (!props.socket) return;
+
+    props.socket.on('messages', (messages) => {
+      console.log('All messages received:', messages);
+      props.setMessages(messages);
+    });
+
+    return () => {
+      props.socket.off('messages');
+    };
+  }, [props.socket]);
 
   //
   const handleScroll = (event) => {
@@ -41,6 +58,30 @@ export const Messages = (props) => {
       // dispatch(setScrollY(scrollY + 1000));
     } else if (scroll == 0) {
       // We are at the bottom
+    }
+  };
+
+  // update chat
+  const UpdateChat = async () => {
+    try {
+      const response = await axios.patch(
+        `https://beautyverse.herokuapp.com/api/v1/chats/${currentChat.room}`,
+        {
+          // Wrap property names in quotes
+          lastMessage: props.messages[props.messages?.length - 1].content,
+          lastMessageSenderId:
+            props.messages[props.messages?.length - 1].username,
+          lastMessageSentAt: props.messages[props.messages?.length - 1].sentAt,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      const data = await response.data;
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -58,18 +99,21 @@ export const Messages = (props) => {
         </LoadingContainer>
       ) : (
         <Container height={props?.height}>
-          {messages?.map((m, i) => {
-            let prevMsg = messages[i - 1];
-            let nextMsg = messages[i + 1];
-            if (prevMsg?.senderId === m?.senderId) {
+          {props.messages?.map((m, i) => {
+            let prevMsg = props.messages[i - 1];
+            let nextMsg = props.messages[i + 1];
+            if (prevMsg?.username === m?.username) {
               return (
                 <Message
                   message={m}
                   key={m.id}
-                  msg={messages[0]}
+                  msg={props.messages[0]}
                   sameSender={true}
                   prevMsg={prevMsg}
                   nextMsg={nextMsg}
+                  socket={props.socket}
+                  setMessages={props.setMessages}
+                  UpdateChat={UpdateChat}
                 />
               );
             } else {
@@ -77,10 +121,13 @@ export const Messages = (props) => {
                 <Message
                   message={m}
                   key={m.id}
-                  msg={messages[0]}
+                  msg={props.messages[0]}
                   sameSender={false}
                   prevMsg={prevMsg}
                   nextMsg={nextMsg}
+                  socket={props.socket}
+                  setMessages={props.setMessages}
+                  UpdateChat={UpdateChat}
                 />
               );
             }

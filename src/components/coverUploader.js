@@ -1,20 +1,26 @@
-import React, { useContext } from "react";
-import styled from "styled-components";
-import { useSelector, useDispatch } from "react-redux";
-import { doc, updateDoc } from "firebase/firestore";
-import { updateProfile } from "firebase/auth";
-import { db, storage, auth } from "../firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { AuthContext } from "../context/AuthContext";
-import { setRerender } from "../redux/main";
-import { BsStars } from "react-icons/bs";
-import Avatar from "../components/avatar";
-import { useNavigate } from "react-router-dom";
-import { setBackdropOpen } from "../redux/main";
-import Resizer from "react-image-file-resizer";
+import React from 'react';
+import styled from 'styled-components';
+import { useSelector, useDispatch } from 'react-redux';
+import { storage } from '../firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import Avatar from '../components/avatar';
+import { useNavigate } from 'react-router-dom';
+import { setBackdropOpen, setCoverUrl } from '../redux/main';
+import Resizer from 'react-image-file-resizer';
+import axios from 'axios';
+import { setRerenderCurrentUser } from '../redux/rerenders';
+import { ProfileCoverLoader } from '../components/loader';
 
-export const CoverUploader = (props) => {
-  const { currentUser } = useContext(AuthContext);
+export const CoverUploader = ({ targetUser, loadingProfile }) => {
+  const currentUser = JSON.parse(
+    localStorage.getItem('Beautyverse:currentUser')
+  );
+
+  const rerenderCurrentUser = useSelector(
+    (state) => state.storeRerenders.rerenderCurrentUser
+  );
+
+  const coverUrl = useSelector((state) => state.storeMain.coverUrl);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -27,67 +33,45 @@ export const CoverUploader = (props) => {
         file,
         240,
         240,
-        "JPEG",
+        'JPEG',
         100,
         0,
         (uri) => {
           resolve(uri);
         },
-        "file"
+        'file'
       );
     });
 
   const DefineResized = async () => {
-    const newObj = await ResizeCover(file);
-    setResizedObj(newObj);
+    if (file !== null) {
+      const newObj = await ResizeCover(file);
+      setResizedObj(newObj);
+    }
   };
   const imageObj = React.useMemo(() => DefineResized(), [file]);
 
-  const cov = useSelector((state) => state.storeMain.coverInfo);
-  let cover;
-  if (cov?.length > 0) {
-    cover = JSON.parse(cov);
-  }
-  // import current user from redux state
-  const userUnparsed = useSelector((state) => state.storeMain.user);
-
-  let user;
-  if (userUnparsed?.length > 0) {
-    user = JSON.parse(userUnparsed);
-  }
   // loader animation for adding cover
   const [loading, setLoading] = React.useState(false);
 
   async function FileUpload() {
-    /* after delete last cover, add new cover
+    /* aadd cover
      */
     if (resizedObj == null) return;
     if (resizedObj != null) {
       dispatch(setBackdropOpen(true));
       // add in storage
-      const imageRef = ref(storage, `images/${currentUser?.uid}/cover`);
+      const imageRef = ref(storage, `images/${currentUser?._id}/cover`);
       // const snapshot = await uploadBytes(imageRef, resizedObj);
       const url = await uploadBytes(imageRef, resizedObj).then((snapshot) => {
-        getDownloadURL(snapshot.ref).then((url) => {
-          updateDoc(doc(db, `users`, currentUser.uid), {
-            cover: url,
-          });
-          updateProfile(auth.currentUser, {
-            photoURL: url,
+        getDownloadURL(snapshot.ref)
+          .then((url) => {
+            dispatch(setCoverUrl(url));
           })
-            .then(() => {
-              // Profile updated!
-              dispatch(setRerender());
-              // ...
-            })
-            .catch((error) => {
-              // An error occurred
-              // ...
-            });
-        });
+          .catch((error) => {
+            console.log(error);
+          });
       });
-      await dispatch(setRerender());
-      dispatch(setBackdropOpen(false));
     }
   }
 
@@ -95,9 +79,27 @@ export const CoverUploader = (props) => {
     FileUpload();
   }, [resizedObj]);
 
+  React.useEffect(() => {
+    const UploadCover = async () => {
+      const response = await axios.patch(
+        `https://beautyverse.herokuapp.com/api/v1/users/${currentUser?._id}`,
+        {
+          cover: coverUrl,
+        }
+      );
+      await dispatch(setRerenderCurrentUser());
+      dispatch(setBackdropOpen(false));
+    };
+    if (coverUrl) {
+      UploadCover();
+    }
+  }, [coverUrl]);
+
+  console.log(coverUrl);
+
   return (
     <Container>
-      {user?.id === props?.user?.id && (
+      {targetUser?._id === currentUser?._id && (
         <Uploader
           id="cover"
           type="file"
@@ -105,24 +107,40 @@ export const CoverUploader = (props) => {
           title=""
         />
       )}
-      <label htmlFor="cover">
-        <Avatar
-          alt={user?.name}
-          link={props?.user?.cover !== undefined ? props?.user?.cover : ""}
-          size="large"
-        />
+      <label
+        htmlFor="cover"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        {loadingProfile ? (
+          <ProfileCoverLoader />
+        ) : (
+          <Avatar
+            alt={currentUser?.name}
+            link={coverUrl ? coverUrl : targetUser.cover}
+            size="large"
+          />
+        )}
       </label>
     </Container>
   );
 };
 
 const Container = styled.div`
-  height: auto;
-  width: auto;
+  height: 150px;
+  width: 150px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+
+  @media only screen and (max-width: 600px) {
+    height: 20vw;
+    width: 20vw;
+  }
 `;
 
 const Uploader = styled.input`

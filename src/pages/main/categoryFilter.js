@@ -1,11 +1,10 @@
-import React, { useContext } from "react";
-import styled from "styled-components";
-import { setFilter } from "../../redux/filter";
-import { setRerender } from "../../redux/main";
-import { useDispatch, useSelector } from "react-redux";
-import { VerseCategories } from "../../data/categories";
-import { AuthContext } from "../../context/AuthContext";
-import useWindowDimensions from "../../functions/dimensions";
+import React from 'react';
+import styled from 'styled-components';
+import { setFilter } from '../../redux/filter';
+import { setRerender } from '../../redux/main';
+import { useDispatch, useSelector } from 'react-redux';
+import { VerseCategories } from '../../data/categories';
+import useWindowDimensions from '../../functions/dimensions';
 
 export const CategoryFilter = () => {
   const { height, width } = useWindowDimensions();
@@ -17,7 +16,7 @@ export const CategoryFilter = () => {
   React.useEffect(() => {
     window.scrollTo({
       top: 0,
-      behavior: "smooth",
+      behavior: 'smooth',
     });
   }, [filterOpen]);
 
@@ -85,39 +84,34 @@ const List = styled.div`
 const CategoryItem = (props) => {
   const dispatch = useDispatch();
   const filter = useSelector((state) => state.storeFilter.filter);
-  const { currentUser } = useContext(AuthContext);
   const language = useSelector((state) => state.storeMain.language);
   // import users
-  const usersList = useSelector((state) => state.storeMain.userList);
-  let users;
-  if (usersList?.length > 0) {
-    users = JSON.parse(usersList);
-  }
+  const users = useSelector((state) => state.storeMain.userList);
 
   return (
     <Wrapper color={props.color}>
       <CategoryItemContainer
-        className={filter === props.value ? "active" : ""}
+        className={filter === props.value ? 'active' : ''}
         onClick={() => {
           dispatch(setFilter(props.value));
           dispatch(setRerender());
         }}
-        color={filter === props.value ? "active" : "none"}
+        color={filter === props.value ? 'active' : 'none'}
       >
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5vw",
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5vw',
           }}
         >
           <div>{props.icon}</div>
           {(() => {
-            if (language === "ka") {
+            if (language === 'ka') {
               return props.geo;
-            } else if (language === "en") {
+            } else if (language === 'en') {
               return props.eng;
-            } else if (language === "ru") {
+            } else if (language === 'ru') {
               return props.rus;
             }
           })()}
@@ -159,7 +153,7 @@ const CategoryItemContainer = styled.div`
   & div > div {
     display: flex;
     align-items: center;
-    color: ${(props) => (props.color === "active" ? "green" : "#ccc")};
+    color: ${(props) => (props.color === 'active' ? 'green' : '#ccc')};
   }
 
   @media only screen and (max-width: 600px) {

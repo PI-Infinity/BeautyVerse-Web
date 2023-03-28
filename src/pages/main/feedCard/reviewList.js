@@ -1,107 +1,122 @@
-import { useContext } from "react";
-import styled from "styled-components";
-import { MdOutlineRemove } from "react-icons/md";
-import { FaUser } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
-import { db } from "../../../firebase";
-import { doc, deleteDoc } from "firebase/firestore";
-import { AuthContext } from "../../../context/AuthContext";
-import GetTimesAgo from "../../../functions/getTimesAgo";
-import { Language } from "../../../context/language";
+import { useState } from 'react';
+import styled from 'styled-components';
+import { MdOutlineRemove } from 'react-icons/md';
+import { FaUser } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import GetTimesAgo from '../../../functions/getTimesAgo';
+import { Language } from '../../../context/language';
 
 export const ReviewList = (props) => {
   const language = Language();
-  const { currentUser } = useContext(AuthContext);
+
   const navigate = useNavigate();
-  const RemoveReview = async (reviewer, i) => {
-    await deleteDoc(
-      doc(
-        db,
-        `users`,
-        `${props.id}`,
-        "feeds",
-        `${props.currentFeed?.id}`,
-        "reviews",
-        `${i}`
-      )
-    );
-    await deleteDoc(
-      doc(db, `reviews`, `${reviewer + props.currentFeed?.id + i}`)
-    );
-    props.setReviewText("");
+
+  const [reviewers, setReviewers] = useState([]);
+
+  const DeleteReview = async (id) => {
+    const url = `https://beautyverse.herokuapp.com/api/v1/users/${props.targetUser?._id}/feeds/${props?.currentFeed?._id}/reviews/${id}`;
+    try {
+      const response = await fetch(url, { method: 'DELETE' });
+
+      if (response.status === 200) {
+        const data = await response.json();
+
+        // Update the feed.reviews array by filtering out the deleted review
+        props.setFeed((prev) => {
+          return {
+            ...prev,
+            feed: {
+              ...prev.feed,
+              reviews: prev.feed.reviews.filter((review) => review._id !== id),
+            },
+            next: prev.next,
+          };
+        });
+      } else {
+        console.error('Error deleting review:', response.status);
+      }
+    } catch (error) {
+      console.log('Error fetching data:', error);
+    }
   };
 
   return (
     <ReviewListContainer>
       {props?.reviews?.map((item, index) => {
-        let time = GetTimesAgo(item.time?.seconds);
+        // define post time
+
+        const currentPostTime = GetTimesAgo(
+          new Date(item?.createdAt)?.getTime(),
+          item?.createdAt
+        );
+
         let timeTitle;
-        if (time?.title === "h") {
+        if (currentPostTime?.title === 'h') {
           timeTitle = language?.language.Main.feedCard.h;
-        } else if (time?.title === "min") {
+        } else if (currentPostTime?.title === 'min') {
           timeTitle = language?.language.Main.feedCard.min;
+        } else if (currentPostTime?.title.includes('2')) {
+          timeTitle = currentPostTime?.title;
         } else {
-          timeTitle = time?.title;
+          timeTitle = language?.language.Main.feedCard.justNow;
         }
 
         return (
           <ReviewItem key={index}>
             <div
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                width: "100%",
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                width: '100%',
               }}
             >
-              {item.reviewerCover != null ? (
-                <Img src={item.reviewerCover} alt="beautyverse" />
+              {item.reviewer.cover ? (
+                <Img src={item.reviewer.cover} alt="beautyverse" />
               ) : (
                 <UserProfileEmpty>
                   <FaUser className="user" />
                 </UserProfileEmpty>
               )}
 
-              <Reviewer onClick={() => navigate(`/user/${item?.reviewerId}`)}>
-                {item.reviewer}
+              <Reviewer
+                onClick={() => navigate(`/api/v1/users/${item?.reviewer.id}`)}
+              >
+                {item.reviewer.name}
               </Reviewer>
-              {time !== undefined && (
+              {currentPostTime && (
                 <span
                   style={{
-                    fontSize: "12px",
-                    color: "#ccc",
-                    marginLeft: "auto",
+                    fontSize: '12px',
+                    color: '#ccc',
+                    marginLeft: 'auto',
                   }}
                 >
-                  {time === "Just now"
-                    ? language?.language.Main.feedCard.justNow
-                    : time?.numbers + " " + timeTitle}
+                  {currentPostTime?.numbers + ' ' + timeTitle}
                 </span>
               )}
             </div>
             <div
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "5px",
-                width: "100%",
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                width: '100%',
               }}
             >
               <Text>{item.text}</Text>
-              {props.currentuser?.id !== undefined &&
-                (item?.reviewerId === props.currentuser?.id ||
-                  item.recieverId === props.currentuser?.id) && (
-                  <MdOutlineRemove
-                    onClick={() => RemoveReview(item.reviewerId, item.id)}
-                    style={{
-                      minWidth: "5%",
-                      textAlign: "center",
-                      fontSize: "16px",
-                      cursor: "pointer",
-                    }}
-                    className="remove"
-                  />
-                )}
+              {props.currentUser?._id && (
+                <MdOutlineRemove
+                  onClick={() => DeleteReview(item._id)}
+                  style={{
+                    minWidth: '5%',
+                    textAlign: 'center',
+                    fontSize: '16px',
+                    cursor: 'pointer',
+                  }}
+                  className="remove"
+                />
+              )}
             </div>
           </ReviewItem>
         );

@@ -1,14 +1,14 @@
-import React, { useContext } from "react";
-import styled from "styled-components";
-import { AiOutlineComment } from "react-icons/ai";
-import { MdOutlineArrowRight } from "react-icons/md";
-import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { onSnapshot, collectionGroup } from "firebase/firestore";
-import { db } from "../../firebase";
-import { AuthContext } from "../../context/AuthContext";
-import { Language } from "../../context/language";
-import GetTimesAgo from "../../functions/getTimesAgo";
+import React, { useContext } from 'react';
+import styled from 'styled-components';
+import { AiOutlineComment } from 'react-icons/ai';
+import { MdOutlineArrowRight } from 'react-icons/md';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { onSnapshot, collectionGroup } from 'firebase/firestore';
+import { db } from '../../firebase';
+import { AuthContext } from '../../context/AuthContext';
+import { Language } from '../../context/language';
+import GetTimesAgo from '../../functions/getTimesAgo';
 
 export const Reviews = () => {
   const { currentUser } = useContext(AuthContext);
@@ -21,7 +21,7 @@ export const Reviews = () => {
   // get reviews from users
   const [reviewList, setReviewList] = React.useState([]);
   React.useEffect(() => {
-    const data = onSnapshot(collectionGroup(db, "reviews"), (snapshot) => {
+    const data = onSnapshot(collectionGroup(db, 'reviews'), (snapshot) => {
       setReviewList(snapshot.docs.map((doc) => doc.data()));
     });
     return data;
@@ -30,7 +30,7 @@ export const Reviews = () => {
   return (
     <Container>
       <Title>
-        {language?.language?.Main?.reviews?.title}{" "}
+        {language?.language?.Main?.reviews?.title}{' '}
         <AiOutlineComment className="likedIcon" />
       </Title>
       <List>
@@ -39,9 +39,9 @@ export const Reviews = () => {
           ?.map((item, index) => {
             let currentPostTime = GetTimesAgo(item?.time?.seconds);
             let timeTitle;
-            if (currentPostTime?.title === "h") {
+            if (currentPostTime?.title === 'h') {
               timeTitle = language?.language.Main.feedCard.h;
-            } else if (currentPostTime?.title === "min") {
+            } else if (currentPostTime?.title === 'min') {
               timeTitle = language?.language.Main.feedCard.min;
             } else {
               timeTitle = currentPostTime?.title;
@@ -50,25 +50,25 @@ export const Reviews = () => {
               <div key={index}>
                 <div
                   style={{
-                    width: "92%",
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    gap: "5px",
+                    width: '92%',
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    gap: '5px',
                   }}
                 >
                   <span
                     style={{
-                      color: "#ddd",
-                      fontSize: "12px",
+                      color: '#ddd',
+                      fontSize: '12px',
                       // fontWeight: "bold",
-                      fontStyle: "italic",
-                      marginLeft: "1vw",
-                      marginBottom: "0.5vw",
+                      fontStyle: 'italic',
+                      marginLeft: '1vw',
+                      marginBottom: '0.5vw',
                     }}
                   >
-                    {currentPostTime === "Just now"
+                    {currentPostTime === 'Just now'
                       ? language?.language.Main.feedCard.justNow
-                      : currentPostTime?.numbers + " " + timeTitle}
+                      : currentPostTime?.numbers + ' ' + timeTitle}
                   </span>
                 </div>
                 <ReviewItem>
@@ -80,13 +80,13 @@ export const Reviews = () => {
                   <MdOutlineArrowRight className="arrowIcon" />
                   <Reviewer
                     onClick={() => navigate(`/user/${item?.recieverId}`)}
-                    style={{ color: "#46BCFF" }}
+                    style={{ color: '#46BCFF' }}
                   >
                     {item.reciever}
                   </Reviewer>
-                  <span id="text" style={{ fontSize: "14px" }}>
+                  <span id="text" style={{ fontSize: '14px' }}>
                     {item.text}
-                  </span>{" "}
+                  </span>{' '}
                 </ReviewItem>
               </div>
             );

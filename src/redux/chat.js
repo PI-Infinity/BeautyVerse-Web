@@ -1,21 +1,26 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  currentChat: "",
-  rerender: 1,
+  activeTab: false,
+  currentChat: '',
+  userChats: [],
   counter: 30,
   scrollY: 500,
+  rerenderChatList: false,
 };
 
 export const chat = createSlice({
-  name: "chat",
+  name: 'chat',
   initialState,
   reducers: {
-    SetCurrentChat: (state, action) => {
+    setActiveTab: (state, action) => {
+      state.activeTab = action.payload;
+    },
+    setCurrentChat: (state, action) => {
       state.currentChat = action.payload;
     },
-    setRerender: (state, action) => {
-      state.rerender++;
+    setUserChats: (state, action) => {
+      state.userChats = action.payload;
     },
     setCounter: (state, action) => {
       state.counter = action.payload;
@@ -23,9 +28,18 @@ export const chat = createSlice({
     setScrollY: (state, action) => {
       state.scrollY = action.payload;
     },
+    setRerenderChatList: (state, action) => {
+      state.rerenderChatList = !state.rerenderChatList;
+    },
   },
 });
 
-export const { SetCurrentChat, setRerender, setCounter, setScrollY } =
-  chat.actions;
+export const {
+  setActiveTab,
+  setCurrentChat,
+  setUserChats,
+  setCounter,
+  setScrollY,
+  setRerenderChatList,
+} = chat.actions;
 export default chat.reducer;

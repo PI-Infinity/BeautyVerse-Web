@@ -1,128 +1,136 @@
-import React, { useState } from "react";
-import styled from "styled-components";
-import { db } from "../../firebase";
-import {
-  doc,
-  updateDoc,
-  deleteDoc,
-  setDoc,
-  onSnapshot,
-  collection,
-} from "firebase/firestore";
-import { useSelector } from "react-redux";
-import { TiDeleteOutline } from "react-icons/ti";
-import { MdLibraryAdd } from "react-icons/md";
-import { ImCheckmark } from "react-icons/im";
-import { GiConfirmed } from "react-icons/gi";
-import Select from "react-select";
-import makeAnimated from "react-select/animated";
+import React, { useState } from 'react';
+import styled from 'styled-components';
+import { useSelector, useDispatch } from 'react-redux';
+import { TiDeleteOutline } from 'react-icons/ti';
+import { MdOutlinePlaylistAdd } from 'react-icons/md';
+import { ImCheckmark } from 'react-icons/im';
+import { GiConfirmed } from 'react-icons/gi';
+import Select from 'react-select';
+import makeAnimated from 'react-select/animated';
 import {
   ProceduresOptions,
   workingDaysOptions,
-} from "../../data/registerDatas";
-import useWindowDimensions from "../../functions/dimensions";
-import { IsMobile } from "../../functions/isMobile";
-import { useOutletContext } from "react-router-dom";
-import { RiEdit2Fill } from "react-icons/ri";
-import AlertDialog from "../../components/dialog";
-import BasicTimePicker from "../../components/timePicker";
+} from '../../data/registerDatas';
+import useWindowDimensions from '../../functions/dimensions';
+import { IsMobile } from '../../functions/isMobile';
+import { useOutletContext } from 'react-router-dom';
+import { RiEdit2Fill } from 'react-icons/ri';
+import AlertDialog from '../../components/dialog';
+import Warrning from '../../snackBars/success';
+import { Spinner } from '../../components/loader';
+import axios from 'axios';
+import { setRerenderCurrentUser } from '../../redux/rerenders';
+import { WorkingDays } from '../../pages/user/workingDays';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 
 const animatedComponents = makeAnimated();
 
 export const Services = () => {
   const proceduresOptions = ProceduresOptions();
-
-  const [user, language] = useOutletContext();
+  const [loading, setLoading] = useState(true);
+  const [targetUser, language] = useOutletContext();
+  const currentUser = JSON.parse(
+    localStorage.getItem('Beautyverse:currentUser')
+  );
   const isMobile = IsMobile();
-  const [loading, setLoading] = React.useState(true);
+  const dispatch = useDispatch();
   const { height, width } = useWindowDimensions();
 
-  // import current user from redux state
-  const userUnparsed = useSelector((state) => state.storeMain.user);
-  let currentuser;
-  if (userUnparsed?.length > 0) {
-    currentuser = JSON.parse(userUnparsed);
-  }
+  const [editProcedure, setEditProcedure] = useState(false);
+  const [addProcedureInput, setAddProcedureInput] = useState('');
 
-  // import services
-  const [services, setServices] = React.useState([]);
+  const [editProcedurePrice, setEditProcedurePrice] = useState(false);
+  const [addProcedurePriceInput, setAddProcedurePriceInput] = useState('');
 
-  React.useEffect(() => {
-    const data = onSnapshot(
-      collection(db, "users", `${user?.id}`, "procedures"),
-      (snapshot) => {
-        setServices(snapshot.docs.map((doc) => doc.data()));
-      }
-    );
-    return data;
-  }, []);
+  const [addPriceFirstly, setAddPriceFirstly] = useState('');
 
-  const [addService, setAddService] = useState(false);
-  const [addServiceInput, setAddServiceInput] = useState("");
-  const [addPrice, setAddPrice] = useState("");
+  const [alert, setAlert] = useState('');
+
+  console.log(targetUser.procedures);
 
   // add service to firebase
-  const Adding = async () => {
-    if (addServiceInput < 1) {
-      setAddService(false);
+  const AddProcedure = async () => {
+    var val = targetUser?.procedures?.find(
+      (item) => item.value === addProcedureInput.value
+    );
+    if (addProcedureInput === '') {
+      setEditProcedure(false);
     } else {
-      const main = doc(db, "users", `${user.id}`);
-      await updateDoc(main, {
-        filterCategories: [...user?.filterCategories, addServiceInput.value],
-      });
-      const base = doc(
-        db,
-        "users",
-        `${user.id}`,
-        "procedures",
-        addServiceInput.value
-      );
-      await setDoc(base, {
-        value: addServiceInput.value,
-      });
-      setAddServiceInput("");
-      setAddService(false);
+      if (val) {
+        setAlert({
+          active: true,
+          title: 'Procedure already added in your procedures list!',
+        });
+        setAddProcedureInput('');
+      } else {
+        const response = await axios.post(
+          `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}/procedures`,
+          {
+            value: addProcedureInput.value,
+          }
+        );
+        const data = await response.data;
+        dispatch(setRerenderCurrentUser());
+        setAddProcedureInput('');
+        setEditProcedure(false);
+      }
     }
   };
   // add service to firebase
-  const AddPrice = async (prop) => {
-    const base = doc(db, "users", `${user.id}`, "procedures", prop);
-    await updateDoc(base, {
-      price: addPrice,
-    });
-    setAddPrice("");
+  const AddProcedurePrice = async (itemId, itemValue) => {
+    if (!addProcedurePriceInput && addPriceFirstly === '') {
+      setAlert({
+        active: true,
+        title: 'input field',
+      });
+    } else {
+      let response;
+      await axios.patch(
+        `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}/procedures/${itemId}`,
+        {
+          value: itemValue,
+          price:
+            editProcedurePrice.value === itemValue
+              ? addProcedurePriceInput
+              : addPriceFirstly,
+        }
+      );
+
+      await dispatch(setRerenderCurrentUser());
+      editProcedurePrice.value === itemValue
+        ? setAddProcedurePriceInput('')
+        : setAddPriceFirstly('');
+    }
   };
 
   // delete service
-  const Deleting = async (prop) => {
-    if (services?.length == 1) {
+  const Deleting = async (itemId) => {
+    if (targetUser?.procedures?.length > 1) {
+      const url = `/api/v1/users/${targetUser?._id}/procedures/${itemId}`;
+      const response = await fetch(url, { method: 'DELETE' })
+        .then((response) => response.json())
+        .then(() => dispatch(setRerenderCurrentUser()))
+        .catch((error) => {
+          console.log('Error fetching data:', error);
+        });
     } else {
-      const main = doc(db, "users", `${user.id}`);
-      let less = user?.filterCategories?.filter((item) => item != prop);
-      await updateDoc(main, {
-        filterCategories: less,
+      setAlert({
+        active: true,
+        title: 'You cant delete last procedure',
       });
-      const base = doc(db, "users", `${user.id}`, "procedures", prop);
-      // let less = user?.services?.filter((item) => item != prop);
-      deleteDoc(base);
     }
   };
-
-  // const [editWorkingPlace, setEditWorkingPlace] = React.useState("");
-  const [editWorkingDays, setEditWorkingDays] = React.useState("");
-  const [edit, setEdit] = React.useState(false);
-
-  const [startingHours, setStartingHours] = React.useState(null);
-  const [endingHours, setEndingHours] = React.useState(null);
 
   // define working days options language
   const lang = useSelector((state) => state.storeMain.language);
   let workingDaysOpt;
-  if (lang === "ka") {
+  if (lang === 'ka') {
     workingDaysOpt = workingDaysOptions?.map((item) => {
       return { value: item.value, label: item.ka };
     });
-  } else if (lang === "ru") {
+  } else if (lang === 'ru') {
     workingDaysOpt = workingDaysOptions?.map((item) => {
       return { value: item.value, label: item.ru };
     });
@@ -132,39 +140,10 @@ export const Services = () => {
     });
   }
 
-  // update working days
-  const UpdateWorkingDays = (newValue) => {
-    const base = doc(db, "users", `${user?.id}`);
-    if (editWorkingDays?.length > 0) {
-      updateDoc(base, {
-        workingDays: editWorkingDays,
-      });
-    }
-    setEditWorkingDays("");
-    setEdit(false);
-  };
-
-  const UpdateWorkingHours = () => {
-    const base = doc(db, "users", `${user?.id}`);
-    if (startingHours !== null && endingHours !== null) {
-      updateDoc(base, {
-        workingHours: {
-          start: startingHours?.$d?.toString().slice(16, 21),
-          end: endingHours?.$d?.toString().slice(16, 21),
-        },
-      });
-      setEndingHours("");
-      setStartingHours("");
-      setEdit(false);
-    } else {
-      alert("Add starting and ending time");
-    }
-  };
-
   // confirm remove service
   const [confirmRemove, setConfirmRemove] = React.useState(false);
   // import user gallery images from firestore
-  const [removeData, setRemoveData] = useState("");
+  const [removeData, setRemoveData] = useState('');
 
   // color mode
   const theme = useSelector((state) => state.storeMain.theme);
@@ -173,285 +152,327 @@ export const Services = () => {
       ...base,
       color: state.isSelected
         ? theme
-          ? "#333"
-          : "#f3f3f3"
+          ? '#333'
+          : '#f3f3f3'
         : theme
-        ? "#f3f3f3"
-        : "#333",
+        ? '#f3f3f3'
+        : '#333',
     }),
     placeholder: (base, state) => ({
       ...base,
       color: state.isSelected
         ? theme
-          ? "#333"
-          : "#f3f3f3"
+          ? '#333'
+          : '#f3f3f3'
         : theme
-        ? "#f3f3f3"
-        : "#333",
+        ? '#f3f3f3'
+        : '#333',
     }),
     input: (base, state) => ({
       ...base,
-      color: theme ? "#f3f3f3" : "#333",
-      fontSize: "16px",
+      color: theme ? '#f3f3f3' : '#333',
+      fontSize: '16px',
     }),
     menuList: (base, state) => ({
       ...base,
-      backgroundColor: theme ? "#333" : "#f3f3f3",
+      backgroundColor: theme ? '#333' : '#f3f3f3',
     }),
     option: (base, state) => ({
       ...base,
       backgroundColor: state.isSelected
         ? theme
-          ? "#f3f3f3"
-          : "#333"
+          ? '#f3f3f3'
+          : '#333'
         : theme
-        ? "#333"
-        : "#f3f3f3",
+        ? '#333'
+        : '#f3f3f3',
       color: state.isSelected
         ? theme
-          ? "#333"
-          : "#f3f3f3"
+          ? '#333'
+          : '#f3f3f3'
         : theme
-        ? "#f3f3f3"
-        : "#333",
-      fontSize: "14px",
+        ? '#f3f3f3'
+        : '#333',
+      fontSize: '14px',
     }),
     control: (baseStyles, state) => ({
       ...baseStyles,
-      backgroundColor: theme ? "#333" : "#fff",
-      borderColor: state.isFocused ? "rgba(0,0,0,0)" : "rgba(0,0,0,0.1)",
-      width: "38vw",
-      minHeight: "2vw",
-      cursor: "pointer",
-      "@media only screen and (max-width: 1200px)": {
-        width: "80vw",
-        fontSize: "14px",
+      backgroundColor: theme ? '#333' : '#fff',
+      borderColor: state.isFocused ? 'rgba(0,0,0,0)' : 'rgba(0,0,0,0.1)',
+      width: '38vw',
+      minHeight: '2vw',
+      cursor: 'pointer',
+      '@media only screen and (max-width: 1200px)': {
+        width: '80vw',
+        fontSize: '14px',
       },
     }),
   };
+
+  // create tab navigator
+  // tab state
+  const [value, setValue] = React.useState(0);
+  const [filterItem, setFilterItem] = React.useState('Hairdressing');
+
+  const StyledTab = styled(Tab)({
+    '&.Mui-selected': {
+      color: 'secondary',
+      fontSize: '14px',
+      '@media only screen and (max-width: 1200px)': {
+        fontSize: '12px',
+      },
+    },
+    '&.MuiTab-root': {
+      color: '#ee99fc',
+      fontSize: '14px',
+      '@media only screen and (max-width: 1200px)': {
+        fontSize: '12px',
+      },
+    },
+  });
+
+  function CenteredTabs({ value, setValue, language }) {
+    const handleChange = (event, newValue) => {
+      setValue(newValue);
+    };
+
+    const uniqueLabels = new Set();
+    const tabs = targetUser?.procedures?.map((item, index) => {
+      let x = item.value.indexOf('-');
+      let result = item.value.substring(0, x - 1);
+      let label = proceduresOptions.find((it) => it.value === result);
+      if (label && !uniqueLabels.has(label.value)) {
+        uniqueLabels.add(label.value);
+        return (
+          <StyledTab
+            label={label.label}
+            key={index}
+            onClick={() => setFilterItem(label.value)}
+          />
+        );
+      }
+      return null;
+    });
+
+    return (
+      <Box sx={{ width: '100%', color: '#fff' }}>
+        <Tabs
+          value={value}
+          onChange={handleChange}
+          variant="scrollable"
+          scrollButtons="auto"
+          aria-label="scrollable auto tabs example"
+          indicatorColor="secondary"
+          textColor="secondary"
+        >
+          {tabs}
+        </Tabs>
+      </Box>
+    );
+  }
 
   setTimeout(() => {
     setLoading(false);
   }, 300);
 
   return (
-    <ContentContainer height={height}>
-      <WrapperOne>
-        <WorkingDays>
-          <span style={{ fontWeight: "bold" }}>
-            {language?.language.User.userPage?.workingDays}:{" "}
-            {user?.id === currentuser?.id && edit !== "days" && (
-              <RiEdit2Fill className="edit" onClick={() => setEdit("days")} />
-            )}
-          </span>
-          <div>
-            {user?.workingDays?.length > 0 &&
-              user?.workingDays
-                ?.sort(function (a, b) {
-                  return a.id - b.id;
-                })
-                ?.map((item, index) => {
-                  let daysLang = workingDaysOpt?.find(
-                    (it) => it.value === item.value
-                  );
-                  return <div key={item.id}>{daysLang.label}</div>;
-                })}
-          </div>
-          {edit === "days" && (
-            <SelectContainer
-              style={{ display: "flex", gap: "10px", alignItems: "center" }}
-            >
-              <Select
-                onChange={(value) => {
-                  setEditWorkingDays(value);
-                }}
-                placeholder={language?.language.User.userPage.workingDays}
-                isMulti
-                components={animatedComponents}
-                styles={CustomStyle}
-                options={workingDaysOpt}
-              />
-              <ImCheckmark
-                className="add"
-                onClick={() => {
-                  UpdateWorkingDays();
-                  setEdit(false);
-                }}
-              />
-            </SelectContainer>
-          )}
-        </WorkingDays>
-        <WorkingDays>
-          <span style={{ fontWeight: "bold" }}>
-            {language?.language.User.userPage.workingHours + ": "}
-            {user?.id === currentuser?.id && edit !== "hours" && (
-              <RiEdit2Fill className="edit" onClick={() => setEdit("hours")} />
-            )}
-          </span>
-          {edit === "hours" ? (
-            <div>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "start",
-                  gap: "10px",
-                }}
-              >
-                <span>{language?.language.User.userPage.startAt}</span>
-                <BasicTimePicker
-                  value={startingHours}
-                  setValue={setStartingHours}
-                  title={language?.language.User.userPage.startAt}
-                />
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "start",
-                  gap: "10px",
-                }}
-              >
-                <span>{language?.language.User.userPage.endAt}</span>
-                <BasicTimePicker
-                  value={endingHours}
-                  setValue={setEndingHours}
-                  title={language?.language.User.userPage.endAt}
-                />
-              </div>
-              <ImCheckmark
-                className="add"
-                onClick={() => setEdit(false)}
-                onClick={UpdateWorkingHours}
-              />
-            </div>
-          ) : (
-            <span>
-              {user?.workingHours !== undefined &&
-                user?.workingHours?.start + "-" + user?.workingHours?.end}
-            </span>
-          )}
-        </WorkingDays>
-      </WrapperOne>
-      <ServicesContainer>
-        <span style={{ fontWeight: "bold", marginTop: "1vw" }}>
-          {language?.language.User.userPage.service}:
-        </span>
-        <Servs>
-          {user?.id === currentuser?.id && (
-            <>
-              {!addService && (
-                <MdLibraryAdd
-                  className="open"
-                  onClick={() => setAddService(true)}
-                />
-              )}
-            </>
-          )}
-          {addService && (
-            <SelectContainer style={{ display: "flex", gap: "10px" }}>
-              <Select
-                placeholder={language?.language.User.userPage.addService}
-                components={animatedComponents}
-                onChange={(value) => {
-                  setAddServiceInput(value);
-                }}
-                styles={CustomStyle}
-                options={proceduresOptions?.filter((item) => {
-                  let symbolCount = 0;
-                  for (let i = 0; i < item.value.length; i++) {
-                    if (item.value[i] === "-") {
-                      symbolCount++;
-                    }
-                  }
-                  return symbolCount === 2;
-                })}
-              />
-              <ImCheckmark className="add" onClick={Adding} />
-            </SelectContainer>
-          )}
-          <ServicesList>
-            {services?.map((cat, index) => {
-              var item = proceduresOptions?.find(
-                (item) => item.value === cat.value
-              );
-              return (
-                <ServiceItemContainer key={index}>
-                  <ServiceItem>
-                    <span>{item?.label}</span>
-                    {user?.id !== currentuser?.id ? (
-                      <>
-                        {cat?.price != undefined ? (
-                          <Price>
-                            <h4>
-                              {cat.price}
-                              {`\u20BE`}
-                            </h4>
-                          </Price>
-                        ) : undefined}
-                      </>
-                    ) : (
-                      <>
-                        {cat?.price != undefined ? (
-                          <Price>
-                            <h4>
-                              {cat.price}
-                              {`\u20BE`}
-                            </h4>
-                          </Price>
-                        ) : (
-                          <InputContainer>
-                            <Input
-                              type="number"
-                              placeholder={
-                                language?.language.User.userPage.price
-                              }
-                              onChange={(e) => setAddPrice(e.target.value)}
-                            />
-                            {`\u20BE`}
+    <>
+      {loading ? (
+        <ContentContainer
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Spinner />
+        </ContentContainer>
+      ) : (
+        <ContentContainer height={height}>
+          <WrapperOne>
+            <WorkingDays targetUser={targetUser} language={language} />
 
-                            <GiConfirmed
-                              // className="remove"
-                              onClick={
-                                addPrice > 0 ? () => AddPrice(item.value) : null
-                              }
-                              style={{ color: "green", cursor: "pointer" }}
-                              // onClick={() => Deleting(item.value)}
-                            />
-                          </InputContainer>
-                        )}
-                      </>
+            {/**
+             *
+             *  Procedures Options
+             *
+             */}
+            <SectionContainer>
+              <span style={{ fontWeight: 'bold', marginTop: '1vw' }}>
+                {language?.language.User.userPage.memberServices}:
+              </span>
+
+              <SectionWrapper>
+                {targetUser?._id === currentUser?._id && (
+                  <>
+                    {!editProcedure && (
+                      <MdOutlinePlaylistAdd
+                        className="open"
+                        onClick={() => setEditProcedure(true)}
+                      />
                     )}
-                  </ServiceItem>
-                  {user?.id === currentuser?.id && (
-                    <>
-                      <TiDeleteOutline
-                        className="remove"
-                        onClick={() => {
-                          setConfirmRemove(true);
-                          setRemoveData(item.value);
-                        }}
-                      />
-                      <AlertDialog
-                        title={language?.language.User.userPage.confirm}
-                        text={
-                          language?.language.User.userPage.removeServiceText
+                  </>
+                )}
+                {editProcedure && (
+                  <SelectContainer style={{ display: 'flex', gap: '10px' }}>
+                    <Select
+                      placeholder={language?.language.User.userPage.addService}
+                      components={animatedComponents}
+                      onChange={(value) => {
+                        setAddProcedureInput(value);
+                      }}
+                      styles={CustomStyle}
+                      options={proceduresOptions?.filter((item) => {
+                        let symbolCount = 0;
+                        for (let i = 0; i < item.value.length; i++) {
+                          if (item.value[i] === '-') {
+                            symbolCount++;
+                          }
                         }
-                        open={confirmRemove}
-                        setOpen={setConfirmRemove}
-                        function={() => Deleting(removeData)}
-                        language={language}
-                      />
-                    </>
-                  )}
-                </ServiceItemContainer>
-              );
-            })}
-          </ServicesList>
-        </Servs>
-      </ServicesContainer>
-    </ContentContainer>
+                        return symbolCount === 2;
+                      })}
+                    />
+                    <ImCheckmark className="add" onClick={AddProcedure} />
+                  </SelectContainer>
+                )}
+                <div style={{ margin: '0 0 5% 0', height: '35px' }}>
+                  <CenteredTabs
+                    value={value}
+                    setValue={setValue}
+                    language={language}
+                  />
+                </div>
+                <SectionList>
+                  {targetUser?.procedures
+                    ?.filter((item) => item.value.includes(filterItem))
+                    ?.map((cat, index) => {
+                      var item = proceduresOptions?.find(
+                        (item) => item.value === cat.value
+                      );
+                      return (
+                        <SectionItemContainer key={index}>
+                          <SectionItem>
+                            <span>{item?.label}</span>
+                            {targetUser?._id !== currentUser?._id ? (
+                              <>
+                                {cat?.price && (
+                                  <AddationalValue>
+                                    <h4>
+                                      {cat.price}
+                                      {`\u20BE`}
+                                    </h4>
+                                  </AddationalValue>
+                                )}
+                              </>
+                            ) : (
+                              <>
+                                {cat?.price &&
+                                editProcedurePrice.value !== cat.value ? (
+                                  <AddationalValue>
+                                    <h4>
+                                      {cat.price}
+                                      {`\u20BE`}
+                                    </h4>
+                                    <RiEdit2Fill
+                                      className="editIcon"
+                                      onClick={() => {
+                                        setEditProcedurePrice({
+                                          active: true,
+                                          value: cat.value,
+                                        });
+                                        setAddProcedurePriceInput(cat?.price);
+                                      }}
+                                    />
+                                  </AddationalValue>
+                                ) : (
+                                  <InputContainer>
+                                    <Input
+                                      type="number"
+                                      value={
+                                        editProcedurePrice.value === cat.value
+                                          ? addProcedurePriceInput
+                                          : addPriceFirstly
+                                      }
+                                      placeholder={
+                                        language?.language.User.userPage.price
+                                      }
+                                      onFocus={() =>
+                                        setEditProcedurePrice({
+                                          active: true,
+                                          value: cat.value,
+                                        })
+                                      }
+                                      onChange={
+                                        editProcedurePrice.value === cat.value
+                                          ? (e) =>
+                                              setAddProcedurePriceInput(
+                                                e.target.value
+                                              )
+                                          : (e) =>
+                                              setAddPriceFirstly(e.target.value)
+                                      }
+                                    />
+                                    {`\u20BE`}
+
+                                    <GiConfirmed
+                                      onClick={async () => {
+                                        await AddProcedurePrice(
+                                          cat._id,
+                                          cat.value
+                                        );
+                                        editProcedurePrice.value === cat.value
+                                          ? setEditProcedurePrice(false)
+                                          : setAddPriceFirstly(false);
+                                      }}
+                                      style={{
+                                        color: 'green',
+                                        cursor: 'pointer',
+                                      }}
+                                    />
+                                  </InputContainer>
+                                )}
+                              </>
+                            )}
+                          </SectionItem>
+                          {targetUser?._id === currentUser?._id && (
+                            <>
+                              <TiDeleteOutline
+                                className="remove"
+                                onClick={() => {
+                                  setConfirmRemove(true);
+                                  setRemoveData(cat?._id);
+                                }}
+                              />
+                              <AlertDialog
+                                title={language?.language.User.userPage.confirm}
+                                text={
+                                  language?.language.User.userPage
+                                    .removeServiceText
+                                }
+                                open={confirmRemove}
+                                setOpen={setConfirmRemove}
+                                function={() => Deleting(removeData)}
+                                language={language}
+                              />
+                            </>
+                          )}
+                        </SectionItemContainer>
+                      );
+                    })}
+                </SectionList>
+              </SectionWrapper>
+            </SectionContainer>
+          </WrapperOne>
+
+          <Warrning
+            open={alert?.active}
+            setOpen={setAlert}
+            type="error"
+            title={alert?.title}
+          />
+        </ContentContainer>
+      )}
+    </>
   );
 };
 
@@ -486,17 +507,19 @@ const ContentContainer = styled.div`
   padding-left: 4vw;
   width: 100%;
   // min-height: 57vh;
-  height: 52vh;
+  height: 60vh;
   gap: 1vw;
   padding-bottom: 3vw;
   overflow-y: scroll;
   overflow-x: hidden;
+  box-sizing: border-box;
 
   @media only screen and (max-width: 600px) {
-    width: 90vw;
-    height: calc(${(props) => props.height}px - 68vw);
+    width: 100vw;
+    height: calc(${(props) => props.height}px - 72vw);
     padding-top: 5vw;
-    padding-left: 2vw;
+    padding-left: 4vw;
+    padding-right: 0;
     gap: 5vw;
   }
 
@@ -557,7 +580,7 @@ const ContentContainer = styled.div`
 `;
 
 const WrapperOne = styled.div`
-  width: 100%;
+  width: auto;
   display: flex;
   flex-direction: column;
   gap: 1vw;
@@ -578,73 +601,18 @@ const SelectContainer = styled.div`
   }
 `;
 
-const WorkingDays = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: start;
-  justify-content: start;
-  gap: 0.5vw;
-  min-height: 2vw;
-  color: ${(props) => props.theme.font};
-
-  @media only screen and (max-width: 600px) {
-    min-height: 8vw;
-    align-items: start;
-    gap: 3vw;
-  }
-
-  & span {
-    @media only screen and (max-width: 600px) {
-      font-size: 14px;
-    }
-  }
-
-  & div {
-    @media only screen and (max-width: 600px) {
-      font-size: 14px;
-    }
-  }
-
-  .open {
-    font-size: 1.5vw;
-    color: ${(props) => props.theme.icon};
-    cursor: pointer;
-
-    @media only screen and (max-width: 600px) {
-      font-size: 6vw;
-      flex-direction: column;
-    }
-
-    :hover {
-      filter: brightness(1.1);
-    }
-  }
-
-  .add {
-    font-size: 1.5vw;
-    color: green;
-    cursor: pointer;
-
-    @media only screen and (max-width: 600px) {
-      font-size: 6vw;
-    }
-
-    :hover {
-      filter: brightness(1.1);
-    }
-  }
-`;
-
-const ServicesList = styled.div`
+const SectionList = styled.div`
   width: 100%;
   margin-top: 1vw;
   border-radius: 5px;
-  box-shadow: 0 0.1vw 0.2vw rgba(0, 0, 0, 0.2);
   background: ${(props) => props.theme.secondLevel};
+
+  @media only screen and (max-width: 600px) {
+    width: 95%;
+  }
 `;
 
-const ServicesContainer = styled.div`
+const SectionContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1vw;
@@ -676,7 +644,7 @@ const ServicesContainer = styled.div`
   }
 `;
 
-const Servs = styled.div`
+const SectionWrapper = styled.div`
   width: 100%;
   // display: flex;
   // flex-direction: column;
@@ -723,9 +691,9 @@ const Servs = styled.div`
   }
 `;
 
-const ServiceItemContainer = styled.div`
+const SectionItemContainer = styled.div`
   width: 42vw;
-  border-bottom: 1px solid #ccc;
+  // border-bottom: 1px solid #ccc;
   padding: 10px;
   display: flex;
   align-items: center;
@@ -744,7 +712,7 @@ const ServiceItemContainer = styled.div`
   }
 `;
 
-const ServiceItem = styled.div`
+const SectionItem = styled.div`
   padding: 0.2vw 0.5vw 0.2vw 1vw;
   border: 1px solid ${(props) => props.theme.lineColor};
   border-radius: 0.25vw;
@@ -762,32 +730,35 @@ const ServiceItem = styled.div`
     width: 81vw;
     height: 8vw;
     border-radius: 1vw;
-    padding: 0 0 0 2vw;
+    padding: 0 1.5vw 0 2vw;
   }
-
-  // & span {
-  //   position: relative;
-  //   bottom: 0.1vw;
-  //   font-size: 0.8vw;
-  // }
 `;
 
-const Price = styled.div`
+const AddationalValue = styled.div`
   padding: 0.5vw;
   border-radius: 50vw;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: 0.2vw;
   height: 2vw;
-  width: 2vw;
+  width: 4vw;
   position: relative;
   right: 0;
 
   @media only screen and (max-width: 600px) {
     gap: 2vw;
     height: 10vw;
-    width: 10vw;
+    width: 12vw;
+  }
+  .editIcon {
+    color: ${(props) => props.theme.disabled};
+    cursor: pointer;
+    font-size: 1vw;
+
+    @media only screen and (max-width: 600px) {
+      font-size: 4vw;
+    }
   }
 `;
 

@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
-import styled from "styled-components";
-import { useSelector, useDispatch } from "react-redux";
-import { MdOutlineCloseFullscreen } from "react-icons/md";
-import { IoMdArrowDropright, IoMdArrowDropleft } from "react-icons/io";
-import { FiSend } from "react-icons/fi";
-import { FaUser } from "react-icons/fa";
-import { FcDeleteRow } from "react-icons/fc";
-import { navigate } from "react-router-dom";
-import { AddReview } from "../../../pages/main/feedCard/addReview";
-import { ReviewList } from "../../../pages/main/feedCard/reviewList";
-import { setFromReviews } from "../../../redux/feed";
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import styled from 'styled-components';
+import { useSelector, useDispatch } from 'react-redux';
+import { MdOutlineCloseFullscreen } from 'react-icons/md';
+import { IoMdArrowDropright, IoMdArrowDropleft } from 'react-icons/io';
+import { FiSend } from 'react-icons/fi';
+import { FaUser } from 'react-icons/fa';
+import { FcDeleteRow } from 'react-icons/fc';
+import { navigate } from 'react-router-dom';
+import { AddReview } from '../../../pages/main/feedCard/addReview';
+import { ReviewList } from '../../../pages/main/feedCard/reviewList';
+import { setFromReviews } from '../../../redux/feed';
 import {
   setDoc,
   doc,
@@ -23,28 +23,28 @@ import {
   updateDoc,
   arrayUnion,
   arrayRemove,
-} from "firebase/firestore";
+} from 'firebase/firestore';
 import {
   ref,
   uploadBytes,
   listAll,
   getDownloadURL,
   deleteObject,
-} from "firebase/storage";
-import { ImagesSide } from "../../../src-marketplace/pages/product/imagesSide";
+} from 'firebase/storage';
+import { ImagesSide } from '../../../src-marketplace/pages/product/imagesSide';
 import {
   InfoSide,
   BottomSection,
-} from "../../../src-marketplace/pages/product/infoSide";
-import { v4 } from "uuid";
-import { setImgNumber, setOpenFeed } from "../../../redux/feed";
-import { setRerender } from "../../../redux/main";
-import Loader from "react-js-loader";
-import { db, storage } from "../../../firebase";
-import useWindowDimensions from "../../../functions/dimensions";
-import { BsFillArrowUpCircleFill } from "react-icons/bs";
-import { IsMobile } from "../../../functions/isMobile";
-import { Spinner } from "../../../components/loader";
+} from '../../../src-marketplace/pages/product/infoSide';
+import { v4 } from 'uuid';
+import { setImgNumber, setOpenFeed } from '../../../redux/feed';
+import { setRerender } from '../../../redux/main';
+import Loader from 'react-js-loader';
+import { db, storage } from '../../../firebase';
+import useWindowDimensions from '../../../functions/dimensions';
+import { BsFillArrowUpCircleFill } from 'react-icons/bs';
+import { IsMobile } from '../../../functions/isMobile';
+import { Spinner } from '../../../components/loader';
 
 const Product = (props) => {
   const { height, width } = useWindowDimensions();
@@ -59,30 +59,28 @@ const Product = (props) => {
   const { Id, ShopId } = useParams();
 
   // import current user & parse it
-  const userUnparsed = useSelector((state) => state.storeMain.user);
-  let currentuser;
-  if (userUnparsed?.length > 0) {
-    currentuser = JSON.parse(userUnparsed);
-  }
+  const currentuser = useSelector(
+    (state) => state.storeMain?.user?.length > 0 && state.storeMain?.user
+  );
 
   //redux states
   const [product, setProduct] = useState([]);
   // remove confirming window
-  const [confirm, setConfirm] = useState("");
+  const [confirm, setConfirm] = useState('');
 
   const [images, setImages] = useState([]);
   const [mainImg, setMainImg] = useState(0);
 
   // add review to firebase
-  const [reviewText, setReviewText] = React.useState("");
+  const [reviewText, setReviewText] = React.useState('');
 
   //get user products from firestore
   const fnc = async () => {
-    const docRef = doc(db, "users", `${ShopId}`, "products", `${Id}`);
+    const docRef = doc(db, 'users', `${ShopId}`, 'products', `${Id}`);
     const product = await getDoc(docRef);
     if (product.exists()) {
-      if (product.data().status !== "Published" && ShopId !== currentuser?.id) {
-        navigate("/");
+      if (product.data().status !== 'Published' && ShopId !== currentuser?.id) {
+        navigate('/');
       }
       if (product.exists()) {
         setProduct(product.data());
@@ -92,7 +90,7 @@ const Product = (props) => {
         }
       } else {
         // doc.data() will be undefined in this case
-        console.log("No such document!");
+        console.log('No such document!');
       }
     }
   };
@@ -118,7 +116,7 @@ const Product = (props) => {
     );
     await uploadBytes(imageRef, file).then((snapshot) => {
       getDownloadURL(snapshot.ref).then((url) => {
-        updateDoc(doc(db, "users", `${ShopId}`, "products", Id), {
+        updateDoc(doc(db, 'users', `${ShopId}`, 'products', Id), {
           images: arrayUnion({
             id: imgId,
             name: file.name,
@@ -151,7 +149,7 @@ const Product = (props) => {
           console.log(error);
         });
     }
-    await updateDoc(doc(db, "users", `${ShopId}`, "products", Id), {
+    await updateDoc(doc(db, 'users', `${ShopId}`, 'products', Id), {
       images: arrayRemove(itm),
     });
     dispatch(setRerender());
@@ -163,7 +161,7 @@ const Product = (props) => {
     /** delete from firestore
      */
     const coll = collection(db, `users/${ShopId}/products/`);
-    setConfirm("");
+    setConfirm('');
     if (coll !== undefined) {
       await deleteDoc(doc(coll, `${deleteItem}`));
       /** delete from cloude
@@ -206,7 +204,7 @@ const Product = (props) => {
           <ConfirmCont>
             <ConfirmText>Are you sure to delete this Product?</ConfirmText>
             <Answers>
-              <Answer name="no" onClick={() => setConfirm("")}>
+              <Answer name="no" onClick={() => setConfirm('')}>
                 Cancel
               </Answer>
               <Answer name="yes" onClick={() => Deleting(confirm)}>
@@ -367,7 +365,7 @@ const Answers = styled.div`
 const Answer = styled.div`
   border-radius: 0.5vw;
   box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
-  background: ${(props) => (props.name != "yes" ? "#35B453" : "#de4360")};
+  background: ${(props) => (props.name != 'yes' ? '#35B453' : '#de4360')};
   color: #fff;
   display: flex;
   align-items: center;
@@ -384,7 +382,7 @@ const Answer = styled.div`
 
   :hover {
     filter: ${(props) =>
-      props.name === "yes" ? "brightness(1.05)" : "brightness(0.95)"};
+      props.name === 'yes' ? 'brightness(1.05)' : 'brightness(0.95)'};
   }
 `;
 
@@ -402,7 +400,7 @@ const Container = styled.div`
   @media only screen and (max-width: 600px) {
     flex-direction: column;
     justify-content: ${(props) =>
-      props.loading === "true" ? "center" : "start"};
+      props.loading === 'true' ? 'center' : 'start'};
     overflow-y: scroll;
     padding: 0;
     height: 80vh;
@@ -414,7 +412,7 @@ const Container = styled.div`
 `;
 
 const Content = styled.div`
-  opacity: ${(props) => (props.loading ? "0" : "1")};
+  opacity: ${(props) => (props.loading ? '0' : '1')};
   transition: ease-in-out 300ms;
   width: 60%;
   height: 100%;

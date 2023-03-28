@@ -1,56 +1,45 @@
-import React, { useContext, useState } from "react";
-import styled from "styled-components";
-import { useSelector, useDispatch } from "react-redux";
+import React, { useState } from 'react';
+import styled from 'styled-components';
+import { useSelector, useDispatch } from 'react-redux';
 import {
   setName,
   setEmail,
   setPhoneNumber,
   setPassword,
-  setMap,
   setCountryCode,
   setConfirmPassowrd,
-} from "../../redux/register";
-import { FaUserEdit } from "react-icons/fa";
-import { ImProfile } from "react-icons/im";
-import { MdAddBusiness } from "react-icons/md";
-import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext";
-import { db, auth } from "../../firebase";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import MapAutocomplete from "../../components/mapAutocomplete";
-import { RiShoppingCartFill } from "react-icons/ri";
-import ReactGoogleMapLoader from "react-google-maps-loader";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import useWindowDimensions from "../../functions/dimensions";
-import { Button } from "../../components/button";
-import { v4 } from "uuid";
-import { Language } from "../../context/language";
-import { IsMobile } from "../../functions/isMobile";
-import { countries } from "../../data/countryCodes";
-import Select from "react-select";
-import VerifyEmail from "../../pages/register/verifyPopup";
-import Error from "../../snackBars/success";
+} from '../../redux/register';
+import { FaUserEdit } from 'react-icons/fa';
+import { ImProfile } from 'react-icons/im';
+import { MdAddBusiness } from 'react-icons/md';
+import { useNavigate } from 'react-router-dom';
+import MapAutocomplete from '../../components/mapAutocomplete';
+import { RiShoppingCartFill } from 'react-icons/ri';
+import ReactGoogleMapLoader from 'react-google-maps-loader';
+import useWindowDimensions from '../../functions/dimensions';
+import { Button } from '../../components/button';
+import { Language } from '../../context/language';
+import { IsMobile } from '../../functions/isMobile';
+import { countries } from '../../data/countryCodes';
+import Select from 'react-select';
+import VerifyEmail from '../../pages/register/verifyPopup';
+import Error from '../../snackBars/success';
+import axios from 'axios';
 
 export const Identify = (props) => {
   const language = Language();
   const isMobile = IsMobile();
   const { height, width } = useWindowDimensions();
-  // import users
-  const usersList = useSelector((state) => state.storeMain.userList);
-  let users;
-  if (usersList?.length > 0) {
-    users = JSON.parse(usersList);
-  }
+
   <ReactGoogleMapLoader
-    params={{
-      key: "AIzaSyBxx8CORlQQBBkbGc-F0yu95DMZaiJkMmo", // Define your api key here
-      libraries: "places,geometry", // To request multiple libraries, separate them with a comma
-    }}
+    // params={{
+    //   key: 'AIzaSyBxx8CORlQQBBkbGc-F0yu95DMZaiJkMmo', // Define your api key here
+    //   libraries: 'places,geometry', // To request multiple libraries, separate them with a comma
+    // }}
     render={(googleMaps) => googleMaps && <div>Google Maps is loaded !</div>}
   />;
   const mainDispatch = useDispatch();
   const navigate = useNavigate();
-  const { dispatch } = useContext(AuthContext);
 
   // define user type
   const type = useSelector((state) => state.storeRegister.userType);
@@ -59,245 +48,76 @@ export const Identify = (props) => {
 
   const [alert, setAlert] = useState(false);
 
-  // // otp register
-  // const [otp, setOTP] = React.useState("");
-  // const [flag, setFlag] = React.useState(false);
-  // const [confirmObj, setConfirmObj] = React.useState("");
-  // // send recaptcha
-  // const SetupRecaptcha = (number) => {
-  //   const recaptchaVerifer = new RecaptchaVerifier(
-  //     "recaptcha-container",
-  //     {},
-  //     auth
-  //   );
-  //   recaptchaVerifer.render(number);
-  //   return signInWithPhoneNumber(auth, number, recaptchaVerifer);
-  // };
-  // // get otp
-  // const GetOTP = async (e) => {
-  //   e.preventDefault();
-  //   if (
-  //     registerFields?.phoneNumber === "" ||
-  //     registerFields?.phoneNumber === undefined
-  //   ) {
-  //     return alert(`${language?.language.Auth.auth.valid}`);
-  //   }
-  //   try {
-  //     const num = registerFields?.countryCode + registerFields?.phoneNumber;
-  //     const response = await SetupRecaptcha(num);
-  //     setConfirmObj(response);
-  //     setFlag(true);
-  //   } catch (err) {
-  //     alert(err);
-  //   }
-  // };
-
-  //verify code
   const Register = async (e) => {
-    // if (otp === "" || otp === null) return;
-    try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        registerFields?.email,
-        registerFields?.password
-      );
-      const user = userCredential.user;
-      await dispatch({ type: "LOGIN", payload: user });
-      // create user database
-      await setDoc(doc(db, `users`, user.uid), {
-        id: user.uid,
-        type: type,
-        name: registerFields?.name,
-        email: registerFields?.email,
-        phone: registerFields?.countryCode?.value + registerFields?.phoneNumber,
-        active: true,
-        address: {
-          number: 1,
-          country: map.country,
-          region: map.region,
-          city: map.city,
-          district: map.district,
-          address: map.street,
-          streetNumber: map.number,
-          latitude: map.latitude,
-          longitude: map.longitude,
-        },
-        lastPost: serverTimestamp(),
-        registerDate: serverTimestamp(),
-      });
-      var actionId = v4();
-      await setDoc(
-        doc(db, `users`, `${user.uid}`, "notifications", `${actionId}`),
-        {
-          id: actionId,
-          senderId: "beautyVerse",
-          text: `${language?.language.Auth.auth.successRegister}`,
-          date: serverTimestamp(),
-          type: "welcome",
-          status: "unread",
-          feed: ``,
-        }
-      );
-      await setDoc(doc(db, `users`, `${user.uid}`, "secret", `password`), {
-        password: registerFields?.password,
-      });
-      mainDispatch(setMap(""));
-      mainDispatch(setPassword(""));
-      mainDispatch(setConfirmPassowrd(""));
-      mainDispatch(setName());
-      mainDispatch(setEmail(""));
-      mainDispatch(setPhoneNumber(""));
-      navigate(`/user/${user?.uid}`);
-    } catch (err) {
-      setAlert({
-        active: true,
-        title: err,
-      });
-    }
-  };
-
-  const HandleSubmit = (e) => {
-    e.preventDefault();
-    if (
-      registerFields?.name?.length > 0 &&
-      registerFields?.phoneNumber?.length > 0 &&
-      registerFields?.email?.length > 0 &&
-      map?.country?.length > 0 &&
-      registerFields?.password?.length > 0 &&
-      registerFields?.confirmPassowrd?.length > 0
-    ) {
-      if (registerFields?.name?.length > 2) {
-        if (map?.country?.length > 5 && map?.city?.length > 3) {
-          if (
-            registerFields?.email?.length > 5 &&
-            registerFields?.email?.includes("@") &&
-            registerFields?.email?.includes(".")
-          ) {
-            /**
-             * define email used or not
-             */
-            let emailUsed = users?.find(
-              (item) =>
-                item.email?.toLowerCase() ===
-                registerFields?.email?.toLowerCase()
+    if (type === 'user') {
+      try {
+        // Signup user
+        const response = await axios
+          .post('https://beautyverse.herokuapp.com/api/v1/signup', {
+            name: registerFields?.name,
+            type: type,
+            email: registerFields?.email,
+            phone:
+              registerFields?.countryCode?.value + registerFields?.phoneNumber,
+            password: registerFields?.password,
+            confirmPassword: registerFields?.confirmPassowrd,
+            address: {
+              country: map.country,
+              region: map.region,
+              city: map.city,
+              district: map.district,
+              street: map.street,
+              number: map.number,
+              latitude: map.latitude,
+              longitude: map.longitude,
+            },
+            notifications: [
+              {
+                senderId: 'Beautyverse',
+                text: `${language?.language.Auth.auth.successRegister}`,
+                date: new Date(),
+                type: 'welcome',
+                status: 'unread',
+                feed: '',
+              },
+            ],
+          })
+          .then(async (data) => {
+            await localStorage.setItem(
+              'Beautyverse:currentUser',
+              JSON.stringify(data.data.newUser)
             );
-            if (emailUsed === undefined) {
-              if (registerFields?.phoneNumber?.length > 8) {
-                /**
-                 * define mobile used or not
-                 */
-                const mobileUsed = users.find(
-                  (item) =>
-                    item.phone ===
-                    registerFields?.countryCode?.value +
-                      registerFields?.phoneNumber
-                );
-                if (
-                  registerFields?.countryCode?.value?.length > 0 &&
-                  registerFields?.countryCode != undefined
-                ) {
-                  if (mobileUsed === undefined) {
-                    if (registerFields?.password?.length > 7) {
-                      if (
-                        registerFields?.password ===
-                        registerFields?.confirmPassowrd
-                      ) {
-                        let HandleSubmit;
-                        if (type == "user") {
-                          SendEmail();
-                        } else if (
-                          type === "specialist" ||
-                          type === "beautyCenter" ||
-                          type === "shop"
-                        ) {
-                          navigate("/register/business");
-                        } else {
-                          setAlert({
-                            active: true,
-                            title: language?.language.Auth.auth.undefinedType,
-                          });
-                        }
-                        return HandleSubmit;
-                      } else {
-                        setAlert({
-                          active: true,
-                          title: language?.language.Auth.auth.passNotMatch,
-                        });
-                      }
-                    } else {
-                      setAlert({
-                        active: true,
-                        title: language?.language.Auth.auth.wrongPassword,
-                      });
-                    }
-                  } else {
-                    setAlert({
-                      active: true,
-                      title: language?.language.Auth.auth.usedPhone,
-                    });
-                  }
-                } else {
-                  setAlert({
-                    active: true,
-                    title: language?.language.Auth.auth.inputCode,
-                  });
-                }
-              } else {
-                setAlert({
-                  active: true,
-                  title: language?.language.Auth.auth.wrongPhoneNumber,
-                });
-              }
-            } else {
-              setAlert({
-                active: true,
-                title: language?.language.Auth.auth.emailUsed,
-              });
-            }
-          } else {
-            setAlert({
-              active: true,
-              title: language?.language.Auth.auth.wrongEmail,
-            });
-          }
-        } else {
-          setAlert({
-            active: true,
-            title: language?.language.Auth.auth.wrongAddress,
+            navigate(`/api/v1/users/${data.data.newUser._id}`);
           });
-        }
-      } else {
+      } catch (err) {
         setAlert({
           active: true,
-          title: language?.language.Auth.auth.nameWarning,
+          title: err.response.data.message,
         });
       }
     } else {
-      setAlert({
-        active: true,
-        title: language?.language.Auth.auth.pleaseInput,
-      });
+      navigate(`/register/business`);
     }
   };
 
   const handleKey = (e) => {
-    e.code === "Enter" && HandleSubmit(e);
+    e.code === 'Enter' && Register(e);
   };
 
   // define title icon
   let icon;
-  if (type === "user") {
+  if (type === 'user') {
     icon = <FaUserEdit className="userIcon" />;
-  } else if (type === "specialist") {
+  } else if (type === 'specialist') {
     icon = <ImProfile className="specIcon" />;
-  } else if (type === "beautyCenter") {
+  } else if (type === 'beautyCenter') {
     icon = <MdAddBusiness className="businessIcon" />;
-  } else if (type === "shop") {
+  } else if (type === 'shop') {
     icon = <RiShoppingCartFill className="businessIcon" />;
   }
 
   /// address
-  const [address, setAddress] = React.useState("");
+  const [address, setAddress] = React.useState('');
   // color mode
   const theme = useSelector((state) => state.storeMain.theme);
   const CustomStyle = {
@@ -305,70 +125,70 @@ export const Identify = (props) => {
       ...base,
       color: state.isSelected
         ? theme
-          ? "#333"
-          : "#f3f3f3"
+          ? '#333'
+          : '#f3f3f3'
         : theme
-        ? "#f3f3f3"
-        : "#333",
+        ? '#f3f3f3'
+        : '#333',
     }),
     placeholder: (base, state) => ({
       ...base,
       // height: "1000px",
       color: state.isSelected
         ? theme
-          ? "#333"
-          : "#f3f3f3"
+          ? '#333'
+          : '#f3f3f3'
         : theme
-        ? "#f3f3f3"
-        : "#333",
-      maxHeight: "50px",
+        ? '#f3f3f3'
+        : '#333',
+      maxHeight: '50px',
     }),
     input: (base, state) => ({
       ...base,
-      color: theme ? "#f3f3f3" : "#333",
-      fontSize: "16px",
-      maxHeight: "100px",
+      color: theme ? '#f3f3f3' : '#333',
+      fontSize: '16px',
+      maxHeight: '100px',
     }),
     multiValue: (base, state) => ({
       ...base,
-      backgroundColor: state.isDisabled ? null : "lightblue",
-      borderRadius: "20px",
+      backgroundColor: state.isDisabled ? null : 'lightblue',
+      borderRadius: '20px',
     }),
     multiValueLabel: (base, state) => ({
       ...base,
     }),
     menuList: (base, state) => ({
       ...base,
-      backgroundColor: theme ? "#333" : "#f3f3f3",
+      backgroundColor: theme ? '#333' : '#f3f3f3',
       zIndex: 1000,
     }),
     option: (base, state) => ({
       ...base,
       backgroundColor: state.isSelected
         ? theme
-          ? "#f3f3f3"
-          : "#333"
+          ? '#f3f3f3'
+          : '#333'
         : theme
-        ? "#333"
-        : "#f3f3f3",
+        ? '#333'
+        : '#f3f3f3',
       color: state.isSelected
         ? theme
-          ? "#333"
-          : "#f3f3f3"
+          ? '#333'
+          : '#f3f3f3'
         : theme
-        ? "#f3f3f3"
-        : "#333",
+        ? '#f3f3f3'
+        : '#333',
     }),
     control: (baseStyles, state) => ({
       ...baseStyles,
-      backgroundColor: theme ? "#333" : "#fff",
-      borderColor: state.isFocused ? "rgba(0,0,0,0)" : "rgba(0,0,0,0.1)",
-      width: "7vw",
-      minHeight: "2vw",
-      cursor: "pointer",
-      "@media only screen and (max-width: 1200px)": {
-        width: "23vw",
-        fontSize: "12px",
+      backgroundColor: theme ? '#333' : '#fff',
+      borderColor: state.isFocused ? 'rgba(0,0,0,0)' : 'rgba(0,0,0,0.1)',
+      width: '7vw',
+      minHeight: '2vw',
+      cursor: 'pointer',
+      '@media only screen and (max-width: 1200px)': {
+        width: '23vw',
+        fontSize: '12px',
       },
     }),
   };
@@ -377,33 +197,33 @@ export const Identify = (props) => {
    * send identify email
    */
 
-  const [verifyCode, setVerifyCode] = useState("");
+  const [verifyCode, setVerifyCode] = useState('');
   const [verify, setVerify] = useState(false);
 
   function SendEmail() {
     const email = registerFields?.email;
     console.log(email);
-    if (
-      users?.find(
-        (item) => item.email.toLowerCase() === email.toLowerCase()
-      ) === undefined
-    ) {
-      fetch(`https://beautyverse.herokuapp.com/emails/verify?email=${email}`)
-        .then((response) => response.json())
-        .then((data) => {
-          console.log("get");
-          setVerifyCode(data);
-          setVerify(true);
-        })
-        .catch((error) => {
-          console.log("Error fetching data:", error);
-        });
-    } else {
-      setAlert({
-        active: true,
-        title: language?.language.Auth.auth.emailUsed,
+    // if (
+    //   users?.find(
+    //     (item) => item.email.toLowerCase() === email.toLowerCase()
+    //   ) === undefined
+    // ) {
+    fetch(`https://beautyverse.herokuapp.com/emails/verify?email=${email}`)
+      .then((response) => response.json())
+      .then((data) => {
+        console.log('get');
+        setVerifyCode(data);
+        setVerify(true);
+      })
+      .catch((error) => {
+        console.log('Error fetching data:', error);
       });
-    }
+    // } else {
+    //   setAlert({
+    //     active: true,
+    //     title: language?.language.Auth.auth.emailUsed,
+    //   });
+    // }
   }
 
   return (
@@ -430,19 +250,19 @@ export const Identify = (props) => {
           {icon}
           <span>{language?.language.Auth.auth.identify}</span>
         </Title>
-        <WrapperContainer onSubmit={HandleSubmit}>
+        <WrapperContainer onSubmit={Register}>
           {!isMobile && (
             <Button
               title={language?.language.Auth.auth.back}
               back={true}
-              function={() => navigate("/register")}
+              function={() => navigate('/register')}
             />
           )}
           <Fields>
             <>
               <TitleWrapper>
                 <InputTitle>
-                  {type == "beautyCenter" || type == "shop"
+                  {type == 'beautyCenter' || type == 'shop'
                     ? language?.language.Auth.auth.title
                     : language?.language.Auth.auth.name}
                   *
@@ -455,7 +275,7 @@ export const Identify = (props) => {
                     requred
                     type="text"
                     placeholder={
-                      type == "beautyCenter" || type == "shop"
+                      type == 'beautyCenter' || type == 'shop'
                         ? language?.language.Auth.auth.title
                         : language?.language.Auth.auth.name
                     }
@@ -487,7 +307,7 @@ export const Identify = (props) => {
                     value={registerFields?.email}
                   />
                 </InputWrapper>
-                <InputWrapper style={{ display: "flex", flexDirection: "row" }}>
+                <InputWrapper style={{ display: 'flex', flexDirection: 'row' }}>
                   <Select
                     // placeholder={language?.language.Auth.auth.workingDays}
                     defaultValue="+995"
@@ -550,30 +370,33 @@ export const Identify = (props) => {
           {!isMobile && (
             <Button
               title={
-                type === "user"
+                type === 'user'
                   ? language?.language.Auth.auth.register
                   : language?.language.Auth.auth.next
               }
               type="Submit"
-              function={HandleSubmit}
+              function={Register}
             />
           )}
         </WrapperContainer>
+        {/* <button onClick={() => GetEmail('tornike.pirtakhia.lietuva@gmail.com')}>
+          test
+        </button> */}
         <MobileButtons>
-          {" "}
+          {' '}
           <Button
             title={language?.language.Auth.auth.back}
             back={true}
-            function={() => navigate("/register")}
+            function={() => navigate('/register')}
           />
           <Button
             title={
-              type === "user"
+              type === 'user'
                 ? language?.language.Auth.auth.register
                 : language?.language.Auth.auth.next
             }
             type="Submit"
-            function={HandleSubmit}
+            function={Register}
           />
         </MobileButtons>
       </Container>
@@ -685,7 +508,7 @@ const WrapperBtn = styled.div`
 `;
 
 const WrapperContainer = styled.form`
-  display: ${(props) => (props.flag === "true" ? "none" : "flex")};
+  display: ${(props) => (props.flag === 'true' ? 'none' : 'flex')};
 
   align-items: center;
   justify-content: center;
@@ -776,7 +599,7 @@ const SubmitButton = styled.button`
   justify-content: center;
   cursor: pointer;
   transition: ease-in 200ms;
-  color: ${(props) => (props.back ? "#ccc" : "green")};
+  color: ${(props) => (props.back ? '#ccc' : 'green')};
   font-weight: bold;
   background: rgba(255, 255, 255, 0.7);
   border: none;

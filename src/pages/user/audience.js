@@ -1,127 +1,165 @@
-import React from "react";
-import styled from "styled-components";
-import { collection, onSnapshot } from "firebase/firestore";
-import { db } from "../../firebase";
-import { AuthContext } from "../../context/AuthContext";
-import { useSelector } from "react-redux";
-import { IsMobile } from "../../functions/isMobile";
-import { useOutletContext, useNavigate } from "react-router-dom";
-import Avatar from "@mui/material/Avatar";
-import AvatarGroup from "@mui/material/AvatarGroup";
-import UserListDialogMain from "../../pages/user/userListPopup";
+import React, { useEffect, useState } from 'react';
+import styled from 'styled-components';
+import { IsMobile } from '../../functions/isMobile';
+import { useOutletContext, useNavigate } from 'react-router-dom';
+import Avatar from '@mui/material/Avatar';
+import AvatarGroup from '@mui/material/AvatarGroup';
+import UserListDialogMain from '../../pages/user/userListPopup';
+import { Spinner } from '../../components/loader';
 
 export const Audience = () => {
-  const [user, language] = useOutletContext();
+  const [targetUser, language] = useOutletContext();
   const isMobile = IsMobile();
   const navigate = useNavigate();
-  const { currentUser } = React.useContext(AuthContext);
+  const currentUser = JSON.parse(
+    localStorage.getItem('Beautyverse:currentUser')
+  );
 
   const [loading, setLoading] = React.useState(true);
 
-  const [followers, setFollowers] = React.useState([]);
-  const [followings, setFollowings] = React.useState([]);
+  const [followers, setFollowers] = useState();
+  const [followings, setFollowings] = useState();
 
-  const usersList = useSelector((state) => state.storeMain.userList);
-  let users;
-  if (usersList?.length > 0) {
-    users = JSON.parse(usersList);
-  }
-
-  React.useEffect(() => {
-    const data = onSnapshot(
-      collection(db, "users", `${user?.id}`, "followers"),
-      (snapshot) => {
-        setFollowers(snapshot.docs.map((doc) => doc.data()));
-      }
-    );
-  }, []);
-  React.useEffect(() => {
-    const data = onSnapshot(
-      collection(db, "users", `${user?.id}`, "followings"),
-      (snapshot) => {
-        setFollowings(snapshot.docs.map((doc) => doc.data()));
-      }
-    );
-  }, []);
+  const [render, setRender] = useState(false);
+  useEffect(() => {
+    async function GetAudience(userId) {
+      const response = await fetch(
+        `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}/followings`
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          setFollowings({ length: data.length, list: data.data.followings });
+        })
+        .catch((error) => {
+          console.log('Error fetching data:', error);
+        });
+    }
+    if (currentUser) {
+      GetAudience();
+    }
+  }, [targetUser?._id, render]);
+  useEffect(() => {
+    async function GetAudience(userId) {
+      const response = await fetch(
+        `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}/followers`
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          setFollowers({ length: data.length, list: data.data.followers });
+        })
+        .catch((error) => {
+          console.log('Error fetching data:', error);
+        });
+    }
+    if (currentUser) {
+      GetAudience();
+    }
+  }, [targetUser?._id, render]);
 
   setTimeout(() => {
     setLoading(false);
   }, 300);
 
   return (
-    <Content>
-      {followers?.length < 1 && followings?.length < 1 ? (
-        <div
+    <>
+      {loading ? (
+        <Content
           style={{
-            width: "100%",
-            height: "100%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#ccc",
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          0 {language?.language.User.userPage.user}
-        </div>
+          <Spinner />
+        </Content>
       ) : (
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "15px",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-            {followers?.length > 0 && (
-              <UserListDialogMain
-                title={language?.language.User.userPage.followers}
-                users={followers}
-                type="followers"
-                user={user}
-                language={language}
-              />
-            )}
-            <AvatarGroup total={followers?.length}>
-              {followers?.map((item, index) => {
-                let us = users?.find((it) => it.id === item.id);
-                return (
-                  <Avatar
-                    alt={us?.name}
-                    src={us?.cover}
-                    onClick={() => navigate(`/user/${item?.id}`)}
-                    style={{ cursor: "pointer" }}
+        <Content>
+          {!followers && !followings ? (
+            <div
+              style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#ccc',
+              }}
+            >
+              0 {language?.language.User.userPage.user}
+            </div>
+          ) : (
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '15px',
+              }}
+            >
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: '15px' }}
+              >
+                {followers && (
+                  <UserListDialogMain
+                    title={language?.language.User.userPage.followers}
+                    users={followers?.list}
+                    type="followers"
+                    targetUser={targetUser}
+                    language={language}
+                    setRender={setRender}
+                    render={render}
                   />
-                );
-              })}
-            </AvatarGroup>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-            {followings?.length > 0 && (
-              <UserListDialogMain
-                title={language?.language.User.userPage.followings}
-                users={followings}
-                type="followings"
-                user={user}
-                language={language}
-              />
-            )}
-            <AvatarGroup total={followings?.length}>
-              {followings?.map((item, index) => {
-                let us = users?.find((it) => it.id === item.id);
-                return (
-                  <Avatar
-                    alt={us?.name}
-                    src={us?.cover}
-                    onClick={() => navigate(`/user/${us?.id}`)}
-                    style={{ cursor: "pointer" }}
+                )}
+                <AvatarGroup total={followers?.length}>
+                  {followers?.list.map((item, index) => {
+                    // let us = users?.find((it) => it.id === item.id);
+                    return (
+                      <Avatar
+                        alt={item?.followerName}
+                        src={item?.followerCover}
+                        onClick={() =>
+                          navigate(`/api/v1/users/${item?.followerAuthId}`)
+                        }
+                        style={{ cursor: 'pointer' }}
+                      />
+                    );
+                  })}
+                </AvatarGroup>
+              </div>
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: '15px' }}
+              >
+                {followings && (
+                  <UserListDialogMain
+                    title={language?.language.User.userPage.followings}
+                    users={followings?.list}
+                    type="followings"
+                    targetUser={targetUser}
+                    language={language}
+                    setRender={setRender}
+                    render={render}
                   />
-                );
-              })}
-            </AvatarGroup>
-          </div>
-        </div>
+                )}
+                <AvatarGroup total={followings?.length}>
+                  {followings?.list.map((item, index) => {
+                    // let us = users?.find((it) => it.id === item.id);
+                    return (
+                      <Avatar
+                        alt={item?.followingName}
+                        src={item?.followingCover}
+                        onClick={() =>
+                          navigate(`/api/v1/users/${item?.followingAuthId}`)
+                        }
+                        style={{ cursor: 'pointer' }}
+                      />
+                    );
+                  })}
+                </AvatarGroup>
+              </div>
+            </div>
+          )}
+        </Content>
       )}
-    </Content>
+    </>
   );
 };
 

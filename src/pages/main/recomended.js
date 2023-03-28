@@ -1,23 +1,26 @@
-import { useState, useEffect } from "react";
-import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import useWindowDimensions from "../../functions/dimensions";
-import { GiFlexibleStar } from "react-icons/gi";
-import { Spinner } from "../../components/loader";
-import Rating from "@mui/material/Rating";
-import { MdLocationPin } from "react-icons/md";
-import { FaUser } from "react-icons/fa";
+import { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import useWindowDimensions from '../../functions/dimensions';
+import { GiFlexibleStar } from 'react-icons/gi';
+import { Spinner } from '../../components/loader';
+import Rating from '@mui/material/Rating';
+import { MdLocationPin } from 'react-icons/md';
+import { FaUser } from 'react-icons/fa';
+import { Language } from '../../context/language';
 
 export const Recomended = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-  const list = useSelector((state) => state.storeMain.userList);
+
+  const language = Language();
+  const recomendedList = useSelector((state) => state.storeMain?.userList);
   const navigate = useNavigate();
-  let recomendedList;
-  if (list?.length > 0) {
-    recomendedList = JSON.parse(list);
+
+  function capitalizeFirstLetter(string) {
+    return string?.charAt(0).toUpperCase() + string?.slice(1);
   }
 
   const { height, width } = useWindowDimensions();
@@ -28,7 +31,7 @@ export const Recomended = () => {
 
   return (
     <Container height={height}>
-      {/* {loading ? (
+      {loading ? (
         <Loader height={height}>
           <Spinner />
         </Loader>
@@ -39,20 +42,30 @@ export const Recomended = () => {
           </Title>
           <RecomendedList>
             {recomendedList
-              ?.filter((item) => item?.type !== "user")
+              ?.filter((item) => item?.type !== 'user')
               .map((item, index) => {
+                const name = capitalizeFirstLetter(item?.name);
+                const username = capitalizeFirstLetter(item?.username);
+
+                let type;
+                if (item?.type?.toLowerCase() === 'beautycenter') {
+                  type = language?.language.Main.feedCard.beautySalon;
+                } else if (item?.type?.toLowerCase() === 'specialist') {
+                  type = language?.language.Main.feedCard.specialist;
+                }
+                console.log(type);
                 return (
                   <RecomendedItem
-                    key={item?.id}
-                    onClick={() => navigate(`/user/${item.id}`)}
+                    key={item?._id}
+                    onClick={() => navigate(`/api/v1/users/${item._id}`)}
                   >
                     <UserCover>
-                      {item.cover?.length > 0 ? (
+                      {item.cover ? (
                         <img
                           style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
                           }}
                           src={item.cover}
                           alt={item.name}
@@ -62,25 +75,27 @@ export const Recomended = () => {
                       )}
                     </UserCover>
                     <Info>
-                      <Name>{item?.name}</Name>
+                      <Name>{name}</Name>
                       <Address>
                         <MdLocationPin size={24} color="red" />
-                        {item?.address?.city}
-                        {item?.address?.district?.length > 0 &&
-                          ", " + item?.address?.district}
-                        {item?.address?.address?.length > 0 &&
-                          ", " + item?.address?.address + " "}
-                        {item?.address?.streetNumber}
+                        {item?.address[0]?.city === "T'bilisi"
+                          ? 'Tbilisi'
+                          : item?.address[0]?.city}
+                        {item?.address[0]?.district?.length > 0 &&
+                          ', ' + item?.address[0]?.district}
+                        {item?.address[0]?.streer?.length > 0 &&
+                          ', ' + item?.address[0]?.street + ' '}
+                        {item?.address[0]?.number}
                       </Address>
-                      <Procedure>წარბების ლამინირება</Procedure>
+                      <Procedure>{item?.username ? username : type}</Procedure>
                       <div
                         style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "10px",
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
                         }}
                       >
-                        <Rating name="size-small" readOnly defaultValue={5} />
+                        <Rating size="small" readOnly defaultValue={5} />
                       </div>
                     </Info>
                   </RecomendedItem>
@@ -88,7 +103,7 @@ export const Recomended = () => {
               })}
           </RecomendedList>
         </Wrapper>
-      )} */}
+      )}
     </Container>
   );
 };
@@ -116,7 +131,7 @@ const Container = styled.div`
   background: ${(props) => props.theme.background};
 
   @media only screen and (max-width: 600px) {
-    // height: calc(${(props) => props.height}px - 25vw);
+    height: calc(${(props) => props.height}px - 25vw);
     width: 100vw;
     display: flex;
     justify-content: center;
@@ -273,12 +288,12 @@ const Name = styled.h4`
 const Address = styled.div`
   font-size: 12px;
   display: flex;
-  align-items: start;
+  align-items: center;
   gap: 3px;
   margin: 5px 0;
 
   @media only screen and (max-width: 600px) {
-    font-size: 14px;
+    font-size: 12px;
   }
 `;
 const Procedure = styled.div`
@@ -291,6 +306,6 @@ const Procedure = styled.div`
   justify-content: center;
 
   @media only screen and (max-width: 600px) {
-    font-size: 14px;
+    font-size: 12px;
   }
 `;

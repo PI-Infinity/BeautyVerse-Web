@@ -1,20 +1,19 @@
-import React from "react";
-import { useSelector, useDispatch } from "react-redux";
-import MainFavourites from "../languages/pages/main/favorites";
-import MainAds from "../languages/pages/main/ads";
-import MainReviews from "../languages/pages/main/reviews";
-import MainFilter from "../languages/pages/main/filter";
-import MainFeedCard from "../languages/pages/main/feedCard";
-import Menu from "../languages/components/menu";
-import User from "../languages/pages/user/user";
-import Chat from "../languages/pages/chat/chat";
-import Auth from "../languages/pages/auth/auth";
-import { AuthContext } from "../context/AuthContext";
+import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import MainFavourites from '../languages/pages/main/favorites';
+import MainAds from '../languages/pages/main/ads';
+import MainReviews from '../languages/pages/main/reviews';
+import MainFilter from '../languages/pages/main/filter';
+import MainFeedCard from '../languages/pages/main/feedCard';
+import Menu from '../languages/components/menu';
+import User from '../languages/pages/user/user';
+import Chat from '../languages/pages/chat/chat';
+import Auth from '../languages/pages/auth/auth';
 
 export const Language = () => {
   const lang = useSelector((state) => state.storeMain.language);
   let language;
-  if (lang === "en") {
+  if (lang === 'en') {
     return {
       language: {
         Main: {
@@ -37,7 +36,7 @@ export const Language = () => {
         },
       },
     };
-  } else if (lang === "ka") {
+  } else if (lang === 'ka') {
     return {
       language: {
         Main: {
@@ -60,7 +59,7 @@ export const Language = () => {
         },
       },
     };
-  } else if (lang === "ru") {
+  } else if (lang === 'ru') {
     return {
       language: {
         Main: {

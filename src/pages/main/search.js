@@ -1,16 +1,15 @@
-import React, { useState } from "react";
-import styled from "styled-components";
-import { useDispatch, useSelector } from "react-redux";
-import { CgSearch } from "react-icons/cg";
-import { MdClear } from "react-icons/md";
-import { BsListCheck } from "react-icons/bs";
-import { setRerender, setFilterOpen } from "../../redux/main";
-import { setSearch } from "../../redux/filter";
-import { ProceduresOptions } from "../../data/registerDatas";
-import { MdOutlinePersonPin } from "react-icons/md";
-import { useNavigate } from "react-router-dom";
-import { Language } from "../../context/language";
-import { IsMobile } from "../../functions/isMobile";
+import React, { useState } from 'react';
+import styled from 'styled-components';
+import { useDispatch, useSelector } from 'react-redux';
+import { CgSearch } from 'react-icons/cg';
+import { MdClear, MdOutlinePersonPin } from 'react-icons/md';
+import { TbArrowBigRightLines } from 'react-icons/tb';
+import { setSearch } from '../../redux/filter';
+import { ProceduresOptions } from '../../data/registerDatas';
+import { useNavigate } from 'react-router-dom';
+import { Language } from '../../context/language';
+import { IsMobile } from '../../functions/isMobile';
+import { setRerenderUserList } from '../../redux/rerenders';
 
 export const Search = (props) => {
   const dispatch = useDispatch();
@@ -23,56 +22,48 @@ export const Search = (props) => {
   const loadFeed = useSelector((state) => state.storeMain.loadFeed);
   const changeFeed = useSelector((state) => state.storeMain.changeFeed);
 
-  const userUnparsed = useSelector((state) => state.storeMain.user);
-  let user;
-  if (userUnparsed?.length > 0) {
-    user = JSON.parse(userUnparsed);
-  }
-
   const search = useSelector((state) => state.storeFilter.search);
-  const [resultCont, setResultCont] = React.useState("0");
-  const [srch, setSrch] = React.useState("");
+  const [resultCont, setResultCont] = React.useState('0');
+  const [srch, setSrch] = React.useState('');
 
   React.useEffect(() => {
     if (!isMobile) {
-      dispatch(setSearch(""));
+      dispatch(setSearch(''));
     }
-    setSrch("");
+    setSrch('');
   }, []);
 
   const [focus, setFocus] = useState(false);
 
   // import users
-  const usersList = useSelector((state) => state.storeMain.userList);
-  let users;
-  if (usersList?.length > 0) {
-    users = JSON.parse(usersList);
-  }
+  const users = useSelector((state) => state.storeMain.userList);
 
   const [bg, setBg] = React.useState(false);
 
   // filter for result container
   const Filter = () => {
     // define filtered words list
-    let userNames = users?.map((item) => {
-      if (item.type != "user") {
-        return item.name;
-      }
-    });
-    let procedures = proceduresOptions?.map((item, index) => {
-      return item.label;
-    });
+    let userNames =
+      users?.length > 0 &&
+      users?.map((item) => {
+        if (item?.type != 'user') {
+          return item?.name;
+        }
+      });
+    // let procedures = proceduresOptions?.map((item, index) => {
+    //   return item.label;
+    // });
     // let proceduresEng = proceduresOptions?.map((item, index) => {
     //   return item.value;
     // });
     // let full = proceduresGeo.concat(proceduresEng, userNames);
 
     let data;
-    data = procedures
-      .map((item, index) => ({
+    data = proceduresOptions
+      ?.map((item, index) => ({
         // id: index + 1,
-        value: item,
-        label: item,
+        value: item.value,
+        label: item.label,
       }))
       .filter((item) => item.label != undefined);
     // }
@@ -80,6 +71,48 @@ export const Search = (props) => {
   };
 
   const data = Filter();
+
+  const ResultData = () => {
+    let dataResult = data
+      ?.filter((item) =>
+        item.label?.toLowerCase()?.includes(srch?.toLowerCase())
+      )
+      ?.map((item, index) => {
+        return (
+          <Item
+            onClick={async () => {
+              await dispatch(setSearch(item.value));
+              await setSrch(item.label);
+              await dispatch(setRerenderUserList());
+              setFocus(false);
+            }}
+            key={index}
+          >
+            {item.label}
+          </Item>
+        );
+      });
+    return dataResult;
+  };
+
+  const resultData = ResultData();
+
+  const [resultList, setResultList] = useState('');
+  function GetName() {
+    let em = srch?.toLowerCase();
+    fetch(`https://beautyverse.herokuapp.com/api/v1/users/?name=${em}`)
+      .then((response) => response.json())
+      .then((data) => {
+        setResultList(data.data.users);
+        console.log(data.data.users);
+      })
+      .catch((error) => {
+        console.log('Error fetching data:', error);
+      });
+  }
+  React.useEffect(() => {
+    GetName();
+  }, []);
 
   return (
     <Container changeFeed={window.location.pathname.toString()}>
@@ -92,21 +125,34 @@ export const Search = (props) => {
             // isMulti
             value={srch}
             onFocus={() => {
-              setFocus(true);
+              if (resultData?.length > 0) {
+                setFocus(true);
+              }
             }}
             autoFocus={isMobile ? true : false}
             onChange={(e) => {
               setSrch(e.target.value);
             }}
           />
+          {srch?.length > 0 && (
+            <TbArrowBigRightLines
+              onClick={() => {
+                dispatch(setSearch(srch));
+                setFocus(false);
+              }}
+              className="icon"
+              style={{ cursor: 'pointer', filter: 'brightness(0.6)' }}
+            />
+          )}
         </SearchContainer>
-        {(search?.length > 0 || srch?.length > 0 || focus) && (
+        {((search?.length > 0 && search !== '') ||
+          srch?.length > 0 ||
+          focus) && (
           <MdClear
             className="clearicon"
             onClick={async () => {
-              await setSrch("");
-              await dispatch(setSearch(""));
-              await dispatch(setRerender());
+              await setSrch('');
+              await dispatch(setSearch(''));
               setFocus(false);
             }}
           />
@@ -114,23 +160,21 @@ export const Search = (props) => {
         <MdOutlinePersonPin
           className="profileicon"
           onClick={
-            window.location.pathname === "/"
+            window.location.pathname === '/'
               ? () => {
-                  dispatch(setRerender());
-                  navigate("/cards");
+                  navigate('/cards');
                 }
               : () => {
-                  dispatch(setRerender());
-                  navigate("/");
+                  navigate('/');
                 }
           }
         />
       </SearchWrapper>
       {focus && (
-        <div style={{ width: "100%", position: "relative" }}>
+        <div style={{ width: '100%', position: 'relative' }}>
           <Result
             setFocus={setFocus}
-            data={data}
+            data={resultData}
             srch={srch}
             setSrch={setSrch}
           />
@@ -160,7 +204,7 @@ const Container = styled.div`
 
   .profileicon {
     color: ${(props) =>
-      props.changeFeed === "/cards" ? props.theme.logo2 : "#ddd"};
+      props.changeFeed === '/cards' ? props.theme.logo2 : '#ddd'};
     font-size: 1.2vw;
     cursor: pointer;
 
@@ -263,32 +307,8 @@ const Input = styled.input`
 
 const Result = (props) => {
   const dispatch = useDispatch();
-  const ResultData = () => {
-    let data;
-    data = props.data
-      ?.filter((item) =>
-        item.label?.toLowerCase()?.includes(props.srch?.toLowerCase())
-      )
-      ?.map((item, index) => {
-        return (
-          <Item
-            onClick={async () => {
-              await dispatch(setRerender());
-              await dispatch(setSearch(item.label));
-              await props.setSrch(item.label);
-              props.setFocus(false);
-            }}
-            key={index}
-          >
-            {item.label}
-          </Item>
-        );
-      });
-    return data;
-  };
 
-  const resultData = ResultData();
-  return <ResultContainer>{resultData}</ResultContainer>;
+  return <ResultContainer>{props.data}</ResultContainer>;
 };
 
 const ResultContainer = styled.div`

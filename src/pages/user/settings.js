@@ -1,80 +1,329 @@
-import React, { useEffect, useState } from "react";
-import styled from "styled-components";
-import { collection, doc, getDoc } from "firebase/firestore";
-import { db, auth } from "../../firebase";
-import { AuthContext } from "../../context/AuthContext";
-import { IsMobile } from "../../functions/isMobile";
-import { useOutletContext, useNavigate } from "react-router-dom";
-import { AiOutlineEyeInvisible, AiOutlineEye } from "react-icons/ai";
-import ChangePassword from "../../pages/user/changePassword";
-import Success from "../../snackBars/success";
-import { updatePassword } from "firebase/auth";
+import React, { useState } from 'react';
+import styled from 'styled-components';
+import { IsMobile } from '../../functions/isMobile';
+import { useOutletContext, useNavigate } from 'react-router-dom';
+import { AiOutlineEyeInvisible, AiOutlineEye } from 'react-icons/ai';
+import ChangePassword from '../../pages/user/changePassword';
+import Success from '../../snackBars/success';
+import {
+  setRerenderCurrentUser,
+  setRerenderUserList,
+} from '../../redux/rerenders';
+import { useSelector, useDispatch } from 'react-redux';
+import makeAnimated from 'react-select/animated';
+import Switch from '@mui/material/Switch';
+import { Spinner } from '../../components/loader';
+import axios from 'axios';
+
+const animatedComponents = makeAnimated();
 
 export const Settings = () => {
-  const [user, language] = useOutletContext();
+  const [loading, setLoading] = useState(true);
+  const [targetUser, language] = useOutletContext();
   const isMobile = IsMobile();
   const navigate = useNavigate();
-  const { currentUser } = React.useContext(AuthContext);
+  const dispatch = useDispatch();
+  const currentUser = JSON.parse(
+    localStorage.getItem('Beautyverse:currentUser')
+  );
+
+  const country = useSelector((state) => state.storeMain.country);
 
   React.useEffect(() => {
-    if (user?.id !== currentUser?.uid) {
-      navigate("/");
+    if (targetUser?._id !== currentUser?._id) {
+      navigate('/');
     }
   }, []);
+
+  // useEffect(() => {
+  //   const getPass = async () => {
+  //     await axios
+  //       .get(
+  //         '/api/v1/users/' + currentUser._id + '/password'
+  //       )
+  //       .then((data) => {
+  //         console.log(data.data.data.user.password);
+  //       });
+  //   };
+  //   getPass();
+  // }, []);
 
   // success messaage open
   const [open, setOpen] = React.useState(false);
 
-  const [password, setPassword] = useState("");
-  useEffect(() => {
-    const GetUserPass = async () => {
-      const passRef = doc(db, "users", currentUser?.uid, "secret", "password");
-      const usr = await getDoc(passRef);
-      if (usr.exists()) {
-        setPassword(usr.data().password);
-      } else {
-        // doc.data() will be undefined in this case
-        console.log("No such document!");
-      }
-    };
-    GetUserPass();
-  }, [open]);
+  // color mode
+  const theme = useSelector((state) => state.storeMain.theme);
 
-  const [showPassword, setShowPassword] = React.useState(false);
+  const CustomStyle = {
+    singleValue: (base, state) => ({
+      ...base,
+      color: state.isSelected
+        ? theme
+          ? '#333'
+          : '#f3f3f3'
+        : theme
+        ? '#f3f3f3'
+        : '#333',
+      fontSize: '14px',
+    }),
+    placeholder: (base, state) => ({
+      ...base,
+      // height: "1000px",
+      color: state.isSelected
+        ? theme
+          ? '#333'
+          : '#f3f3f3'
+        : theme
+        ? '#f3f3f3'
+        : '#333',
+      maxHeight: '50px',
+    }),
+    input: (base, state) => ({
+      ...base,
+      color: theme ? '#f3f3f3' : '#333',
+      fontSize: '16px',
+      maxHeight: '100px',
+    }),
+    multiValue: (base, state) => ({
+      ...base,
+      backgroundColor: state.isDisabled ? null : 'lightblue',
+      borderRadius: '20px',
+    }),
+    multiValueLabel: (base, state) => ({
+      ...base,
+    }),
+    menuList: (base, state) => ({
+      ...base,
+      backgroundColor: theme ? '#333' : '#f3f3f3',
+      zIndex: 1000,
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isSelected
+        ? theme
+          ? '#f3f3f3'
+          : '#333'
+        : theme
+        ? '#333'
+        : '#f3f3f3',
+      color: state.isSelected
+        ? theme
+          ? '#333'
+          : '#f3f3f3'
+        : theme
+        ? '#f3f3f3'
+        : '#333',
+      fontSize: '14px',
+    }),
+    control: (baseStyles, state) => ({
+      ...baseStyles,
+      backgroundColor: theme ? '#333' : '#fff',
+      borderColor: state.isFocused ? 'rgba(0,0,0,0)' : 'rgba(0,0,0,0.1)',
+      width: '10vw',
+      color: '#888',
+      minHeight: '2vw',
+      cursor: 'pointer',
+      '@media only screen and (max-width: 1200px)': {
+        width: '50vw',
+        fontSize: '12px',
+      },
+    }),
+  };
+
+  const rerenderCurrentUser = useSelector(
+    (state) => state.storeRerenders?.rerenderCurrentUser
+  );
+  const rerenderUserList = useSelector(
+    (state) => state.storeRerenders?.rerenderCurrentUser
+  );
+
+  // deactivate or active account
+  const ControlActivity = async () => {
+    try {
+      const response = await axios.patch(
+        `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}`,
+        {
+          active: !targetUser?.active,
+        }
+      );
+      const data = await response.data;
+      dispatch(setRerenderCurrentUser(!rerenderCurrentUser));
+      dispatch(setRerenderUserList(!rerenderUserList));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // open delete account dialog
+  const [deleteAccount, setDelleteAccount] = useState(false);
+
+  setTimeout(() => {
+    setLoading(false);
+  }, 300);
 
   return (
-    <Content>
-      <Password>
-        {language?.language.User.userPage.password}:{" "}
-        {showPassword ? (
-          <div id="password">{password}</div>
-        ) : (
-          <div id="blur">{password}</div>
-        )}{" "}
-        {showPassword ? (
-          <AiOutlineEye
-            className="eye"
-            onClick={() => setShowPassword(false)}
+    <>
+      {loading ? (
+        <Content
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Spinner />
+        </Content>
+      ) : (
+        <Content>
+          <Success
+            open={open}
+            setOpen={setOpen}
+            title={language?.language.User.userPage.succesChange}
           />
-        ) : (
-          <AiOutlineEyeInvisible
-            className="eye"
-            onClick={() => setShowPassword(true)}
+          <ChangePassword
+            targetUser={targetUser}
+            setOpen={setOpen}
+            language={language}
           />
-        )}
-      </Password>
-      <Success
-        open={open}
-        setOpen={setOpen}
-        title={language?.language.User.userPage.succesChange}
-      />
-      <ChangePassword
-        user={user}
-        password={password}
-        setOpen={setOpen}
-        language={language}
-      />
-    </Content>
+          {/* <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              marginTop: '30px',
+            }}
+          >
+            <FaGlobeEurope size={20} color={theme ? '#fff' : '#111'} />
+            <Select
+              placeholder={country}
+              components={animatedComponents}
+              onChange={(value) => {
+                dispatch(setCountry(value?.value));
+                localStorage.setItem(
+                  'BeautyVerse:Country',
+                  JSON.stringify(value?.value)
+                );
+              }}
+              // value={registerFields?.categories}
+              styles={CustomStyle}
+              options={countries}
+            />
+          </div> */}
+          {targetUser?._id === currentUser?._id && (
+            <>
+              {targetUser?.active ? (
+                <div>
+                  <h4
+                    style={{
+                      color: theme ? '#fff' : '#111',
+                      margin: '30px 0 0 0',
+                    }}
+                  >
+                    Deactivate account!
+                  </h4>
+                  <div
+                    style={{
+                      color: theme ? '#666' : '#111',
+                      margin: '5px 0 10px 0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                    }}
+                  >
+                    <AiOutlineEye />
+                    <span>(Everyone can see your profile now)</span>
+                  </div>
+                  <div>
+                    <Switch
+                      size="large"
+                      checked={targetUser?.active}
+                      onChange={ControlActivity}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <h4
+                    style={{
+                      color: theme ? '#fff' : '#111',
+                      margin: '50px 0 0 0',
+                    }}
+                  >
+                    Active account!
+                  </h4>
+                  <div
+                    style={{
+                      color: theme ? '#666' : '#111',
+                      margin: '5px 0 10px 0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                    }}
+                  >
+                    <AiOutlineEyeInvisible />
+                    <span>(Nobody can see your profile now)</span>
+                  </div>
+                  <div>
+                    <Switch
+                      size="large"
+                      checked={targetUser?.active}
+                      onChange={ControlActivity}
+                    />
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+          {/* {targetUser?._id === currentUser?._id && (
+            <>
+              {!requested?.request ? (
+                <div>
+                  <h4
+                    style={{
+                      color: theme ? '#fff' : '#111',
+                      margin: '20px 0 0 0',
+                    }}
+                  >
+                    Delete account!
+                  </h4>
+                  <div
+                    style={{
+                      color: theme ? '#666' : '#111',
+                      margin: '5px 0 10px 0',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      gap: '10px',
+                    }}
+                  >
+                    <span>
+                      (Send account remove request, 24 hours for accepting)
+                    </span>
+                    <AiFillDelete
+                      size={24}
+                      onClick={() => setDelleteAccount(true)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </div>
+                  <div></div>
+                  <AlertDialog
+                    title="Do you really want to dielete account"
+                    open={deleteAccount}
+                    setOpen={setDelleteAccount}
+                    language={language}
+                    function={SendDeleteRequest}
+                  />
+                </div>
+              ) : (
+                <button onClick={CancelRequest} style={{ cursor: 'pointer' }}>
+                  Cancel Delete Account Request
+                </button>
+              )}
+            </>
+          )} */}
+        </Content>
+      )}
+    </>
   );
 };
 

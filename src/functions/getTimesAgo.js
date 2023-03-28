@@ -1,34 +1,19 @@
-export default function GetTimesAgo(x) {
-  if (x !== undefined) {
+export default function GetTimesAgo(x, y) {
+  if (x) {
+    const timesAgoInSeconds = ((new Date().getTime() - x) / 1000).toFixed(0);
+    const timesAgoInMinutes = (timesAgoInSeconds / 60).toFixed(0);
+    const timesAgoInHours = (timesAgoInMinutes / 60).toFixed(0);
     let currentPostTime;
-    let hoursAgo;
-    let definedTitle;
-    if (parseInt((new Date().getTime() - x * 1000) / 3600000) < parseInt(1)) {
-      hoursAgo = ((new Date().getTime() - x * 1000) / 60000)?.toFixed(0);
-      definedTitle = "min";
+    if (timesAgoInSeconds < 61) {
+      currentPostTime = { numbers: '', title: 'Just Now' };
+    } else if (timesAgoInSeconds > 60 && timesAgoInSeconds < 3601) {
+      currentPostTime = { numbers: timesAgoInMinutes, title: 'min' };
+    } else if (timesAgoInSeconds > 3601 && timesAgoInSeconds < 86400) {
+      currentPostTime = { numbers: timesAgoInHours, title: 'h' };
     } else {
-      hoursAgo = ((new Date().getTime() - x * 1000) / 3600000)?.toFixed(0);
-      definedTitle = "h";
+      currentPostTime = { numbers: '', title: y?.slice(0, 10) };
     }
-    if (new Date().getTime() - x * 1000 > 86400000) {
-      currentPostTime = {
-        numbers: "",
-        title: new Date(x * 1000).toString().slice(4, 10),
-      };
-    } else {
-      if (hoursAgo < 1 && definedTitle === "min") {
-        currentPostTime = "Just now";
-      } else if (hoursAgo >= 1 && definedTitle === "min") {
-        currentPostTime = { numbers: hoursAgo, title: definedTitle };
-      } else {
-        if (definedTitle[4] === "0") {
-          var timeTitle = definedTitle?.replace(definedTitle[4], "");
-          currentPostTime = { numbers: hoursAgo, title: timeTitle };
-        } else {
-          currentPostTime = { numbers: hoursAgo, title: definedTitle };
-        }
-      }
-    }
+
     return currentPostTime;
   }
 }

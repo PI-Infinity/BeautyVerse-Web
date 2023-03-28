@@ -1,5 +1,5 @@
-import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
+import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 
 export const Button = (props) => {
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ const Container = styled.div`
   justify-content: center;
   cursor: pointer;
   transition: ease-in 200ms;
-  color: ${(props) => (props.back ? "#ccc" : "green")};
+  color: ${(props) => (props.back ? '#ccc' : 'green')};
   font-weight: bold;
   background: ${(props) => props.theme.categoryItem};
   font-size: 14px;

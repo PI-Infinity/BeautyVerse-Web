@@ -1,17 +1,14 @@
-import React from "react";
-import styled from "styled-components";
-import { useSelector } from "react-redux";
-import { Link } from "react-router-dom";
-import { storage } from "../../firebase";
-import { ref, listAll, getDownloadURL } from "firebase/storage";
-import { MdOutlineDragIndicator } from "react-icons/md";
-import { AuthContext } from "../../context/AuthContext";
+import React from 'react';
+import styled from 'styled-components';
+import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
+import { storage } from '../../firebase';
+import { ref, listAll, getDownloadURL } from 'firebase/storage';
+import { MdOutlineDragIndicator } from 'react-icons/md';
 
 export const Chat = () => {
-  const { currentUser } = React.useContext(AuthContext);
-
   // define chat position: open ro hide
-  const [position, setPosition] = React.useState("-9.5vw");
+  const [position, setPosition] = React.useState('-9.5vw');
   const targetUser = useSelector((state) => state.storeChat.targetUser);
 
   //enter user cover from storage//
@@ -24,7 +21,7 @@ export const Chat = () => {
       response.items.forEach((item) => {
         getDownloadURL(item).then((url) => {
           if (url?.length < 1) {
-            setCover("");
+            setCover('');
           } else {
             setCover(url);
           }
@@ -85,20 +82,20 @@ export const Chat = () => {
         <Container
           position={position}
           onClick={
-            position == "-9.5vw"
-              ? () => setPosition("8.5vw")
-              : () => setPosition("-9.5vw")
+            position == '-9.5vw'
+              ? () => setPosition('8.5vw')
+              : () => setPosition('-9.5vw')
           }
         >
           <User>
             <Link
               to={`/user/${targetUser?.id}`}
               style={{
-                color: "inherit",
-                textDecoration: "none",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.5vw",
+                color: 'inherit',
+                textDecoration: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5vw',
               }}
             >
               <Profile>
@@ -109,9 +106,9 @@ export const Chat = () => {
             <MdOutlineDragIndicator
               color="#ccc"
               style={{
-                transform: "rotate(90deg)",
-                fontSize: "1.2vw",
-                marginRight: "1vw",
+                transform: 'rotate(90deg)',
+                fontSize: '1.2vw',
+                marginRight: '1vw',
               }}
             />
           </User>

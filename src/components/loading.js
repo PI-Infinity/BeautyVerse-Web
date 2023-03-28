@@ -1,30 +1,34 @@
-import React from "react";
-import styled from "styled-components";
-import { BsStars } from "react-icons/bs";
+import React from 'react';
+import styled from 'styled-components';
+import { BsStars } from 'react-icons/bs';
 
 export const Loading = (props) => {
   React.useEffect(() => {
     window.scrollTo({
       top: 0,
-      behavior: "smooth",
+      behavior: 'smooth',
     });
   }, []);
 
   return (
     <Container
       style={{
-        widht: "100%",
-        height: "100vh",
-        display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        overflow: "hidden",
+        widht: '100%',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        zIndex: 10000,
       }}
     >
       <BsStars className="logo" />
       <Title>Beauty</Title>
-      <Title2 style={{ fontWeight: "normal" }}>verse</Title2>
+      <Title2 style={{ fontWeight: 'normal' }}>verse</Title2>
     </Container>
   );
 };

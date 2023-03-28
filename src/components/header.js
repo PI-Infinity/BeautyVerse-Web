@@ -1,61 +1,62 @@
-import React, { useContext, useEffect, useState } from "react";
-import styled from "styled-components";
-import { BiMessageSquareAdd } from "react-icons/bi";
-import { BsStars } from "react-icons/bs";
-import { setOpenMenu, setOpenMobileMenu } from "../redux/main";
-import Menu from "../components/menu";
-import { Link, useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import Badge from "@mui/material/Badge";
-import { IsMobile } from "../functions/isMobile";
-import { AuthContext } from "../context/AuthContext";
-import Avatar from "@mui/material/Avatar";
+import React, { useEffect, useState } from 'react';
+import styled from 'styled-components';
+import { BiMessageSquareAdd } from 'react-icons/bi';
+import { setFeedScrollY } from '../redux/scroll';
 import {
-  query,
-  limit,
-  orderBy,
-  collection,
-  onSnapshot,
-} from "firebase/firestore";
-import { db } from "../firebase";
-import Notifications from "../components/notifications";
-import AppBar from "@mui/material/AppBar";
-import { HiChatAlt } from "react-icons/hi";
+  setRerenderUserList,
+  setRerenderNotifications,
+  setRerenderCurrentUser,
+} from '../redux/rerenders';
+import Menu from '../components/menu';
+import { Link, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import Badge from '@mui/material/Badge';
+import { IsMobile } from '../functions/isMobile';
+import Avatar from '@mui/material/Avatar';
+import Notifications from '../components/notifications';
 
 export const Header = () => {
   const isMobile = IsMobile();
-  const { currentUser } = useContext(AuthContext);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const cover = useSelector((state) => state.storeMain.cover);
-  const rerender = useSelector((state) => state.storeMain.rerender);
   const openMenu = useSelector((state) => state.storeMain.openMenu);
   const openMobileMenu = useSelector((state) => state.storeMain.openMobileMenu);
 
   // import current user from redux state
-  const userUnparsed = useSelector((state) => state.storeMain.user);
+  const currentUser = JSON.parse(
+    localStorage.getItem('Beautyverse:currentUser')
+  );
 
-  let user;
-  if (userUnparsed?.length > 0) {
-    user = JSON.parse(userUnparsed);
-  }
+  const cover = useSelector((state) => state.storeMain.coverUrl);
+  const [coverUrl, setCoverUrl] = useState();
 
-  // import current shop from redux state
-  // const shopUnparsed = useSelector((state) => state.storeMarket.shop);
+  useEffect(() => {
+    // Update the cover image whenever coverUrl changes
+    if (cover) {
+      setCoverUrl(cover);
+    }
+  }, [cover]);
 
-  // let shop;
-  // if (shopUnparsed?.length > 0) {
-  //   shop = JSON.parse(shopUnparsed);
-  // }
-
-  const MenuOpening = () => {
-    if (isMobile) {
-      dispatch(setOpenMobileMenu(true));
+  const getCoverImageSrc = () => {
+    if (coverUrl) {
+      return coverUrl;
+    } else if (currentUser && currentUser.cover) {
+      return currentUser.cover;
     } else {
-      dispatch(setOpenMenu("0.5vw"));
+      return '';
     }
   };
+
+  const rerenderNotifications = useSelector(
+    (state) => state.storeRerenders?.rerenderNotifications
+  );
+  const rerenderUserList = useSelector(
+    (state) => state.storeRerenders?.rerenderUserList
+  );
+  const rerenderCurrentUser = useSelector(
+    (state) => state.storeRerenders?.rerenderCurrentUser
+  );
 
   // define scroll
   const scroll = useSelector((state) => state.storeScroll.scroll);
@@ -63,28 +64,35 @@ export const Header = () => {
   // styled badge for menu
 
   const StyledBadge = styled(Badge)(({ theme }) => ({
-    "& .MuiBadge-badge": {
+    '& .MuiBadge-badge': {
       right: 20,
       top: 5,
-      padding: "0",
+      padding: '0',
     },
   }));
 
-  // get notificationst
+  // // get notificationst
   const [notifications, setNotifications] = useState([]);
   useEffect(() => {
-    const ref = query(
-      collection(db, "users", `${currentUser?.uid}`, "notifications"),
-      orderBy("date", "desc"),
-      limit(50)
-    );
-    onSnapshot(ref, (snapshot) => {
-      setNotifications(snapshot.docs.map((doc) => doc.data()));
-    });
-  }, [currentUser]);
+    async function GetNotifications() {
+      const response = await fetch(
+        `https://beautyverse.herokuapp.com/api/v1/users/${currentUser?._id}/notifications`
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          setNotifications(data.data.notifications);
+        })
+        .catch((error) => {
+          console.log('Error fetching data:', error);
+        });
+    }
+    if (currentUser?._id) {
+      GetNotifications();
+    }
+  }, [rerenderNotifications]);
 
   const notifLength = notifications?.filter(
-    (item) => item?.status === "unread"
+    (item) => item?.status === 'unread'
   );
   // open notifs
   const [openNotifications, setOpenNotifications] = useState(false);
@@ -92,46 +100,32 @@ export const Header = () => {
   // define unread messages length
   const [chats, setChats] = React.useState([]);
 
-  React.useEffect(() => {
-    const getChats = () => {
-      const unsub = onSnapshot(
-        collection(db, "users", currentUser?.uid, "chats"),
-        (snapshot) => {
-          let result = snapshot.docs.map((doc) => doc.data());
-          const filtered = result?.filter(
-            (item) =>
-              item?.opened === false && item?.senderId !== currentUser?.uid
-          );
-          setChats(filtered?.length);
-        }
-      );
-      return () => {
-        unsub();
-      };
-    };
-    currentUser?.uid && getChats();
-  }, [currentUser]);
-
   return (
     <>
-      <Notifications
-        open={openNotifications}
-        setOpen={setOpenNotifications}
-        notifications={notifications}
-      />
-      {/* <AppBar> */}
+      {openNotifications && (
+        <Notifications
+          open={openNotifications}
+          setOpen={setOpenNotifications}
+          notifications={notifications}
+        />
+      )}
       <Container scroll={scroll} isMobile={isMobile}>
         <Divider>
           <div
             onClick={
-              window.location.pathname != "/"
-                ? () => {
-                    navigate("/");
-                    localStorage.setItem("BeautyVerse:scrollPosition", 0);
+              window.location.pathname != '/'
+                ? async () => {
+                    await dispatch(setRerenderUserList());
+                    dispatch(setRerenderNotifications());
+                    dispatch(setRerenderCurrentUser());
+                    navigate('/');
+                    dispatch(setFeedScrollY(0));
                   }
-                : () => {
-                    localStorage.setItem("BeautyVerse:scrollPosition", 0);
-                    window.location.reload();
+                : async () => {
+                    await dispatch(setRerenderUserList());
+                    dispatch(setRerenderNotifications());
+                    dispatch(setRerenderCurrentUser());
+                    dispatch(setFeedScrollY(0));
                   }
             }
             className="logoLink"
@@ -139,84 +133,65 @@ export const Header = () => {
             <Title>Beauty</Title>
             <Title2>verse</Title2>
           </div>
-          <Divider style={{ justifyContent: "start", flex: 2 }} empty={true}>
+          <Divider style={{ justifyContent: 'start', flex: 2 }} empty={true}>
             {/* <BsStars className="logo" onClick={() => navigate("/")} /> */}
           </Divider>
         </Divider>
-        <Divider style={{ justifyContent: "flex-end", alignItems: "center" }}>
-          {!isMobile && user !== undefined && (
+        <Divider style={{ justifyContent: 'flex-end', alignItems: 'center' }}>
+          {!isMobile && currentUser && (
             <div
               style={{
-                marginRight: "20px",
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                height: "100%",
-                marginTop: "3px",
+                marginRight: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                height: '100%',
+                marginTop: '3px',
               }}
             >
-              {user?.type !== "user" && (
+              {currentUser?.type !== 'user' && (
                 <BiMessageSquareAdd
                   className="notifIcon"
                   size={24}
-                  style={{ cursor: "pointer" }}
-                  onClick={() => navigate("/add")}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => navigate('/add')}
                 />
               )}
-              {chats > 0 ? (
+              {/* {chats > 0 ? (
                 <Badge badgeContent={chats} color="secondary">
                   <HiChatAlt
                     className="notifIcon"
                     size={24}
-                    style={{ cursor: "pointer" }}
-                    onClick={() => navigate("/chat")}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => navigate('/chat')}
                   />
                 </Badge>
               ) : (
                 <HiChatAlt
                   className="notifIcon"
                   size={24}
-                  style={{ cursor: "pointer" }}
-                  onClick={() => navigate("/chat")}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => navigate('/chat')}
                 />
-              )}
+              )} */}
             </div>
           )}
-          {currentUser !== null ? (
-            <Link
-              to={`/user/${currentUser?.uid}`}
-              style={{
-                color: "inherit",
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              <Profile>
-                <Avatar
-                  alt={user?.name}
-                  src={user?.cover !== undefined ? user?.cover : ""}
-                  sx={{ width: 36, height: 36 }}
-                />
-              </Profile>
-            </Link>
-          ) : (
-            <Link
-              to={"/login"}
-              style={{
-                color: "inherit",
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              <Profile>
-                <Avatar
-                  alt={user?.name}
-                  src={user?.cover !== undefined ? user?.cover : ""}
-                  sx={{ width: 36, height: 36 }}
-                />
-              </Profile>
-            </Link>
-          )}
+          <Link
+            to={currentUser ? `/api/v1/users/${currentUser?._id}` : '/login'}
+            style={{
+              color: 'inherit',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            <Profile>
+              <Avatar
+                alt={currentUser?.name}
+                src={getCoverImageSrc()}
+                sx={{ width: 36, height: 36 }}
+              />
+            </Profile>
+          </Link>
 
           {notifLength?.length > 0 ? (
             <StyledBadge
@@ -237,10 +212,8 @@ export const Header = () => {
               setOpen={setOpenNotifications}
             />
           )}
-          {/* )} */}
         </Divider>
       </Container>
-      {/* </AppBar> */}
     </>
   );
 };
@@ -296,7 +269,7 @@ const Container = styled.header`
 
 const Divider = styled.div`
   flex: 2;
-  display: ${(props) => (props.empty ? "none" : "flex")};
+  display: ${(props) => (props.empty ? 'none' : 'flex')};
   align-items: center;
 
   .logo {

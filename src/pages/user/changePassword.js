@@ -1,56 +1,68 @@
-import * as React from "react";
-import styled from "styled-components";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
-import { AiOutlineEyeInvisible, AiOutlineEye } from "react-icons/ai";
-import { db, auth } from "../../firebase";
-import { updateDoc, doc } from "firebase/firestore";
-import { updatePassword } from "firebase/auth";
+import * as React from 'react';
+import styled from 'styled-components';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import { AiOutlineEyeInvisible, AiOutlineEye } from 'react-icons/ai';
+import { auth } from '../../firebase';
+import { updatePassword } from 'firebase/auth';
+import axios from 'axios';
 
 export default function ChangePassword(props) {
   const [open, setOpen] = React.useState(false);
 
-  const [showPassword, setShowPassword] = React.useState("");
+  const [showPassword, setShowPassword] = React.useState('');
 
-  const [oldPassword, setOldPassword] = React.useState("");
-  const [newPassword, setNewPassword] = React.useState("");
-  const [confirmPassword, setConfirmPassword] = React.useState("");
+  const [oldPassword, setOldPassword] = React.useState('');
+  const [newPassword, setNewPassword] = React.useState('');
+  const [confirmPassword, setConfirmPassword] = React.useState('');
 
   // change password
-  const Changing = () => {
-    if (oldPassword === props?.password) {
-      if (newPassword?.length > 7) {
-        if (newPassword === confirmPassword) {
-          const authUser = auth.currentUser;
+  const Changing = async () => {
+    if (newPassword?.length > 7) {
+      if (newPassword === confirmPassword) {
+        const authUser = auth.currentUser;
+        try {
+          const response = await axios.patch(
+            'https://beautyverse.herokuapp.com/api/v1/users/' +
+              props.targetUser._id +
+              '/password',
+            {
+              oldPassword: oldPassword,
+              newPassword: newPassword,
+            }
+          );
           updatePassword(authUser, newPassword)
             .then(() => {
-              // Update successful.
+              props?.setOpen(true);
             })
             .catch((error) => {
+              console.log(error);
               // An error ocurred
               // ...
             });
-          updateDoc(doc(db, "users", authUser?.uid, "secret", "password"), {
-            password: newPassword,
-          });
-        } else {
-          alert("New Passwords doesn't match!");
+          console.log(response.data);
+          setOldPassword('');
+          setNewPassword('');
+          setConfirmPassword('');
+          setOpen(false);
+        } catch (error) {
+          setOldPassword('');
+          alert('Wrong old password');
         }
       } else {
-        alert("Password length must be min 8 symbols");
+        setNewPassword('');
+        setConfirmPassword('');
+        alert("New Passwords doesn't match!");
       }
     } else {
-      alert("Old Password is wrong!");
+      setNewPassword('');
+      setConfirmPassword('');
+      alert('Password length must be min 8 symbols');
     }
-    setOldPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-    setOpen(false);
-    props?.setOpen(true);
   };
 
   const handleClickOpen = () => {
@@ -67,7 +79,7 @@ export default function ChangePassword(props) {
         <Button
           variant="outlined"
           onClick={handleClickOpen}
-          sx={{ fontSize: "14px" }}
+          sx={{ fontSize: '14px' }}
         >
           {props?.language?.language.User.userPage.changePassword}
         </Button>
@@ -79,10 +91,10 @@ export default function ChangePassword(props) {
         <DialogContent>
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              width: "300px",
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              width: '300px',
             }}
           >
             <TextField
@@ -91,33 +103,33 @@ export default function ChangePassword(props) {
               id="name"
               label={props?.language?.language.User.userPage.oldPassword}
               value={oldPassword}
-              type={showPassword === "old" ? "text" : "password"}
+              type={showPassword === 'old' ? 'text' : 'password'}
               fullWidth
               variant="standard"
               onChange={(e) => setOldPassword(e.target.value)}
             />
-            {showPassword === "old" ? (
+            {showPassword === 'old' ? (
               <AiOutlineEye
                 className="eye"
                 size={20}
-                style={{ cursor: "pointer" }}
-                onClick={() => setShowPassword("")}
+                style={{ cursor: 'pointer' }}
+                onClick={() => setShowPassword('')}
               />
             ) : (
               <AiOutlineEyeInvisible
                 className="eye"
                 size={20}
-                style={{ cursor: "pointer" }}
-                onClick={() => setShowPassword("old")}
+                style={{ cursor: 'pointer' }}
+                onClick={() => setShowPassword('old')}
               />
             )}
           </div>
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              width: "300px",
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              width: '300px',
             }}
           >
             <TextField
@@ -125,33 +137,33 @@ export default function ChangePassword(props) {
               id="name"
               label={props?.language?.language.User.userPage.newPassword}
               value={newPassword}
-              type={showPassword === "new" ? "text" : "password"}
+              type={showPassword === 'new' ? 'text' : 'password'}
               fullWidth
               variant="standard"
               onChange={(e) => setNewPassword(e.target.value)}
             />
-            {showPassword === "new" ? (
+            {showPassword === 'new' ? (
               <AiOutlineEye
                 className="eye"
                 size={20}
-                style={{ cursor: "pointer" }}
-                onClick={() => setShowPassword("")}
+                style={{ cursor: 'pointer' }}
+                onClick={() => setShowPassword('')}
               />
             ) : (
               <AiOutlineEyeInvisible
                 className="eye"
                 size={20}
-                style={{ cursor: "pointer" }}
-                onClick={() => setShowPassword("new")}
+                style={{ cursor: 'pointer' }}
+                onClick={() => setShowPassword('new')}
               />
             )}
           </div>
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              width: "300px",
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              width: '300px',
             }}
           >
             <TextField
@@ -159,24 +171,24 @@ export default function ChangePassword(props) {
               id="name"
               label={props?.language?.language.User.userPage.confirmPassword}
               value={confirmPassword}
-              type={showPassword === "confirm" ? "text" : "password"}
+              type={showPassword === 'confirm' ? 'text' : 'password'}
               fullWidth
               variant="standard"
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
-            {showPassword === "confirm" ? (
+            {showPassword === 'confirm' ? (
               <AiOutlineEye
                 className="eye"
                 size={20}
-                style={{ cursor: "pointer" }}
-                onClick={() => setShowPassword("")}
+                style={{ cursor: 'pointer' }}
+                onClick={() => setShowPassword('')}
               />
             ) : (
               <AiOutlineEyeInvisible
                 className="eye"
                 size={20}
-                style={{ cursor: "pointer" }}
-                onClick={() => setShowPassword("confirm")}
+                style={{ cursor: 'pointer' }}
+                onClick={() => setShowPassword('confirm')}
               />
             )}
           </div>

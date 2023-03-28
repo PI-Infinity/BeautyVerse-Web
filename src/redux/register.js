@@ -1,28 +1,30 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  page: "1",
-  userType: "",
+  page: '1',
+  userType: '',
 
   //register info
-  name: "",
-  map: "",
-  addressInput: "",
-  addationalAddress: "",
-  countryCode: { value: "+995", label: "Georgia" },
-  phoneNumber: "",
-  email: "",
-  password: "",
-  confirmPassowrd: "",
+  name: '',
+  map: '',
+  addressInput: '',
+  addationalAddress: '',
+  countryCode: { value: '+995', label: 'Georgia' },
+  phoneNumber: '',
+  email: '',
+  password: '',
+  confirmPassowrd: '',
+
+  address: '',
 
   // working info
-  categories: "",
-  workingDays: "",
-  workingPlace: "",
+  categories: '',
+  workingDays: '',
+  workingPlace: '',
 };
 
 export const register = createSlice({
-  name: "register",
+  name: 'register',
   initialState,
   reducers: {
     setRegisterPage: (state, action) => {
@@ -67,6 +69,9 @@ export const register = createSlice({
     setWorkingDays: (state, action) => {
       state.workingDays = action.payload;
     },
+    setAddress: (state, action) => {
+      state.address = action.payload;
+    },
   },
 });
 
@@ -85,5 +90,6 @@ export const {
   setCategories,
   setAddressInput,
   setWorkingDays,
+  setAddress,
 } = register.actions;
 export default register.reducer;

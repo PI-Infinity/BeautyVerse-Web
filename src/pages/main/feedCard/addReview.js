@@ -1,190 +1,157 @@
-import React, { useState, useContext } from "react";
-import styled from "styled-components";
-import {
-  setDoc,
-  doc,
-  serverTimestamp,
-  onSnapshot,
-  collection,
-  deleteDoc,
-} from "firebase/firestore";
-import { AuthContext } from "../../../context/AuthContext";
-import { useSelector } from "react-redux";
-import { db } from "../../../firebase";
-import { useNavigate } from "react-router-dom";
-import { FiSend } from "react-icons/fi";
-import { v4 } from "uuid";
-import { BiStar } from "react-icons/bi";
+import { useState } from 'react';
+import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
+import { FiSend } from 'react-icons/fi';
+import { BiStar } from 'react-icons/bi';
+import axios from 'axios';
 
 export const AddReview = (props) => {
-  const { currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
-  const rerender = useSelector((state) => state.storeMain.rerender);
 
-  // import current user & parse it
-  const userUnparsed = useSelector((state) => state.storeMain.user);
-  let currentuser;
-  if (userUnparsed?.length > 0) {
-    currentuser = JSON.parse(userUnparsed);
-  }
+  const [text, setText] = useState();
 
-  /**
-   * add review to firebase
-   *  */
-  const AddingReview = async () => {
-    var id = new Date().toString();
-    var addTime = serverTimestamp();
-    // add review to target user
-    await setDoc(
-      doc(
-        db,
-        `users`,
-        `${props.id}`,
-        "feeds",
-        `${props.currentFeed?.id}`,
-        "reviews",
-        `${id}`
-      ),
-      {
-        id: id,
-        time: addTime,
-        reviewer: props.currentuser?.name,
-        reviewerId: props.currentuser?.id,
-        reviewerCover:
-          props.currentuser?.cover != undefined
-            ? props.currentuser?.cover
-            : null,
-        text: props.reviewText,
-        reciever: props.name,
-        recieverId: props.id,
-        recieverCover: props?.cover != undefined ? props?.cover : null,
-      }
-    );
+  // import current currentUser & parse it
+  const currentUser = JSON.parse(
+    localStorage.getItem('Beautyverse:currentUser')
+  );
 
-    var actionId = v4();
-    if (props?.id !== currentUser?.uid) {
-      setDoc(doc(db, `users`, `${props?.id}`, "notifications", `${actionId}`), {
-        id: actionId,
-        senderId: currentUser?.uid,
-        review: props.reviewText,
-        text: `დაგიტოვათ კომენტარი პოსტზე!`,
-        date: serverTimestamp(),
-        type: "review",
-        status: "unread",
-        feed: `${window.location.pathname}`,
-      });
-    }
-    props.setReviewText("");
-  };
-
-  const [stars, setStars] = useState([]);
-  // get stars
-  React.useEffect(() => {
-    let data = onSnapshot(
-      collection(
-        db,
-        "users",
-        `${props?.state?.userId}`,
-        "feeds",
-        `${props?.currentFeed?.id}`,
-        `${props?.state?.userId}+stars`
-      ),
-      (snapshot) => {
-        setStars(snapshot.docs.map((doc) => doc.data()));
-      }
-    );
-    return data;
-  }, [props?.path, props?.state, props?.currentFeed, props?.state?.imgNumber]);
-
-  // give heart to user
+  // give heart to currentUser
   const SetStar = async () => {
-    await setDoc(
-      doc(
-        db,
-        `users`,
-        `${props?.state?.userId}`,
-        "feeds",
-        `${props?.currentFeed?.id}`,
-        `${props?.state?.userId}+stars`,
-        currentuser?.id
-      ),
-      {
-        id: currentuser?.id,
-        date: serverTimestamp(),
-      }
-    );
-    var actionId = v4();
-    if (props?.state?.userId !== currentUser?.uid) {
-      setDoc(
-        doc(
-          db,
-          `users`,
-          `${props?.state?.userId}`,
-          "notifications",
-          `${actionId}`
-        ),
+    try {
+      await axios.post(
+        `https://beautyverse.herokuapp.com/api/v1/users/${props?.targetUser._id}/feeds/${props.currentFeed?._id}/stars`,
         {
-          id: actionId,
-          senderId: currentUser?.uid,
-          text: `მიანიჭა ვარსკვლავი თქვენ პოსტს!`,
-          date: serverTimestamp(),
-          type: "star",
-          status: "unread",
-          feed: `${window.location.pathname}`,
+          staredBy: currentUser?._id,
+          createdAt: new Date(),
         }
       );
+      if (currentUser._id !== props?.targetUser._id) {
+        await axios.post(
+          `https://beautyverse.herokuapp.com/api/v1/users/${props?.targetUser._id}/notifications`,
+          {
+            senderId: currentUser?._id,
+            text: `მიანიჭა ვარსკვლავი თქვენ პოსტს!`,
+            date: new Date(),
+            type: 'star',
+            status: 'unread',
+            feed: `/api/v1/users/${props?.targetUser._id}/feeds/${currentUser?._id}`,
+          }
+        );
+      }
+      const { length, checkIfStared } = props.stars;
+      props.setStars({
+        length: length + 1,
+        checkIfStared: { staredBy: currentUser?._id, createdAt: new Date() },
+      });
+    } catch (error) {
+      console.error(error);
     }
   };
 
-  const isStarGiven = stars?.find((item) => item.id === currentuser?.id);
+  // let stars;
 
   // remove heart
   const RemoveStar = async () => {
-    await deleteDoc(
-      doc(
-        db,
-        `users`,
-        `${props?.state?.userId}`,
-        "feeds",
-        `${props?.currentFeed?.id}`,
-        `${props?.state?.userId}+stars`,
-        currentuser?.id
-      )
-    );
+    const url = `https://beautyverse.herokuapp.com/api/v1/users/${props.targetUser?._id}/feeds/${props?.currentFeed?._id}/stars/${props.stars.checkIfStared?._id}`;
+    const response = await fetch(url, { method: 'DELETE' })
+      .then((response) => response.json())
+      .then(async (data) => {
+        const { length, checkIfStared } = props.stars;
+        props.setStars({ length: length - 1, checkIfStared: undefined });
+      })
+
+      .catch((error) => {
+        console.log('Error fetching data:', error);
+      });
+  };
+
+  /**
+   * add review
+   *  */
+
+  const SetReview = async () => {
+    try {
+      await axios.post(
+        `https://beautyverse.herokuapp.com/api/v1/users/${props?.targetUser._id}/feeds/${props.currentFeed?._id}/reviews`,
+        {
+          reviewer: {
+            id: currentUser?._id,
+            name: currentUser?.name,
+            cover: currentUser.cover,
+          },
+          createdAt: new Date(),
+          text: text,
+        }
+      );
+      if (currentUser._id !== props?.targetUser._id) {
+        await axios.post(
+          `https://beautyverse.herokuapp.com/api/v1/users/${props?.targetUser._id}/notifications`,
+          {
+            senderId: currentUser?._id,
+            text: `მიანიჭა ვარსკვლავი თქვენ პოსტს!`,
+            date: new Date(),
+            type: 'star',
+            status: 'unread',
+            feed: `/api/v1/users/${props?.targetUser._id}/feeds/${currentUser?._id}`,
+          }
+        );
+      }
+      props.setFeed((prev) => {
+        return {
+          ...prev,
+          feed: {
+            ...prev.feed,
+            reviews: [
+              {
+                reviewer: {
+                  id: currentUser?._id,
+                  name: currentUser?.name,
+                  cover: currentUser.cover,
+                },
+                createdAt: new Date(),
+                text: text,
+              },
+              ...prev.feed.reviews,
+            ],
+          },
+          next: prev.next,
+        };
+      });
+      setText('');
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
     <ReviewContainer>
-      {props.currentuser?.id !== undefined && (
+      {currentUser && (
         <Footer>
           <Likes>
-            {isStarGiven != undefined ? (
+            {props.isStarGiven ? (
               <BiStar className="likedIcon" onClick={RemoveStar} />
             ) : (
               <BiStar
                 className="unlikedIcon"
-                onClick={
-                  props.currentuser != ""
-                    ? SetStar
-                    : async () => {
-                        await props.setOpenFeed(false);
-                        navigate("/login");
-                      }
-                }
+                onClick={currentUser?._id ? SetStar : () => navigate('/login')}
               />
             )}
-            {stars?.length}
+            {props.stars.length}
           </Likes>
-          <AddReviewContainer
-            value={props.reviewText}
-            type="text"
-            placeholder="Add Review"
-            onChange={(e) => props.setReviewText(e.target.value)}
-          />{" "}
-          <FiSend
-            className="send"
-            onClick={props.reviewText?.length > 0 ? AddingReview : null}
-          />
+          {currentUser._id && (
+            <>
+              <AddReviewContainer
+                value={text}
+                type="text"
+                placeholder="Add Review"
+                onChange={(e) => setText(e.target.value)}
+              />{' '}
+              <FiSend
+                className="send"
+                onClick={text?.length > 0 ? SetReview : null}
+              />
+            </>
+          )}
         </Footer>
       )}
     </ReviewContainer>
@@ -200,7 +167,7 @@ const ReviewContainer = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 1vw;
+  padding-bottom: 1.5vw;
   box-sizing: border-box;
   margin-top: auto;
 
@@ -259,7 +226,7 @@ const ReviewContainer = styled.div`
 
 const AddReviewContainer = styled.input`
   border: none;
-  color: #fff;
+  color: ${(props) => props.theme.font};
   background: #050505;
   width: 100%;
   padding: 0.5vw;
@@ -272,7 +239,7 @@ const AddReviewContainer = styled.input`
   }
 
   ::placeholder {
-    color: #fff;
+    color: #666;
     font-size: 14px;
   }
 

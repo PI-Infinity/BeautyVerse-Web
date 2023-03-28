@@ -1,23 +1,19 @@
-import { useState, useContext, useEffect } from "react";
-import styled from "styled-components";
-import { useSelector, useDispatch } from "react-redux";
-import { AuthContext } from "../../context/AuthContext";
-import { setLoadFeed } from "../../redux/main";
-import { setCardsScrollY } from "../../redux/scroll";
-import { db } from "../../firebase";
-import { onSnapshot, collectionGroup } from "firebase/firestore";
-import { FaUser } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
-import { BiStar } from "react-icons/bi";
-import { ProceduresOptions } from "../../data/registerDatas";
-import { FaUserEdit } from "react-icons/fa";
-import { MdAddBusiness } from "react-icons/md";
-import { BsBrush } from "react-icons/bs";
-import Tooltip from "@mui/material/Tooltip";
-import { Language } from "../../context/language";
+import { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import { useSelector, useDispatch } from 'react-redux';
+import { setLoadFeed } from '../../redux/main';
+import { setCardsScrollY } from '../../redux/scroll';
+import { FaUser } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { BiStar } from 'react-icons/bi';
+import { ProceduresOptions } from '../../data/registerDatas';
+import { FaUserEdit } from 'react-icons/fa';
+import { MdAddBusiness } from 'react-icons/md';
+import { BsBrush } from 'react-icons/bs';
+import Tooltip from '@mui/material/Tooltip';
+import { Language } from '../../context/language';
 
 export const SpecialistsCard = (props) => {
-  const { currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const language = Language();
@@ -35,17 +31,22 @@ export const SpecialistsCard = (props) => {
    * Define start total
    */
   const [stars, setStars] = useState([]);
-  const DefineStars = () => {
-    const starsGroupRef = onSnapshot(
-      collectionGroup(db, `${props?.id + "+stars"}`),
-      (snapshot) => {
-        setStars(snapshot.docs.map((doc) => doc.data())?.length);
-      }
-    );
-  };
+
+  async function GetStars() {
+    const response = await fetch(
+      `https://beautyverse.herokuapp.com/api/v1/users/${props?._id}/stars`
+    )
+      .then((response) => response.json())
+      .then(async (data) => {
+        setStars(data.result);
+      })
+      .catch((error) => {
+        console.log('Error fetching data:', error);
+      });
+  }
 
   useEffect(() => {
-    DefineStars();
+    GetStars();
   }, []);
 
   // capitalize first letters
@@ -56,49 +57,37 @@ export const SpecialistsCard = (props) => {
 
   const name = capitalizeFirstLetter(props?.name);
   let type;
-  if (props?.type === "beautyCenter") {
+  if (props?.type === 'beautyCenter') {
     type = language?.language.Main.feedCard.beautySalon;
-  } else if (props?.type === "specialist") {
+  } else if (props?.type === 'specialist') {
     type = language?.language.Main.feedCard.specialist;
   }
   const username = capitalizeFirstLetter(props?.username);
 
-  /// define procedure title
-  var mainCategory = props?.filterCategories[0]?.substring(
-    0,
-    props?.filterCategories[0].indexOf(" -")
-  );
-  var procedures = proceduresOptions?.find((item) => {
-    if (
-      item?.value === mainCategory
-      // ?.toLowerCase()
-      // .includes(props?.filterCategories[0]?.toLowerCase())
-    ) {
-      return item.label;
-    }
-  });
+  let procedures;
 
   /**
    * define user type icon
    */
   let icon;
-  if (props?.type === "user") {
+  if (props?.type === 'user') {
     icon = <FaUserEdit />;
-  } else if (props?.type === "specialist") {
+  } else if (props?.type === 'specialist') {
     icon = <BsBrush />;
-  } else if (props?.type === "beautyCenter") {
+  } else if (props?.type === 'beautyCenter') {
     icon = <MdAddBusiness />;
   }
 
   // define full address
   const fullAddress = (
     <div>
-      {props?.address?.region?.length > 0 && props?.address?.region}
-      {props?.address?.city?.length > 0 && ", " + props?.address?.city}
-      {props?.address?.district?.length > 0 && ", " + props?.address?.district}
-      {props?.address?.address?.length > 0 &&
-        ", " + props?.address?.address + " "}
-      {props?.address?.streetNumber}
+      {props?.address[0]?.region?.length > 0 && props?.address[0]?.region}
+      {props?.address[0]?.city?.length > 0 && ', ' + props?.address[0]?.city}
+      {props?.address[0]?.district?.length > 0 &&
+        ', ' + props?.address[0]?.district}
+      {props?.address[0]?.street?.length > 0 &&
+        ', ' + props?.address[0]?.street + ' '}
+      {props?.address[0]?.number}
     </div>
   );
 
@@ -112,34 +101,34 @@ export const SpecialistsCard = (props) => {
       });
       return lab.label;
     })
-    .join(", ");
+    .join(', ');
 
   setTimeout(() => {
     if (props.index === 0) {
       dispatch(setLoadFeed(false));
     }
-  }, 700);
+  }, 200);
 
   return (
     <Card>
       <Title
         onClick={() => {
           dispatch(setCardsScrollY(window.scrollY));
-          navigate(`/user/${props.id}`);
+          navigate(`/api/v1/users/${props._id}`);
         }}
       >
         {icon}
-        {name.substring(0, name.indexOf(" "))?.length > 0
-          ? name.substring(0, name.indexOf(" "))
+        {name.substring(0, name.indexOf(' '))?.length > 0
+          ? name.substring(0, name.indexOf(' '))
           : name}
       </Title>
       <ImgContainer
         onClick={() => {
           dispatch(setCardsScrollY(window.scrollY));
-          navigate(`/user/${props.id}`);
+          navigate(`/api/v1/users/${props._id}`);
         }}
       >
-        {props.cover != undefined ? (
+        {props.cover ? (
           <Img src={props?.cover} />
         ) : (
           <IconCont>
@@ -150,52 +139,37 @@ export const SpecialistsCard = (props) => {
       <Tooltip title={fullAddress}>
         <City>
           <div>
-            {props?.address?.city === "T'bilisi"
-              ? "Tbilisi"
-              : props?.address?.city}
+            {props?.address[0]?.city === "T'bilisi"
+              ? 'Tbilisi'
+              : props?.address[0]?.city}
           </div>
         </City>
       </Tooltip>
       <Tooltip title={fullAddress}>
         <City>
           <div>
-            {props?.address?.district?.length > 0 &&
-              props?.address?.district + " "}
-            {props?.address?.address?.length > 0 &&
-              props?.address?.address + " "}
-            {props?.address?.streetNumber}
+            {props?.address[0]?.district?.length > 0 &&
+              props?.address[0]?.district + ' '}
+            {props?.address[0]?.street?.length > 0 &&
+              props?.address[0]?.street + ' '}
+            {props?.address[0]?.number}
           </div>
         </City>
       </Tooltip>
       <Tooltip title={allProcedures}>
-        <Category>{props?.username !== undefined ? username : type}</Category>
+        <Category>{props?.username ? username : type}</Category>
       </Tooltip>
       <Review>
-        {/* <Rating
-          size="small"
-          name="simple-controlled"
-          value={defineGived?.reiting !== undefined ? defineGived?.reiting : 0}
-          onChange={
-            currentUser != null
-              ? (event, newValue) => SetReiting(newValue)
-              : () => navigate("/login")
-          }
-        /> */}
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
-            marginBottom: "3px",
-            fontSize: "14px",
+            display: 'flex',
+            alignItems: 'center',
+            marginBottom: '3px',
+            fontSize: '14px',
           }}
         >
           <BiStar className="likedIcon" />
           <span>{stars}</span>
-          {/* <MdOutlineStarPurple500
-            size={12}
-            color="#ffa534"
-            style={{ marginTop: "2px" }}
-          /> */}
         </div>
       </Review>
     </Card>

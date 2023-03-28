@@ -1,15 +1,15 @@
-import React, { useState } from "react";
-import styled from "styled-components";
-import { db, storage } from "../../firebase";
-import { collection, deleteDoc, doc, onSnapshot } from "firebase/firestore";
-import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { ref, deleteObject } from "firebase/storage";
-import { MdAddShoppingCart } from "react-icons/md";
-import { AiOutlineDelete } from "react-icons/ai";
-import { BiImageAdd } from "react-icons/bi";
-import useWindowDimensions from "../../functions/dimensions";
-import { IsMobile } from "../../functions/isMobile";
+import React, { useState } from 'react';
+import styled from 'styled-components';
+import { db, storage } from '../../firebase';
+import { collection, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { ref, deleteObject } from 'firebase/storage';
+import { MdAddShoppingCart } from 'react-icons/md';
+import { AiOutlineDelete } from 'react-icons/ai';
+import { BiImageAdd } from 'react-icons/bi';
+import useWindowDimensions from '../../functions/dimensions';
+import { IsMobile } from '../../functions/isMobile';
 
 export const Products = (props) => {
   const isMobile = IsMobile();
@@ -18,12 +18,9 @@ export const Products = (props) => {
   const navigate = useNavigate();
 
   // current user info from redux
-  const userUnparsed = useSelector((state) => state.storeMain.user);
-
-  let userCurrent;
-  if (userUnparsed?.length > 0) {
-    userCurrent = JSON.parse(userUnparsed);
-  }
+  const userCurrent = useSelector(
+    (state) => state.storeMain?.user?.length > 0 && state.storeMain?.user
+  );
 
   /** Define user - current user or visisted user
    */
@@ -37,7 +34,7 @@ export const Products = (props) => {
   // loading images
   const [loading, setLoading] = useState(true);
   // remove confirming window
-  const [confirm, setConfirm] = useState("");
+  const [confirm, setConfirm] = useState('');
 
   // get products from firebase or from redux
   const ps = useSelector((state) => state.storeMarket.currentShopProducts);
@@ -45,7 +42,7 @@ export const Products = (props) => {
   React.useEffect(() => {
     if (userCurrent?.id !== user?.id) {
       const data = onSnapshot(
-        collection(db, "users", `${user?.id}`, "products"),
+        collection(db, 'users', `${user?.id}`, 'products'),
         (snapshot) => {
           setProducts(snapshot.docs.map((doc) => doc.data()));
         }
@@ -62,7 +59,7 @@ export const Products = (props) => {
   const DefineList = (gall) => {
     if (gall?.length > 0) {
       let list = gall?.map((item, index) => {
-        if (item?.status !== "Published" && user?.id !== userCurrent?.id) {
+        if (item?.status !== 'Published' && user?.id !== userCurrent?.id) {
           return null;
         } else {
           let images;
@@ -75,9 +72,9 @@ export const Products = (props) => {
                 <div
                   style={{
                     height: 0,
-                    width: "100%",
-                    display: "flex",
-                    justifyContent: "end",
+                    width: '100%',
+                    display: 'flex',
+                    justifyContent: 'end',
                   }}
                 >
                   <RemoveIconContainer onClick={() => setConfirm(item.id)}>
@@ -103,9 +100,9 @@ export const Products = (props) => {
               <ProductInfo>
                 <h5
                   style={{
-                    margin: "5px 0.5vw 0px 0.5vw",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
+                    margin: '5px 0.5vw 0px 0.5vw',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
                   }}
                 >
                   {item?.title}
@@ -113,8 +110,8 @@ export const Products = (props) => {
                 <h5
                   style={{
                     // fontWeight: "normal",
-                    margin: "0 0.5vw",
-                    color: "green",
+                    margin: '0 0.5vw',
+                    color: 'green',
                   }}
                 >
                   {item?.price} Gel
@@ -129,9 +126,9 @@ export const Products = (props) => {
                     }
                   >
                     <>
-                      {item.status === "Not Published"
-                        ? "გამოუქვეყნებელი"
-                        : "გამოქვეყნებული"}
+                      {item.status === 'Not Published'
+                        ? 'გამოუქვეყნებელი'
+                        : 'გამოქვეყნებული'}
                     </>
                   </PublishButton>
                 )}
@@ -152,7 +149,7 @@ export const Products = (props) => {
     /** delete from firestore
      */
     const coll = collection(db, `users/${user?.id}/products/`);
-    setConfirm("");
+    setConfirm('');
     if (coll !== undefined) {
       await deleteDoc(doc(coll, `${deleteItem}`));
       /** delete from cloude
@@ -189,7 +186,7 @@ export const Products = (props) => {
           <ConfirmCont>
             <ConfirmText>Are you sure to delete this file?</ConfirmText>
             <Answers>
-              <Answer name="no" onClick={() => setConfirm("")}>
+              <Answer name="no" onClick={() => setConfirm('')}>
                 Cancel
               </Answer>
               <Answer name="yes" onClick={() => Deleting(confirm)}>
@@ -201,14 +198,14 @@ export const Products = (props) => {
       )}
       <Container height={height}>
         <Content listLength={list?.length}>
-          {user?.type != "user" && (
+          {user?.type != 'user' && (
             <>
               {!props.userVisit && (
                 <AddProduct onClick={props.setAdd}>
                   <MdAddShoppingCart className="uploaderIcon" />
                 </AddProduct>
               )}
-              {list?.length > 0 == true ? list : ""}
+              {list?.length > 0 == true ? list : ''}
             </>
           )}
         </Content>
@@ -324,7 +321,7 @@ const Answers = styled.div`
 const Answer = styled.div`
   border-radius: 0.5vw;
   box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
-  background: ${(props) => (props.name != "yes" ? "#35B453" : "#de4360")};
+  background: ${(props) => (props.name != 'yes' ? '#35B453' : '#de4360')};
   color: #fff;
   display: flex;
   align-items: center;
@@ -341,7 +338,7 @@ const Answer = styled.div`
 
   :hover {
     filter: ${(props) =>
-      props.name === "yes" ? "brightness(1.05)" : "brightness(0.95)"};
+      props.name === 'yes' ? 'brightness(1.05)' : 'brightness(0.95)'};
   }
 `;
 
@@ -606,8 +603,8 @@ const PublishButton = styled.div`
   width: 100%;
   border: none;
   height: 1.7vw;
-  background: ${(props) => (props.status === "Published" ? "green" : "#ccc")};
-  color: ${(props) => (props.status === "Published" ? "white" : "black")};
+  background: ${(props) => (props.status === 'Published' ? 'green' : '#ccc')};
+  color: ${(props) => (props.status === 'Published' ? 'white' : 'black')};
   cursor: pointer;
   display: flex;
   align-items: center;

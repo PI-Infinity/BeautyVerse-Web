@@ -1,17 +1,20 @@
-import React from "react";
-import styled from "styled-components";
-import { Header } from "../../pages/chat/header";
-import { Search } from "../../pages/chat/search";
-import { ChatUsers } from "../../pages/chat/chatUsers";
-import { Favourites } from "../../pages/chat/favourites";
-import { AiFillHeart } from "react-icons/ai";
-import { MdAvTimer } from "react-icons/md";
-import { Language } from "../../context/language";
+import React, { useState, useRef, useEffect } from 'react';
+import styled from 'styled-components';
+import { Header } from '../../pages/chat/header';
+import { Search } from '../../pages/chat/search';
+import { ChatUsers } from '../../pages/chat/chatUsers';
+import { Favourites } from '../../pages/chat/favourites';
+import { AiFillHeart } from 'react-icons/ai';
+import { MdAvTimer } from 'react-icons/md';
+import { Language } from '../../context/language';
+import { useSelector, useDispatch } from 'react-redux';
+import { setRerenderChatList } from '../../redux/chat';
 
 export const SideBar = (props) => {
+  const dispatch = useDispatch();
   const language = Language();
-  const [search, setSearch] = React.useState("");
-  const [active, setActive] = React.useState("recently");
+  const [search, setSearch] = React.useState('');
+  const [active, setActive] = React.useState('recently');
 
   return (
     <Container>
@@ -19,25 +22,39 @@ export const SideBar = (props) => {
 
       <Navigator>
         <div
-          className={active == "recently" ? "active" : undefined}
-          onClick={() => setActive("recently")}
+          className={active == 'recently' ? 'active' : undefined}
+          onClick={() => {
+            setActive('recently');
+            dispatch(setRerenderChatList());
+          }}
         >
           <MdAvTimer className="icon" />
           {language?.language.Chat.chat.recently}
         </div>
         <div
-          className={active == "followings" ? "active" : undefined}
-          onClick={() => setActive("followings")}
+          className={active == 'followings' ? 'active' : undefined}
+          onClick={() => {
+            setActive('followings');
+            dispatch(setRerenderChatList());
+          }}
         >
           <AiFillHeart className="icon" />
           {language?.language.Chat.chat.followings}
         </div>
       </Navigator>
       <Search setSearch={setSearch} search={search} />
-      {active == "recently" ? (
-        <ChatUsers search={search} />
+      {active == 'recently' ? (
+        <ChatUsers
+          search={search}
+          handleRoomChange={props.handleRoomChange}
+          socket={props.socket}
+        />
       ) : (
-        <Favourites search={search} />
+        <Favourites
+          search={search}
+          handleRoomChange={props.handleRoomChange}
+          socket={props.socket}
+        />
       )}
     </Container>
   );

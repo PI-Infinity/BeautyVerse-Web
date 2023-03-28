@@ -1,20 +1,20 @@
-import React, { useState } from "react";
-import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { CgSearch } from "react-icons/cg";
-import { MdClear } from "react-icons/md";
+import React, { useState } from 'react';
+import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { CgSearch } from 'react-icons/cg';
+import { MdClear } from 'react-icons/md';
 import {
   setRerender,
   setEnterSearch,
   setFilterOpen,
-} from "../../../redux/main";
-import { setSearch } from "../../../redux/filter";
-import { ProceduresOptions } from "../../../data/registerDatas";
-import Select from "react-select";
-import { GrList } from "react-icons/gr";
-import { MdOutlinePersonPin } from "react-icons/md";
-import { setChangeFeed, setLoadFeed } from "../../../redux/main";
+} from '../../../redux/main';
+import { setSearch } from '../../../redux/filter';
+import { ProceduresOptions } from '../../../data/registerDatas';
+import Select from 'react-select';
+import { GrList } from 'react-icons/gr';
+import { MdOutlinePersonPin } from 'react-icons/md';
+import { setChangeFeed, setLoadFeed } from '../../../redux/main';
 
 export const Search = (props) => {
   const proceduresOptions = ProceduresOptions();
@@ -22,29 +22,27 @@ export const Search = (props) => {
   const navigate = useNavigate();
 
   // import current user & parse it
-  const userUnparsed = useSelector((state) => state.storeMain.user);
-  let user;
-  if (userUnparsed?.length > 0) {
-    user = JSON.parse(userUnparsed);
-  }
+  const user = useSelector(
+    (state) => state.storeMain.user?.length > 0 && state.storeMain.user
+  );
 
   const search = useSelector((state) => state.storeFilter.search);
-  const [resultCont, setResultCont] = React.useState("0");
-  const [srch, setSrch] = React.useState("");
+  const [resultCont, setResultCont] = React.useState('0');
+  const [srch, setSrch] = React.useState('');
 
   React.useEffect(() => {
-    dispatch(setSearch(""));
-    setSrch("");
+    dispatch(setSearch('all'));
+    setSrch('');
   }, []);
 
   const [focus, setFocus] = useState(false);
 
   // import users
-  const usersList = useSelector((state) => state.storeMain.userList);
-  let users;
-  if (usersList?.length > 0) {
-    users = JSON.parse(usersList);
-  }
+  const users = useSelector(
+    (state) =>
+      state.storeMain?.userList?.length > 0 &&
+      JSON.parse(state.storeMain?.userList)
+  );
 
   const [bg, setBg] = React.useState(false);
 
@@ -55,7 +53,7 @@ export const Search = (props) => {
   const Filter = () => {
     // define filtered words list
     let userNames = users?.map((item) => {
-      if (item.type != "user") {
+      if (item.type != 'user') {
         return item.name;
       }
     });
@@ -85,8 +83,8 @@ export const Search = (props) => {
     <Container changeFeed={changeFeed?.toString()}>
       <SearchWrapper>
         <h3
-          onClick={() => navigate("/marketplace")}
-          style={{ cursor: "pointer" }}
+          onClick={() => navigate('/marketplace')}
+          style={{ cursor: 'pointer' }}
         >
           Marketplace
         </h3>
@@ -111,8 +109,8 @@ export const Search = (props) => {
           <MdClear
             className="clearicon"
             onClick={async () => {
-              await setSrch("");
-              await dispatch(setSearch(""));
+              await setSrch('');
+              await dispatch(setSearch('all'));
               await dispatch(setRerender());
               setFocus(false);
             }}
@@ -120,7 +118,7 @@ export const Search = (props) => {
         )}
       </SearchWrapper>
       {focus && (
-        <div style={{ width: "100%", position: "relative" }}>
+        <div style={{ width: '100%', position: 'relative' }}>
           <Result
             setFocus={setFocus}
             data={data}
@@ -164,7 +162,7 @@ const Container = styled.div`
     }
   }
   .profileicon {
-    color: ${(props) => (props.changeFeed === "true" ? "#ddd" : "#050505")};
+    color: ${(props) => (props.changeFeed === 'true' ? '#ddd' : '#050505')};
     font-size: 1.2vw;
     cursor: pointer;
 

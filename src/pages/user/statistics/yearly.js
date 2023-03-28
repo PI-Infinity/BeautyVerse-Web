@@ -1,31 +1,29 @@
-import React, { useEffect } from "react";
-import styled from "styled-components";
-import { collection, getCountFromServer } from "firebase/firestore";
-import { db } from "../../../firebase";
-import { useSelector, useDispatch } from "react-redux";
-import { Chart } from "react-google-charts";
-import { IsMobile } from "../../../functions/isMobile";
-import { BiStar } from "react-icons/bi";
-import { ImCheckmark } from "react-icons/im";
-import { AiOutlineEye } from "react-icons/ai";
-import ShowChartIcon from "@mui/icons-material/ShowChart";
-import { MdDynamicFeed } from "react-icons/md";
+import React, { useEffect } from 'react';
+import styled from 'styled-components';
+import { collection, getCountFromServer } from 'firebase/firestore';
+import { db } from '../../../firebase';
+import { useSelector, useDispatch } from 'react-redux';
+import { Chart } from 'react-google-charts';
+import { IsMobile } from '../../../functions/isMobile';
+import { BiStar } from 'react-icons/bi';
+import { ImCheckmark } from 'react-icons/im';
+import { AiOutlineEye } from 'react-icons/ai';
+import ShowChartIcon from '@mui/icons-material/ShowChart';
+import { MdDynamicFeed } from 'react-icons/md';
 
 export function Yearly(props) {
   const isMobile = IsMobile();
 
   // import followings
-  const folls = useSelector((state) => state.storeMain.followings);
-  let followings;
-  if (folls?.length > 0) {
-    followings = JSON.parse(folls);
-  }
+  const followings = useSelector(
+    (state) => state.storeMain.followings?.length > 0 && JSON.parse(state.storeMain.followings)
+  );
 
   // feeds stats
-  const [count, setCount] = React.useState("");
+  const [count, setCount] = React.useState('');
   useEffect(() => {
     const Getting = async () => {
-      const coll = collection(db, "users", props?.user?.id, "feeds");
+      const coll = collection(db, 'users', props?.user?.id, 'feeds');
       const snapshot = await getCountFromServer(coll);
       setCount(snapshot.data().count);
     };
@@ -35,14 +33,10 @@ export function Yearly(props) {
   return (
     <>
       <Stats>
-        <ImCheckmark color="#2bdfd9" />{" "}
-        {props?.language?.language.User.userPage.followers}:{" "}
-        {props?.followers?.length}
+        <ImCheckmark color="#2bdfd9" /> {props?.language?.language.User.userPage.followers}: {props?.followers?.length}
       </Stats>
       <Stats>
-        <ImCheckmark color="orange" />{" "}
-        {props?.language?.language.User.userPage.followings}:{" "}
-        {followings?.length}
+        <ImCheckmark color="orange" /> {props?.language?.language.User.userPage.followings}: {followings?.length}
       </Stats>
       <Stats>
         <BiStar color="#bb3394" />

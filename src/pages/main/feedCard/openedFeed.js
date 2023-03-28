@@ -1,40 +1,23 @@
-import React, { useState, useEffect, useContext, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
-import styled from "styled-components";
-import { useSelector, useDispatch } from "react-redux";
-import { MdOutlineCloseFullscreen } from "react-icons/md";
-import { IoMdArrowDropright, IoMdArrowDropleft } from "react-icons/io";
-import { AddReview } from "../../../pages/main/feedCard/addReview";
-import { ReviewList } from "../../../pages/main/feedCard/reviewList";
-import {
-  setDoc,
-  getDocs,
-  doc,
-  collection,
-  deleteDoc,
-  onSnapshot,
-  serverTimestamp,
-  getDoc,
-  getCountFromServer,
-  orderBy,
-  query,
-} from "firebase/firestore";
-import { v4 } from "uuid";
-import { setOpenFeed } from "../../../redux/feed";
-import { db } from "../../../firebase";
-import useWindowDimensions from "../../../functions/dimensions";
-import { IsMobile } from "../../../functions/isMobile";
-import { AuthContext } from "../../../context/AuthContext";
-import { Spinner } from "../../../components/loader";
-import { isWebpSupported } from "react-image-webp/dist/utils";
-import Avatar from "@mui/material/Avatar";
-import GetTimesAgo from "../../../functions/getTimesAgo";
-import { SiGoogletranslate } from "react-icons/si";
-import { SlReload } from "react-icons/sl";
-import { Language } from "../../../context/language";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+import { useSelector, useDispatch } from 'react-redux';
+import { MdOutlineCloseFullscreen } from 'react-icons/md';
+import { IoMdArrowDropright, IoMdArrowDropleft } from 'react-icons/io';
+import { AddReview } from '../../../pages/main/feedCard/addReview';
+import { ReviewList } from '../../../pages/main/feedCard/reviewList';
+import { setOpenFeed } from '../../../redux/feed';
+import useWindowDimensions from '../../../functions/dimensions';
+import { IsMobile } from '../../../functions/isMobile';
+import { Spinner } from '../../../components/loader';
+import { isWebpSupported } from 'react-image-webp/dist/utils';
+import Avatar from '@mui/material/Avatar';
+import GetTimesAgo from '../../../functions/getTimesAgo';
+import { SiGoogletranslate } from 'react-icons/si';
+import { SlReload } from 'react-icons/sl';
+import { Language } from '../../../context/language';
 
 export const OpenedFeed = (props) => {
-  const { currentUser } = useContext(AuthContext);
   const { height, width } = useWindowDimensions();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -44,216 +27,87 @@ export const OpenedFeed = (props) => {
   const [loading, setLoading] = useState(true);
 
   const path = window.location.pathname;
+  const splited = path.split('/');
+  const userId = splited[4];
+  const feedId = splited[6];
 
-  const [state, setState] = useState("");
+  const [feed, setFeed] = useState();
+  const [user, setUser] = useState();
+  // const [state, setState] = useState('');
+
+  const currentUser = JSON.parse(
+    localStorage.getItem('Beautyverse:currentUser')
+  );
 
   const rerender = useSelector((state) => state.storeMain.rerender);
   useEffect(() => {
     window.scrollTo(0, 0);
-    DefineState(path);
-    document.body.style.overflowY = "hidden";
+    if (feedId) {
+      GetFeed();
+    }
+    if (userId) {
+      GetUser();
+    }
   }, [path]);
 
-  /**
-   * define variables from link
-   *  */
-  const DefineState = async (url) => {
-    setLoading(true);
-    // define user id
-    let minused;
-    if (url.startsWith("/user")) {
-      minused = url.slice(6, url?.length);
-    } else if (url.startsWith("/visit")) {
-      minused = url.slice(12, url?.length);
-    } else {
-      minused = url.slice(1, url?.length);
+  const [render, setRender] = useState(false);
+  useEffect(() => {
+    if (feed?.feed?._id && user?._id) {
+      GetStars();
+      document.body.style.overflowY = 'hidden';
     }
-    const indexOfDash = await minused.indexOf("/");
-    const id = await minused.slice(0, indexOfDash);
+  }, [path, feed?.feed?._id, user, render]);
 
-    // define user
-    const docRef = doc(db, "users", `${id}`);
-    const docSnap = await getDoc(docRef);
+  const [stars, setStars] = React.useState([]);
 
-    let user;
-    if (docSnap.exists()) {
-      user = docSnap.data();
-    } else {
-      // doc.data() will be undefined in this case
-      console.log("No such document!");
-    }
-
-    //define img number
-    let imgNumber;
-    if (url[url?.length - 2] === "/") {
-      imgNumber = url[url?.length - 1];
-    } else if (url[url?.length - 3] === "/") {
-      imgNumber = url.slice(url?.length - 2, url?.length);
-    } else if (url[url?.length - 4] === "/") {
-      imgNumber = url.slice(url?.length - 3, url?.length);
-    } else if (url[url?.length - 5] === "/") {
-      imgNumber = url.slice(url?.length - 4, url?.length);
-    } else if (url[url?.length - 6] === "/") {
-      imgNumber = url.slice(url?.length - 5, url?.length);
-    }
-    setState({
-      userId: id,
-      userCover: user?.cover,
-      userName: user?.name,
-      userType: user?.type,
-      imgNumber: parseInt(imgNumber),
-    });
-  };
-
-  /*
-  /import current user & parse it
-  */
-
-  const userUnparsed = useSelector((state) => state.storeMain.user);
-  let currentuser;
-  if (userUnparsed?.length > 0) {
-    currentuser = JSON.parse(userUnparsed);
+  async function GetStars() {
+    const response = await fetch(
+      `https://beautyverse.herokuapp.com/api/v1/users/${user?._id}/feeds/${feed?.feed?._id}/stars/check/${currentUser?._id}`
+    )
+      .then((response) => response.json())
+      .then(async (data) => {
+        setStars(data.data.stars);
+      })
+      .catch((error) => {
+        console.log('Error fetching data:', error);
+      });
   }
 
-  /**
-   * define feeds length
-   */
-  const [feedsLength, setFeedsLength] = useState("");
-  useEffect(() => {
-    const GetFeedsLength = async () => {
-      const coll = collection(db, "users", `${state?.userId}`, "feeds");
-      //get coll length
-      const snapshot = await getCountFromServer(coll);
-      setFeedsLength(snapshot.data().count);
-    };
-    GetFeedsLength();
-  }, [state]);
-  /**
-   * define reviews
-   */
+  let isStarGiven = stars?.checkIfStared;
 
-  const [reviews, setReviews] = useState([]);
-  useEffect(() => {
-    const GetReviews = async () => {
-      const revRef = query(
-        collection(
-          db,
-          "users",
-          `${state?.userId}`,
-          "feeds",
-          `${feed?.id}`,
-          "reviews"
-        ),
-        orderBy("time", "desc")
-      );
-      onSnapshot(revRef, (snapshot) => {
-        setReviews(snapshot.docs.map((doc) => doc.data()));
+  async function GetFeed() {
+    const response = await fetch(
+      `https://beautyverse.herokuapp.com/api/v1/users/${userId}/feeds/${feedId}`
+    )
+      .then((response) => response.json())
+      .then(async (data) => {
+        console.log(data.data);
+        setFeed(data.data);
+      })
+      .catch((error) => {
+        console.log('Error fetching data:', error);
       });
-    };
-    GetReviews();
-  }, [state]);
-
-  /**
-   * define prev feed
-   */
-  const [prev, setPrev] = useState("");
-  useEffect(() => {
-    const GetPrevFeed = async () => {
-      const coll = collection(db, "users", `${state?.userId}`, "feeds");
-      const data = await query(coll, orderBy("addTime", "desc"));
-      const documentSnapshots = await getDocs(data);
-      const prevDoc =
-        documentSnapshots.docs[
-          state?.imgNumber !== 0 ? state?.imgNumber - 1 : 0
-        ];
-      setPrev(prevDoc?.data().id);
-    };
-    GetPrevFeed();
-  }, [state]);
-  /**
-   * define next feed
-   */
-  const [next, setNext] = useState("");
-  useEffect(() => {
-    const GetNextFeed = async () => {
-      const coll = collection(db, "users", `${state?.userId}`, "feeds");
-      const data = await query(coll, orderBy("addTime", "desc"));
-      const documentSnapshots = await getDocs(data);
-      const nextDoc =
-        documentSnapshots.docs[
-          state?.imgNumber + 1 > feedsLength - 1
-            ? state?.imgNumber
-            : state?.imgNumber + 1
-        ];
-      setNext(nextDoc?.data().id);
-    };
-    GetNextFeed();
-  }, [state]);
-
-  // // add review to firebase
-  const [reviewText, setReviewText] = React.useState("");
-
-  // define post img added time
-  const [postTime, setPostTime] = React.useState([]);
-
-  // open report
-  const [reports, setReports] = React.useState(false);
-  // console.log(state);
-  // React.useEffect(() => {
-  //   fnc(state?.imgNumber);
-  // }, [state]);
-
-  /**
-   * define links destionation path
-   */
-
-  //define next link
-  const GoToNext = () => {
-    let navigatePath;
-    if (path.startsWith("/user")) {
-      navigatePath = () =>
-        navigate(`/user/${state?.userId}/feed/${next}/${state?.imgNumber + 1}`);
-    } else if (path.startsWith("/visit")) {
-      navigatePath = () =>
-        navigate(
-          `/visit/user/${state?.userId}/feed/${next}/${state?.imgNumber + 1}`
-        );
-    } else {
-      navigatePath = () =>
-        navigate(`/${state?.userId}/feed/${next}/${state?.imgNumber + 1}`);
-    }
-    return navigatePath;
-  };
-
-  const nextLink = GoToNext();
-
-  // define prev link
-  const GoToPrev = () => {
-    let navigatePath;
-    if (path.startsWith("/user")) {
-      navigatePath = () =>
-        navigate(`/user/${state?.userId}/feed/${prev}/${state?.imgNumber - 1}`);
-    } else if (path.startsWith("/visit")) {
-      navigatePath = () =>
-        navigate(
-          `/visit/user/${state?.userId}/feed/${prev}/${state?.imgNumber - 1}`
-        );
-    } else {
-      navigatePath = () =>
-        navigate(`/${state?.userId}/feed/${prev}/${state?.imgNumber - 1}`);
-    }
-    return navigatePath;
-  };
-
-  const prevLink = GoToPrev();
+  }
+  async function GetUser() {
+    const response = await fetch(
+      `https://beautyverse.herokuapp.com/api/v1/users/${userId}`
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        setUser(data.data.user);
+      })
+      .catch((error) => {
+        console.log('Error fetching data:', error);
+      });
+  }
 
   //define closing link
   const Closing = () => {
     let navigatePath;
-    if (path.startsWith("/user")) {
-      navigatePath = () => navigate(`/user/${state.userId}`);
+    if (splited[splited?.length - 1] === 'profile') {
+      navigatePath = () => navigate(`/api/v1/users/${user?._id}`);
     } else {
-      navigatePath = () => navigate("/");
+      navigatePath = () => navigate('/');
     }
     return navigatePath;
   };
@@ -261,21 +115,21 @@ export const OpenedFeed = (props) => {
   const closeOpenedFeed = Closing();
 
   // translate feed
-  const [translated, setTranslated] = React.useState("");
+  const [translated, setTranslated] = React.useState('');
 
   const lang = useSelector((state) => state.storeMain.language);
 
   // translate feed text
   const GetLanguages = (x) => {
-    const API_KEY = "AIzaSyAuSnUmGlptL0E4m4wP-1XzlqL_iv_y3g8";
+    const API_KEY = 'AIzaSyAuSnUmGlptL0E4m4wP-1XzlqL_iv_y3g8';
 
     let url = `https://translation.googleapis.com/language/translate/v2?q=${x}&target=${lang}&key=${API_KEY}`;
 
     fetch(url, {
-      method: "GET",
+      method: 'GET',
       headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
       },
     })
       .then((res) => res.json())
@@ -283,34 +137,26 @@ export const OpenedFeed = (props) => {
         setTranslated(response.data.translations[0].translatedText);
       })
       .catch((error) => {
-        console.log("There was an error with the translation request: ", error);
+        console.log('There was an error with the translation request: ', error);
       });
   };
 
-  // get current feed
+  // define post time
 
-  const [feed, setFeed] = useState("");
+  const currentPostTime = GetTimesAgo(
+    new Date(feed?.feed?.createdAt)?.getTime(),
+    feed?.feed?.createdAt
+  );
 
-  useEffect(() => {
-    const GeetCurrentFeed = async () => {
-      const coll = collection(db, "users", `${state?.userId}`, "feeds");
-      const data = await query(coll, orderBy("addTime", "desc"));
-      const documentSnapshots = await getDocs(data);
-      const feedDoc = await documentSnapshots.docs[state?.imgNumber];
-      setFeed(feedDoc?.data());
-    };
-    GeetCurrentFeed();
-  }, [state]);
-
-  // define shown post added time
-  const currentPostTime = GetTimesAgo(feed?.addTime?.seconds);
   let timeTitle;
-  if (currentPostTime?.title === "h") {
+  if (currentPostTime?.title === 'h') {
     timeTitle = language?.language.Main.feedCard.h;
-  } else if (currentPostTime?.title === "min") {
+  } else if (currentPostTime?.title === 'min') {
     timeTitle = language?.language.Main.feedCard.min;
-  } else {
+  } else if (currentPostTime?.title.includes('2')) {
     timeTitle = currentPostTime?.title;
+  } else {
+    timeTitle = language?.language.Main.feedCard.justNow;
   }
 
   const [imageHeight, setImageHeight] = useState(null);
@@ -318,23 +164,17 @@ export const OpenedFeed = (props) => {
   useEffect(() => {
     const img = new Image();
     if (isMobile) {
-      img.src = feed?.mobileWEBPurl;
+      img.src = feed?.feed?.mobileJpeg;
     } else {
-      img.src = feed?.desktopJPEGurl;
+      img.src = feed?.feed?.desktopUrl;
     }
     img.onload = () => {
       setImageHeight(img.height - (img.width - width));
       setTimeout(() => {
         setLoading(false);
-      }, 300);
+      }, 100);
     };
   }, [feed]);
-
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //     setLoading(false);
-  //   }, 300);
-  // }, [imageHeight + currentPostTime]);
 
   return (
     <Container height={height}>
@@ -345,30 +185,41 @@ export const OpenedFeed = (props) => {
           </LoaderContainer>
         )}
         <ImgContainer loading={loading?.toString()} imageHeight={imageHeight}>
-          {state?.imgNumber > 0 && (
-            <Arrow right="true" onClick={prevLink}>
+          {feed?.prev && (
+            <Arrow
+              right="true"
+              onClick={() =>
+                navigate(`/api/v1/users/${user?._id}/feeds/${feed?.prev}`)
+              }
+            >
               <IoMdArrowDropleft size={40} color="rgba(255,255,255,0.5)" />
             </Arrow>
           )}
-          {feed?.name?.toLowerCase().endsWith("mp4") ? (
+
+          {feed?.feed?.name?.toLowerCase().endsWith('mp4') ? (
             <Video width="100%" height="auto" controls autoplay muted>
-              <source src={feed?.videoUrl} type="video/mp4" />
+              <source src={feed?.feed?.videoUrl} type="video/mp4" />
             </Video>
           ) : (
             <>
               {isMobile ? (
                 isWebpSupported() ? (
-                  <MainImg src={feed?.mobileWEBPurl} active={props.active} />
+                  <MainImg src={feed?.feed?.mobileWebp} active={props.active} />
                 ) : (
-                  <MainImg src={feed?.mobileJPEGurl} active={props.active} />
+                  <MainImg src={feed?.feed?.mobileJpeg} active={props.active} />
                 )
               ) : (
-                <MainImg src={feed?.desktopJPEGurl} active={props.active} />
+                <MainImg src={feed?.feed?.desktopUrl} active={props.active} />
               )}
             </>
           )}
-          {state?.imgNumber < feedsLength - 1 && (
-            <Arrow left="true" onClick={nextLink}>
+          {feed?.next && (
+            <Arrow
+              left="true"
+              onClick={() =>
+                navigate(`/api/v1/users/${user?._id}/feeds/${feed?.next}`)
+              }
+            >
               <IoMdArrowDropright size={40} color="rgba(255,255,255,0.5)" />
             </Arrow>
           )}
@@ -377,21 +228,17 @@ export const OpenedFeed = (props) => {
         <PostSide loading={loading.toString()}>
           <UserInfo>
             <Avatar
-              onClick={() => navigate(`/user/${state?.userId}`)}
-              alt={state?.userName}
-              src={state?.userCover !== undefined ? state?.userCover : ""}
-              sx={{ width: 42, height: 42, cursor: "pointer" }}
+              onClick={() => navigate(`/api/v1/users/${user?._id}`)}
+              alt={user?.name}
+              src={user?.cover ? user?.cover : ''}
+              sx={{ width: 42, height: 42, cursor: 'pointer' }}
             />
 
-            <UserName onClick={() => navigate(`/user/${state?.userId}`)}>
-              {state?.userName}
+            <UserName onClick={() => navigate(`/api/v1/users/${user?._id}`)}>
+              {user?.name}
             </UserName>
-            {currentPostTime !== undefined && (
-              <PostTime>
-                {currentPostTime === "Just now"
-                  ? language?.language.Main.feedCard.justNow
-                  : currentPostTime?.numbers + " " + timeTitle}
-              </PostTime>
+            {currentPostTime && (
+              <PostTime>{currentPostTime?.numbers + ' ' + timeTitle}</PostTime>
             )}
 
             <ClosePost onClick={closeOpenedFeed}>
@@ -399,25 +246,25 @@ export const OpenedFeed = (props) => {
             </ClosePost>
           </UserInfo>
           <Post>
-            {translated?.length > 0 ? translated : feed?.post}
-            {feed?.length > 0 && (
-              <div style={{ cursor: "pointer" }}>
+            {translated ? translated : feed?.feed?.post}
+            {feed?.feed?.post && (
+              <div style={{ cursor: 'pointer' }}>
                 {translated?.length < 1 ? (
-                  <div style={{ padding: "2px" }}>
+                  <div style={{ padding: '2px' }}>
                     <SiGoogletranslate
-                      onClick={() => GetLanguages(feed?.post)}
+                      onClick={() => GetLanguages(feed?.feed?.post)}
                       size={14}
                       color="#ddd"
-                      style={{ cursor: "pointer" }}
+                      style={{ cursor: 'pointer' }}
                     />
                   </div>
                 ) : (
-                  <div style={{ padding: "2px" }}>
+                  <div style={{ padding: '2px' }}>
                     <SlReload
-                      onClick={() => setTranslated("")}
+                      onClick={() => setTranslated('')}
                       size={14}
                       color="#ddd"
-                      style={{ cursor: "pointer" }}
+                      style={{ cursor: 'pointer' }}
                     />
                   </div>
                 )}
@@ -425,29 +272,29 @@ export const OpenedFeed = (props) => {
             )}
           </Post>
           <ReviewList
-            reviews={reviews}
-            currentuser={currentuser}
-            setReviewText={setReviewText}
-            id={state?.userId}
-            currentFeed={feed}
+            reviews={feed?.feed?.reviews}
+            currentUser={currentUser}
+            id={userId}
+            currentFeed={feed?.feed}
+            setFeed={setFeed}
+            targetUser={user}
           />
-
           <>
             {!isMobile && (
               <AddReview
                 opened={true}
-                reviews={reviews}
-                currentuser={currentuser}
-                name={state?.userName}
-                id={state?.userId}
-                cover={state?.userCover}
-                reviews={reviews}
-                currentFeed={feed}
+                render={render}
+                setRender={setRender}
+                targetUser={user}
+                name={user?.name}
+                id={userId}
+                cover={user?.cover}
+                isStarGiven={isStarGiven}
+                stars={stars}
+                setStars={setStars}
+                setFeed={setFeed}
+                currentFeed={feed?.feed}
                 setOpenFeed={setOpenFeed}
-                setReviewText={setReviewText}
-                reviewText={reviewText}
-                pathc={path}
-                state={state}
               />
             )}
           </>
@@ -456,18 +303,18 @@ export const OpenedFeed = (props) => {
       {isMobile && (
         <AddReview
           opened={true}
-          reviews={reviews}
-          currentuser={currentuser}
-          name={state?.userName}
-          id={state?.userId}
-          cover={state?.userCover}
-          reviews={reviews}
-          currentFeed={feed}
+          render={render}
+          setRender={setRender}
+          targetUser={user}
+          name={user?.name}
+          id={userId}
+          cover={user?.cover}
+          isStarGiven={isStarGiven}
+          stars={stars}
+          setStars={setStars}
+          setFeed={setFeed}
+          currentFeed={feed?.feed}
           setOpenFeed={setOpenFeed}
-          setReviewText={setReviewText}
-          reviewText={reviewText}
-          pathc={path}
-          state={state}
         />
       )}
     </Container>
@@ -533,6 +380,7 @@ const LoaderContainer = styled.div`
   background: ${(props) => props.theme.background};
   position: absolute;
   z-index: 10005;
+  overflow: hidden;
 
   @media only screen and (max-width: 600px) {
     width: 100vw;
@@ -554,7 +402,7 @@ const ImgContainer = styled.div`
   @media only screen and (max-width: 600px) {
     width: 100vw;
     height: ${(props) => props.imageHeight}px;
-    align-items: ${(props) => (props.loading === "true" ? "center" : "start")};
+    align-items: ${(props) => (props.loading === 'true' ? 'center' : 'start')};
     position: relative;
     background: #050505;
     // border-bottom: 1px solid #f3f3f3;
@@ -602,7 +450,7 @@ const PostSide = styled.div`
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: ${(props) => (props.loading === "true" ? "100%" : "auto")};
+    height: ${(props) => (props.loading === 'true' ? '100%' : 'auto')};
     align-items: center;
     padding: 0 5vw;
   }
@@ -686,10 +534,11 @@ const ClosePost = styled.div`
     position: relative;
     bottom: 1vw;
     left: 1vw;
+    color: orange;
 
     @media only screen and (max-width: 600px) {
       font-size: 6vw;
-      color: rgba(255, 255, 255, 0.8);
+      // color: rgba(255, 255, 255, 0.8);
     }
   }
 
@@ -766,9 +615,9 @@ const Post = styled.div`
 
 const Arrow = styled.div`
   position: absolute;
-  margin-right: ${(props) => (props.right === "true" ? "43%" : "auto")};
-  margin-left: ${(props) => (props.left === "true" ? "43%" : "auto")};
-  // opacity: ${(props) => (props.off ? "0" : "0.2")};
+  margin-right: ${(props) => (props.right === 'true' ? '43%' : 'auto')};
+  margin-left: ${(props) => (props.left === 'true' ? '43%' : 'auto')};
+  // opacity: ${(props) => (props.off ? '0' : '0.2')};
   width: 2.5vw;
   height: 2.5vw;
   border-radius: 50%;
@@ -776,7 +625,7 @@ const Arrow = styled.div`
   align-items: center;
   justify-content: center;
   font-size: 2vw;
-  cursor: ${(props) => (props.off ? "auto" : "pointer")};
+  cursor: ${(props) => (props.off ? 'auto' : 'pointer')};
   transition: ease-in-out 150ms;
   color: #444;
   user-select: none;
@@ -796,11 +645,11 @@ const Arrow = styled.div`
     margin-right: 0;
     margin-left: 0;
     top: calc(50% - 4.5vw);
-    left: ${(props) => (props.right === "true" ? "5vw" : "auto")};
-    right: ${(props) => (props.left === "true" ? "5vw" : "auto")};
+    left: ${(props) => (props.right === 'true' ? '5vw' : 'auto')};
+    right: ${(props) => (props.left === 'true' ? '5vw' : 'auto')};
   }
 
   :hover {
-    opacity: ${(props) => (props.off ? "0" : "0.8")};
+    opacity: ${(props) => (props.off ? '0' : '0.8')};
   }
 `;

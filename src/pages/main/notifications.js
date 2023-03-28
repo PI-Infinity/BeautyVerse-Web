@@ -1,21 +1,19 @@
-import React, { useContext } from "react";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import Divider from "@mui/material/Divider";
-import ListItemText from "@mui/material/ListItemText";
-import ListItemAvatar from "@mui/material/ListItemAvatar";
-import Avatar from "@mui/material/Avatar";
-import Typography from "@mui/material/Typography";
-import styled from "styled-components";
-import { AiOutlineComment } from "react-icons/ai";
-import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { onSnapshot, collectionGroup } from "firebase/firestore";
-import { db } from "../../firebase";
-import { AuthContext } from "../../context/AuthContext";
+import React from 'react';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import Divider from '@mui/material/Divider';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import Avatar from '@mui/material/Avatar';
+import Typography from '@mui/material/Typography';
+import styled from 'styled-components';
+import { AiOutlineComment } from 'react-icons/ai';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { onSnapshot, collectionGroup } from 'firebase/firestore';
+import { db } from '../../firebase';
 
 export default function Notifications() {
-  const { currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -24,7 +22,7 @@ export default function Notifications() {
   // get reviews from users
   const [reviewList, setReviewList] = React.useState([]);
   React.useEffect(() => {
-    const data = onSnapshot(collectionGroup(db, "reviews"), (snapshot) => {
+    const data = onSnapshot(collectionGroup(db, 'reviews'), (snapshot) => {
       setReviewList(snapshot.docs.map((doc) => doc.data()));
     });
     return data;
@@ -36,12 +34,12 @@ export default function Notifications() {
       </Title>
       <List
         sx={{
-          width: "90%",
-          bgcolor: "background.paper",
+          width: '90%',
+          bgcolor: 'background.paper',
           pl: 5,
           pt: 1,
           height: 300,
-          overflowY: "scroll",
+          overflowY: 'scroll',
         }}
       >
         {reviewList
@@ -54,8 +52,8 @@ export default function Notifications() {
               <>
                 <ListItem
                   alignItems="flex-start"
-                  onClick={() => navigate("/chat")}
-                  style={{ cursor: "pointer" }}
+                  onClick={() => navigate('/chat')}
+                  style={{ cursor: 'pointer' }}
                 >
                   <ListItemAvatar>
                     <Avatar alt="Remy Sharp" src={item?.reviewerCover} />
@@ -65,14 +63,14 @@ export default function Notifications() {
                     secondary={
                       <React.Fragment>
                         <Typography
-                          sx={{ display: "inline" }}
+                          sx={{ display: 'inline' }}
                           component="span"
                           variant="body2"
                           color="text.primary"
                         >
                           {item.reciever}
                         </Typography>
-                        {" - "}
+                        {' - '}
                         {item.text}
                       </React.Fragment>
                     }

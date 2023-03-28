@@ -1,9 +1,9 @@
-import React, { useContext, useRef, useEffect, useState } from "react";
-import { AuthContext } from "../../context/AuthContext";
-import styled from "styled-components";
-import { useSelector } from "react-redux";
-import { ref, deleteObject } from "firebase/storage";
-import { storage, db } from "../../firebase";
+import React, { useContext, useRef, useEffect, useState } from 'react';
+import { AuthContext } from '../../context/AuthContext';
+import styled from 'styled-components';
+import { useSelector } from 'react-redux';
+import { ref, deleteObject } from 'firebase/storage';
+import { storage, db } from '../../firebase';
 import {
   collection,
   query,
@@ -12,87 +12,70 @@ import {
   updateDoc,
   doc,
   arrayRemove,
-} from "firebase/firestore";
-import { useNavigate } from "react-router-dom";
-import Avatar from "@mui/material/Avatar";
-import { MdRemove } from "react-icons/md";
-import AlertDialog from "../../components/dialog";
-import { Language } from "../../context/language";
-import ChatMsg from "@mui-treasury/components/chatMsg/ChatMsg";
-import GetTimesAgo from "../../functions/getTimesAgo";
+} from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
+import Avatar from '@mui/material/Avatar';
+import { MdRemove } from 'react-icons/md';
+import AlertDialog from '../../components/dialog';
+import { Language } from '../../context/language';
+import ChatMsg from '@mui-treasury/components/chatMsg/ChatMsg';
+import GetTimesAgo from '../../functions/getTimesAgo';
 
-export const Message = ({ message, sameSender, prevMsg, nextMsg }) => {
-  const language = Language();
-  const navigate = useNavigate();
-
-  const { currentUser } = useContext(AuthContext);
-  const unparsedUser = useSelector((state) => state.storeMain.user);
-
-  let currentuser;
-  if (unparsedUser?.length > 0) {
-    currentuser = JSON.parse(unparsedUser);
-  }
-
-  /// define user list
-  const list = useSelector((state) => state.storeMain.userList);
-  let userList;
-  if (list?.length > 0) {
-    userList = JSON.parse(list);
-  }
-
+export const Message = ({
+  message,
+  sameSender,
+  prevMsg,
+  nextMsg,
+  socket,
+  setMessages,
+  messages,
+  UpdateChat,
+}) => {
   const messageref = useRef();
 
   useEffect(() => {
     messageref.current?.scrollIntoView();
   }, [message]);
 
-  const [user, setUser] = useState("");
+  const language = Language();
+  const navigate = useNavigate();
 
-  const handleSearch = async () => {
-    const q = query(
-      collection(db, "users"),
-      where("id", "==", message?.senderId)
-    );
+  const { currentUser } = useContext(AuthContext);
+  const currentuser = useSelector((state) => state.storeMain?.user);
+  const currentChat = useSelector((state) => state.storeChat?.currentChat);
 
-    try {
-      const querySnapshot = await getDocs(q);
-      querySnapshot.forEach((doc) => {
-        setUser(doc.data());
-      });
-    } catch (err) {
-      alert(err);
-    }
-  };
+  const [user, setUser] = useState('');
 
-  useEffect(() => {
-    handleSearch();
-  }, [message]);
+  // define shown post added time
 
-  // define send time
-  const time = GetTimesAgo(message?.date.seconds);
+  const currentPostTime = GetTimesAgo(new Date(message.sentAt)?.getTime());
+
   let timeTitle;
-  if (time?.title === "h") {
+  if (currentPostTime?.title === 'h') {
     timeTitle = language?.language.Main.feedCard.h;
-  } else if (time?.title === "min") {
+  } else if (currentPostTime?.title === 'min') {
     timeTitle = language?.language.Main.feedCard.min;
   } else {
-    timeTitle = time?.title;
+    timeTitle = language?.language.Main.feedCard.justNow;
   }
 
   let cover;
   if (!sameSender) {
-    if (message?.senderId === currentuser?.id) {
+    if (message?.username === currentuser?._id) {
       cover = (
         <Avatar
           alt={currentuser?.name}
-          src={currentuser?.cover}
+          src={currentChat.targetChatUser?.cover}
           sx={{ width: 30, height: 30 }}
         />
       );
     } else {
-      let us = userList?.find((item) => item?.id === message?.senderId);
       cover = (
-        <Avatar alt={us?.name} src={us?.cover} sx={{ width: 30, height: 30 }} />
+        <Avatar
+          alt={currentChat.targetChatUser?.name}
+          src={currentChat.targetChatUser?.cover}
+          sx={{ width: 30, height: 30 }}
+        />
       );
     }
   } else {
@@ -101,17 +84,30 @@ export const Message = ({ message, sameSender, prevMsg, nextMsg }) => {
 
   // delete message
   const chatUser = useSelector((state) => state.storeChat.currentChat);
-  const DeleteMessage = async (obj) => {
-    if (obj?.img !== undefined) {
-      await deleteObject(
-        ref(storage, `images/chats/${chatUser[0]?.chatId}/${obj?.imgName}`)
-      ).then(() => {
-        console.log("storage success");
+  const DeleteMessage = async (messageId, fileId) => {
+    // Emit a 'deleteMessage' event to the server with the messageId
+    await socket.emit('deleteMessage', {
+      id: messageId,
+      room: currentChat.room,
+    });
+
+    const storageRef = ref(
+      storage,
+      `images/chats/${currentChat.room}/${fileId}`
+    );
+
+    // Delete the file
+    if (fileId) {
+      deleteObject(storageRef).then(() => {
+        console.log('object deleted');
       });
     }
-    updateDoc(doc(db, "chats", chatUser[0]?.chatId), {
-      messages: arrayRemove(obj),
+
+    setMessages((prevMessages) => {
+      return prevMessages.filter((message) => message.uniqueId !== messageId);
     });
+
+    UpdateChat();
   };
 
   // open dialog
@@ -119,109 +115,107 @@ export const Message = ({ message, sameSender, prevMsg, nextMsg }) => {
 
   // define message design
   let design;
-  if (message?.senderId === currentuser.id) {
+  if (message?.username === currentuser?._id) {
     if (
-      prevMsg?.senderId === nextMsg?.senderId &&
-      prevMsg?.senderId === message?.senderId
+      prevMsg?.username === nextMsg?.username &&
+      prevMsg?.username === message?.username
     ) {
-      design = "30px 8px 8px 30px";
+      design = '30px 8px 8px 30px';
     } else if (
-      prevMsg?.senderId !== message?.senderId &&
-      message?.senderId === nextMsg?.senderId
+      prevMsg?.username !== message?.username &&
+      message?.username === nextMsg?.username
     ) {
-      design = "30px 25px 8px 30px";
+      design = '30px 25px 8px 30px';
     } else if (
-      prevMsg?.senderId === message?.senderId &&
-      message?.senderId !== nextMsg?.senderId
+      prevMsg?.username === message?.username &&
+      message?.username !== nextMsg?.username
     ) {
-      design = "30px 8px 25px 30px";
+      design = '30px 8px 25px 30px';
     } else {
-      design = "30px 30px 30px 30px";
+      design = '30px 30px 30px 30px';
     }
   } else {
     if (
-      prevMsg?.senderId === nextMsg?.senderId &&
-      prevMsg?.senderId === message?.senderId
+      prevMsg?.username === nextMsg?.username &&
+      prevMsg?.username === message?.username
     ) {
-      design = "8px 30px 30px 8px";
+      design = '8px 30px 30px 8px';
     } else if (
-      prevMsg?.senderId !== message?.senderId &&
-      message?.senderId === nextMsg?.senderId
+      prevMsg?.username !== message?.username &&
+      message?.username === nextMsg?.username
     ) {
-      design = "25px 30px 30px 8px";
+      design = '25px 30px 30px 8px';
     } else if (
-      prevMsg?.senderId === message?.senderId &&
-      message?.senderId !== nextMsg?.senderId
+      prevMsg?.username === message?.username &&
+      message?.username !== nextMsg?.username
     ) {
-      design = "8px 30px 30px 25px";
+      design = '8px 30px 30px 25px';
     } else {
-      design = "30px 30px 30px 30px";
+      design = '30px 30px 30px 30px';
     }
   }
 
   // define
   let lastMsg;
   if (
-    (prevMsg?.senderId === message?.senderId ||
-      prevMsg?.senderId === undefined ||
-      prevMsg?.senderId !== message?.senderId) &&
-    (nextMsg?.senderId !== message?.senderId || nextMsg?.senderId === undefined)
+    (prevMsg?.username === message?.username ||
+      prevMsg?.username === undefined ||
+      prevMsg?.username !== message?.username) &&
+    (nextMsg?.username !== message?.username || nextMsg?.username === undefined)
   ) {
     lastMsg = true;
   }
 
-  console.log(sameSender);
-
   return (
-    <MainContainer prop={message?.senderId === currentuser.id}>
+    <MainContainer prop={message?.username === currentuser?._id}>
       <MessageContainer
         ref={messageref}
-        prop={(message?.senderId === currentuser.id)?.toString()}
+        prop={(message?.username === currentuser?._id)?.toString()}
         sameSender={sameSender?.toString()}
         design={design}
+        onClick={
+          message?.username === currentuser?._id
+            ? () => setOpen(true)
+            : undefined
+        }
       >
-        {message?.senderId !== currentuser.id && cover}
+        {message?.username !== currentuser?._id}
         <div>
-          {message?.img && (
-            <img id="img" style={{ margin: "2px 0" }} src={message?.img} />
+          {message?.file?.url && (
+            <img
+              id="img"
+              style={{ margin: '2px 0' }}
+              src={message?.file?.url}
+            />
           )}
           <MessageContent
-            img={message?.img}
+            content={message?.content?.length.toString()}
             className={
-              message?.senderId === currentuser.id ? "current" : "noCurrent"
+              message?.username === currentuser?._id ? 'current' : 'noCurrent'
             }
-            onClick={() => setOpen(true)}
+            // onClick={() => setOpen(true)}
           >
-            {message?.text}
+            {message?.content}
           </MessageContent>
         </div>
         {lastMsg && (
           <span
             style={{
-              color: "#ddd",
-              opacity: "0.7",
-              marginTop: "5px",
+              color: '#ddd',
+              opacity: '0.7',
+              marginTop: '5px',
             }}
             className="time"
           >
-            {time === "Just now"
-              ? language?.language.Main.feedCard.justNow
-              : time?.numbers + " " + timeTitle}
+            {currentPostTime?.numbers + ' ' + timeTitle}
           </span>
         )}
-        {/* <MdRemove
-          color="#ccc"
-          onClick={() => setOpen(true)}
-          style={{ cursor: "pointer" }}
-        /> */}
-        {/* {prevMsg?.id === message?.id && ( */}
-        {/* )} */}
       </MessageContainer>
 
       <AlertDialog
+        function={() => DeleteMessage(message.uniqueId, message?.file?.id)}
         open={open}
         setOpen={setOpen}
-        function={() => DeleteMessage(message)}
         title={language?.language.Chat.chat.confirm}
         text={language?.language.Chat.chat.confirmText}
         language={language}
@@ -234,7 +228,7 @@ const MainContainer = styled.div`
   // width: 100%;
   // display: flex;
   // // flex-direction: column;
-  // // align-items: ${(props) => (props.prop ? "flex-end" : "start")};
+  // // align-items: ${(props) => (props.prop ? 'flex-end' : 'start')};
 
   // @media only screen and (max-width: 600px) {
   // }
@@ -245,9 +239,9 @@ const MessageContainer = styled.div`
   align-items: center;
   gap: 15px;
   width: 100%;
-  flex-direction: ${(props) => (props.prop === "true" ? "row-reverse" : "row")};
-  justify-content: ${(props) => (props.prop === "true" ? "auto" : "start")};
-  margin-top: ${(props) => (props.sameSender === "true" ? "auto" : "5px")};
+  flex-direction: ${(props) => (props.prop === 'true' ? 'row-reverse' : 'row')};
+  justify-content: ${(props) => (props.prop === 'true' ? 'auto' : 'start')};
+  margin-top: ${(props) => (props.sameSender === 'true' ? 'auto' : '5px')};
 
   @media only screen and (max-width: 600px) {
     gap: 10px;
@@ -296,7 +290,7 @@ const Img = styled.img`
   }
 `;
 const MessageContent = styled.div`
-  padding: ${(props) => (props?.img ? "0" : "10px 20px 10px 20px")};
+  padding: ${(props) => (props?.content === '0' ? '0' : '10px 20px 10px 20px')};
   box-shadow: 0 0.1vw 0.3vw rgba(0, 0, 0, 0.1);
   font-size: 14px;
   cursor: pointer;
@@ -305,7 +299,7 @@ const MessageContent = styled.div`
   @media only screen and (max-width: 600px) {
     font-size: 14px;
     max-width: 55vw;
-    padding: ${(props) => (props?.img ? "0" : "7px 20px 8px 20px")};
+    padding: ${(props) => (props?.content === '0' ? '0' : '7px 20px 8px 20px')};
   }
 `;
 

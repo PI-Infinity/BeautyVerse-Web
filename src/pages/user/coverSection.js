@@ -1,145 +1,112 @@
-import React from "react";
-import styled from "styled-components";
-import { ImProfile } from "react-icons/im";
-import { BiShoppingBag } from "react-icons/bi";
-import { useSelector, useDispatch } from "react-redux";
-import { CoverUploader } from "../../components/coverUploader";
-import { MdLocationPin } from "react-icons/md";
-import { BsBrush } from "react-icons/bs";
-import { ImCheckmark } from "react-icons/im";
-import { RiEdit2Fill, RiHomeHeartLine } from "react-icons/ri";
-import { db } from "../../firebase";
-import Map from "../../components/map";
-import { GiConfirmed } from "react-icons/gi";
-import { FiEdit } from "react-icons/fi";
-import MapAutocomplete from "../../components/mapAutocomplete";
-import { useNavigate } from "react-router-dom";
+import React from 'react';
+import styled from 'styled-components';
+import { useSelector, useDispatch } from 'react-redux';
+import { CoverUploader } from '../../components/coverUploader';
+import { MdLocationPin } from 'react-icons/md';
+import { ImCheckmark } from 'react-icons/im';
+import { RiEdit2Fill } from 'react-icons/ri';
+import Map from '../../components/map';
+import { GiConfirmed } from 'react-icons/gi';
+import { FiEdit } from 'react-icons/fi';
+import MapAutocomplete from '../../components/mapAutocomplete';
+import { useNavigate } from 'react-router-dom';
+import { BsArrowRightCircleFill, BsArrowLeftCircleFill } from 'react-icons/bs';
+import AddAddress from '../../pages/user/addAddressPopup';
+import { IsMobile } from '../../functions/isMobile';
+import { setAddress } from '../../redux/register';
+import TextField from '@mui/material/TextField';
+import axios from 'axios';
+import { setRerenderCurrentUser } from '../../redux/rerenders';
 import {
-  setDoc,
-  doc,
-  deleteDoc,
-  serverTimestamp,
-  updateDoc,
-} from "firebase/firestore";
-import { v4 } from "uuid";
-import { BsArrowRightCircleFill, BsArrowLeftCircleFill } from "react-icons/bs";
-import AddAddress from "../../pages/user/addAddressPopup";
-import { IsMobile } from "../../functions/isMobile";
-import { setMap } from "../../redux/register";
-import TextField from "@mui/material/TextField";
+  setTargetUserName,
+  setTargetUsername,
+  setTargetUserAddress,
+} from '../../redux/user';
+import { TitleLoader, MapLoader } from '../../components/loader';
 
-const CoverSection = React.memo(function ({ user, language }) {
+const CoverSection = React.memo(function ({
+  targetUser,
+  language,
+  loading,
+  setLoading,
+}) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const isMobile = IsMobile();
-  // import current user from redux state
-  const userUnparsed = useSelector((state) => state.storeMain.user);
-  let currentuser;
-  if (userUnparsed?.length > 0) {
-    currentuser = JSON.parse(userUnparsed);
-  }
 
-  // define user type
-  const rerender = useSelector((state) => state.storeMain.rerender);
+  // import current user from localstorage
+  const currentUser = JSON.parse(
+    localStorage.getItem('Beautyverse:currentUser')
+  );
+
   const theme = useSelector((state) => state.storeMain.theme);
   // edit name
   const [edit, setEdit] = React.useState(false);
 
-  const [editName, setEditName] = React.useState("");
+  const [editName, setEditName] = React.useState('');
 
-  const UpdateName = () => {
-    const base = doc(db, "users", `${user?.id}`);
-    if (editName?.length > 0) {
-      updateDoc(base, {
-        name: editName,
-      });
-      setEditName("");
-      setTimeout(() => {
-        setEdit(false);
-      }, 300);
+  const UpdateName = async () => {
+    try {
+      const response = await axios.patch(
+        `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}`,
+        {
+          name: editName,
+        }
+      );
+      const data = await response.data;
+      dispatch(setTargetUserName(editName));
+      setEdit(false);
+      setEditName('');
+    } catch (error) {
+      console.error(error);
     }
-    setEdit(false);
   };
+
   // edit type
   const [editUsername, setEditUsername] = React.useState(false);
 
-  const [username, setUsername] = React.useState("");
+  const [username, setUsername] = React.useState('');
 
-  const UpdateUsername = () => {
-    const base = doc(db, "users", `${user?.id}`);
-    if (username?.length > 0) {
-      updateDoc(base, {
-        username: username,
-      });
-      setEditName("");
-      setTimeout(() => {
-        setEditUsername(false);
-      }, 300);
+  const UpdateUsername = async () => {
+    try {
+      const response = await axios.patch(
+        `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}`,
+        {
+          username: username,
+        }
+      );
+      const data = await response.data;
+      dispatch(setTargetUsername(username));
+      setEditUsername(false);
+      setUsername('');
+    } catch (error) {
+      console.error(error);
     }
-    setEditUsername(false);
   };
+
   // edit about
   const [editAbout, setEditAbout] = React.useState(false);
 
-  const [about, setAbout] = React.useState(user?.about);
-
-  const UpdateAbout = async () => {
-    const base = doc(db, "users", `${user?.id}`);
-    await updateDoc(base, {
-      about: about,
-    });
-    setAbout("");
-    setTimeout(() => {
-      setEditAbout(false);
-    }, 300);
-
-    setEditAbout(false);
-  };
+  const [about, setAbout] = React.useState(targetUser?.about);
 
   // capitilize firs letter
   function capitalizeFirstLetter(string) {
     return string?.charAt(0).toUpperCase() + string?.slice(1);
   }
 
-  const name = capitalizeFirstLetter(user?.name);
-  const userType = capitalizeFirstLetter(user?.type);
-
-  // define cover icon
-
-  let coverIcon;
-  if (user?.type == "shop") {
-    coverIcon = <BiShoppingBag />;
-  } else if (user?.type == "beautyCenter") {
-    coverIcon = <RiHomeHeartLine />;
-  } else if (user?.type == "specialist") {
-    coverIcon = <BsBrush />;
-  } else {
-    coverIcon = <ImProfile />;
-  }
+  const name = capitalizeFirstLetter(targetUser?.name);
+  const userType = capitalizeFirstLetter(targetUser?.type);
 
   // edit address
   const map = useSelector((state) => state.storeRegister.map);
-  const [editAddress, SetEditAddress] = React.useState("");
-  const [addressInput, SetAddressInput] = React.useState("");
+  const [editAddress, SetEditAddress] = React.useState('');
+  const [addressInput, SetAddressInput] = React.useState('');
 
   /// address for autocomplete
-  const [address, setAddress] = React.useState("");
+  const address = useSelector((state) => state.storeRegister.address);
 
   // get all addresses
-  function findValueByPrefix(object, prefix) {
-    let addressesList = [];
-    for (var property in object) {
-      if (
-        object.hasOwnProperty(property) &&
-        property.toString().startsWith(prefix)
-      ) {
-        addressesList?.push(object[property]);
-      }
-    }
-    return addressesList?.sort((a, b) => a?.number - b?.number);
-  }
-
-  const addresses = findValueByPrefix(user, "address");
+  const addresses = targetUser?.address;
 
   /**
    * change addresses list on cover
@@ -150,120 +117,187 @@ const CoverSection = React.memo(function ({ user, language }) {
   let latitude;
   let longitude;
   let addressDefined;
-  if (currentAddress !== undefined) {
-    latitude = addresses[currentAddress]?.latitude;
-    longitude = addresses[currentAddress]?.longitude;
+  if (targetUser?.address) {
+    latitude = targetUser?.address[currentAddress]?.latitude;
+    longitude = targetUser?.address[currentAddress]?.longitude;
     addressDefined = (
       <div>
-        {addresses[currentAddress]?.city === "T'bilisi"
-          ? "Tbilisi"
-          : addresses[currentAddress]?.city}
-        {addresses[currentAddress]?.district?.length > 0 &&
-          ", " + addresses[currentAddress]?.district}
-        {addresses[currentAddress]?.address?.length > 0 &&
-          ", " + addresses[currentAddress]?.address + " "}
-        {addresses[currentAddress]?.streetNumber}
+        {targetUser?.address[currentAddress]?.city === "T'bilisi"
+          ? 'Tbilisi'
+          : targetUser?.address[currentAddress]?.city}
+        {targetUser?.address[currentAddress]?.district?.length > 0 &&
+          ', ' + targetUser?.address[currentAddress]?.district}
+        {targetUser?.address[currentAddress]?.street?.length > 0 &&
+          ', ' + targetUser?.address[currentAddress]?.street + ' '}
+        {targetUser?.address[currentAddress]?.number}
       </div>
     );
   }
-
-  // update main address
-
-  const UpdateAddress = () => {
-    if (map?.country?.length > 0) {
-      updateDoc(doc(db, "users", `${user.id}`), {
-        address: {
-          number: 1,
-          country: map.country,
-          region: map.region,
-          city: map.city,
-          district: map.district,
-          address: map.street,
-          streetNumber: map.number,
-          latitude: map.latitude,
-          longitude: map.longitude,
-        },
-      });
-      dispatch(setMap(""));
-      setAddress("");
-    } else {
-      alert("Add Address..");
+  console.log(
+    targetUser?.address?.length > 0 && targetUser?.address[currentAddress]
+  );
+  const UpdateAddress = async () => {
+    try {
+      const newAddress = {
+        country: map.country,
+        region: map.region,
+        city: map.city,
+        district: map.district,
+        street: map.street,
+        number: map.number,
+        latitude: map.latitude,
+        longitude: map.longitude,
+      };
+      const response = await axios.patch(
+        `https://beautyverse.herokuapp.com/api/v1/users/${
+          targetUser?._id
+        }/address/${
+          targetUser?.address?.length > 0 &&
+          targetUser?.address[currentAddress]._id
+        }`,
+        newAddress
+      );
+      const data = await response.data;
+      SetEditAddress(false);
+      await dispatch(
+        setTargetUserAddress({
+          index: currentAddress,
+          data: newAddress,
+        })
+      );
+      dispatch(setRerenderCurrentUser());
+    } catch (error) {
+      console.error(error);
     }
   };
 
-  const [type, setType] = React.useState("");
+  const [type, setType] = React.useState('');
 
   React.useEffect(() => {
-    setType("");
-    if (userType === "Specialist") {
+    setType('');
+    if (targetUser?.type?.toLowerCase() === 'specialist') {
       setType(language?.language.User.userPage.specialist);
-    } else if (userType === "BeautyCenter") {
+    } else if (targetUser?.type?.toLowerCase() === 'beautycenter') {
       setType(language?.language.User.userPage.beautySalon);
     } else {
       setType(language?.language.User.userPage.user);
     }
   }, [language]);
 
-  // import followings
-  const folls = useSelector((state) => state.storeMain.followings);
-  let followings;
-  if (folls?.length > 0) {
-    followings = JSON.parse(folls);
-  }
+  /** Define following to user or not
+   * //
+   */
 
-  // define if props user is in your followings list
-  const following = followings.find((item) => item?.id == user?.id);
-  const userToFollow = user;
+  // import followings
+  const [followerDefined, setFollowerDefined] = React.useState('');
+  const [render, setRender] = React.useState(false);
+  React.useEffect(() => {
+    async function checkFollower() {
+      const response = await fetch(
+        `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}/followers/${currentUser?._id}/check/`
+      )
+        .then((response) => response.json())
+        .then(async (data) => {
+          setFollowerDefined(data.data.follower);
+        })
+        .catch((error) => {
+          console.log('Error fetching data:', error);
+        });
+    }
+    if (targetUser?._id) {
+      checkFollower();
+    }
+  }, [targetUser?._id, render]);
 
   // function to follow user
   const FollowToUser = async () => {
-    var actionId = v4();
-    await setDoc(
-      doc(db, `users`, `${currentuser?.id}`, "followings", `${user?.id}`),
-      {
-        id: user?.id,
-        date: serverTimestamp(),
+    try {
+      await axios.post(
+        `https://beautyverse.herokuapp.com/api/v1/users/${currentUser?._id}/followings`,
+        {
+          followingId: targetUser?._id,
+          followingAuthId: targetUser?._id,
+          followingName: targetUser?.name,
+          followingCover: targetUser?.cover,
+          followerId: currentUser?._id,
+          followAt: new Date(),
+        }
+      );
+      await axios.post(
+        `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}/followers`,
+        {
+          followerId: currentUser?._id,
+          followerAuthId: currentUser?._id,
+          followerName: currentUser?.name,
+          followerCover: currentUser?.cover,
+          followingId: targetUser?._id,
+          followAt: new Date(),
+        }
+      );
+      if (currentUser?._id !== targetUser?._id) {
+        await axios.post(
+          `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}/notifications`,
+          {
+            senderId: targetUser?._id,
+            text: `გამოიწერა თქვენი გვერდი!`,
+            date: new Date(),
+            type: 'star',
+            status: 'unread',
+            feed: `/api/v1/users/${currentUser?._id}/`,
+          }
+        );
       }
-    );
-    await setDoc(
-      doc(db, `users`, `${user?.id}`, "followers", `${currentuser?.id}`),
-      {
-        id: currentuser?.id,
-        date: serverTimestamp(),
-      }
-    );
-    if (user?.id !== currentuser?.id) {
-      setDoc(doc(db, `users`, `${user?.id}`, "notifications", `${actionId}`), {
-        id: actionId,
-        senderId: currentuser?.id,
-        text: `ჩაინიშნა თქვენი პერსონალური გვერდი!`,
-        date: serverTimestamp(),
-        type: "following",
-        status: "unread",
-      });
+      // const data = await response.data;
+    } catch (error) {
+      console.error(error);
     }
+    setRender(!render);
   };
-
   // function to unfollow user
-  const UnFollowToUser = async () => {
-    await deleteDoc(
-      doc(db, `users`, `${currentuser?.id}`, "followings", `${user?.id}`)
-    );
+  const UnFollowToUser = async (id) => {
+    try {
+      const url = `https://beautyverse.herokuapp.com/api/v1/users/${currentUser?._id}/followings/${targetUser?._id}`;
+      await fetch(url, { method: 'DELETE' })
+        .then((response) => response.json())
+        .then(async (data) => {})
+        .catch((error) => {
+          console.log('Error fetching data:', error);
+        });
+      const url2 = `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}/followers/${followerDefined?.followerId}`;
+      await fetch(url2, { method: 'DELETE' })
+        .then((response) => response.json())
+        .then(async (data) => {})
+        .catch((error) => {
+          console.log('Error fetching data:', error);
+        });
+
+      // const data = await response.data;
+    } catch (error) {
+      console.error(error);
+    }
+    setRender(!render);
   };
+  setTimeout(() => {
+    setLoading(false);
+  }, 500);
 
   return (
     <InfoSide>
-      <CoverUploader cover="cover" user={user} />
+      <CoverUploader
+        cover="cover"
+        targetUser={targetUser}
+        loadingProfile={loading}
+      />
       <TitleContainer>
         {editUsername ? (
           <Wrapper1>
             <Wrapper2>
               <div
                 style={{
-                  position: "fixed",
-                  height: "1.5vw",
-                  display: "flex",
-                  alignItems: "center",
+                  position: 'fixed',
+                  height: '1.5vw',
+                  display: 'flex',
+                  alignItems: 'center',
                 }}
               >
                 <WhiteBorderTextField
@@ -273,12 +307,12 @@ const CoverSection = React.memo(function ({ user, language }) {
                   placeholder={`Max. 30 letters`}
                   value={username}
                   sx={{
-                    input: { color: theme ? "#fff" : "#151515" },
-                    fontSize: "16px",
-                    fontWeight: "bold",
+                    input: { color: theme ? '#fff' : '#151515' },
+                    fontSize: '16px',
+                    fontWeight: 'bold',
                   }}
                   id="standard-basic"
-                  label={`${username?.length}`}
+                  label={`${username?.length} letters`}
                   variant="outlined"
                 />
               </div>
@@ -289,23 +323,37 @@ const CoverSection = React.memo(function ({ user, language }) {
               onClick={
                 username?.length < 31
                   ? () => UpdateUsername()
-                  : () => alert("Max length 30 letters")
+                  : () => alert('Max length 30 letters')
               }
             />
           </Wrapper1>
         ) : (
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <Type>{user?.username != undefined ? user?.username : type}</Type>
-            {currentuser?.id === user?.id && (
-              <RiEdit2Fill
-                className="editIcon"
-                onClick={() => setEditUsername(true)}
-              />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {loading ? (
+              <TitleLoader />
+            ) : (
+              <>
+                <Type>
+                  {targetUser?.username ? targetUser?.username : type}
+                </Type>
+                {currentUser?._id === targetUser?._id && (
+                  <RiEdit2Fill
+                    className="editIcon"
+                    onClick={() => {
+                      setEditUsername(true);
+                      setUsername(
+                        targetUser?.username?.length > 0
+                          ? targetUser?.username
+                          : targetUser?.type
+                      );
+                    }}
+                  />
+                )}
+              </>
             )}
           </div>
         )}
-        <Title edit={edit} following={following?.id?.length?.toString()}>
-          {coverIcon}
+        <Title edit={edit} following={followerDefined?.followerId?.toString()}>
           {edit ? (
             <>
               <Wrapper1>
@@ -315,12 +363,12 @@ const CoverSection = React.memo(function ({ user, language }) {
                       size="small"
                       autoFocus
                       placeholder={`Max. 30 letters`}
-                      label={`${name?.length}`}
+                      label={`${editName?.length} letters`}
                       value={editName}
                       sx={{
-                        input: { color: theme ? "#fff" : "#151515" },
-                        fontSize: "16px",
-                        fontWeight: "bold",
+                        input: { color: theme ? '#fff' : '#151515' },
+                        fontSize: '16px',
+                        fontWeight: 'bold',
                       }}
                       onChange={(e) => setEditName(e.target.value)}
                       id="standard-basic"
@@ -332,242 +380,249 @@ const CoverSection = React.memo(function ({ user, language }) {
                   className="uploaderIcon"
                   color="green"
                   onClick={
-                    name?.length < 31
+                    editName?.length < 31 && editName?.length > 1
                       ? () => UpdateName()
-                      : () => alert("Max length 30 letters")
+                      : () =>
+                          alert('Min length 1 letter, Max length 30 letters')
                   }
                 />
               </Wrapper1>
             </>
           ) : (
             <>
-              <div
-                style={{
-                  height: "1.5vw",
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                <h3 style={{ margin: 0 }}>{name}</h3>{" "}
-                {currentuser?.id !== user?.id && (
-                  <>
-                    {following?.id?.length > 0 ? (
-                      <ImCheckmark
-                        className="followIcon"
-                        following="true"
-                        onClick={UnFollowToUser}
-                      />
-                    ) : (
-                      <ImCheckmark
-                        className="followIcon"
-                        onClick={
-                          currentuser != undefined
-                            ? FollowToUser
-                            : () => navigate("/login")
-                        }
-                      />
+              {loading ? (
+                <TitleLoader />
+              ) : (
+                <>
+                  <div
+                    style={{
+                      height: '1.5vw',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <h3 style={{ margin: 0 }}>{name}</h3>{' '}
+                    {currentUser?._id !== targetUser?._id && (
+                      <>
+                        {!loading && (
+                          <>
+                            {followerDefined ? (
+                              <ImCheckmark
+                                className="followIcon"
+                                following="true"
+                                onClick={UnFollowToUser}
+                              />
+                            ) : (
+                              <ImCheckmark
+                                className="followIcon"
+                                onClick={
+                                  targetUser
+                                    ? FollowToUser
+                                    : () => navigate('/login')
+                                }
+                              />
+                            )}
+                          </>
+                        )}
+                      </>
                     )}
-                  </>
-                )}
-              </div>
-              {currentuser?.id === user?.id && (
-                <RiEdit2Fill
-                  className="editIcon"
-                  onClick={() => setEdit(true)}
-                />
+                  </div>
+                  {currentUser?._id === targetUser?._id && (
+                    <RiEdit2Fill
+                      className="editIcon"
+                      onClick={() => {
+                        setEdit(true);
+                        setEditName(targetUser?.name);
+                      }}
+                    />
+                  )}
+                </>
               )}
             </>
           )}
         </Title>
 
-        <About>
-          {editAbout ? (
-            <>
-              <Wrapper1>
-                <Wrapper2>
-                  <WhiteBorderTextField
-                    editAbout={editAbout?.toString()}
-                    id="standard-basic"
-                    multiline
-                    rows={2}
-                    autoFocus
-                    placeholder={`Max. 100 letters`}
-                    label={`${about?.length}`}
-                    value={about}
-                    sx={{
-                      inputStyle: { color: theme ? "#fff" : "#151515" },
-                      input: { color: theme ? "#fff" : "#151515" },
-                      fontSize: "16px",
-                      fontWeight: "normal",
-                      background: editAbout ? "#151515" : "none",
-                      width: isMobile ? "100%" : "300px",
-                    }}
-                    onChange={(e) => setAbout(e.target.value)}
-                    variant="outlined"
-                  />
-                </Wrapper2>
-              </Wrapper1>
-              <ImCheckmark
-                className="followIcon"
-                color="green"
-                onClick={
-                  about?.length < 101
-                    ? () => UpdateAbout()
-                    : () => alert("Max length 100 letters")
-                }
-              />
-            </>
-          ) : (
-            <div style={{ display: "flex" }}>
-              <div
-                style={{
-                  height: "1.5vw",
-                  display: "flex",
-                  alignItems: "center",
-                  whiteSpace: "normal",
-                  width: "100%",
-                }}
-              >
-                {user?.about?.length > 0 && (
-                  <div
-                    style={{
-                      margin: 0,
-                      whiteSpace: "normal",
-                      lineBreak: "auto",
-                    }}
-                  >
-                    {user?.about?.length < 1 ? (
-                      <span style={{ width: "80px" }}>About you</span>
-                    ) : (
-                      <span>{user?.about}</span>
-                    )}
-                  </div>
-                )}
-                {currentuser?.id !== user?.id && (
-                  <>
-                    {following?.id?.length > 0 ? (
-                      <ImCheckmark
-                        className="followIcon"
-                        following="true"
-                        onClick={UnFollowToUser}
-                      />
-                    ) : (
-                      <ImCheckmark
-                        className="followIcon"
-                        onClick={
-                          currentuser != undefined
-                            ? FollowToUser
-                            : () => navigate("/login")
-                        }
-                      />
-                    )}
-                  </>
+        {/* {!isMobile && (
+          <About>
+            {editAbout ? (
+              <>
+                <Wrapper1>
+                  <Wrapper2>
+                    <WhiteBorderTextField
+                      editAbout={editAbout?.toString()}
+                      id="standard-basic"
+                      multiline
+                      rows={2}
+                      autoFocus
+                      placeholder={`Max. 100 letters`}
+                      label={`${about?.length} letters`}
+                      value={about}
+                      sx={{
+                        inputStyle: { color: theme ? '#fff' : '#151515' },
+                        input: { color: theme ? '#fff' : '#151515' },
+                        fontSize: '16px',
+                        fontWeight: 'normal',
+                        background: editAbout ? '#151515' : 'none',
+                        width: isMobile ? '100%' : '300px',
+                      }}
+                      onChange={(e) => setAbout(e.target.value)}
+                      variant="outlined"
+                    />
+                  </Wrapper2>
+                </Wrapper1>
+                <ImCheckmark
+                  className="followIcon"
+                  color="green"
+                  onClick={about?.length < 101 ? () => UpdateAbout() : () => alert('Max length 100 letters')}
+                />
+              </>
+            ) : (
+              <div style={{ display: 'flex' }}>
+                <div
+                  style={{
+                    height: '1.5vw',
+                    display: 'flex',
+                    alignItems: 'center',
+                    whiteSpace: 'normal',
+                    width: '100%',
+                  }}
+                >
+                  {targetUser?.about?.length > 0 && (
+                    <div
+                      style={{
+                        margin: 0,
+                        whiteSpace: 'normal',
+                        lineBreak: 'auto',
+                      }}
+                    >
+                      {targetUser?.about?.length < 1 || targetUser?.about === undefined ? (
+                        <span style={{ width: '80px' }}>About you</span>
+                      ) : (
+                        <span>{targetUser?.about}</span>
+                      )}
+                    </div>
+                  )}
+                  {currentUser?._id !== targetUser?._id && (
+                    <>
+                      {following?.id?.length > 0 ? (
+                        <ImCheckmark className="followIcon" following="true" onClick={UnFollowToUser} />
+                      ) : (
+                        <ImCheckmark
+                          className="followIcon"
+                          onClick={currentUser != undefined ? FollowToUser : () => navigate('/login')}
+                        />
+                      )}
+                    </>
+                  )}
+                </div>
+                {currentUser?._id === targetUser?._id && (
+                  <RiEdit2Fill className="editIcon" onClick={() => setEditAbout(true)} />
                 )}
               </div>
-              {currentuser?.id === user?.id && (
-                <RiEdit2Fill
-                  className="editIcon"
-                  onClick={() => setEditAbout(true)}
-                />
-              )}
-            </div>
-          )}
-        </About>
+            )}
+          </About>
+        )} */}
       </TitleContainer>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "1.5vw",
-          width: "50%",
-          minWidth: "50%",
-        }}
-      >
-        {!isMobile && user?.id === currentuser?.id && (
-          <AddAddress
-            language={language}
-            currentuser={currentuser}
-            type="dekstop"
-            address={address}
-            setAddress={setAddress}
-          />
-        )}
-        {addresses?.length > 1 && !isMobile && (
-          <BsArrowLeftCircleFill
-            size={24}
-            color={"#ccc"}
-            style={{
-              cursor: currentAddress === 0 ? "auto" : "pointer",
-              opacity: currentAddress === 0 ? "0.5" : 1,
-            }}
-            onClick={
-              currentAddress !== 0
-                ? () => setCurrentAddress(currentAddress - 1)
-                : undefined
-            }
-          />
-        )}
-        <WorkingInfo>
-          <div style={{ zIndex: 4 }}>
-            <div style={{ position: "relative", top: "8vw" }}>
-              <Map latitude={latitude} longitude={longitude} />
-            </div>
-          </div>
 
-          <StaticInfo>
-            <Location>
-              <MdLocationPin className="location" />{" "}
-              {editAddress ? (
-                <>
-                  <MapAutocomplete
-                    language={language}
-                    address={address}
-                    setAddress={setAddress}
-                  />
-                  <GiConfirmed
-                    className="confirm"
-                    onClick={async (e) => {
-                      e.preventDefault();
-                      await UpdateAddress();
-                      SetEditAddress(false);
-                    }}
-                  />
-                </>
-              ) : (
-                <>
-                  {addressDefined}
+      {loading && !isMobile ? (
+        <MapLoader />
+      ) : (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1.5vw',
+            width: '50%',
+            minWidth: '50%',
+          }}
+        >
+          {!isMobile && targetUser?._id === currentUser?._id && (
+            <AddAddress
+              language={language}
+              targetUser={targetUser}
+              type="dekstop"
+              address={address}
+              setAddress={setAddress}
+            />
+          )}
+          {addresses?.length > 1 && !isMobile && (
+            <BsArrowLeftCircleFill
+              size={24}
+              color={'#ccc'}
+              style={{
+                cursor: currentAddress === 0 ? 'auto' : 'pointer',
+                opacity: currentAddress === 0 ? '0.5' : 1,
+              }}
+              onClick={
+                currentAddress !== 0
+                  ? () => setCurrentAddress(currentAddress - 1)
+                  : undefined
+              }
+            />
+          )}
+          <WorkingInfo>
+            <div style={{ zIndex: 4 }}>
+              <div style={{ position: 'relative', top: '8vw' }}>
+                <Map latitude={latitude} longitude={longitude} />
+              </div>
+            </div>
+
+            <StaticInfo>
+              <Location>
+                <MdLocationPin className="location" />{' '}
+                {editAddress ? (
                   <>
-                    {currentuser?.id === user?.id && currentAddress === 0 && (
-                      <FiEdit
-                        className="edit"
-                        onClick={() => {
-                          SetEditAddress(true);
-                        }}
-                      />
-                    )}
+                    <MapAutocomplete language={language} />
+                    <GiConfirmed
+                      className="confirm"
+                      onClick={async (e) => {
+                        if (map.country?.length > 0) {
+                          e.preventDefault();
+                          await UpdateAddress();
+                          SetEditAddress(false);
+                        } else {
+                          alert('Add address..');
+                        }
+                      }}
+                    />
                   </>
-                </>
-              )}
-            </Location>
-          </StaticInfo>
-        </WorkingInfo>
-        {addresses?.length > 1 && !isMobile && (
-          <BsArrowRightCircleFill
-            size={24}
-            color={"#ccc"}
-            style={{
-              cursor:
-                currentAddress < addresses?.length - 1 ? "pointer" : "auto",
-              opacity: currentAddress < addresses?.length - 1 ? 1 : 0.5,
-            }}
-            onClick={
-              currentAddress < addresses?.length - 1
-                ? () => setCurrentAddress(currentAddress + 1)
-                : false
-            }
-          />
-        )}
-      </div>
+                ) : (
+                  <>
+                    {addressDefined}
+                    <>
+                      {currentUser?._id === targetUser?._id && (
+                        // currentAddress === 0 && (
+                        <FiEdit
+                          className="edit"
+                          onClick={() => {
+                            SetEditAddress(true);
+                          }}
+                        />
+                      )}
+                    </>
+                  </>
+                )}
+              </Location>
+            </StaticInfo>
+          </WorkingInfo>
+          {addresses?.length > 1 && !isMobile && (
+            <BsArrowRightCircleFill
+              size={24}
+              color={'#ccc'}
+              style={{
+                cursor:
+                  currentAddress < addresses?.length - 1 ? 'pointer' : 'auto',
+                opacity: currentAddress < addresses?.length - 1 ? 1 : 0.5,
+              }}
+              onClick={
+                currentAddress < addresses?.length - 1
+                  ? () => setCurrentAddress(currentAddress + 1)
+                  : false
+              }
+            />
+          )}
+        </div>
+      )}
     </InfoSide>
   );
 });
@@ -586,21 +641,7 @@ const InfoSide = styled.div`
 
   @media only screen and (max-width: 600px) {
     width: 100%;
-    padding: 3vw 4vw;
-  }
-`;
-
-const CoverImg = styled.img`
-  object-fit: cover;
-  width: 9vw;
-  height: 9vw;
-  z-index: 5;
-
-  @media only screen and (max-width: 600px) {
-    width: 22vw;
-    height: 22vw;
-    position: relative;
-    border-radius: 50vw;
+    padding: 0 4vw;
   }
 `;
 
@@ -622,7 +663,7 @@ const AddImg = styled.div`
 
   .uploaderIcon {
     font-size: 5vw;
-    color: color: ${(props) => props.theme.disabled};
+    color: ${(props) => props.theme.disabled};
     position: relative;
     left: 5vw;
 
@@ -636,7 +677,7 @@ const TitleContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: start;
-  justify-content: start;
+  justify-content: center;
   padding-left: 2vw;
   width: 30vw;
   white-space: nowrap;
@@ -644,8 +685,7 @@ const TitleContainer = styled.div`
   min-height: 130px;
 
   @media only screen and (max-width: 600px) {
-    position: relative;
-    top: 6vw;
+    justify-content: center;
     min-width: auto;
     width: auto;
     height: auto;
@@ -654,7 +694,7 @@ const TitleContainer = styled.div`
 
   .editIcon {
     font-size: 1.1vw;
-    color: ${(props) => (props.following > 0 ? "#2bdfd9" : "#ddd")};
+    color: ${(props) => (props.following > 0 ? '#2bdfd9' : '#ddd')};
     margin-left: 0.5vw;
     cursor: pointer;
 
@@ -681,14 +721,14 @@ const Title = styled.h2`
 
   @media only screen and (max-width: 600px) {
     font-size: 16px;
-    margin: 20px 0 0 10px;
+    margin: 20px 0 0 0;
     gap: 15px;
     letter-spacing: 0.2vw;
   }
 
   .editIcon {
     font-size: 1.1vw;
-    color: ${(props) => (props.following > 0 ? "#2bdfd9" : "#ddd")};
+    color: ${(props) => (props.following > 0 ? '#2bdfd9' : '#ddd')};
     margin-left: 0.5vw;
     cursor: pointer;
 
@@ -699,7 +739,7 @@ const Title = styled.h2`
 
   .followIcon {
     font-size: 1.1vw;
-    color: ${(props) => (props.following > 0 ? "#2bdfd9" : "#ddd")};
+    color: ${(props) => (props.following ? '#2bdfd9' : '#ddd')};
     margin-left: 0.5vw;
     cursor: pointer;
 
@@ -799,7 +839,7 @@ const About = styled.div`
 
   .editIcon {
     font-size: 1.1vw;
-    color: ${(props) => (props.following > 0 ? "#2bdfd9" : "#ddd")};
+    color: ${(props) => (props.following > 0 ? '#2bdfd9' : '#ddd')};
     margin-left: 0.5vw;
     cursor: pointer;
 
@@ -821,7 +861,7 @@ const WorkingInfo = styled.div`
   align-items: start;
   justify-content: flex-end;
   width: 100%;
-  height: 10vw;
+  height: 190px;
   box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
   overflow: hidden;
   border-radius: 0.5vw;

@@ -1,37 +1,23 @@
-import React, { useContext, useState } from "react";
-import styled from "styled-components";
-import { Button } from "../../components/button";
-import { useSelector, useDispatch } from "react-redux";
-import { setCategories, setWorkingDays } from "../../redux/register";
-import { useNavigate } from "react-router-dom";
-import { AiOutlineProfile } from "react-icons/ai";
-import Select from "react-select";
-import makeAnimated from "react-select/animated";
-import { AuthContext } from "../../context/AuthContext";
+import { useState } from 'react';
+import styled from 'styled-components';
+import { Button } from '../../components/button';
+import { useSelector, useDispatch } from 'react-redux';
+import { setCategories, setWorkingDays } from '../../redux/register';
+import { useNavigate } from 'react-router-dom';
+import { AiOutlineProfile } from 'react-icons/ai';
+import Select from 'react-select';
+import makeAnimated from 'react-select/animated';
 import {
   ProceduresOptions,
   categoriesOptions,
   workingDaysOptions,
-} from "../../data/registerDatas";
-import { db, auth } from "../../firebase";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import useWindowDimensions from "../../functions/dimensions";
-import { v4 } from "uuid";
-import { Language } from "../../context/language";
-import { IsMobile } from "../../functions/isMobile";
-import {
-  setName,
-  setEmail,
-  setPhoneNumber,
-  setPassword,
-  setMap,
-  setCountryCode,
-  setConfirmPassowrd,
-  setAddressInput,
-} from "../../redux/register";
-import VerifyEmail from "../../pages/register/verifyPopup";
-import Error from "../../snackBars/success";
+} from '../../data/registerDatas';
+import useWindowDimensions from '../../functions/dimensions';
+import { Language } from '../../context/language';
+import { IsMobile } from '../../functions/isMobile';
+import VerifyEmail from '../../pages/register/verifyPopup';
+import Error from '../../snackBars/success';
+import axios from 'axios';
 
 const animatedComponents = makeAnimated();
 
@@ -41,7 +27,6 @@ export const BusinessRegister = (props) => {
   const isMobile = IsMobile();
   const mainDispatch = useDispatch();
   const navigate = useNavigate();
-  const { dispatch } = useContext(AuthContext);
   const page = useSelector((state) => state.storeRegister.page);
   const proceduresOptions = ProceduresOptions();
 
@@ -53,95 +38,76 @@ export const BusinessRegister = (props) => {
   let categories;
   if (registerFields?.categories?.length > 0) {
     categories = registerFields?.categories?.map((item, index) => {
-      return item.value;
+      return { value: item.value };
     });
   }
-  const [alert, setAlert] = useState(false);
+  let days;
+  if (registerFields?.workingDays?.length > 0) {
+    days = registerFields?.workingDays?.map((item, index) => {
+      return { value: item.value };
+    });
+  }
 
+  const [alert, setAlert] = useState(false);
   //verify code
   const Register = async (e) => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        registerFields?.email,
-        registerFields?.password
-      );
-      const user = userCredential.user;
-      await dispatch({ type: "LOGIN", payload: user });
-      // create user database
-      await setDoc(doc(db, `users`, user.uid), {
-        id: user.uid,
-        type: type,
-        name: registerFields?.name,
-        email: registerFields?.email,
-        phone: registerFields?.countryCode?.value + registerFields?.phoneNumber,
-        address: {
-          number: 1,
-          country: map.country,
-          region: map.region,
-          city: map.city,
-          district: map.district,
-          address: map.street,
-          streetNumber: map.number,
-          latitude: map.latitude,
-          longitude: map.longitude,
-        },
-        active: true,
-        workingDays:
-          registerFields?.workingDays?.length > 0
-            ? registerFields?.workingDays
-            : "",
-        lastPost: serverTimestamp(),
-        registerDate: serverTimestamp(),
-        filterCategories: categories,
-      });
-      await setDoc(doc(db, `users`, `${user.uid}`, "secret", `password`), {
-        password: registerFields?.password,
-      });
-      let subcat;
-      if (type === "specialist" || type === "beautyCenter") {
-        await registerFields?.categories?.map((item, index) => {
-          setDoc(doc(db, `users`, user.uid, "procedures", item.value), {
-            value: item.value,
-          });
+      // Signup user
+      const response = await axios
+        .post('https://beautyverse.herokuapp.com/api/v1/signup', {
+          name: registerFields?.name,
+          type: type,
+          email: registerFields?.email,
+          phone:
+            registerFields?.countryCode?.value + registerFields?.phoneNumber,
+          password: registerFields?.password,
+          confirmPassword: registerFields?.confirmPassowrd,
+          address: {
+            country: map.country,
+            region: map.region,
+            city: map.city,
+            district: map.district,
+            street: map.street,
+            number: map.number,
+            latitude: map.latitude,
+            longitude: map.longitude,
+          },
+          procedures: categories,
+          workingDays: days,
+          notifications: [
+            {
+              senderId: 'Beautyverse',
+              text: `${language?.language.Auth.auth.successRegister}`,
+              date: new Date(),
+              type: 'welcome',
+              status: 'unread',
+              feed: '',
+            },
+          ],
+        })
+        .then(async (data) => {
+          await localStorage.setItem(
+            'Beautyverse:currentUser',
+            JSON.stringify(data.data.newUser)
+          );
+          navigate(`/api/v1/users/${data.data.newUser._id}`);
         });
-      }
-      var actionId = v4();
-      await setDoc(
-        doc(db, `users`, `${user.uid}`, "notifications", `${actionId}`),
-        {
-          id: actionId,
-          senderId: "beautyVerse",
-          text: language?.language.Auth.auth.successRegister,
-          date: serverTimestamp(),
-          type: "welcome",
-          status: "unread",
-          feed: ``,
-        }
-      );
-      navigate(`/user/${user?.uid}`);
-      mainDispatch(setMap(""));
-      mainDispatch(setPassword(""));
-      mainDispatch(setConfirmPassowrd(""));
-      mainDispatch(setName());
-      mainDispatch(setEmail(""));
-      mainDispatch(setPhoneNumber(""));
     } catch (err) {
       setAlert({
         active: true,
-        title: err,
+        title: err.response.data.message,
       });
     }
   };
   const handleKey = (e) => {
-    e.code === "Enter" && Register();
+    e.code === 'Enter' && Register();
   };
 
   // defined procedures which specialist or salon can to choise
   let option = proceduresOptions?.filter((item) => {
     let symbolCount = 0;
     for (let i = 0; i < item.value.length; i++) {
-      if (item.value[i] === "-") {
+      if (item.value[i] === '-') {
         symbolCount++;
       }
     }
@@ -155,73 +121,73 @@ export const BusinessRegister = (props) => {
       ...base,
       color: state.isSelected
         ? theme
-          ? "#333"
-          : "#f3f3f3"
+          ? '#333'
+          : '#f3f3f3'
         : theme
-        ? "#f3f3f3"
-        : "#333",
-      fontSize: "14px",
+        ? '#f3f3f3'
+        : '#333',
+      fontSize: '14px',
     }),
     placeholder: (base, state) => ({
       ...base,
       // height: "1000px",
       color: state.isSelected
         ? theme
-          ? "#333"
-          : "#f3f3f3"
+          ? '#333'
+          : '#f3f3f3'
         : theme
-        ? "#f3f3f3"
-        : "#333",
-      maxHeight: "50px",
+        ? '#f3f3f3'
+        : '#333',
+      maxHeight: '50px',
     }),
     input: (base, state) => ({
       ...base,
-      color: theme ? "#f3f3f3" : "#333",
-      fontSize: "16px",
-      maxHeight: "100px",
+      color: theme ? '#f3f3f3' : '#333',
+      fontSize: '16px',
+      maxHeight: '100px',
     }),
     multiValue: (base, state) => ({
       ...base,
-      backgroundColor: state.isDisabled ? null : "lightblue",
-      borderRadius: "20px",
+      backgroundColor: state.isDisabled ? null : 'lightblue',
+      borderRadius: '20px',
     }),
     multiValueLabel: (base, state) => ({
       ...base,
     }),
     menuList: (base, state) => ({
       ...base,
-      backgroundColor: theme ? "#333" : "#f3f3f3",
+      backgroundColor: theme ? '#333' : '#f3f3f3',
       zIndex: 1000,
     }),
     option: (base, state) => ({
       ...base,
       backgroundColor: state.isSelected
         ? theme
-          ? "#f3f3f3"
-          : "#333"
+          ? '#f3f3f3'
+          : '#333'
         : theme
-        ? "#333"
-        : "#f3f3f3",
+        ? '#333'
+        : '#f3f3f3',
       color: state.isSelected
         ? theme
-          ? "#333"
-          : "#f3f3f3"
+          ? '#333'
+          : '#f3f3f3'
         : theme
-        ? "#f3f3f3"
-        : "#333",
-      fontSize: "14px",
+        ? '#f3f3f3'
+        : '#333',
+      fontSize: '14px',
     }),
     control: (baseStyles, state) => ({
       ...baseStyles,
-      backgroundColor: theme ? "#333" : "#fff",
-      borderColor: state.isFocused ? "rgba(0,0,0,0)" : "rgba(0,0,0,0.1)",
-      width: "38vw",
-      color: "#888",
-      minHeight: "2vw",
-      cursor: "pointer",
-      "@media only screen and (max-width: 1200px)": {
-        width: "85vw",
-        fontSize: "12px",
+      backgroundColor: theme ? '#333' : '#fff',
+      borderColor: state.isFocused ? 'rgba(0,0,0,0)' : 'rgba(0,0,0,0.1)',
+      width: '38vw',
+      color: '#888',
+      minHeight: '2vw',
+      cursor: 'pointer',
+      '@media only screen and (max-width: 1200px)': {
+        width: '85vw',
+        fontSize: '12px',
       },
     }),
   };
@@ -229,54 +195,41 @@ export const BusinessRegister = (props) => {
   // define working days language
   const lang = useSelector((state) => state.storeMain.language);
   let wdOption = workingDaysOptions?.map((item, index) => {
-    if (lang === "en") {
+    if (lang === 'en') {
       return {
         value: item.value,
         label: item.en,
       };
-    } else if (lang === "ka") {
+    } else if (lang === 'ka') {
       return {
         value: item.value,
         label: item.ka,
       };
-    } else if (lang === "ru") {
+    } else if (lang === 'ru') {
       return {
         value: item.value,
         label: item.ru,
       };
     }
   });
-
-  // import users
-  const usersList = useSelector((state) => state.storeMain.userList);
-  let users;
-  if (usersList?.length > 0) {
-    users = JSON.parse(usersList);
-  }
-
   /**
    * send identify email
    */
 
-  const [verifyCode, setVerifyCode] = useState("");
+  const [verifyCode, setVerifyCode] = useState('');
   const [verify, setVerify] = useState(false);
 
   function SendEmail() {
     const email = registerFields?.email;
-    if (
-      users?.find(
-        (item) => item.email.toLowerCase() === email.toLowerCase()
-      ) === undefined
-    ) {
+    if (registerFields?.email) {
       fetch(`https://beautyverse.herokuapp.com/emails/verify?email=${email}`)
         .then((response) => response.json())
         .then((data) => {
-          console.log("get");
           setVerifyCode(data);
           setVerify(true);
         })
         .catch((error) => {
-          console.log("Error fetching data:", error);
+          console.log('Error fetching data:', error);
         });
     } else {
       setAlert({
@@ -308,15 +261,15 @@ export const BusinessRegister = (props) => {
       >
         <Title>
           <AiOutlineProfile className="icon" />
-          {type == "shop"
-            ? "ინფორმაცია მაღაზიის შესახებ"
+          {type == 'shop'
+            ? 'ინფორმაცია მაღაზიის შესახებ'
             : language?.language.Auth.auth.aboutSalon}
         </Title>
         <WrapperContainer onSubmit={SendEmail}>
           {!isMobile && (
             <Button
               title={language?.language.Auth.auth.back}
-              function={() => navigate("/register/identify")}
+              function={() => navigate('/register/identify')}
               back={true}
             />
           )}
@@ -324,8 +277,8 @@ export const BusinessRegister = (props) => {
             <>
               <TitleWrapper>
                 <InputTitle>
-                  {type == "shop"
-                    ? "აირჩიე კატეგორიები"
+                  {type == 'shop'
+                    ? 'აირჩიე კატეგორიები'
                     : language?.language.Auth.auth.service}
                   *
                 </InputTitle>
@@ -333,8 +286,8 @@ export const BusinessRegister = (props) => {
               <Wrapper cat={registerFields?.categories?.length}>
                 <Select
                   placeholder={
-                    type == "shop"
-                      ? "დაამატე კატეგორიები"
+                    type == 'shop'
+                      ? 'დაამატე კატეგორიები'
                       : language?.language.Auth.auth.addService
                   }
                   isMulti
@@ -344,10 +297,10 @@ export const BusinessRegister = (props) => {
                   }}
                   value={registerFields?.categories}
                   styles={CustomStyle}
-                  options={type == "shop" ? categoriesOptions : option}
+                  options={type == 'shop' ? categoriesOptions : option}
                 />
               </Wrapper>
-              {type != "shop" && (
+              {type != 'shop' && (
                 <>
                   <TitleWrapper>
                     <InputTitle>
@@ -400,10 +353,10 @@ export const BusinessRegister = (props) => {
           )}
         </WrapperContainer>
         <MobileButtons>
-          {" "}
+          {' '}
           <Button
             title={language?.language.Auth.auth.back}
-            function={() => navigate("/register/identify")}
+            function={() => navigate('/register/identify')}
             back={true}
           />
           <Button
@@ -528,7 +481,7 @@ const Wrapper = styled.div`
   color: ${(props) => props.theme.font};
   background: ${(props) => props.theme.categoryItem};
   max-height: 400px;
-  overflow-y: ${(props) => (props.cat > 30 ? "scroll" : "visible")};
+  overflow-y: ${(props) => (props.cat > 30 ? 'scroll' : 'visible')};
   height: auto;
   z-index: 900;
 
@@ -670,7 +623,7 @@ const SubmitButton = styled.button`
   justify-content: center;
   cursor: pointer;
   transition: ease-in 200ms;
-  color: ${(props) => (props.back ? "#ccc" : "green")};
+  color: ${(props) => (props.back ? '#ccc' : 'green')};
   font-weight: bold;
   background: rgba(255, 255, 255, 0.7);
   border: none;

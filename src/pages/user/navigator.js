@@ -1,17 +1,17 @@
-import styled from "styled-components";
-import { BsListCheck } from "react-icons/bs";
-import { useNavigate } from "react-router-dom";
+import styled from 'styled-components';
+import { BsListCheck } from 'react-icons/bs';
+import { useNavigate } from 'react-router-dom';
 import {
   MdOutlinePhotoSizeSelectActual,
   MdContactPhone,
   MdShoppingCart,
-} from "react-icons/md";
-import { FaUsers } from "react-icons/fa";
-import { FiSettings } from "react-icons/fi";
-import { AiOutlineTeam } from "react-icons/ai";
-import { useSelector, useDispatch } from "react-redux";
-import { IsMobile } from "../../functions/isMobile";
-import ShowChartIcon from "@mui/icons-material/ShowChart";
+} from 'react-icons/md';
+import { FaUsers } from 'react-icons/fa';
+import { FiSettings } from 'react-icons/fi';
+import { useSelector, useDispatch } from 'react-redux';
+import { IsMobile } from '../../functions/isMobile';
+import ShowChartIcon from '@mui/icons-material/ShowChart';
+import { NavigatorLoader } from '../../components/loader';
 
 export const Navigator = (props) => {
   const dispatch = useDispatch();
@@ -22,53 +22,57 @@ export const Navigator = (props) => {
   const list = [
     {
       id: 1,
-      value: "posts",
+      value: 'posts',
       title: props?.language?.language.User.userPage.feeds,
-      onClick: () => navigate(`/user/${props?.user.id}`),
+      onClick: () => navigate(`/api/v1/users/${props?.targetUser?._id}`),
       className:
-        window.location.pathname === `/user/${props?.user?.id}`
-          ? "active"
-          : "btn",
+        window.location.pathname === `/api/v1/users/${props?.targetUser?._id}`
+          ? 'active'
+          : 'btn',
       icon: <MdOutlinePhotoSizeSelectActual className="icon" />,
     },
     {
       id: 2,
-      value: "contact",
+      value: 'contact',
       title: props?.language?.language.User.userPage.contact,
       onClick: () => navigate(`contact`),
       className:
-        window.location.pathname === `/user/${props?.user?.id}/contact`
-          ? "active"
-          : "btn",
-      id: "contact",
+        window.location.pathname ===
+        `/api/v1/users/${props?.targetUser?._id}/contact`
+          ? 'active'
+          : 'btn',
+      id: 'contact',
       icon: <MdContactPhone className="icon" />,
     },
-    {
-      id: 3,
-      value: "team",
-      title: props?.language?.language.User.userPage.team,
-      onClick: () => navigate(`team`),
-      className:
-        window.location.pathname === `/user/${props?.user?.id}/team`
-          ? "active"
-          : "btn",
-      id: "team",
-      icon: <AiOutlineTeam className="icon" />,
-    },
+    // {
+    //   id: 3,
+    //   value: 'team',
+    //   title: props?.language?.language.User.userPage.team,
+    //   onClick: () => navigate(`team`),
+    //   className:
+    //     window.location.pathname ===
+    //     `/api/v1/users/${props?.targetUser?._id}/team`
+    //       ? 'active'
+    //       : 'btn',
+    //   id: 'team',
+    //   icon: <AiOutlineTeam className="icon" />,
+    // },
     {
       id: 4,
-      value: props?.user?.type == "shop" ? "products" : "services",
+      value: props?.targetUser?.type == 'shop' ? 'products' : 'services',
       title:
-        props?.user?.type == "shop"
-          ? "პროდუქტები"
+        props?.targetUser?.type == 'shop'
+          ? 'პროდუქტები'
           : props?.language?.language.User.userPage.service,
-      onClick: () => navigate(`/user/${props?.user?.id}/services`),
+      onClick: () =>
+        navigate(`/api/v1/users/${props?.targetUser?._id}/services`),
       className:
-        window.location.pathname === `/user/${props?.user?.id}/services`
-          ? "active"
-          : "btn",
+        window.location.pathname ===
+        `/api/v1/users/${props?.targetUser?._id}/services`
+          ? 'active'
+          : 'btn',
       icon:
-        props?.user?.type == "shop" ? (
+        props?.targetUser?.type == 'shop' ? (
           <MdShoppingCart className="icon" />
         ) : (
           <BsListCheck className="icon" />
@@ -76,35 +80,41 @@ export const Navigator = (props) => {
     },
     {
       id: 5,
-      value: "audience",
+      value: 'audience',
       title: props?.language?.language.User.userPage.audience,
-      onClick: () => navigate(`/user/${props?.user?.id}/audience`),
+      onClick: () =>
+        navigate(`/api/v1/users/${props?.targetUser?._id}/audience`),
       className:
-        window.location.pathname === `/user/${props?.user?.id}/audience`
-          ? "active"
-          : "btn",
+        window.location.pathname ===
+        `/api/v1/users/${props?.targetUser?._id}/audience`
+          ? 'active'
+          : 'btn',
       icon: <FaUsers className="icon" />,
     },
     {
       id: 6,
-      value: "statistics",
+      value: 'statistics',
       title: props?.language?.language.User.userPage.statistics,
-      onClick: () => navigate(`/user/${props?.user?.id}/statistics`),
+      onClick: () =>
+        navigate(`/api/v1/users/${props?.targetUser?._id}/statistics`),
       className:
-        window.location.pathname === `/user/${props?.user?.id}/statistics`
-          ? "active"
-          : "btn",
+        window.location.pathname ===
+        `/api/v1/users/${props?.targetUser?._id}/statistics`
+          ? 'active'
+          : 'btn',
       icon: <ShowChartIcon className="icon" />,
     },
     {
       id: 7,
-      value: "settings",
+      value: 'settings',
       title: props?.language?.language.User.userPage.settings,
-      onClick: () => navigate(`/user/${props?.user?.id}/settings`),
+      onClick: () =>
+        navigate(`/api/v1/users/${props?.targetUser?._id}/settings`),
       className:
-        window.location.pathname === `/user/${props?.user?.id}/settings`
-          ? "active"
-          : "btn",
+        window.location.pathname ===
+        `/api/v1/users/${props?.targetUser?._id}/settings`
+          ? 'active'
+          : 'btn',
       icon: <FiSettings className="icon" />,
     },
   ];
@@ -130,24 +140,24 @@ export const Navigator = (props) => {
     let withoutSettings = list?.filter((item, index) => {
       if (
         props?.currentUser == null ||
-        props?.currentUser?.uid !== props?.user?.id
+        props?.currentUser?.uid !== props?.targetUser?._id
       ) {
-        return item.value !== "settings" && item.value !== "statistics";
+        return item.value !== 'settings' && item.value !== 'statistics';
       } else {
         return item;
       }
     });
     let content;
     content = withoutSettings?.filter((item, index) => {
-      if (props?.user?.type == "user") {
+      if (props?.targetUser?.type == 'user') {
         return (
-          item.value !== "team" &&
-          item.value !== "services" &&
-          item.value !== "posts" &&
-          item.value !== "statistics"
+          item.value !== 'team' &&
+          item.value !== 'services' &&
+          item.value !== 'posts' &&
+          item.value !== 'statistics'
         );
-      } else if (props?.user?.type == "specialist") {
-        return item.value !== "team";
+      } else if (props?.targetUser?.type == 'specialist') {
+        return item.value !== 'team';
       } else {
         return item;
       }
@@ -187,7 +197,11 @@ export const Navigator = (props) => {
 
   const DefinedContet = DefineList();
 
-  return <Container>{DefinedContet}</Container>;
+  return (
+    <Container>
+      {props?.loading ? <NavigatorLoader /> : DefinedContet}
+    </Container>
+  );
 };
 
 const Container = styled.div`
