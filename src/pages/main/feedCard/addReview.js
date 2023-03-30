@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { FiSend } from 'react-icons/fi';
 import { BiStar } from 'react-icons/bi';
 import axios from 'axios';
+import { v4 } from 'uuid';
 
 export const AddReview = (props) => {
   const navigate = useNavigate();
@@ -34,14 +35,19 @@ export const AddReview = (props) => {
             date: new Date(),
             type: 'star',
             status: 'unread',
-            feed: `/api/v1/users/${props?.targetUser._id}/feeds/${currentUser?._id}`,
+            feed: `/api/v1/users/${props?.targetUser._id}/feeds/${props.currentFeed?._id}`,
           }
         );
       }
-      const { length, checkIfStared } = props.stars;
-      props.setStars({
-        length: length + 1,
-        checkIfStared: { staredBy: currentUser?._id, createdAt: new Date() },
+      props.setFeedObj((prev) => {
+        return {
+          ...prev,
+          feed: {
+            ...prev.feed,
+            starsLength: prev.feed.starsLength + 1,
+          },
+          checkIfStared: true,
+        };
       });
     } catch (error) {
       console.error(error);
@@ -52,12 +58,21 @@ export const AddReview = (props) => {
 
   // remove heart
   const RemoveStar = async () => {
-    const url = `https://beautyverse.herokuapp.com/api/v1/users/${props.targetUser?._id}/feeds/${props?.currentFeed?._id}/stars/${props.stars.checkIfStared?._id}`;
+    const url = `https://beautyverse.herokuapp.com/api/v1/users/${props.targetUser?._id}/feeds/${props?.currentFeed?._id}/stars/${props.currentUser?._id}`;
     const response = await fetch(url, { method: 'DELETE' })
       .then((response) => response.json())
       .then(async (data) => {
-        const { length, checkIfStared } = props.stars;
-        props.setStars({ length: length - 1, checkIfStared: undefined });
+        props.setFeedObj((prev) => {
+          return {
+            ...prev,
+            feed: {
+              ...prev.feed,
+              starsLength: prev.feed.starsLength - 1,
+            },
+            checkIfStared: false,
+            someobjects: prev.someobjects,
+          };
+        });
       })
 
       .catch((error) => {
@@ -70,10 +85,12 @@ export const AddReview = (props) => {
    *  */
 
   const SetReview = async () => {
+    const newId = v4();
     try {
       await axios.post(
         `https://beautyverse.herokuapp.com/api/v1/users/${props?.targetUser._id}/feeds/${props.currentFeed?._id}/reviews`,
         {
+          reviewId: newId,
           reviewer: {
             id: currentUser?._id,
             name: currentUser?.name,
@@ -88,21 +105,23 @@ export const AddReview = (props) => {
           `https://beautyverse.herokuapp.com/api/v1/users/${props?.targetUser._id}/notifications`,
           {
             senderId: currentUser?._id,
-            text: `მიანიჭა ვარსკვლავი თქვენ პოსტს!`,
+            text: `დატოვა კომენტარი თქვენს პოსტზე!`,
             date: new Date(),
             type: 'star',
             status: 'unread',
-            feed: `/api/v1/users/${props?.targetUser._id}/feeds/${currentUser?._id}`,
+            feed: `/api/v1/users/${props?.targetUser._id}/feeds/${props.currentFeed?._id}`,
           }
         );
       }
-      props.setFeed((prev) => {
+      setText('');
+      props.setFeedObj((prev) => {
         return {
           ...prev,
           feed: {
             ...prev.feed,
             reviews: [
               {
+                reviewId: newId,
                 reviewer: {
                   id: currentUser?._id,
                   name: currentUser?.name,
@@ -117,7 +136,6 @@ export const AddReview = (props) => {
           next: prev.next,
         };
       });
-      setText('');
     } catch (error) {
       console.error(error);
     }
@@ -128,7 +146,7 @@ export const AddReview = (props) => {
       {currentUser && (
         <Footer>
           <Likes>
-            {props.isStarGiven ? (
+            {props.checkIfStared ? (
               <BiStar className="likedIcon" onClick={RemoveStar} />
             ) : (
               <BiStar
@@ -136,7 +154,7 @@ export const AddReview = (props) => {
                 onClick={currentUser?._id ? SetStar : () => navigate('/login')}
               />
             )}
-            {props.stars.length}
+            {props.starsLength}
           </Likes>
           {currentUser._id && (
             <>

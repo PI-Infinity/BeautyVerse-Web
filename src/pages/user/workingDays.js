@@ -194,7 +194,7 @@ export const WorkingDays = ({ targetUser, language }) => {
         {language?.language.User.userPage.workingDays}:
       </span>
       <SectionWrapper>
-        {targetUser?.authenticationId === currentUser?.uid && (
+        {targetUser?._id === currentUser?._id && (
           <>
             {!editWorkingDay && (
               <MdOutlinePlaylistAdd
@@ -498,6 +498,7 @@ const SectionWrapper = styled.div`
     overflow-y: scroll;
     overflow-x: hidden;
     gap: 2vw;
+    height: auto;
   }
 
   .open {
@@ -588,7 +589,7 @@ const AddationalValue = styled.div`
   @media only screen and (max-width: 600px) {
     gap: 2vw;
     height: 10vw;
-    width: 24vw;
+    width: 30vw;
   }
   .editIcon {
     color: ${(props) => props.theme.disabled};

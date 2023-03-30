@@ -12,13 +12,17 @@ import { IsMobile } from '../../../functions/isMobile';
 import { Spinner } from '../../../components/loader';
 import { isWebpSupported } from 'react-image-webp/dist/utils';
 import Avatar from '@mui/material/Avatar';
-import GetTimesAgo from '../../../functions/getTimesAgo';
 import { SiGoogletranslate } from 'react-icons/si';
 import { SlReload } from 'react-icons/sl';
 import { Language } from '../../../context/language';
+import { format } from 'timeago.js';
+import useScrollPosition from '../../../functions/useScrollPosition';
+import { AddReviewLoader } from '../../../components/loader';
 
 export const OpenedFeed = (props) => {
   const { height, width } = useWindowDimensions();
+  const { saveScrollPositionWhenClose, saveScrollPosition, scrollPosition } =
+    useScrollPosition();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const isMobile = IsMobile();
@@ -31,9 +35,7 @@ export const OpenedFeed = (props) => {
   const userId = splited[4];
   const feedId = splited[6];
 
-  const [feed, setFeed] = useState();
-  const [user, setUser] = useState();
-  // const [state, setState] = useState('');
+  const [feedObj, setFeedObj] = useState();
 
   const currentUser = JSON.parse(
     localStorage.getItem('Beautyverse:currentUser')
@@ -42,72 +44,50 @@ export const OpenedFeed = (props) => {
   const rerender = useSelector((state) => state.storeMain.rerender);
   useEffect(() => {
     window.scrollTo(0, 0);
+
     if (feedId) {
-      GetFeed();
-    }
-    if (userId) {
-      GetUser();
+      GetFeedObj();
     }
   }, [path]);
 
   const [render, setRender] = useState(false);
-  useEffect(() => {
-    if (feed?.feed?._id && user?._id) {
-      GetStars();
-      document.body.style.overflowY = 'hidden';
-    }
-  }, [path, feed?.feed?._id, user, render]);
 
-  const [stars, setStars] = React.useState([]);
+  let isStarGiven = feedObj?.checkIfStared;
 
-  async function GetStars() {
+  async function GetFeedObj() {
     const response = await fetch(
-      `https://beautyverse.herokuapp.com/api/v1/users/${user?._id}/feeds/${feed?.feed?._id}/stars/check/${currentUser?._id}`
-    )
-      .then((response) => response.json())
-      .then(async (data) => {
-        setStars(data.data.stars);
-      })
-      .catch((error) => {
-        console.log('Error fetching data:', error);
-      });
-  }
-
-  let isStarGiven = stars?.checkIfStared;
-
-  async function GetFeed() {
-    const response = await fetch(
-      `https://beautyverse.herokuapp.com/api/v1/users/${userId}/feeds/${feedId}`
+      `https://beautyverse.herokuapp.com/api/v1/users/${userId}/feeds/${feedId}/opened?checked=${
+        currentUser ? currentUser._id : ''
+      }`
     )
       .then((response) => response.json())
       .then(async (data) => {
         console.log(data.data);
-        setFeed(data.data);
-      })
-      .catch((error) => {
-        console.log('Error fetching data:', error);
-      });
-  }
-  async function GetUser() {
-    const response = await fetch(
-      `https://beautyverse.herokuapp.com/api/v1/users/${userId}`
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        setUser(data.data.user);
+        setFeedObj(data.data);
       })
       .catch((error) => {
         console.log('Error fetching data:', error);
       });
   }
 
+  const scrollY = useSelector((state) => state.storeScroll.feedScrollY);
+
+  useEffect(() => {
+    return () => {
+      saveScrollPositionWhenClose(scrollY.toFixed(0));
+    };
+  }, [saveScrollPositionWhenClose]);
   //define closing link
   const Closing = () => {
     let navigatePath;
     if (splited[splited?.length - 1] === 'profile') {
-      navigatePath = () => navigate(`/api/v1/users/${user?._id}`);
+      navigatePath = () => {
+        navigate(`/api/v1/users/${feedObj.feedOwner?._id}`);
+      };
     } else {
-      navigatePath = () => navigate('/');
+      navigatePath = () => {
+        navigate('/');
+      };
     }
     return navigatePath;
   };
@@ -141,40 +121,22 @@ export const OpenedFeed = (props) => {
       });
   };
 
-  // define post time
-
-  const currentPostTime = GetTimesAgo(
-    new Date(feed?.feed?.createdAt)?.getTime(),
-    feed?.feed?.createdAt
-  );
-
-  let timeTitle;
-  if (currentPostTime?.title === 'h') {
-    timeTitle = language?.language.Main.feedCard.h;
-  } else if (currentPostTime?.title === 'min') {
-    timeTitle = language?.language.Main.feedCard.min;
-  } else if (currentPostTime?.title.includes('2')) {
-    timeTitle = currentPostTime?.title;
-  } else {
-    timeTitle = language?.language.Main.feedCard.justNow;
-  }
-
   const [imageHeight, setImageHeight] = useState(null);
 
   useEffect(() => {
     const img = new Image();
     if (isMobile) {
-      img.src = feed?.feed?.mobileJpeg;
+      img.src = feedObj?.feed?.mobileJpeg;
     } else {
-      img.src = feed?.feed?.desktopUrl;
+      img.src = feedObj?.feed?.desktopUrl;
     }
     img.onload = () => {
       setImageHeight(img.height - (img.width - width));
       setTimeout(() => {
         setLoading(false);
-      }, 100);
+      }, 200);
     };
-  }, [feed]);
+  }, [feedObj?.feed?.name]);
 
   return (
     <Container height={height}>
@@ -185,39 +147,52 @@ export const OpenedFeed = (props) => {
           </LoaderContainer>
         )}
         <ImgContainer loading={loading?.toString()} imageHeight={imageHeight}>
-          {feed?.prev && (
+          {feedObj?.prev && (
             <Arrow
               right="true"
               onClick={() =>
-                navigate(`/api/v1/users/${user?._id}/feeds/${feed?.prev}`)
+                navigate(
+                  `/api/v1/users/${feedObj.feedOwner?._id}/feeds/${feedObj?.prev}`
+                )
               }
             >
               <IoMdArrowDropleft size={40} color="rgba(255,255,255,0.5)" />
             </Arrow>
           )}
 
-          {feed?.feed?.name?.toLowerCase().endsWith('mp4') ? (
+          {feedObj?.feed?.name?.toLowerCase().endsWith('mp4') ? (
             <Video width="100%" height="auto" controls autoplay muted>
-              <source src={feed?.feed?.videoUrl} type="video/mp4" />
+              <source src={feedObj?.feed?.videoUrl} type="video/mp4" />
             </Video>
           ) : (
             <>
               {isMobile ? (
                 isWebpSupported() ? (
-                  <MainImg src={feed?.feed?.mobileWebp} active={props.active} />
+                  <MainImg
+                    src={feedObj?.feed?.mobileWebp}
+                    active={props.active}
+                  />
                 ) : (
-                  <MainImg src={feed?.feed?.mobileJpeg} active={props.active} />
+                  <MainImg
+                    src={feedObj?.feed?.mobileJpeg}
+                    active={props.active}
+                  />
                 )
               ) : (
-                <MainImg src={feed?.feed?.desktopUrl} active={props.active} />
+                <MainImg
+                  src={feedObj?.feed?.desktopUrl}
+                  active={props.active}
+                />
               )}
             </>
           )}
-          {feed?.next && (
+          {feedObj?.next && (
             <Arrow
               left="true"
               onClick={() =>
-                navigate(`/api/v1/users/${user?._id}/feeds/${feed?.next}`)
+                navigate(
+                  `/api/v1/users/${feedObj.feedOwner?._id}/feeds/${feedObj?.next}`
+                )
               }
             >
               <IoMdArrowDropright size={40} color="rgba(255,255,255,0.5)" />
@@ -228,31 +203,35 @@ export const OpenedFeed = (props) => {
         <PostSide loading={loading.toString()}>
           <UserInfo>
             <Avatar
-              onClick={() => navigate(`/api/v1/users/${user?._id}`)}
-              alt={user?.name}
-              src={user?.cover ? user?.cover : ''}
+              onClick={() =>
+                navigate(`/api/v1/users/${feedObj.feedOwner?._id}`)
+              }
+              alt={feedObj?.feedOwner?.name}
+              src={feedObj?.feedOwner?.cover ? feedObj?.feedOwner?.cover : ''}
               sx={{ width: 42, height: 42, cursor: 'pointer' }}
             />
 
-            <UserName onClick={() => navigate(`/api/v1/users/${user?._id}`)}>
-              {user?.name}
+            <UserName
+              onClick={() =>
+                navigate(`/api/v1/users/${feedObj.feedOwner?._id}`)
+              }
+            >
+              {feedObj?.feedOwner?.name}
             </UserName>
-            {currentPostTime && (
-              <PostTime>{currentPostTime?.numbers + ' ' + timeTitle}</PostTime>
-            )}
+            {<PostTime>{format(feedObj?.feed?.createdAt)}</PostTime>}
 
             <ClosePost onClick={closeOpenedFeed}>
               <MdOutlineCloseFullscreen className="closeIcon" />
             </ClosePost>
           </UserInfo>
           <Post>
-            {translated ? translated : feed?.feed?.post}
-            {feed?.feed?.post && (
+            {translated ? translated : feedObj?.feed?.post}
+            {feedObj?.feed?.post && (
               <div style={{ cursor: 'pointer' }}>
                 {translated?.length < 1 ? (
                   <div style={{ padding: '2px' }}>
                     <SiGoogletranslate
-                      onClick={() => GetLanguages(feed?.feed?.post)}
+                      onClick={() => GetLanguages(feedObj?.feed?.post)}
                       size={14}
                       color="#ddd"
                       style={{ cursor: 'pointer' }}
@@ -272,12 +251,12 @@ export const OpenedFeed = (props) => {
             )}
           </Post>
           <ReviewList
-            reviews={feed?.feed?.reviews}
+            reviews={feedObj?.feed?.reviews}
             currentUser={currentUser}
             id={userId}
-            currentFeed={feed?.feed}
-            setFeed={setFeed}
-            targetUser={user}
+            currentFeed={feedObj?.feed}
+            setFeedObj={setFeedObj}
+            targetUser={feedObj?.feedOwner}
           />
           <>
             {!isMobile && (
@@ -285,37 +264,46 @@ export const OpenedFeed = (props) => {
                 opened={true}
                 render={render}
                 setRender={setRender}
-                targetUser={user}
-                name={user?.name}
+                checkIfStared={feedObj?.checkIfStared}
+                targetUser={feedObj?.feedOwner}
+                name={feedObj?.feedOwner?.name}
                 id={userId}
-                cover={user?.cover}
+                cover={feedObj?.feedOwner?.cover}
                 isStarGiven={isStarGiven}
-                stars={stars}
-                setStars={setStars}
-                setFeed={setFeed}
-                currentFeed={feed?.feed}
+                starsLength={feedObj?.feed.starsLength}
+                setFeedObj={setFeedObj}
+                currentFeed={feedObj?.feed}
                 setOpenFeed={setOpenFeed}
               />
             )}
           </>
         </PostSide>
       </Wrapper>
+
       {isMobile && (
-        <AddReview
-          opened={true}
-          render={render}
-          setRender={setRender}
-          targetUser={user}
-          name={user?.name}
-          id={userId}
-          cover={user?.cover}
-          isStarGiven={isStarGiven}
-          stars={stars}
-          setStars={setStars}
-          setFeed={setFeed}
-          currentFeed={feed?.feed}
-          setOpenFeed={setOpenFeed}
-        />
+        <>
+          {!loading ? (
+            <AddReview
+              opened={true}
+              render={render}
+              setRender={setRender}
+              checkIfStared={feedObj?.checkIfStared}
+              targetUser={feedObj?.feedOwner}
+              name={feedObj?.feedOwner?.name}
+              id={userId}
+              cover={feedObj?.feedOwner?.cover}
+              isStarGiven={isStarGiven}
+              starsLength={feedObj?.feed.starsLength}
+              setFeedObj={setFeedObj}
+              currentFeed={feedObj?.feed}
+              setOpenFeed={setOpenFeed}
+            />
+          ) : (
+            <div style={{ position: 'fixed', bottom: 0, zindex: 10007 }}>
+              <AddReviewLoader width={width} />
+            </div>
+          )}
+        </>
       )}
     </Container>
   );
@@ -379,7 +367,7 @@ const LoaderContainer = styled.div`
   justify-content: center;
   background: ${(props) => props.theme.background};
   position: absolute;
-  z-index: 10005;
+  z-index: 10007;
   overflow: hidden;
 
   @media only screen and (max-width: 600px) {
@@ -401,11 +389,12 @@ const ImgContainer = styled.div`
 
   @media only screen and (max-width: 600px) {
     width: 100vw;
+    // min-height: ${(props) => props.imageHeight}px;
     height: ${(props) => props.imageHeight}px;
+    // min-height: ${(props) => (props.loading === 'true' ? '400px' : 'auto')};
     align-items: ${(props) => (props.loading === 'true' ? 'center' : 'start')};
     position: relative;
     background: #050505;
-    // border-bottom: 1px solid #f3f3f3;
   }
 `;
 
@@ -556,7 +545,6 @@ const UserProfileEmpty = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  // background: red;
 
   @media only screen and (max-width: 600px) {
     width: 6vw;

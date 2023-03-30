@@ -2,7 +2,6 @@ import styled from 'styled-components';
 import { FaUser } from 'react-icons/fa';
 
 export default function Avatar({ link, size, name }) {
-  console.log(link);
   if (size === 'small') {
     return (
       <Small>

@@ -95,8 +95,6 @@ export const CoverUploader = ({ targetUser, loadingProfile }) => {
     }
   }, [coverUrl]);
 
-  console.log(coverUrl);
-
   return (
     <Container>
       {targetUser?._id === currentUser?._id && (

@@ -5,6 +5,7 @@ import { FaUser } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import GetTimesAgo from '../../../functions/getTimesAgo';
 import { Language } from '../../../context/language';
+import { format } from 'timeago.js';
 
 export const ReviewList = (props) => {
   const language = Language();
@@ -12,7 +13,6 @@ export const ReviewList = (props) => {
   const navigate = useNavigate();
 
   const [reviewers, setReviewers] = useState([]);
-
   const DeleteReview = async (id) => {
     const url = `https://beautyverse.herokuapp.com/api/v1/users/${props.targetUser?._id}/feeds/${props?.currentFeed?._id}/reviews/${id}`;
     try {
@@ -22,12 +22,14 @@ export const ReviewList = (props) => {
         const data = await response.json();
 
         // Update the feed.reviews array by filtering out the deleted review
-        props.setFeed((prev) => {
+        props.setFeedObj((prev) => {
           return {
             ...prev,
             feed: {
               ...prev.feed,
-              reviews: prev.feed.reviews.filter((review) => review._id !== id),
+              reviews: prev.feed.reviews.filter(
+                (review) => review.reviewId !== id
+              ),
             },
             next: prev.next,
           };
@@ -43,24 +45,6 @@ export const ReviewList = (props) => {
   return (
     <ReviewListContainer>
       {props?.reviews?.map((item, index) => {
-        // define post time
-
-        const currentPostTime = GetTimesAgo(
-          new Date(item?.createdAt)?.getTime(),
-          item?.createdAt
-        );
-
-        let timeTitle;
-        if (currentPostTime?.title === 'h') {
-          timeTitle = language?.language.Main.feedCard.h;
-        } else if (currentPostTime?.title === 'min') {
-          timeTitle = language?.language.Main.feedCard.min;
-        } else if (currentPostTime?.title.includes('2')) {
-          timeTitle = currentPostTime?.title;
-        } else {
-          timeTitle = language?.language.Main.feedCard.justNow;
-        }
-
         return (
           <ReviewItem key={index}>
             <div
@@ -84,17 +68,16 @@ export const ReviewList = (props) => {
               >
                 {item.reviewer.name}
               </Reviewer>
-              {currentPostTime && (
-                <span
-                  style={{
-                    fontSize: '12px',
-                    color: '#ccc',
-                    marginLeft: 'auto',
-                  }}
-                >
-                  {currentPostTime?.numbers + ' ' + timeTitle}
-                </span>
-              )}
+
+              <span
+                style={{
+                  fontSize: '12px',
+                  color: '#ccc',
+                  marginLeft: 'auto',
+                }}
+              >
+                {format(item?.createdAt)}
+              </span>
             </div>
             <div
               style={{
@@ -105,9 +88,10 @@ export const ReviewList = (props) => {
               }}
             >
               <Text>{item.text}</Text>
-              {props.currentUser?._id && (
+              {(props.currentUser?._id === item.reviewer.id ||
+                props.id === props.currentUser._id) && (
                 <MdOutlineRemove
-                  onClick={() => DeleteReview(item._id)}
+                  onClick={() => DeleteReview(item.reviewId)}
                   style={{
                     minWidth: '5%',
                     textAlign: 'center',

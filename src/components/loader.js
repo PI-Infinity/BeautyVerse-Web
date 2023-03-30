@@ -24,19 +24,19 @@ export const LineLoader = (props) => {
   const isMobile = IsMobile();
   return (
     <ContentLoader
-      speed={1}
+      speed={0.5}
       width={isMobile ? 700 : 700}
       height={isMobile ? 15 : 15}
-      backgroundColor={theme ? '#222' : '#f3f3f3'}
-      foregroundColor={theme ? '#151515' : '#F7E6FF'}
+      backgroundColor={theme ? '#151515' : '#f3f3f3'}
+      foregroundColor={theme ? '#30102E' : '#F7E6FF'}
       {...props}
     >
       <rect
         x={isMobile ? 0 : 0}
-        y={isMobile ? 5 : 5}
-        rx={isMobile ? 0 : 0}
-        ry={isMobile ? 0 : 0}
-        width={isMobile ? 700 : 700}
+        y={isMobile ? 0 : 0}
+        rx={isMobile ? 10 : 10}
+        ry={isMobile ? 10 : 10}
+        width={isMobile ? 300 : 400}
         height={isMobile ? 15 : 15}
       />
     </ContentLoader>
@@ -47,18 +47,18 @@ export const IconLoader = (props) => {
   const isMobile = IsMobile();
   return (
     <ContentLoader
-      speed={1}
+      speed={0.5}
       width={isMobile ? 25 : 50}
       height={isMobile ? 15 : 15}
-      backgroundColor={theme ? '#222' : '#f3f3f3'}
-      foregroundColor={theme ? '#151515' : '#F7E6FF'}
+      backgroundColor={theme ? '#151515' : '#f3f3f3'}
+      foregroundColor={theme ? '#30102E' : '#F7E6FF'}
       {...props}
     >
       <rect
         x={isMobile ? 0 : 0}
-        y={isMobile ? 5 : 5}
-        rx={isMobile ? 0 : 0}
-        ry={isMobile ? 0 : 0}
+        y={isMobile ? 0 : 0}
+        rx={isMobile ? 10 : 10}
+        ry={isMobile ? 10 : 10}
         width={isMobile ? 25 : 50}
         height={isMobile ? 15 : 15}
       />
@@ -70,11 +70,11 @@ export const TextLoader = (props) => {
   const theme = useSelector((state) => state.storeMain.theme);
   return (
     <ContentLoader
-      speed={1}
+      speed={0.5}
       width={isMobile ? 300 : 300}
       height={isMobile ? 15 : 18}
-      backgroundColor={theme ? '#222' : '#f3f3f3'}
-      foregroundColor={theme ? '#151515' : '#F7E6FF'}
+      backgroundColor={theme ? '#151515' : '#f3f3f3'}
+      foregroundColor={theme ? '#30102E' : '#F7E6FF'}
       {...props}
     >
       <rect
@@ -93,11 +93,11 @@ export const TitleLoader = (props) => {
   const theme = useSelector((state) => state.storeMain.theme);
   return (
     <ContentLoader
-      speed={1}
+      speed={0.5}
       width={isMobile ? 150 : 150}
       height={isMobile ? 15 : 18}
-      backgroundColor={theme ? '#222' : '#f3f3f3'}
-      foregroundColor={theme ? '#151515' : '#F7E6FF'}
+      backgroundColor={theme ? '#151515' : '#f3f3f3'}
+      foregroundColor={theme ? '#30102E' : '#F7E6FF'}
       {...props}
     >
       <rect
@@ -111,16 +111,39 @@ export const TitleLoader = (props) => {
     </ContentLoader>
   );
 };
+export const TitleLoader2 = (props) => {
+  const isMobile = IsMobile();
+  const theme = useSelector((state) => state.storeMain.theme);
+  return (
+    <ContentLoader
+      speed={0.5}
+      width={isMobile ? 190 : 190}
+      height={isMobile ? 15 : 18}
+      backgroundColor={theme ? '#151515' : '#f3f3f3'}
+      foregroundColor={theme ? '#30102E' : '#F7E6FF'}
+      {...props}
+    >
+      <rect
+        x={isMobile ? 0 : 0}
+        y={isMobile ? 0 : 0}
+        rx={isMobile ? 10 : 10}
+        ry={isMobile ? 10 : 10}
+        width={isMobile ? 190 : 190}
+        height={isMobile ? 15 : 18}
+      />
+    </ContentLoader>
+  );
+};
 export const LinkLoader = (props) => {
   const isMobile = IsMobile();
   const theme = useSelector((state) => state.storeMain.theme);
   return (
     <ContentLoader
-      speed={1}
+      speed={0.5}
       width={isMobile ? 150 : 250}
       height={isMobile ? 25 : 200}
-      backgroundColor={theme ? '#222' : '#f3f3f3'}
-      foregroundColor={theme ? '#151515' : '#F7E6FF'}
+      backgroundColor={theme ? '#151515' : '#f3f3f3'}
+      foregroundColor={theme ? '#30102E' : '#F7E6FF'}
       {...props}
     >
       <rect
@@ -155,11 +178,11 @@ export const NavigatorLoader = (props) => {
   const theme = useSelector((state) => state.storeMain.theme);
   return (
     <ContentLoader
-      speed={1}
+      speed={0.5}
       width={isMobile ? 450 : 550}
       height={isMobile ? 15 : 25}
-      backgroundColor={theme ? '#222' : '#f3f3f3'}
-      foregroundColor={theme ? '#151515' : '#F7E6FF'}
+      backgroundColor={theme ? '#151515' : '#f3f3f3'}
+      foregroundColor={theme ? '#30102E' : '#F7E6FF'}
       {...props}
     >
       <rect
@@ -178,11 +201,11 @@ export const SendMessageLoader = (props) => {
   const theme = useSelector((state) => state.storeMain.theme);
   return (
     <ContentLoader
-      speed={1}
+      speed={0.5}
       width={isMobile ? 350 : 200}
       height={isMobile ? 20 : 15}
-      backgroundColor={theme ? '#222' : '#f3f3f3'}
-      foregroundColor={theme ? '#151515' : '#F7E6FF'}
+      backgroundColor={theme ? '#151515' : '#f3f3f3'}
+      foregroundColor={theme ? '#30102E' : '#F7E6FF'}
       {...props}
     >
       <rect
@@ -201,20 +224,20 @@ export const TypeLoader = (props) => {
   const isMobile = IsMobile();
   return (
     <ContentLoader
-      speed={1}
+      speed={0.5}
       width={isMobile ? 100 : 100}
       height={isMobile ? 12 : 15}
-      backgroundColor={theme ? '#222' : '#f3f3f3'}
-      foregroundColor={theme ? '#151515' : '#F7E6FF'}
+      backgroundColor={theme ? '#151515' : '#f3f3f3'}
+      foregroundColor={theme ? '#30102E' : '#F7E6FF'}
       {...props}
     >
       <rect
         x={isMobile ? 0 : 0}
-        y={isMobile ? 5 : 5}
-        rx={isMobile ? 0 : 0}
-        ry={isMobile ? 0 : 0}
+        y={isMobile ? 0 : 0}
+        rx={isMobile ? 10 : 10}
+        ry={isMobile ? 10 : 10}
         width={isMobile ? 100 : 100}
-        height={isMobile ? 12 : 15}
+        height={isMobile ? 10 : 12}
       />
     </ContentLoader>
   );
@@ -224,11 +247,11 @@ export const CoverLoader = (props) => {
   const theme = useSelector((state) => state.storeMain.theme);
   return (
     <ContentLoader
-      speed={1}
+      speed={0.5}
       width={isMobile ? 80 : 150}
       height={isMobile ? 80 : 150}
-      backgroundColor={theme ? '#222' : '#f3f3f3'}
-      foregroundColor={theme ? '#151515' : '#F7E6FF'}
+      backgroundColor={theme ? '#151515' : '#f3f3f3'}
+      foregroundColor={theme ? '#30102E' : '#F7E6FF'}
       {...props}
     >
       <circle
@@ -239,16 +262,39 @@ export const CoverLoader = (props) => {
     </ContentLoader>
   );
 };
+export const CardImageLoader = (props) => {
+  const isMobile = IsMobile();
+  const theme = useSelector((state) => state.storeMain.theme);
+  return (
+    <ContentLoader
+      speed={0.5}
+      width={isMobile ? 200 : 200}
+      height={200}
+      backgroundColor={theme ? '#151515' : '#f3f3f3'}
+      foregroundColor={theme ? '#30102E' : '#F7E6FF'}
+      {...props}
+    >
+      <rect
+        x={isMobile ? 0 : 0}
+        y={isMobile ? 0 : 0}
+        rx={isMobile ? 0 : 0}
+        ry={isMobile ? 0 : 0}
+        width={isMobile ? 200 : 200}
+        height={200}
+      />
+    </ContentLoader>
+  );
+};
 export const ProfileCoverLoader = (props) => {
   const isMobile = IsMobile();
   const theme = useSelector((state) => state.storeMain.theme);
   return (
     <ContentLoader
-      speed={1}
+      speed={0.5}
       width={isMobile ? 100 : 150}
       height={isMobile ? 100 : 150}
-      backgroundColor={theme ? '#222' : '#f3f3f3'}
-      foregroundColor={theme ? '#151515' : '#F7E6FF'}
+      backgroundColor={theme ? '#151515' : '#f3f3f3'}
+      foregroundColor={theme ? '#30102E' : '#F7E6FF'}
       {...props}
     >
       <circle
@@ -264,11 +310,11 @@ export const ImgLoader = (props) => {
   const theme = useSelector((state) => state.storeMain.theme);
   return (
     <ContentLoader
-      speed={1}
+      speed={0.5}
       width={isMobile ? 800 : 800}
-      height={isMobile ? 250 : 400}
-      backgroundColor={theme ? '#222' : '#f3f3f3'}
-      foregroundColor={theme ? '#151515' : '#F7E6FF'}
+      height={800}
+      backgroundColor={theme ? '#151515' : '#f3f3f3'}
+      foregroundColor={theme ? '#30102E' : '#F7E6FF'}
       {...props}
     >
       <rect
@@ -277,7 +323,30 @@ export const ImgLoader = (props) => {
         rx={isMobile ? 0 : 0}
         ry={isMobile ? 0 : 0}
         width={isMobile ? 800 : 800}
-        height={isMobile ? 250 : 400}
+        height={800}
+      />
+    </ContentLoader>
+  );
+};
+export const AddReviewLoader = (props) => {
+  const isMobile = IsMobile();
+  const theme = useSelector((state) => state.storeMain.theme);
+  return (
+    <ContentLoader
+      speed={0.5}
+      width={props.width}
+      height={40}
+      backgroundColor={theme ? '#151515' : '#f3f3f3'}
+      foregroundColor={theme ? '#30102E' : '#F7E6FF'}
+      {...props}
+    >
+      <rect
+        x={isMobile ? 0 : 0}
+        y={isMobile ? 0 : 0}
+        rx={isMobile ? 0 : 0}
+        ry={isMobile ? 0 : 0}
+        width={props.width}
+        height={40}
       />
     </ContentLoader>
   );
@@ -287,11 +356,11 @@ export const MapLoader = (props) => {
   const theme = useSelector((state) => state.storeMain.theme);
   return (
     <ContentLoader
-      speed={1}
+      speed={0.5}
       width={isMobile ? 800 : 700}
       height={isMobile ? 250 : 190}
-      backgroundColor={theme ? '#222' : '#f3f3f3'}
-      foregroundColor={theme ? '#151515' : '#F7E6FF'}
+      backgroundColor={theme ? '#151515' : '#f3f3f3'}
+      foregroundColor={theme ? '#30102E' : '#F7E6FF'}
       {...props}
     >
       <rect

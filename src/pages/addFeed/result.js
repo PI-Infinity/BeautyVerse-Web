@@ -615,7 +615,7 @@ const Button = styled.div`
   transition: ease-in 200ms;
   color: ${(props) => (props.back ? '#ccc' : 'green')};
   font-weight: bold;
-  background: rgba(255, 255, 255, 0.7);
+  background: ${(props) => props.theme.secondLevel};
   margin-top: 0.5vw;
   font-size: 14px;
 

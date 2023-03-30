@@ -46,7 +46,7 @@ const UserProfile = () => {
   useEffect(() => {
     async function GetUser(id) {
       const response = await fetch(
-        `https://beautyverse.herokuapp.com/api/v1/users/${id}`
+        `https://beautyverse.herokuapp.com/api/v1/users/${id}?fields=notifications`
       )
         .then((response) => response.json())
         .then((data) => {
@@ -54,7 +54,6 @@ const UserProfile = () => {
             data.data.user.active ||
             data.data.user._id === currentUser?._id
           ) {
-            console.log(data.data.user);
             dispatch(setTargetUser(data.data.user));
             dispatch(setCoverUrl(''));
           }
@@ -131,7 +130,7 @@ const Container = styled.div`
   background: ${(props) => props.theme.background};
 
   @media only screen and (max-width: 600px) {
-    padding-top: 14vw;
+    padding-top: 0;
     box-sizing: border-box;
   }
 

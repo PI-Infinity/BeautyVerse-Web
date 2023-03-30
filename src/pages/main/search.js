@@ -104,7 +104,6 @@ export const Search = (props) => {
       .then((response) => response.json())
       .then((data) => {
         setResultList(data.data.users);
-        console.log(data.data.users);
       })
       .catch((error) => {
         console.log('Error fetching data:', error);
@@ -136,10 +135,14 @@ export const Search = (props) => {
           />
           {srch?.length > 0 && (
             <TbArrowBigRightLines
-              onClick={() => {
-                dispatch(setSearch(srch));
-                setFocus(false);
-              }}
+              onClick={
+                isMobile
+                  ? () => navigate('/')
+                  : () => {
+                      dispatch(setSearch(srch));
+                      setFocus(false);
+                    }
+              }
               className="icon"
               style={{ cursor: 'pointer', filter: 'brightness(0.6)' }}
             />
@@ -204,7 +207,7 @@ const Container = styled.div`
 
   .profileicon {
     color: ${(props) =>
-      props.changeFeed === '/cards' ? props.theme.logo2 : '#ddd'};
+      props.changeFeed === '/cards' ? props.theme.font : '#aaa'};
     font-size: 1.2vw;
     cursor: pointer;
 

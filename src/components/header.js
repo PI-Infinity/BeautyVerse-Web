@@ -15,9 +15,11 @@ import { IsMobile } from '../functions/isMobile';
 import Avatar from '@mui/material/Avatar';
 import Notifications from '../components/notifications';
 
-export const Header = () => {
+export const Header = (props) => {
   const isMobile = IsMobile();
-
+  React.useEffect(() => {
+    dispatch(setRerenderCurrentUser());
+  }, []);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const openMenu = useSelector((state) => state.storeMain.openMenu);
@@ -59,7 +61,7 @@ export const Header = () => {
   );
 
   // define scroll
-  const scroll = useSelector((state) => state.storeScroll.scroll);
+  // const scroll = useSelector((state) => state.storeScroll.scroll);
 
   // styled badge for menu
 
@@ -71,29 +73,32 @@ export const Header = () => {
     },
   }));
 
-  // // get notificationst
+  // get notificationst
   const [notifications, setNotifications] = useState([]);
+
   useEffect(() => {
-    async function GetNotifications() {
-      const response = await fetch(
-        `https://beautyverse.herokuapp.com/api/v1/users/${currentUser?._id}/notifications`
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          setNotifications(data.data.notifications);
-        })
-        .catch((error) => {
-          console.log('Error fetching data:', error);
-        });
-    }
-    if (currentUser?._id) {
-      GetNotifications();
-    }
+    setNotifications(currentUser?.notifications);
   }, [rerenderNotifications]);
+
+  // console.log(notifications);
+
+  // useEffect(() => {
+  //   const handleGetNotification = (data) => {
+  //     console.log(data);
+  //     setNotifications((prev) => [data.data, ...prev]);
+  //   };
+
+  //   props.socket?.on('getNotification', handleGetNotification);
+
+  //   return () => {
+  //     props.socket?.off('getNotification', handleGetNotification);
+  //   };
+  // }, [props.socket]);
 
   const notifLength = notifications?.filter(
     (item) => item?.status === 'unread'
   );
+
   // open notifs
   const [openNotifications, setOpenNotifications] = useState(false);
 
@@ -107,25 +112,24 @@ export const Header = () => {
           open={openNotifications}
           setOpen={setOpenNotifications}
           notifications={notifications}
+          setNotifications={setNotifications}
         />
       )}
-      <Container scroll={scroll} isMobile={isMobile}>
+      <Container isMobile={isMobile}>
         <Divider>
           <div
             onClick={
               window.location.pathname != '/'
                 ? async () => {
                     await dispatch(setRerenderUserList());
-                    dispatch(setRerenderNotifications());
                     dispatch(setRerenderCurrentUser());
                     navigate('/');
-                    dispatch(setFeedScrollY(0));
+                    // dispatch(setFeedScrollY(0));
                   }
                 : async () => {
                     await dispatch(setRerenderUserList());
-                    dispatch(setRerenderNotifications());
                     dispatch(setRerenderCurrentUser());
-                    dispatch(setFeedScrollY(0));
+                    // dispatch(setFeedScrollY(0));
                   }
             }
             className="logoLink"
@@ -249,7 +253,8 @@ const Container = styled.header`
   }
 
   @media only screen and (max-width: 600px) {
-    position: fixed;
+    position: static;
+    z-index: 1000;
     flex-shrink: 0;
     top: 0;
     left: 0;

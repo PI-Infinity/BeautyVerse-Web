@@ -25,7 +25,9 @@ const Register = () => {
         >
           <FaUserEdit className="userIcon" />
           <h2>{language?.language.Auth.auth.user}</h2>
-          <span style={{ textAlign: 'center' }}>{language?.language.Auth.auth.userText}</span>
+          <span style={{ textAlign: 'center' }}>
+            {language?.language.Auth.auth.userText}
+          </span>
         </Card>
         <Card
           onClick={async () => {
@@ -35,7 +37,9 @@ const Register = () => {
         >
           <ImProfile className="specIcon" />
           <h2>{language?.language.Auth.auth.specialist}</h2>
-          <span style={{ textAlign: 'center' }}>{language?.language.Auth.auth.specText}</span>
+          <span style={{ textAlign: 'center' }}>
+            {language?.language.Auth.auth.specText}
+          </span>
         </Card>
         <Card
           onClick={async () => {
@@ -45,7 +49,9 @@ const Register = () => {
         >
           <MdAddBusiness className="businessIcon" />
           <h2>{language?.language.Auth.auth.beautySalon}</h2>
-          <span style={{ textAlign: 'center' }}>{language?.language.Auth.auth.salonText}</span>
+          <span style={{ textAlign: 'center' }}>
+            {language?.language.Auth.auth.salonText}
+          </span>
         </Card>
 
         {/* <Card
@@ -63,7 +69,11 @@ const Register = () => {
       </ChoiseContainer>
       <SignupText>
         {language?.language.Auth.auth.havea}{' '}
-        <Link to="/login" id="signup" style={{ color: 'orange', textDecoration: 'none' }}>
+        <Link
+          to="/login"
+          id="signup"
+          style={{ color: 'orange', textDecoration: 'none' }}
+        >
           {language?.language.Auth.auth.login}
         </Link>
       </SignupText>
@@ -86,7 +96,8 @@ const FirstPageContainer = styled.div`
   gap: 1.5vw;
 
   @media only screen and (max-width: 600px) {
-    padding-top: 14vw;
+    justify-content: start;
+    padding-top: 8vh;
     padding-bottom: 3vw;
   }
 `;

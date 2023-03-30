@@ -8,7 +8,6 @@ import useWindowDimensions from '../../functions/dimensions';
 
 export const CategoryFilter = () => {
   const { height, width } = useWindowDimensions();
-  const [loading, setLoading] = React.useState(true);
   const dispatch = useDispatch();
   const filter = useSelector((state) => state.storeFilter.filter);
   const filterOpen = useSelector((state) => state.storeMain.mobileFilter);
@@ -19,10 +18,6 @@ export const CategoryFilter = () => {
       behavior: 'smooth',
     });
   }, [filterOpen]);
-
-  setTimeout(() => {
-    setLoading(false);
-  }, 300);
 
   return (
     <FilterContainer height={height}>
@@ -85,8 +80,6 @@ const CategoryItem = (props) => {
   const dispatch = useDispatch();
   const filter = useSelector((state) => state.storeFilter.filter);
   const language = useSelector((state) => state.storeMain.language);
-  // import users
-  const users = useSelector((state) => state.storeMain.userList);
 
   return (
     <Wrapper color={props.color}>
@@ -124,7 +117,6 @@ const CategoryItem = (props) => {
 const Wrapper = styled.div`
   .active {
     width: 70%;
-    // padding-left: 10%;
     background: ${(props) => props.theme.categoryItem};
     box-shadow: inset 0 0 0.15vw green;
     color: ${(props) => props.theme.font};

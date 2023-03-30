@@ -27,7 +27,6 @@ export default function Login() {
   const mainDispatch = useDispatch();
   const isMobile = IsMobile();
 
-  document.body.style.overflowY = 'hidden';
   const country = useSelector((state) => state.storeMain.country);
   // color mode
   const theme = useSelector((state) => state.storeMain.theme);
@@ -169,30 +168,28 @@ export default function Login() {
    */
 
   async function SendEmail(email) {
-    await sendPasswordResetEmail(auth, emailInput);
-    console.log('Password reset email sent');
-    // const email = 'tornike.pirtakhia@gmail.com';
-    // // if (targetUser?.email?.toLowerCase() === emailInput.toLowerCase()) {
-    // fetch(`/api/v1/emails/forgotPassword?email=${email}`)
-    //   .then((response) => response.json())
-    //   .then((data) => {
-    //     setRandomPass(data);
-    //     if (openInput) {
-    //       setOpenInput(false);
-    //       setOpenChange(true);
-    //     } else {
-    //       return;
-    //     }
-    //   })
-    //   .catch((error) => {
-    //     console.log('Error fetching data:', error);
-    //   });
-    // } else {
-    //   setAlert({
-    //     active: true,
-    //     title: language?.language.Auth.auth.wrongEmail,
-    //   });
-    // }
+    try {
+      const response = await axios.post(
+        'https://beautyverse.herokuapp.com/api/v1/forgotPassword',
+        {
+          email: emailInput,
+        }
+      );
+      // If the email is sent successfully, handle the response here
+      setAlert({
+        active: true,
+        title: 'Request sent succesfully, check your email!',
+        type: 'success',
+      });
+    } catch (error) {
+      // If there's an error, display an alert
+      setAlert({
+        active: true,
+        title: language?.language.Auth.auth.wrongEmail,
+        type: 'error',
+      });
+    }
+    setOpenInput(false);
   }
 
   return (
@@ -200,7 +197,7 @@ export default function Login() {
       <Error
         open={alert?.active}
         setOpen={setAlert}
-        type="error"
+        type={alert?.type}
         title={alert?.title}
       />
       <Container height={height}>
@@ -255,7 +252,7 @@ export default function Login() {
             </Link>
           </SignupText>
 
-          <div
+          {/* <div
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -279,17 +276,9 @@ export default function Login() {
               styles={CustomStyle}
               options={countries}
             />
-          </div>
+          </div> */}
         </Form>
       </Container>
-      <ChangePassword
-        forgot={true}
-        open={openChange}
-        setOpen={setOpenChange}
-        randomPass={randomPass}
-        targetUser={targetUser}
-        language={language}
-      />
     </>
   );
 }
@@ -307,7 +296,7 @@ const Container = styled.div`
   gap: 2vw;
 
   @media only screen and (max-width: 600px) {
-    padding-top: 14vw;
+    padding-top: 0vw;
     padding-bottom: 5vw;
   }
 `;

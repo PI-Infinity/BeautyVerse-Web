@@ -1,23 +1,23 @@
-import * as React from "react";
-import PropTypes from "prop-types";
-import Button from "@mui/material/Button";
-import { styled } from "@mui/material/styles";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
-import IconButton from "@mui/material/IconButton";
-import CloseIcon from "@mui/icons-material/Close";
-import Typography from "@mui/material/Typography";
-import { BsListCheck } from "react-icons/bs";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../../firebase";
+import * as React from 'react';
+import PropTypes from 'prop-types';
+import Button from '@mui/material/Button';
+import { styled } from '@mui/material/styles';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+import Typography from '@mui/material/Typography';
+import { BsListCheck } from 'react-icons/bs';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../../firebase';
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
-  "& .MuiDialogContent-root": {
+  '& .MuiDialogContent-root': {
     padding: theme.spacing(2),
   },
-  "& .MuiDialogActions-root": {
+  '& .MuiDialogActions-root': {
     padding: theme.spacing(1),
   },
 }));
@@ -33,7 +33,7 @@ function BootstrapDialogTitle(props) {
           aria-label="close"
           onClick={onClose}
           sx={{
-            position: "absolute",
+            position: 'absolute',
             right: 8,
             top: 8,
             color: (theme) => theme.palette.grey[500],
@@ -64,9 +64,8 @@ export default function ProceduresList({ id }) {
   // user procedures
   const [procedures, setProcedures] = React.useState([]);
   React.useEffect(() => {
-    console.log(id);
     const Getting = async () => {
-      const ref = collection(db, "users", `${id}`, "procedures");
+      const ref = collection(db, 'users', `${id}`, 'procedures');
       const querySnapshot = await getDocs(ref);
       let list = [];
       querySnapshot.forEach((doc) => {
@@ -96,19 +95,19 @@ export default function ProceduresList({ id }) {
         </BootstrapDialogTitle>
         <div
           style={{
-            padding: "20px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "10px",
+            padding: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
           }}
         >
           {procedures?.map((item, index) => {
             return (
               <div key={index}>
-                <b>{index + 1}.</b> {item?.value}{" "}
+                <b>{index + 1}.</b> {item?.value}{' '}
                 <b>
                   {item?.price}
-                  {item?.price?.length > 0 && " Gel"}
+                  {item?.price?.length > 0 && ' Gel'}
                 </b>
               </div>
             );

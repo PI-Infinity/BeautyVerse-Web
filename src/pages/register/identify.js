@@ -200,31 +200,18 @@ export const Identify = (props) => {
   const [verifyCode, setVerifyCode] = useState('');
   const [verify, setVerify] = useState(false);
 
-  function SendEmail() {
-    const email = registerFields?.email;
-    console.log(email);
-    // if (
-    //   users?.find(
-    //     (item) => item.email.toLowerCase() === email.toLowerCase()
-    //   ) === undefined
-    // ) {
-    fetch(`https://beautyverse.herokuapp.com/emails/verify?email=${email}`)
-      .then((response) => response.json())
-      .then((data) => {
-        console.log('get');
-        setVerifyCode(data);
-        setVerify(true);
-      })
-      .catch((error) => {
-        console.log('Error fetching data:', error);
-      });
-    // } else {
-    //   setAlert({
-    //     active: true,
-    //     title: language?.language.Auth.auth.emailUsed,
-    //   });
-    // }
-  }
+  // function SendEmail() {
+  //   const email = registerFields?.email;
+  //   fetch(`https://beautyverse.herokuapp.com/verify?email=${email}`)
+  //     .then((response) => response.json())
+  //     .then((data) => {
+  //       setVerifyCode(data);
+  //       setVerify(true);
+  //     })
+  //     .catch((error) => {
+  //       console.log('Error fetching data:', error);
+  //     });
+  // }
 
   return (
     <>
@@ -415,15 +402,16 @@ const Container = styled.div`
   align-items: center;
   justify-content: center;
   gap: 2vw;
+  box-sizing: border-box;
 
   @media only screen and (max-width: 600px) {
-    justify-content: start;
-    padding-top: 40vw;
+    justify-content: center;
+    padding-top: 18vh;
+    height: 100%;
   }
 
   .userIcon {
     font-size: 2vw;
-    // margin-bottom: -1.5vw;
 
     @media only screen and (max-width: 600px) {
       font-size: 7vw;
@@ -439,7 +427,6 @@ const Container = styled.div`
 
   .businessIcon {
     font-size: 2vw;
-    // margin-bottom: -1.5vw;
 
     @media only screen and (max-width: 600px) {
       font-size: 7vw;
@@ -460,7 +447,7 @@ const Confirm = styled.form`
   gap: 2vw;
 
   @media only screen and (max-width: 600px) {
-    padding-top: 14vw;
+    padding-top: 0vw;
     padding-bottom: 3vw;
   }
 `;

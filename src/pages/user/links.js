@@ -182,7 +182,6 @@ export const Links = ({ targetUser, loading }) => {
     }
   };
   const AddTelegram = async () => {
-    console.log('run');
     if (targetUser?.media?.telegram === true) {
       const response = await axios.patch(
         `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}`,

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled, { ThemeProvider } from 'styled-components';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Main from './pages/main/main';
@@ -8,6 +8,7 @@ import { FilterMobile } from './pages/main/filterMobile';
 import { Recomended } from './pages/main/recomended';
 import AddFeed from './pages/addFeed/addFeed';
 import Login from './pages/login/login';
+import ChangePassword from './pages/login/changePassword';
 import Register from './pages/register/register';
 import { Identify } from './pages/register/identify';
 import { BusinessRegister } from './pages/register/businessRegister';
@@ -44,10 +45,30 @@ import { IsMobile } from './functions/isMobile';
 import useWindowDimensions from './functions/dimensions';
 import SimpleBackdrop from './components/backDrop';
 import { ChoiceCountry } from './components/choiceCountry';
-
-const SOCKET_SERVER = 'http://localhost:5000';
+import Headroom from 'react-headroom';
+import { io } from 'socket.io-client';
+import { setRerenderNotifications } from './redux/rerenders';
 
 function App() {
+  /**
+   * get user
+   */
+
+  const currentUser = JSON?.parse(
+    localStorage.getItem('Beautyverse:currentUser')
+  );
+
+  // socket server
+  // const [socket, setSocket] = useState(null);
+  // useEffect(() => {
+  //   setSocket(io('http://localhost:5000'));
+  // }, []);
+  // useEffect(() => {
+  //   if (currentUser) {
+  //     socket?.emit('newUser', currentUser._id);
+  //   }
+  // }, [socket, currentUser]);
+
   /**
    * define some needed functions
    */
@@ -57,32 +78,18 @@ function App() {
   const dispatch = useDispatch();
 
   // redux imports
-  const loading = useSelector((state) => state.storeMain.loading);
   const rerenderUserList = useSelector(
     (state) => state.storeRerenders.rerenderUserList
   );
   const rerenderCurrentUser = useSelector(
     (state) => state.storeRerenders.rerenderCurrentUser
   );
-  const openFeed = useSelector((state) => state.storeFeed.openFeed);
-  const changeFeed = useSelector((state) => state.storeMain.changeFeed);
-  const loadFeed = useSelector((state) => state.storeMain.loadFeed);
 
   const language = useSelector((state) => state.storeMain.language);
   const country = useSelector((state) => state.storeMain.country);
 
   // open mobile filter
   const filterOpen = useSelector((state) => state.storeMain.mobileFilter);
-
-  /**
-   * get user
-   */
-
-  const currentUser = JSON?.parse(
-    localStorage.getItem('Beautyverse:currentUser')
-  );
-
-  console.log(process.env.REACT_APP_HOST);
 
   /**
    * Import current user
@@ -97,6 +104,9 @@ function App() {
           'Beautyverse:currentUser',
           JSON.stringify(data.data.user)
         );
+      })
+      .then(() => {
+        dispatch(setRerenderNotifications());
       })
       .catch((error) => {
         console.log('Error fetching data:', error);
@@ -177,11 +187,12 @@ function App() {
           specialist ? 'specialist' : ''
         }${
           beautyCenter ? 'beautyCenter' : ''
-        }&city=${city}&district=${district}&filter=${filter}&search=${search}`
+        }&city=${city}&district=${district}&filter=${filter}&search=${search}&check=${
+          currentUser !== null ? currentUser._id : ''
+        }`
       )
         .then((response) => response.json())
         .then((data) => {
-          console.log(data.data);
           dispatch(setUserList(data.data.feedList));
         })
         .then(() => {
@@ -219,9 +230,7 @@ function App() {
     return !currentUser ? (
       children
     ) : (
-      <Navigate
-        to={`https://beautyverse.herokuapp.com/api/v1/users/${currentUser?._id}`}
-      />
+      <Navigate to={`/api/v1/users/${currentUser?._id}`} />
     );
   };
 
@@ -259,7 +268,7 @@ function App() {
       .querySelector("meta[name='theme-color']")
       .setAttribute('content', activeTheme);
     document.body.style.background = activeTheme;
-  }, [currentUser, country, theme]);
+  }, [currentUser, theme]);
 
   /**
    * Add local storage in redux
@@ -282,6 +291,7 @@ function App() {
     window.location.pathname?.includes('/chat/') ||
     window.location.pathname?.includes('/product/') ||
     window.location.pathname == '/login' ||
+    window.location.pathname.includes('/resetPassword') ||
     window.location.pathname == '/register' ||
     window.location.pathname == '/register/identify' ||
     window.location.pathname == '/register/business'
@@ -291,9 +301,13 @@ function App() {
     nav = <Navigator />;
   }
 
+  const headroomStyles = {
+    zIndex: 2000, // Set a high z-index value for the Headroom component
+  };
+
   return (
-    <ThemeProvider theme={theme === false ? lightTheme : darkTheme}>
-      {(country?.length < 1 || language?.length < 1) && (
+    <ThemeProvider theme={!theme ? lightTheme : darkTheme}>
+      {/* {(!country || !language) && (
         <div
           style={{
             position: 'fixed',
@@ -312,13 +326,33 @@ function App() {
         >
           <ChoiceCountry />
         </div>
-      )}
+      )} */}
       <GlobalStyles />
       <TopLine />
       {/* {loading && <Loading />} */}
       <Container>
         <SimpleBackdrop />
-        {!window.location.pathname?.includes('admin') && <Header />}
+        {!window.location.pathname?.includes('admin') && (
+          <>
+            {isMobile ? (
+              <>
+                {!window.location.pathname.includes('/users') ? (
+                  <Headroom
+                    downTolerance={0}
+                    upTolerance={0}
+                    style={headroomStyles}
+                  >
+                    <Header />
+                  </Headroom>
+                ) : (
+                  <Header />
+                )}
+              </>
+            ) : (
+              <Header />
+            )}
+          </>
+        )}
         {isMobile &&
           (window.location.pathname === '/' ||
             window.location.pathname === '/cards') && <Filter />}
@@ -353,6 +387,15 @@ function App() {
               </RequireLogout>
             }
           />
+          <Route
+            path="/resetPassword/:resetId"
+            element={
+              <RequireLogout>
+                <ChangePassword />
+              </RequireLogout>
+            }
+          />
+
           <Route path="api/v1/users/:id" element={<UserProfile />}>
             <Route index element={<UserFeeds />} />
             <Route path="services" element={<Services />} />
@@ -443,7 +486,7 @@ function App() {
             element={
               <RequireAuth>
                 <Chat
-                  socket={socket}
+                  
                   SOCKET_SERVER={SOCKET_SERVER}
                   handleRoomChange={handleRoomChange}
                   room={room}

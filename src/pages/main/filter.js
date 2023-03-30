@@ -20,11 +20,6 @@ export const Filter = (props) => {
   const navigate = useNavigate();
   const language = Language();
 
-  const lang = useSelector((state) => state.storeMain.language);
-
-  // import users
-  const users = useSelector((state) => state.storeMain?.userList);
-
   // define scroll
   const scroll = useSelector((state) => state.storeScroll.scroll);
 
@@ -34,15 +29,13 @@ export const Filter = (props) => {
   const districtFilter = useSelector(
     (state) => state.storeFilter.districtFilter
   );
+  const specialist = useSelector((state) => state.storeFilter.specialist);
+  const physicalObject = useSelector((state) => state.storeFilter.object);
+  const shop = useSelector((state) => state.storeFilter.shop);
 
   const rerenderUserList = useSelector(
     (state) => state.storeRerenders.rerenderUserList
   );
-
-  const specialist = useSelector((state) => state.storeFilter.specialist);
-  const physicalObject = useSelector((state) => state.storeFilter.object);
-  const shop = useSelector((state) => state.storeFilter.shop);
-  const reiting = useSelector((state) => state.storeFilter.reiting);
 
   const [cities, setCities] = useState([]);
 
@@ -52,12 +45,8 @@ export const Filter = (props) => {
     )
       .then((response) => response.json())
       .then((data) => {
-        setCities([
-          // `${language?.language.Main.filter.city}`,
-          ...data.data.cities,
-        ]);
+        setCities([...data.data.cities]);
       })
-      .then(() => {})
       .catch((error) => {
         console.log('Error fetching data:', error);
       });
@@ -75,12 +64,8 @@ export const Filter = (props) => {
     )
       .then((response) => response.json())
       .then((data) => {
-        setDistricts([
-          // `${language?.language.Main.filter.district}`,
-          ...data.data.districts,
-        ]);
+        setDistricts([...data.data.districts]);
       })
-      .then(() => {})
       .catch((error) => {
         console.log('Error fetching data:', error);
       });
@@ -89,8 +74,6 @@ export const Filter = (props) => {
   useEffect(() => {
     GetDistricts();
   }, [rerenderUserList]);
-
-  // filter districts and not dublicate same districts in map
 
   // color mode
   const theme = useSelector((state) => state.storeMain.theme);
@@ -149,9 +132,6 @@ export const Filter = (props) => {
     }),
   };
 
-  console.log(cityFilter);
-  console.log(districtFilter);
-
   return (
     <FilterContainer scroll={scroll?.toString()}>
       {!props.mobile && <Search />}
@@ -170,10 +150,6 @@ export const Filter = (props) => {
           onChange={(value) => {
             dispatch(setCityFilter(value.value));
           }}
-          // classNames={{
-          //   control: (state) =>
-          //     state.isFocused ? "border-red-400" : "border-grey-400",
-          // }}
           options={cities?.map((item, index) => {
             return { value: item, label: item };
           })}
@@ -271,27 +247,6 @@ export const Filter = (props) => {
           style={{ cursor: 'pointer' }}
         />
       </RecomendedActive>
-
-      {/* <CheckBoxContainer>
-        <CheckBox
-          type="checkbox"
-          id="shop"
-          name="shop"
-          checked={shop}
-          onChange={() => {
-
-            dispatch(setShop(!shop));
-          }}
-        />
-        <label htmlFor="shop" style={{ cursor: "pointer" }}>
-          მაღაზიები
-        </label>
-      </CheckBoxContainer> */}
-      {/* <Market>
-        <ButtonBg onClick={() => navigate("/marketplace")}>
-          <MarketButton>Marketplace</MarketButton>
-        </ButtonBg>
-      </Market> */}
     </FilterContainer>
   );
 };
@@ -366,89 +321,3 @@ const RecomendedActive = styled.div`
     display: none;
   }
 `;
-// const CheckBox = styled.input`
-//   cursor: pointer;
-// `;
-
-// const Market = styled.div`
-//   flex: 1;
-//   display: flex;
-//   justify-content: flex-end;
-
-//   @media only screen and (max-width: 600px) {
-//     display: none;
-//   }
-// `;
-
-// const MarketButton = styled.div`
-//   height: 1.5vw;
-//   width: 7vw;
-//   padding-bottom: 0.05vw;
-//   border-radius: 0.2vw;
-//   display: flex;
-//   justify-content: center;
-//   align-items: center;
-//   gap: 0.3vw;
-//   color: white;
-//   font-size: 0.8vw;
-//   font-weight: bold;
-//   cursor: pointer;
-//   background: white;
-//   color: #222;
-// `;
-
-// const ButtonBg = styled.div`
-//   height: 1.8vw;
-//   width: 7.2vw;
-//   border-radius: 0.3vw;
-//   display: flex;
-//   justify-content: center;
-//   align-items: center;
-//   color: white;
-//   cursor: pointer;
-
-//   :hover {
-//     filter: brightness(1.1);
-//   }
-
-//   background: linear-gradient(323deg, #438ee4, #c743e4, #e4b643, #43e457);
-//   background-size: 800% 800%;
-
-//   -webkit-animation: AnimationName 5s ease infinite;
-//   -moz-animation: AnimationName 5s ease infinite;
-//   animation: AnimationName 5s ease infinite;
-
-//   @-webkit-keyframes AnimationName {
-//     0% {
-//       background-position: 7% 0%;
-//     }
-//     50% {
-//       background-position: 94% 100%;
-//     }
-//     100% {
-//       background-position: 7% 0%;
-//     }
-//   }
-//   @-moz-keyframes AnimationName {
-//     0% {
-//       background-position: 7% 0%;
-//     }
-//     50% {
-//       background-position: 94% 100%;
-//     }
-//     100% {
-//       background-position: 7% 0%;
-//     }
-//   }
-//   @keyframes AnimationName {
-//     0% {
-//       background-position: 7% 0%;
-//     }
-//     50% {
-//       background-position: 94% 100%;
-//     }
-//     100% {
-//       background-position: 7% 0%;
-//     }
-//   }
-// `;

@@ -11,10 +11,10 @@ import { ImgLoader, TextLoader, LineLoader } from '../../../components/loader';
 import { IsMobile } from '../../../functions/isMobile';
 import { isWebpSupported } from 'react-image-webp/dist/utils';
 import { Language } from '../../../context/language';
-import GetTimesAgo from '../../../functions/getTimesAgo';
 import { SiGoogletranslate } from 'react-icons/si';
 import { SlReload } from 'react-icons/sl';
 import axios from 'axios';
+import { format } from 'timeago.js';
 
 export const FeedCard = (props) => {
   const currentUser = JSON.parse(
@@ -28,34 +28,13 @@ export const FeedCard = (props) => {
 
   const [render, setRender] = useState(false);
 
-  useEffect(() => {
-    if (props?._id) {
-      GetStars();
-    }
-  }, [props._id, render]);
-
-  const [stars, setStars] = React.useState([]);
-
-  async function GetStars() {
-    const response = await fetch(
-      `https://beautyverse.herokuapp.com/api/v1/users/${props?._id}/feeds/${props?.feed?._id}/stars/check/${currentUser?._id}`
-    )
-      .then((response) => response.json())
-      .then(async (data) => {
-        setStars(data.data.stars);
-      })
-      .catch((error) => {
-        console.log('Error fetching data:', error);
-      });
-  }
-
-  let isStarGiven = stars?.checkIfStared;
+  const [starObj, setStarObj] = useState({
+    check: props.feed.checkIfStared,
+    starsLength: props.feed.starsLength,
+  });
 
   // loading feeds
   const [loading, setLoading] = React.useState(true);
-
-  const loadFeed = useSelector((state) => state.storeMain.loadFeed);
-  const openFeed = useSelector((state) => state.storeFeed.openFeed);
 
   const rerenderUserList = useSelector(
     (state) => state.storeRerenders.rerenderUserList
@@ -92,20 +71,30 @@ export const FeedCard = (props) => {
         }
       );
       if (currentUser?.uid !== props?._id) {
-        await axios.post(`/api/v1/users/${props?._id}/notifications`, {
-          senderId: currentUser?._id,
-          text: `მიანიჭა ვარსკვლავი თქვენ პოსტს!`,
-          date: new Date(),
-          type: 'star',
-          status: 'unread',
-          feed: `/api/v1/users/${props?._id}/feeds/${props.feed?._id}`,
-        });
+        await axios.post(
+          `https://beautyverse.herokuapp.com/api/v1/users/${props?._id}/notifications`,
+          {
+            senderId: currentUser?._id,
+            text: `მიანიჭა ვარსკვლავი თქვენ პოსტს!`,
+            date: new Date(),
+            type: 'star',
+            status: 'unread',
+            feed: `/api/v1/users/${props?._id}/feeds/${props.feed?._id}`,
+          }
+        );
+        // await props.socket.emit('sendNotification', {
+        //   senderName: currentUser.name,
+        //   senderId: currentUser._Id,
+        //   recieverName: props.name,
+        //   recieverId: props._id,
+        //   text: `მიანიჭა ვარსკვლავი თქვენ პოსტს!`,
+        //   date: new Date(),
+        //   type: 'star',
+        //   status: 'unread',
+        //   feed: `/api/v1/users/${props?._id}/feeds/${props.feed?._id}`,
+        // });
       }
-      const { length, checkIfStared } = stars;
-      setStars({
-        length: length + 1,
-        checkIfStared: { staredBy: currentUser?._id, createdAt: new Date() },
-      });
+      setStarObj({ check: true, starsLength: starObj.starsLength + 1 });
     } catch (error) {
       console.error(error);
     }
@@ -113,12 +102,11 @@ export const FeedCard = (props) => {
 
   // remove heart
   const RemoveStar = async () => {
-    const url = `https://beautyverse.herokuapp.com/api/v1/users/${props?._id}/feeds/${props?.feed?._id}/stars/${isStarGiven?._id}`;
+    const url = `https://beautyverse.herokuapp.com/api/v1/users/${props?._id}/feeds/${props?.feed?._id}/stars/${currentUser?._id}`;
     const response = await fetch(url, { method: 'DELETE' })
       .then((response) => response.json())
       .then(async (data) => {
-        const { length, checkIfStared } = stars;
-        setStars({ length: length - 1, checkIfStared: undefined });
+        setStarObj({ check: false, starsLength: starObj.starsLength - 1 });
       })
 
       .catch((error) => {
@@ -126,26 +114,8 @@ export const FeedCard = (props) => {
       });
   };
 
-  // define post img added time
-  const [postTime, setPostTime] = React.useState([]);
-
   // open report
   const [reports, setReports] = React.useState(false);
-
-  // define shown post added time
-
-  const currentPostTime = GetTimesAgo(
-    new Date(props.feed?.createdAt)?.getTime()
-  );
-
-  let timeTitle;
-  if (currentPostTime?.title === 'h') {
-    timeTitle = language?.language.Main.feedCard.h;
-  } else if (currentPostTime?.title === 'min') {
-    timeTitle = language?.language.Main.feedCard.min;
-  } else {
-    timeTitle = language?.language.Main.feedCard.justNow;
-  }
 
   // open post
   const [openPost, setOpenPost] = React.useState(false);
@@ -170,7 +140,6 @@ export const FeedCard = (props) => {
     })
       .then((res) => res.json())
       .then((response) => {
-        console.log(response.data.translations[0].translatedText);
         setTranslated(response.data.translations[0].translatedText);
       })
       .catch((error) => {
@@ -178,15 +147,27 @@ export const FeedCard = (props) => {
       });
   };
 
-  setTimeout(() => {
-    setLoading(false);
-  }, 200);
+  const createdAt = format(props?.feed?.createdAt);
+
+  const [imageHeight, setImageHeight] = useState(null);
+
+  useEffect(() => {
+    const img = new Image();
+    if (isMobile) {
+      img.src = props?.feed?.mobileJpeg;
+    } else {
+      img.src = props?.feed?.desktopUrl;
+    }
+    img.onload = () => {
+      setImageHeight(img.height - (img.width - width));
+      setTimeout(() => {
+        setLoading(false);
+      }, 200);
+    };
+  }, [props?.feed]);
 
   return (
     <Main feed={props?.feed?.name}>
-      {/* {loading ? (
-        <Loader />
-      ) : ( */}
       <Container
         onClick={
           props?.feed?.fileFormat === 'video'
@@ -213,7 +194,6 @@ export const FeedCard = (props) => {
         {props?.feed?.post && (
           <>
             <PostContainer openPost={openPost}>
-              {/* {country === props?.address?.country ? ( */}
               <p
                 style={{
                   whiteSpace: 'pre-line',
@@ -227,23 +207,7 @@ export const FeedCard = (props) => {
                   <>{translated ? translated : props?.feed?.post}</>
                 )}
               </p>
-              {/* ) : (
-                <p
-                  style={{
-                    whiteSpace: 'pre-line',
-                    margin: '0 15px 5px 15px',
-                    fontSize: '14px',
-                    color: '#ccc',
-                  }}
-                >
-                  {loading ? (
-                    <TextLoader />
-                  ) : (
-                    'Your profile is not shown in this area, visible only for you'
-                  )}
-                </p>
-              )} */}
-              {props?.feed?.post && (
+              {props?.feed?.post && !loading && (
                 // country === props?.address?.country && (
                 <Translater style={{ cursor: 'pointer' }}>
                   {translated?.length < 1 ? (
@@ -272,7 +236,7 @@ export const FeedCard = (props) => {
         )}
         <div>
           {reports && (
-            <Reports path={`${props?._id}/feed/${props.feed?._id}/0`} />
+            <Reports path={`/api/v1/${props?._id}/feed/${props.feed?._id}`} />
           )}
           {props?.feed && (
             <>
@@ -287,9 +251,16 @@ export const FeedCard = (props) => {
                   )}
                 </FileContainer>
               ) : (
-                <FileContainer>
+                <FileContainer imageHeight={imageHeight}>
                   {loading ? (
-                    <ImgLoader />
+                    // <div
+                    //   style={{
+                    //     widht: '100%',
+                    //     height: imageHeight,
+                    //     background: 'red',
+                    //   }}
+                    // ></div>
+                    <ImgLoader imageHeight={imageHeight} />
                   ) : (
                     <>
                       {isMobile ? (
@@ -344,7 +315,7 @@ export const FeedCard = (props) => {
             <>
               <div style={{ flex: 1 }}>
                 <Likes>
-                  {isStarGiven ? (
+                  {starObj?.check ? (
                     <BiStar className="likedIcon" onClick={RemoveStar} />
                   ) : (
                     <BiStar
@@ -356,7 +327,7 @@ export const FeedCard = (props) => {
                       }
                     />
                   )}
-                  {stars?.length}
+                  {starObj.starsLength}
                 </Likes>
               </div>
 
@@ -372,12 +343,12 @@ export const FeedCard = (props) => {
                     );
                   }}
                 >
-                  {props?.feed?.reviewLength}{' '}
+                  {props?.feed?.reviewsLength}{' '}
                   {language?.language.Main.feedCard.reviews}
                 </TextReview>
               </div>
               <PostTime>
-                <span>{currentPostTime?.numbers + ' ' + timeTitle}</span>
+                <span>{createdAt}</span>
               </PostTime>
             </>
           )}
@@ -388,9 +359,7 @@ export const FeedCard = (props) => {
   );
 };
 
-const Main = styled.div`
-  // display: ${(props) => (props.feed === undefined ? 'none' : 'auto')};
-`;
+const Main = styled.div``;
 
 const Divider = styled.div`
   display: none;
@@ -398,76 +367,6 @@ const Divider = styled.div`
     display: flex;
     height: 1px;
     background: ${(props) => props.theme.secondLevel};
-    // background: linear-gradient(
-    //   226deg,
-    //   #2bdf61,
-    //   #dfc32b,
-    //   #ce2bdf,
-    //   #2bc6df,
-    //   #df2bb8,
-    //   #2b8edf,
-    //   #d3df2b,
-    //   #2bdfd9,
-    //   #df8c2b,
-    //   #2bbedf,
-    //   #df2bb0,
-    //   #c3df2b,
-    //   #ea7c7c,
-    //   #2bdf61,
-    //   #dfc32b
-    // );
-    // background-size: 800% 800%;
-    // z-index: 10;
-
-    // -webkit-animation: AnimationName 30s ease infinite;
-    // -moz-animation: AnimationName 30s ease infinite;
-    // -o-animation: AnimationName 30s ease infinite;
-    // animation: AnimationName 30s ease infinite;
-
-    // @-webkit-keyframes AnimationName {
-    //   0% {
-    //     background-position: 0% 50%;
-    //   }
-    //   50% {
-    //     background-position: 100% 50%;
-    //   }
-    //   100% {
-    //     background-position: 0% 50%;
-    //   }
-    // }
-    // @-moz-keyframes AnimationName {
-    //   0% {
-    //     background-position: 0% 50%;
-    //   }
-    //   50% {
-    //     background-position: 100% 50%;
-    //   }
-    //   100% {
-    //     background-position: 0% 50%;
-    //   }
-    // }
-    // @-o-keyframes AnimationName {
-    //   0% {
-    //     background-position: 0% 50%;
-    //   }
-    //   50% {
-    //     background-position: 100% 50%;
-    //   }
-    //   100% {
-    //     background-position: 0% 50%;
-    //   }
-    // }
-    // @keyframes AnimationName {
-    //   0% {
-    //     background-position: 0% 50%;
-    //   }
-    //   50% {
-    //     background-position: 100% 50%;
-    //   }
-    //   100% {
-    //     background-position: 0% 50%;
-    //   }
-    // }
   }
 `;
 
@@ -530,14 +429,16 @@ const Translater = styled.div`
 
 const FileContainer = styled.div`
   width: 100%;
-  height: ${(props) => props.imageHeight}px;
+  height: 35vw;
   min-height: 400px;
   display: flex;
   aling-items: center;
   justify-content: center;
 
   @media only screen and (max-width: 600px) {
-    min-height: 250px;
+    height: ${(props) => props.imageHeight}px;
+    max-width: 100%;
+    max-height: 100%;
   }
 `;
 
@@ -549,56 +450,6 @@ const Cover = styled.img`
   margin-right: auto;
   object-fit: cover;
   cursor: pointer;
-  animation: fadeIn ease 0.3s;
-  -webkit-animation: fadeIn ease 0.3s;
-  -moz-animation: fadeIn ease 0.3s;
-  -o-animation: fadeIn ease 0.3s;
-  -ms-animation: fadeIn ease 0.3s;
-
-  @keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-
-  @-moz-keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-
-  @-webkit-keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-
-  @-o-keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-
-  @-ms-keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
 
   @media only screen and (max-width: 600px) {
     max-width: 100%;
@@ -705,8 +556,8 @@ const Review = styled.div`
 
   @media only screen and (max-width: 600px) {
     height: 10vw;
-    padding-left: 3vw;
-    padding-right: 3vw;
+    padding-left: 4vw;
+    padding-right: 4vw;
     // padding-top: 1vw;
   }
 

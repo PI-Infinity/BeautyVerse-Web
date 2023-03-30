@@ -44,7 +44,6 @@ export default function ChangePassword(props) {
               // An error ocurred
               // ...
             });
-          console.log(response.data);
           setOldPassword('');
           setNewPassword('');
           setConfirmPassword('');

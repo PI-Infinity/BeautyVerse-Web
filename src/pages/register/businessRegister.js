@@ -265,7 +265,7 @@ export const BusinessRegister = (props) => {
             ? 'ინფორმაცია მაღაზიის შესახებ'
             : language?.language.Auth.auth.aboutSalon}
         </Title>
-        <WrapperContainer onSubmit={SendEmail}>
+        <WrapperContainer onSubmit={Register}>
           {!isMobile && (
             <Button
               title={language?.language.Auth.auth.back}
@@ -348,7 +348,7 @@ export const BusinessRegister = (props) => {
             <Button
               title={language?.language.Auth.auth.next}
               type="Submit"
-              function={SendEmail}
+              function={Register}
             />
           )}
         </WrapperContainer>
@@ -364,7 +364,7 @@ export const BusinessRegister = (props) => {
             type="Submit"
             function={
               registerFields?.categories?.length > 0
-                ? () => SendEmail()
+                ? () => Register()
                 : () =>
                     setAlert({
                       active: true,

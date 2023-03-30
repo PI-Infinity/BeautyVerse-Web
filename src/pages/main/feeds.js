@@ -5,56 +5,44 @@ import { useSelector, useDispatch } from 'react-redux';
 import useWindowDimensions from '../../functions/dimensions';
 import { IsMobile } from '../../functions/isMobile';
 import { Spinner } from '../../components/loader';
+import { useNavigate } from 'react-router-dom';
+import useScrollPosition from '../../functions/useScrollPosition';
 
 export const Feeds = (props) => {
+  const loadFeeds = useSelector((state) => state.storeMain.loadFeeds);
   const { height, width } = useWindowDimensions();
   const isMobile = IsMobile();
   const dispatch = useDispatch();
-  const [loading, setLoading] = useState(true);
-  // import users
-
-  const rerenderUserList = useSelector(
-    (state) => state.storeRerenders.rerenderUserList
-  );
-  const scrollY = useSelector((state) => state.storeScroll.feedScrollY);
-
-  const loadFeeds = useSelector((state) => state.storeMain.loadFeeds);
 
   const feeds = useSelector((state) => state.storeMain.userList);
 
+  const navigate = useNavigate();
+  const { saveScrollPosition } = useScrollPosition();
+
   useEffect(() => {
-    const Scrolling = () => {
-      setTimeout(() => {
-        return window.scrollTo(0, scrollY);
-      }, 500);
+    return () => {
+      saveScrollPosition();
     };
-    return Scrolling();
-  }, [scrollY]);
+  }, [saveScrollPosition]);
 
   return (
     <Container height={height}>
-      {loadFeeds ? (
-        <LoaderContainer id="feed">
-          <Spinner />
-        </LoaderContainer>
-      ) : (
-        <Wrapper id="feed">
-          <div style={{ color: 'orange', height: 'auto' }}>
-            {feeds?.map((item, index) => {
-              if (item.feed) {
-                return (
-                  <FeedCard
-                    key={index}
-                    {...item}
-                    index={index}
-                    filterOpen={props.filterOpen}
-                  />
-                );
-              }
-            })}
-          </div>
-        </Wrapper>
-      )}
+      <Wrapper id="feed">
+        {feeds?.map((item, index) => {
+          if (item.feed) {
+            return (
+              <FeedCard
+                key={index}
+                {...item}
+                index={index}
+                filterOpen={props.filterOpen}
+                socket={props.socket}
+              />
+            );
+          }
+        })}
+      </Wrapper>
+      {/* )} */}
     </Container>
   );
 };
@@ -82,8 +70,9 @@ const Wrapper = styled.div`
   height: 100%;
   width: 100%;
   display: flex;
-  justify-content: center;
-  align-items: start;
+  justify-content: start;
+  flex-direction: column;
+  align-items: center;
   // overflow-y: scroll;
   overflow-x: hidden;
   box-sizing: border-box;

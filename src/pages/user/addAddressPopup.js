@@ -66,8 +66,6 @@ export default function AddAddress({
     }
   };
 
-  console.log(targetUser);
-
   // delete address
   const DeleteAddress = async (itemId) => {
     if (targetUser?.address?.length > 1) {
@@ -82,8 +80,6 @@ export default function AddAddress({
       alert('cant delete last address');
     }
   };
-
-  console.log(targetUser?.address);
 
   return (
     <Container>
@@ -109,8 +105,8 @@ export default function AddAddress({
         </DialogTitle>
         <DialogContent>
           <p style={{ margin: '0 auto 10px auto', fontSize: '14px' }}>
-            {language?.language.User.userPage.addAddress}{' '}
-            {/* {targetUser?.address?.length + 1} */}
+            {language?.language.User.userPage.addAddress} {'N'}
+            {targetUser?.address?.length + 1}
           </p>
           <MapAutocomplete language={language} userMobile={type} />
           <List>

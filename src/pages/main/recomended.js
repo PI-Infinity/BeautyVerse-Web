@@ -9,11 +9,26 @@ import Rating from '@mui/material/Rating';
 import { MdLocationPin } from 'react-icons/md';
 import { FaUser } from 'react-icons/fa';
 import { Language } from '../../context/language';
+import {
+  TitleLoader2,
+  IconLoader,
+  CardImageLoader,
+  TextLoader,
+} from '../../components/loader';
+import useScrollPosition from '../../functions/useScrollPosition';
+import { ProceduresOptions } from '../../data/registerDatas';
 
 export const Recomended = () => {
+  const { saveScrollPosition } = useScrollPosition();
+  const proceduresOptions = ProceduresOptions();
+
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+    return () => {
+      saveScrollPosition();
+    };
+  }, [saveScrollPosition]);
+
+  const [loading, setLoading] = useState(true);
 
   const language = Language();
   const recomendedList = useSelector((state) => state.storeMain?.userList);
@@ -24,58 +39,72 @@ export const Recomended = () => {
   }
 
   const { height, width } = useWindowDimensions();
-  const [loading, setLoading] = useState(true);
+
   setTimeout(() => {
     setLoading(false);
-  }, 300);
+  }, 500);
 
   return (
     <Container height={height}>
-      {loading ? (
-        <Loader height={height}>
-          <Spinner />
-        </Loader>
-      ) : (
-        <Wrapper>
-          <Title>
-            <GiFlexibleStar id="recomendedIcon" /> Find Best Procedures Here
-          </Title>
-          <RecomendedList>
-            {recomendedList
-              ?.filter((item) => item?.type !== 'user')
-              .map((item, index) => {
-                const name = capitalizeFirstLetter(item?.name);
-                const username = capitalizeFirstLetter(item?.username);
+      <Wrapper>
+        <Title>
+          {loading ? (
+            <TextLoader />
+          ) : (
+            <>
+              <GiFlexibleStar id="recomendedIcon" /> Find Best Procedures Here
+            </>
+          )}
+        </Title>
+        <RecomendedList>
+          {recomendedList
+            ?.filter((item) => item?.type !== 'user')
+            .map((item, index) => {
+              const name = capitalizeFirstLetter(item?.name);
+              const username = capitalizeFirstLetter(item?.username);
 
-                let type;
-                if (item?.type?.toLowerCase() === 'beautycenter') {
-                  type = language?.language.Main.feedCard.beautySalon;
-                } else if (item?.type?.toLowerCase() === 'specialist') {
-                  type = language?.language.Main.feedCard.specialist;
-                }
-                console.log(type);
-                return (
-                  <RecomendedItem
-                    key={item?._id}
+              let type;
+              if (item?.type?.toLowerCase() === 'beautycenter') {
+                type = language?.language.Main.feedCard.beautySalon;
+              } else if (item?.type?.toLowerCase() === 'specialist') {
+                type = language?.language.Main.feedCard.specialist;
+              }
+
+              let procedure = proceduresOptions?.find(
+                (p) => p.value === item.procedures[0].value
+              );
+
+              console.log(procedure);
+              return (
+                <RecomendedItem key={item?._id}>
+                  <UserCover
                     onClick={() => navigate(`/api/v1/users/${item._id}`)}
                   >
-                    <UserCover>
-                      {item.cover ? (
-                        <img
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                          }}
-                          src={item.cover}
-                          alt={item.name}
-                        />
-                      ) : (
-                        <FaUser id="undefined" />
-                      )}
-                    </UserCover>
-                    <Info>
-                      <Name>{name}</Name>
+                    {loading ? (
+                      <CardImageLoader />
+                    ) : (
+                      <>
+                        {item.cover ? (
+                          <img
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover',
+                            }}
+                            src={item.cover}
+                            alt={item.name}
+                          />
+                        ) : (
+                          <FaUser id="undefined" />
+                        )}
+                      </>
+                    )}
+                  </UserCover>
+                  <Info>
+                    {loading ? <TitleLoader2 /> : <Name>{name}</Name>}
+                    {loading ? (
+                      <TitleLoader2 />
+                    ) : (
                       <Address>
                         <MdLocationPin size={24} color="red" />
                         {item?.address[0]?.city === "T'bilisi"
@@ -83,27 +112,34 @@ export const Recomended = () => {
                           : item?.address[0]?.city}
                         {item?.address[0]?.district?.length > 0 &&
                           ', ' + item?.address[0]?.district}
-                        {item?.address[0]?.streer?.length > 0 &&
+                        {item?.address[0]?.street?.length > 0 &&
                           ', ' + item?.address[0]?.street + ' '}
                         {item?.address[0]?.number}
                       </Address>
-                      <Procedure>{item?.username ? username : type}</Procedure>
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '10px',
-                        }}
-                      >
+                    )}
+
+                    <Procedure>
+                      {loading ? <TitleLoader2 /> : <>{procedure?.label} </>}
+                    </Procedure>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                      }}
+                    >
+                      {loading ? (
+                        <TitleLoader2 />
+                      ) : (
                         <Rating size="small" readOnly defaultValue={5} />
-                      </div>
-                    </Info>
-                  </RecomendedItem>
-                );
-              })}
-          </RecomendedList>
-        </Wrapper>
-      )}
+                      )}
+                    </div>
+                  </Info>
+                </RecomendedItem>
+              );
+            })}
+        </RecomendedList>
+      </Wrapper>
     </Container>
   );
 };
@@ -129,13 +165,17 @@ const Container = styled.div`
   width: 100%;
   margin-left: 2px;
   background: ${(props) => props.theme.background};
+  box-sizing: border-box;
+  overflow-x: hidden;
 
   @media only screen and (max-width: 600px) {
-    height: calc(${(props) => props.height}px - 25vw);
+    // height: calc(${(props) => props.height}px - 25vw);
     width: 100vw;
     display: flex;
     justify-content: center;
-    margin-top: 14vw;
+    margin-top: 7vh;
+    padding-bottom: 10vh;
+    margin-left: 0;
   }
 `;
 
@@ -146,36 +186,13 @@ const Wrapper = styled.div`
   flex-direction: column;
   justify-content: start;
   align-items: center;
-  // overflow-y: scroll;
   overflow-x: hidden;
   box-sizing: border-box;
   padding: 1vw 2.5vw;
-  //   gap: 15px;
 
   @media only screen and (max-width: 600px) {
     border-top: 1px solid ${(props) => props.theme.lineColor};
     width: 92vw;
-    // gap: 15px;
-  }
-
-  /* width */
-  ::-webkit-scrollbar {
-    width: 0vw;
-  }
-
-  /* Track */
-  ::-webkit-scrollbar-track {
-    background-color: white;
-  }
-
-  /* Handle */
-  ::-webkit-scrollbar-thumb {
-    background-color: #222;
-  }
-
-  /* Handle on hover */
-  ::-webkit-scrollbar-thumb:hover {
-    background-color: #1e1e1e;
   }
 `;
 
@@ -204,6 +221,7 @@ const RecomendedList = styled.li`
   flex-wrap: wrap;
   gap: 2%;
   margin-top: 0.5vw;
+  box-sizing: border-box;
 
   @media only screen and (max-width: 600px) {
     flex-direction: column;
@@ -216,7 +234,7 @@ const RecomendedList = styled.li`
 const RecomendedItem = styled.div`
   width: 49%;
   height: 8vw;
-  background: ${(props) => props.theme.secondLevel};
+
   box-shadow: 0 0.1vw 0.2vw ${(props) => props.theme.shadowColor};
   margin-bottom: 0.8vw;
   border-radius: 0.5vw;
@@ -273,7 +291,8 @@ const Info = styled.div`
   overflow: hidden;
 
   @media only screen and (max-width: 600px) {
-    padding: 2vw 1.5vw 2vw 3vw;
+    gap: 2px;
+    padding: 2vw 1.5vw 2vw 5vw;
   }
 `;
 
@@ -303,7 +322,7 @@ const Procedure = styled.div`
   width: auto;
   font-size: 12px;
   display: flex;
-  justify-content: center;
+  justify-content: start;
 
   @media only screen and (max-width: 600px) {
     font-size: 12px;

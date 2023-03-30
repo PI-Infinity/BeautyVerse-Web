@@ -39,7 +39,7 @@ export const Navigator = (props) => {
   const filterOpen = useSelector((state) => state.storeMain.mobileFilter);
 
   // hide filter on scroll
-  const scroll = useSelector((state) => state.storeMain.scroll);
+  // const scroll = useSelector((state) => state.storeMain.scroll);
 
   // define mobile or desktop
 
@@ -167,7 +167,7 @@ export const Navigator = (props) => {
                     await dispatch(setRerenderUserList());
                     await dispatch(setRerenderNotifications());
                     await dispatch(setRerenderCurrentUser());
-                    dispatch(setFeedScrollY(0));
+                    // dispatch(setFeedScrollY(0));
                   }
                 : async () => {
                     // await dispatch(setNavigatorActive(0));
@@ -175,7 +175,7 @@ export const Navigator = (props) => {
                     await dispatch(setRerenderUserList());
                     await dispatch(setRerenderNotifications());
                     await dispatch(setRerenderCurrentUser());
-                    dispatch(setFeedScrollY(0));
+                    // dispatch(setFeedScrollY(0));
                     navigate('/');
                     // await dispatch(setChangeFeed(true));
                   }
@@ -185,10 +185,20 @@ export const Navigator = (props) => {
         <IconContainer className={active == 'cards' ? 'active' : ''}>
           <SwitchAccountIcon
             className={active == 'cards' ? 'activeIcon' : 'feedIcon'}
-            onClick={() => {
-              dispatch(setCardsScrollY(0));
-              navigate('cards');
-            }}
+            onClick={
+              active === 'cards'
+                ? async () => {
+                    await window.scrollTo({ top: 0, behevoir: 'smooth' });
+                    await dispatch(setRerenderUserList());
+                    await dispatch(setRerenderNotifications());
+                  }
+                : async () => {
+                    // dispatch(setCardsScrollY(0));
+                    await dispatch(setRerenderUserList());
+                    await dispatch(setRerenderNotifications());
+                    navigate('cards');
+                  }
+            }
           />
         </IconContainer>
         {/* <Market>
@@ -206,10 +216,20 @@ export const Navigator = (props) => {
         <IconContainer className={active == 'recomended' ? 'active' : ''}>
           <GiFlexibleStar
             className={active == 'recomended' ? 'activeIcon' : 'feedIcon'}
-            onClick={() => {
-              // dispatch(setNavigatorActive(2));
-              navigate('recomended');
-            }}
+            onClick={
+              active === 'recomended'
+                ? async () => {
+                    await window.scrollTo({ top: 0, behevoir: 'smooth' });
+                    await dispatch(setRerenderUserList());
+                    await dispatch(setRerenderNotifications());
+                  }
+                : async () => {
+                    // dispatch(setCardsScrollY(0));
+                    await dispatch(setRerenderUserList());
+                    await dispatch(setRerenderNotifications());
+                    navigate('recomended');
+                  }
+            }
           />
         </IconContainer>
         <IconContainer className={active == 'filtermobile' ? 'active' : ''}>

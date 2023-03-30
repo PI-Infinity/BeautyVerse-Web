@@ -1,6 +1,5 @@
 import * as React from 'react';
 import styled from 'styled-components';
-import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import Divider from '@mui/material/Divider';
 import ListItemText from '@mui/material/ListItemText';
@@ -10,52 +9,90 @@ import Typography from '@mui/material/Typography';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { BsStars } from 'react-icons/bs';
 import AgreementDialog from '../components/agreementDialog';
 import { Language } from '../context/language';
 import axios from 'axios';
-import { setRerenderNotifications } from '../redux/rerenders';
+import {
+  setRerenderCurrentUser,
+  setRerenderNotifications,
+} from '../redux/rerenders';
 
 export default function Notifications(props) {
   const language = Language();
+  const dispatch = useDispatch();
+
   const handleClose = () => {
     props?.setOpen(false);
   };
 
-  document.body.style.overflowY = 'hidden';
   return (
-    <div
-      style={{
-        position: 'absolute',
-        top: '0',
-        left: 0,
-        width: '100%',
-        height: '100vh',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 10000,
-        background: 'rgba(0,0,0,0.5)',
-      }}
-      onClick={handleClose}
-    >
-      <div>
-        <DialogTitle>{language?.language.Main.menu.notifications}</DialogTitle>
-        <DialogContent>
-          <AlignItemsList
-            notifications={props.notifications}
-            setOpen={props.setOpen}
-          />
-        </DialogContent>
-      </div>
-    </div>
+    <BG onClick={handleClose}>
+      <Container onClick={(event) => event.stopPropagation()}>
+        <Title>{language?.language.Main.menu.notifications}</Title>
+        <List>
+          {props.notifications.map((item, index) => {
+            return (
+              <Item
+                {...item}
+                notifications={props.notifications}
+                setNotifications={props.setNotifications}
+                setOpen={props.setOpen}
+              />
+            );
+          })}
+        </List>
+      </Container>
+    </BG>
   );
 }
 
-function AlignItemsList(props) {
+const BG = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.5);
+`;
+
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start;
+  margin-top: 3vh;
+  width: 50vw;
+  height: 80vh;
+  background: ${(props) => props.theme.background};
+  border-radius: 10px;
+  box-sizing: border-box;
+  padding: 1.5vw;
+
+  @media only screen and (max-width: 600px) {
+    width: 80vw;
+    height: 80vh;
+    padding: 2vw;
+  }
+`;
+
+const List = styled.ul`
+  width: 100%;
+  overflow-y: scroll;
+  list-style: none;
+
+  @media only screen and (max-width: 600px) {
+  }
+`;
+
+function Item(props) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   // import current user from redux state
@@ -63,137 +100,133 @@ function AlignItemsList(props) {
     localStorage.getItem('Beautyverse:currentUser')
   );
 
-  document.body.style.overflowY = 'hidden';
+  const theme = useSelector((state) => state.storeMain.theme);
 
   const ReadNotification = async (id) => {
     try {
       const response = await axios.patch(
-        `/api/v1/users/${currentUser?._id}/notifications/${id}`,
+        `https://beautyverse.herokuapp.com/api/v1/users/${currentUser?._id}/notifications/${id}`,
         {
           status: 'read',
         }
       );
-      const data = await response.data;
-      dispatch(setRerenderNotifications());
+      await findNotificationByIdAndMarkAsRead(id);
     } catch (error) {}
   };
 
   // agreement dialog
   const [agreementDialog, setAgreementDialog] = React.useState(false);
 
-  return (
-    <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
-      {props?.notifications?.map((item, index) => {
-        // const user = users?.find((it) => it?.id === item?.senderId);
-        return (
-          <>
-            <Container>
-              <ListItem
-                alignItems="flex-start"
-                className="item"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  // handle list item click logic here
+  const findNotificationByIdAndMarkAsRead = (id) => {
+    const updatedNotifications = props.notifications.map((notification) => {
+      if (notification._id === id) {
+        return { ...notification, status: 'read' };
+      }
+      dispatch(setRerenderNotifications());
+      return notification;
+    });
 
-                  if (item?.status === 'unread') {
-                    if (item?.type === 'offer') {
-                      setAgreementDialog(true);
-                    }
-                    return ReadNotification(item?._id);
-                  } else {
-                    props.setOpen(false);
-                    return navigate(item?.feed);
-                  }
+    props.setNotifications(updatedNotifications);
+  };
+
+  return (
+    <>
+      <ItemContainer>
+        <ListItem
+          alignItems="flex-start"
+          className="item"
+          onClick={(event) => {
+            event.stopPropagation();
+            // handle list item click logic here
+
+            if (props.status === 'unread') {
+              if (props.type === 'offer') {
+                setAgreementDialog(true);
+              }
+
+              return ReadNotification(props._id);
+            } else {
+              props.setOpen(false);
+              return navigate(props.feed);
+            }
+          }}
+        >
+          <ListItemAvatar>
+            {props.senderId === 'beautyVerse' ? (
+              <BsStars className="logo" onClick={() => navigate('/')} />
+            ) : (
+              <Avatar alt="Remy Sharp" src={currentUser?.cover} />
+            )}
+          </ListItemAvatar>
+
+          <ListItemText
+            primary={
+              <span
+                style={{
+                  fontWeight: props.status === 'unread' ? 'bold' : 'normal',
+                  color: props.status === 'unread' ? 'green' : 'orange',
                 }}
               >
-                <ListItemAvatar>
-                  {item?.senderId === 'beautyVerse' ? (
-                    <BsStars className="logo" onClick={() => navigate('/')} />
-                  ) : (
-                    <Avatar alt="Remy Sharp" src={currentUser?.cover} />
-                  )}
-                </ListItemAvatar>
-
-                <ListItemText
-                  primary={
-                    <span
-                      style={{
-                        fontWeight:
-                          item?.status === 'unread' ? 'bold' : 'normal',
-                      }}
-                    >
-                      {item?.type === 'welcome'
-                        ? 'მოგესალმებით!'
-                        : 'შეტყობინება'}
-                    </span>
-                  }
-                  secondary={
-                    <React.Fragment>
-                      <Typography
-                        sx={{
-                          display: 'inline',
-                          fontWeight:
-                            item?.status === 'unread' ? 'bold' : 'normal',
-                        }}
-                        component="span"
-                        variant="body2"
-                        color="text.primary"
-                      >
-                        {item?.type !== 'welcome' && currentUser?.name}{' '}
-                      </Typography>
-                      <span
-                        style={{
-                          fontWeight:
-                            item?.status === 'unread' ? 'bold' : 'normal',
-                        }}
-                      >
-                        {item?.text}
-                      </span>
-                    </React.Fragment>
-                  }
-                />
-                {item?.type === 'offer' ? (
-                  <AgreementDialog
-                    title="დაადასტურეთ!"
-                    text="გსურთ შეთავაზებულ გუნდში გაწევრიანება?"
-                    setOpen={setAgreementDialog}
-                    open={agreementDialog}
-                    // function={() => UpdateOffer(item.senderId)}
-                  />
-                ) : (
-                  ''
-                )}
-              </ListItem>
-            </Container>
-            <Divider variant="inset" component="li" />
-          </>
-        );
-      })}
-    </List>
+                {props.type === 'welcome' ? 'მოგესალმებით!' : 'შეტყობინება'}
+              </span>
+            }
+            secondary={
+              <React.Fragment>
+                <Typography
+                  sx={{
+                    display: 'inline',
+                    fontWeight: 'bold',
+                    color: theme ? '#fff' : '#111',
+                  }}
+                  component="span"
+                  variant="body2"
+                  color="text.primary"
+                >
+                  {props.type !== 'welcome' && currentUser?.name}{' '}
+                </Typography>
+                <span
+                  style={{
+                    fontWeight: props.status === 'unread' ? 'bold' : 'normal',
+                    color: props.status === 'unread' ? 'green' : '#ccc',
+                  }}
+                >
+                  {props.text}
+                </span>
+              </React.Fragment>
+            }
+          />
+          {props.type === 'offer' ? (
+            <AgreementDialog
+              title="დაადასტურეთ!"
+              text="გსურთ შეთავაზებულ გუნდში გაწევრიანება?"
+              setOpen={setAgreementDialog}
+              open={agreementDialog}
+              // function={() => UpdateOffer(item.senderId)}
+            />
+          ) : (
+            ''
+          )}
+        </ListItem>
+      </ItemContainer>
+      <Divider variant="inset" component="li" />
+    </>
   );
 }
 
-const Container = styled.div`
+const Title = styled.h3`
+  color: ${(props) => props.theme.font};
+`;
+
+const ItemContainer = styled.div`
+  width: 90%;
+  height: auto;
+  display: flex;
+  align-items: center;
   cursor: pointer;
+  background: ${(props) => props.theme.background};
+  font-size: 12px;
 
-  .item {
-    :hover {
-      background: #f3f3f3;
-    }
-  }
-
-  .text {
-    font-weight: bold;
-  }
-
-  .logo {
-    font-size: 1.7vw;
-    margin-right: 0.25vw;
-    // color: #c743e4;
-
-    @media only screen and (max-width: 600px) {
-      font-size: 6.5vw;
-      margin-right: 1vw;
-    }
+  :hover {
+    filter: brightness(1.4);
   }
 `;

@@ -17,32 +17,29 @@ import { IsMobile } from '../../functions/isMobile';
 const Main = (props) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const rerender = useSelector((state) => state.storeMain.rerender);
-  const loadFeed = useSelector((state) => state.storeMain.loadFeed);
-  const changeFeed = useSelector((state) => state.storeMain.changeFeed);
-
   const isMobile = IsMobile();
   const { height, width } = useWindowDimensions();
 
-  React.useEffect(() => {
-    dispatch(setScroll(true));
-    dispatch(setNavigatorActive(0));
-  }, [rerender, changeFeed]);
+  const changeFeed = useSelector((state) => state.storeMain.changeFeed);
 
-  document.body.style.overflowY = 'scroll';
+  document.body.style.overflowY = 'visible';
+
+  React.useEffect(() => {
+    dispatch(setNavigatorActive(0));
+  }, [changeFeed]);
+
+  // document.body.style.overflowY = 'scroll';
 
   // open mobile filter
   const filterOpen = useSelector((state) => state.storeMain.mobileFilter);
 
-  useEffect(() => {
-    dispatch(setRegisterPage(1));
-  }, []);
-
   return (
     <>
-      <MobileFilter filterOpen={filterOpen}>
-        <FilterMobile />
-      </MobileFilter>
+      {isMobile && (
+        <MobileFilter filterOpen={filterOpen}>
+          <FilterMobile />
+        </MobileFilter>
+      )}
       <Container height={height}>
         {!isMobile && (
           <FilterSection>
@@ -67,9 +64,7 @@ const Main = (props) => {
               rightAd="https://res.cloudinary.com/mimino/image/upload/v1673281471/ELAN/products/smart-skin-colour-remover-1-900x900-min_a0oruf.jpg"
             />
             <FavoritesContainer>
-              {/* <Reviews /> */}
               <Favorites />
-              <Chat />
             </FavoritesContainer>
           </RightSide>
         </MainSection>

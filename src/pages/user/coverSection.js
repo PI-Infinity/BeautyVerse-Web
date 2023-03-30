@@ -133,9 +133,7 @@ const CoverSection = React.memo(function ({
       </div>
     );
   }
-  console.log(
-    targetUser?.address?.length > 0 && targetUser?.address[currentAddress]
-  );
+
   const UpdateAddress = async () => {
     try {
       const newAddress = {

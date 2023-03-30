@@ -151,6 +151,7 @@ export const Contact = () => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: '5px',
+                      fontSize: '12px',
                     }}
                   >
                     <MdLocationPin className="location" />

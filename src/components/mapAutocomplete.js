@@ -99,18 +99,6 @@ const MapAutocomplete = ({ language, userMobile }) => {
     const lat = ll.lat;
     const lng = ll.lng;
 
-    console.log({
-      country: countr,
-      region: reg,
-      city: cit,
-      district: destr,
-      street: str,
-      number: nmb,
-      latitude: lat,
-      longitude: lng,
-      address: address,
-    });
-
     dispatch(
       setMap({
         country: countr,

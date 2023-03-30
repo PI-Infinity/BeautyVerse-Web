@@ -12,7 +12,7 @@ import { useOutletContext } from 'react-router-dom';
 import { isWebpSupported } from 'react-image-webp/dist/utils';
 import AlertDialog from '../../components/dialog';
 import { Language } from '../../context/language';
-import { Spinner } from '../../components/loader';
+import { Spinner, CardImageLoader } from '../../components/loader';
 
 export const UserFeeds = () => {
   const language = Language();
@@ -50,122 +50,134 @@ export const UserFeeds = () => {
           console.log('Error fetching data:', error);
         });
     }
-    if (targetUser) {
+    if (targetUser?._id) {
       GetUser(targetUser?._id);
     }
   }, [targetUser, render]);
 
   /** after getting files from firestore define list */
-  const DefineList = (gall) => {
-    if (gall?.length > 0 && currentUser?.type !== 'user') {
-      let list = gall
-        ?.sort((a, b) => {
-          return b?.addTime?.seconds - a?.addTime?.seconds;
-        })
-        .map((item, index) => {
-          return (
-            <GalleryImg key={index}>
-              {currentUser?._id === currentUser?._id && (
-                <div
-                  style={{ height: 0, display: 'flex', justifyContent: 'end' }}
-                >
-                  <RemoveIconContainer
-                    onClick={() => {
-                      setOpenDialog(true);
-                      setFeedData({
-                        id: item._id,
-                        name: item.name,
-                        fileFormat: item.fileFormat,
-                      });
-                    }}
-                  >
-                    <AiOutlineDelete className="removeIcon" />
-                  </RemoveIconContainer>
-                  <AlertDialog
-                    title={language?.language.User.userPage.removeTitle}
-                    open={openDialog}
-                    setOpen={setOpenDialog}
-                    text={language?.language.User.userPage.removeText}
-                    function={() =>
-                      Deleting(
-                        feedData?.id,
-                        feedData?.name,
-                        feedData?.fileFormat
+  const DefineList = (feedsData) => {
+    if (feedsData?.length > 0 && targetUser?.type !== 'user') {
+      let list = feedsData.map((item, index) => {
+        return (
+          <>
+            {loading ? (
+              <GalleryImg>
+                <CardImageLoader />
+              </GalleryImg>
+            ) : (
+              <GalleryImg key={index}>
+                {currentUser?._id === targetUser?._id &&
+                  targetUser?.type !== 'user' && (
+                    <div
+                      style={{
+                        height: 0,
+                        display: 'flex',
+                        justifyContent: 'end',
+                      }}
+                    >
+                      <RemoveIconContainer
+                        onClick={() => {
+                          setOpenDialog(true);
+                          setFeedData({
+                            id: item._id,
+                            name: item.name,
+                            fileFormat: item.fileFormat,
+                          });
+                        }}
+                      >
+                        <AiOutlineDelete className="removeIcon" />
+                      </RemoveIconContainer>
+                      <AlertDialog
+                        title={language?.language.User.userPage.removeTitle}
+                        open={openDialog}
+                        setOpen={setOpenDialog}
+                        text={language?.language.User.userPage.removeText}
+                        function={() =>
+                          Deleting(
+                            feedData?.id,
+                            feedData?.name,
+                            feedData?.fileFormat
+                          )
+                        }
+                        language={language}
+                      />
+                    </div>
+                  )}
+                {item.fileFormat === 'video' ? (
+                  <Video
+                    width="100%"
+                    height="auto"
+                    controls
+                    onClick={() =>
+                      navigate(
+                        `/api/v1/users/${currentUser?._id}/feeds/${item?._id}/profile`
                       )
                     }
-                    language={language}
-                  />
-                </div>
-              )}
-              {item.fileFormat === 'video' ? (
-                <Video
-                  width="100%"
-                  height="auto"
-                  controls
-                  onClick={() =>
-                    navigate(
-                      `/api/v1/users/${currentUser?._id}/feeds/${item?._id}/profile`
-                    )
-                  }
-                >
-                  <source src={item?.videoUrl} type="video/mp4" />
-                </Video>
-              ) : (
-                <>
-                  {isMobile ? (
-                    isWebpSupported() ? (
-                      <Img
-                        src={item?.mobileWebp}
-                        alt="item"
-                        style={{ zIndex: 5 }}
-                        onClick={() =>
-                          navigate(
-                            `/api/v1/users/${currentUser?._id}/feeds/${item?._id}/profile`
-                          )
-                        }
-                      />
+                  >
+                    <source src={item?.videoUrl} type="video/mp4" />
+                  </Video>
+                ) : (
+                  <>
+                    {isMobile ? (
+                      isWebpSupported() ? (
+                        <Img
+                          src={item?.mobileWebp}
+                          alt="item"
+                          style={{ zIndex: 5 }}
+                          onClick={() =>
+                            navigate(
+                              `/api/v1/users/${currentUser?._id}/feeds/${item?._id}/profile`
+                            )
+                          }
+                        />
+                      ) : (
+                        <Img
+                          src={item?.mobileJpeg}
+                          alt="item"
+                          style={{ zIndex: 5 }}
+                          onClick={() =>
+                            navigate(
+                              `/api/v1/users/${currentUser?._id}/feeds/${item?._id}/profile`
+                            )
+                          }
+                        />
+                      )
                     ) : (
                       <Img
-                        src={item?.mobileJpeg}
+                        src={item?.desktopUrl}
                         alt="item"
                         style={{ zIndex: 5 }}
                         onClick={() =>
                           navigate(
-                            `/api/v1/users/${currentUser?._id}/feeds/${item?._id}/profile`
+                            `/api/v1/users/${currentUser?._id}/feeds/${item?._id}/profile`,
+                            {
+                              state: {
+                                data: item,
+                                targetUser: targetUser,
+                              },
+                            }
                           )
                         }
                       />
-                    )
-                  ) : (
-                    <Img
-                      src={item?.desktopUrl}
-                      alt="item"
-                      style={{ zIndex: 5 }}
-                      onClick={() =>
-                        navigate(
-                          `/api/v1/users/${currentUser?._id}/feeds/${item?._id}/profile`,
-                          {
-                            state: {
-                              data: item,
-                              targetUser: targetUser,
-                            },
-                          }
-                        )
-                      }
-                    />
-                  )}
-                </>
-              )}
-            </GalleryImg>
-          );
-        });
+                    )}
+                  </>
+                )}
+              </GalleryImg>
+            )}
+          </>
+        );
+      });
+      console.log(list);
       return list;
     }
   };
 
   const list = DefineList(feeds);
 
-  /** delete image from firestore and cloud */
+  console.log(list);
+
+  /** delete image from db and cloud */
   const Deleting = async (itemId, itemName, itemFormat) => {
     const values = [];
     /** delete from mongodb
@@ -214,41 +226,31 @@ export const UserFeeds = () => {
 
   setTimeout(() => {
     setLoading(false);
-  }, 300);
+  }, 500);
 
   return (
     <>
-      {loading ? (
-        <Container
-          height={height}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Spinner />
-        </Container>
-      ) : (
-        <Container height={height}>
-          <Content listLength={list?.length}>
-            {currentUser?._id === currentUser?._id &&
-              currentUser?.type != 'user' && (
-                <GalleryImg
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                  onClick={() => navigate('/add')}
-                >
-                  <HiOutlineViewGridAdd id="add" />
-                </GalleryImg>
+      <Container height={height}>
+        <Content listLength={list?.length}>
+          {currentUser?._id === targetUser?._id && (
+            <GalleryImg
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              onClick={() => navigate('/add')}
+            >
+              {loading ? (
+                <CardImageLoader />
+              ) : (
+                <HiOutlineViewGridAdd id="add" />
               )}
-            {list?.length > 0 == true ? list : ''}
-          </Content>
-        </Container>
-      )}
+            </GalleryImg>
+          )}
+          {list?.length > 0 ? list : ''}
+        </Content>
+      </Container>
     </>
   );
 };
@@ -280,57 +282,6 @@ const ConfirmCont = styled.div`
   align-items: center;
   justify-content: center;
   gap 3vw;
-
-  animation: fadeIn 0.25s;
-  -webkit-animation: fadeIn 0.25s;
-  -moz-animation: fadeIn 0.25s;
-  -o-animation: fadeIn 0.25s;
-  -ms-animation: fadeIn 0.25s;
-
-  @keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-
-  @-moz-keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-
-  @-webkit-keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-
-  @-o-keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-
-  @-ms-keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
 
   @media only screen and (max-width: 600px) {
     width: 80vw;
