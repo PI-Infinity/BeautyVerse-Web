@@ -10,10 +10,11 @@ import { AiOutlineEyeInvisible, AiOutlineEye } from 'react-icons/ai';
 import { auth } from '../../firebase';
 import { updatePassword } from 'firebase/auth';
 import axios from 'axios';
+import Error from '../../snackBars/success';
 
 export default function ChangePassword(props) {
   const [open, setOpen] = React.useState(false);
-
+  const [alert, setAlert] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState('');
 
   const [oldPassword, setOldPassword] = React.useState('');
@@ -22,45 +23,36 @@ export default function ChangePassword(props) {
 
   // change password
   const Changing = async () => {
-    if (newPassword?.length > 7) {
-      if (newPassword === confirmPassword) {
-        const authUser = auth.currentUser;
-        try {
-          const response = await axios.patch(
-            'https://beautyverse.herokuapp.com/api/v1/users/' +
-              props.targetUser._id +
-              '/password',
-            {
-              oldPassword: oldPassword,
-              newPassword: newPassword,
-            }
-          );
-          updatePassword(authUser, newPassword)
-            .then(() => {
-              props?.setOpen(true);
-            })
-            .catch((error) => {
-              console.log(error);
-              // An error ocurred
-              // ...
-            });
-          setOldPassword('');
-          setNewPassword('');
-          setConfirmPassword('');
-          setOpen(false);
-        } catch (error) {
-          setOldPassword('');
-          alert('Wrong old password');
+    try {
+      const response = await axios.patch(
+        'https://beautyverse.herokuapp.com/api/v1/changePassword/' +
+          props.targetUser._id,
+        {
+          oldPassword: oldPassword,
+          newPassword: newPassword,
+          confirmPassword: confirmPassword,
         }
-      } else {
-        setNewPassword('');
-        setConfirmPassword('');
-        alert("New Passwords doesn't match!");
-      }
-    } else {
+      );
+      setOldPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      alert('Password length must be min 8 symbols');
+      setAlert({
+        active: true,
+        title: 'Password changed successfully!',
+        type: 'success',
+      });
+      setTimeout(() => {
+        setOpen(false);
+      }, 2000);
+    } catch (error) {
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setAlert({
+        active: true,
+        title: error.response.data.message,
+        type: 'error',
+      });
     }
   };
 
@@ -74,6 +66,12 @@ export default function ChangePassword(props) {
 
   return (
     <Container>
+      <Error
+        open={alert?.active}
+        setOpen={setAlert}
+        type={alert?.type}
+        title={alert?.title}
+      />
       {!props.forgot && (
         <Button
           variant="outlined"

@@ -8,7 +8,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import { BiLocationPlus } from 'react-icons/bi';
 import { GrMapLocation, GrLocation } from 'react-icons/gr';
-import MapAutocomplete from '../../components/mapAutocomplete';
+import AddressAutocomplete from '../../components/addresAutocomplete';
 import { MdDeleteForever } from 'react-icons/md';
 import { setMap } from '../../redux/register';
 import axios from 'axios';
@@ -20,6 +20,7 @@ export default function AddAddress({
   type,
   address,
   setAddress,
+  setOpenAddresses,
 }) {
   const dispatch = useDispatch();
 
@@ -38,7 +39,7 @@ export default function AddAddress({
 
   const Add = async () => {
     try {
-      if (address?.length > 0) {
+      if (map.country?.length > 0) {
         const response = await axios.post(
           `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}/address`,
           {
@@ -82,33 +83,27 @@ export default function AddAddress({
   };
 
   return (
-    <Container>
-      <Button>
-        <BiLocationPlus color="orange" size={28} onClick={handleClickOpen} />
-      </Button>
-      <Dialog
-        PaperProps={{
-          style: {
-            width: '100%',
-            height: '50vh',
-            display: 'flex',
-            justifyContent: 'center',
-          },
+    <BG onClick={() => setOpenAddresses(false)}>
+      <Container
+        onClick={(event) => {
+          event.stopPropagation();
         }}
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">
-          <GrMapLocation /> {language?.language.User.userPage.address}
-        </DialogTitle>
-        <DialogContent>
+        <Title>
+          <GrMapLocation
+            className="icon"
+            style={{ fontSize: '20px', color: 'red', marginRight: '10px' }}
+          />{' '}
+          {language?.language.User.userPage.address}
+        </Title>
+        <Address>
           <p style={{ margin: '0 auto 10px auto', fontSize: '14px' }}>
             {language?.language.User.userPage.addAddress} {'N'}
             {targetUser?.address?.length + 1}
           </p>
-          <MapAutocomplete language={language} userMobile={type} />
+          <Wrapper>
+            <AddressAutocomplete language={language} userMobile={type} />
+          </Wrapper>
           <List>
             {targetUser?.address?.map((item, index) => {
               return (
@@ -121,7 +116,7 @@ export default function AddAddress({
                     gap: '5px',
                   }}
                 >
-                  <GrLocation />
+                  <GrLocation className="icon" color="orange" />
                   <b>
                     {language?.language.User.userPage.address}
                     {index === 0 ? '' : index}:
@@ -149,21 +144,63 @@ export default function AddAddress({
               );
             })}
           </List>
-        </DialogContent>
+        </Address>
         <DialogActions>
-          <Button onClick={handleClose}>
+          <Button
+            onClick={() => {
+              dispatch(setMap(''));
+              setOpenAddresses(false);
+            }}
+          >
             {language?.language.User.userPage.cancel}
           </Button>
           <Button onClick={Add} autoFocus>
             {language?.language.User.userPage.add}
           </Button>
         </DialogActions>
-      </Dialog>
-    </Container>
+      </Container>
+    </BG>
   );
 }
 
-const Container = styled.div``;
+const BG = styled.div`
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+`;
+
+const Title = styled.h4`
+  color: ${(props) => props.theme.font};
+  .icon {
+    color: ${(props) => props.theme.font};
+  }
+`;
+const Address = styled.h4`
+  color: ${(props) => props.theme.font};
+`;
+
+const Wrapper = styled.div`
+  background: ${(props) => props.theme.background};
+  border-radius: 5px;
+`;
+
+const Container = styled.div`
+  background: ${(props) => props.theme.secondLevel};
+  border-radius: 5px;
+  padding: 1vw;
+
+  @media only screen and (max-width: 600px) {
+    padding: 4vw;
+  }
+`;
+
 const List = styled.div`
   font-size: 14px;
   width: 100%;
@@ -171,9 +208,14 @@ const List = styled.div`
   flex-direction: column;
   gap: 5px;
   margin-top: 30px;
+  color: ${(props) => props.theme.font};
 
   @media only screen and (max-width: 600px) {
     font-size: 12px;
     margin-top: 3vw;
+  }
+
+  .icon {
+    color: ${(props) => props.theme.font};
   }
 `;

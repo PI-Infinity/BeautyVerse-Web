@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import { MdOutlineCloseFullscreen } from 'react-icons/md';
+import { AiFillEdit } from 'react-icons/ai';
 import { IoMdArrowDropright, IoMdArrowDropleft } from 'react-icons/io';
 import { AddReview } from '../../../pages/main/feedCard/addReview';
 import { ReviewList } from '../../../pages/main/feedCard/reviewList';
@@ -18,6 +19,7 @@ import { Language } from '../../../context/language';
 import { format } from 'timeago.js';
 import useScrollPosition from '../../../functions/useScrollPosition';
 import { AddReviewLoader } from '../../../components/loader';
+import axios from 'axios';
 
 export const OpenedFeed = (props) => {
   const { height, width } = useWindowDimensions();
@@ -62,7 +64,6 @@ export const OpenedFeed = (props) => {
     )
       .then((response) => response.json())
       .then(async (data) => {
-        console.log(data.data);
         setFeedObj(data.data);
       })
       .catch((error) => {
@@ -119,6 +120,29 @@ export const OpenedFeed = (props) => {
       .catch((error) => {
         console.log('There was an error with the translation request: ', error);
       });
+  };
+  /**
+   * edit post
+   */
+  const [openEditPost, setOpenEditPost] = useState(false);
+  const [editPost, setEditPost] = useState('');
+
+  const UpdatePost = async () => {
+    try {
+      setFeedObj((prevState) => {
+        const updatedFeed = { ...prevState.feed, post: editPost };
+        return { ...prevState, feed: updatedFeed };
+      });
+      await axios.patch(
+        `https://beautyverse.herokuapp.com/api/v1/users/${userId}/feeds/${feedObj?.feed?._id}`,
+        {
+          post: editPost,
+        }
+      );
+      setOpenEditPost(false);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const [imageHeight, setImageHeight] = useState(null);
@@ -225,30 +249,61 @@ export const OpenedFeed = (props) => {
             </ClosePost>
           </UserInfo>
           <Post>
-            {translated ? translated : feedObj?.feed?.post}
-            {feedObj?.feed?.post && (
-              <div style={{ cursor: 'pointer' }}>
-                {translated?.length < 1 ? (
-                  <div style={{ padding: '2px' }}>
-                    <SiGoogletranslate
-                      onClick={() => GetLanguages(feedObj?.feed?.post)}
-                      size={14}
-                      color="#ddd"
-                      style={{ cursor: 'pointer' }}
-                    />
-                  </div>
-                ) : (
-                  <div style={{ padding: '2px' }}>
-                    <SlReload
-                      onClick={() => setTranslated('')}
-                      size={14}
-                      color="#ddd"
-                      style={{ cursor: 'pointer' }}
-                    />
-                  </div>
-                )}
+            {openEditPost ? (
+              <div
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
+                }}
+              >
+                <Text
+                  value={editPost}
+                  onChange={(e) => setEditPost(e.target.value)}
+                />
+                <Button onClick={UpdatePost}>Update</Button>
               </div>
+            ) : (
+              <>{translated ? translated : feedObj?.feed?.post}</>
             )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              {currentUser?._id === userId &&
+                !openEditPost &&
+                feedObj?.feed?.post && (
+                  <AiFillEdit
+                    style={{ cursor: 'pointer' }}
+                    size={20}
+                    onClick={() => {
+                      setOpenEditPost(true);
+                      setEditPost(feedObj?.feed?.post);
+                    }}
+                  />
+                )}
+              {feedObj?.feed?.post && !openEditPost && (
+                <div style={{ cursor: 'pointer' }}>
+                  {translated?.length < 1 ? (
+                    <div style={{ padding: '2px' }}>
+                      <SiGoogletranslate
+                        onClick={() => GetLanguages(feedObj?.feed?.post)}
+                        size={14}
+                        color="#ddd"
+                        style={{ cursor: 'pointer' }}
+                      />
+                    </div>
+                  ) : (
+                    <div style={{ padding: '2px' }}>
+                      <SlReload
+                        onClick={() => setTranslated('')}
+                        size={14}
+                        color="#ddd"
+                        style={{ cursor: 'pointer' }}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </Post>
           <ReviewList
             reviews={feedObj?.feed?.reviews}
@@ -639,5 +694,49 @@ const Arrow = styled.div`
 
   :hover {
     opacity: ${(props) => (props.off ? '0' : '0.8')};
+  }
+`;
+
+const Text = styled.textarea`
+  width: 100%;
+  height: 45%;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 15px;
+  font-size: 14px;
+  box-sizing: border-box;
+  white-space: pre-wrap;
+
+  @media only screen and (max-width: 600px) {
+    font-size: 16px;
+    height: 20vw;
+  }
+
+  :focus {
+    outline: none;
+  }
+`;
+
+const Button = styled.div`
+  border-radius: 0.5vw;
+  box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: ease-in 200ms;
+  color: ${(props) => (props.back ? '#ccc' : 'green')};
+  font-weight: bold;
+  background: ${(props) => props.theme.secondLevel};
+  font-size: 14px;
+  padding: 10px;
+
+  @media only screen and (max-width: 600px) {
+    border-radius: 1.5vw;
+    box-shadow: 0 0.3vw 0.6vw rgba(2, 2, 2, 0.2);
+  }
+
+  :hover {
+    box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.2);
   }
 `;

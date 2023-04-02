@@ -374,3 +374,27 @@ export const MapLoader = (props) => {
     </ContentLoader>
   );
 };
+
+export const AudienceLoader = (props) => {
+  const isMobile = IsMobile();
+  const theme = useSelector((state) => state.storeMain.theme);
+  return (
+    <ContentLoader
+      speed={0.5}
+      width={isMobile ? 300 : 300}
+      height={isMobile ? 45 : 45}
+      backgroundColor={theme ? '#151515' : '#f3f3f3'}
+      foregroundColor={theme ? '#30102E' : '#F7E6FF'}
+      {...props}
+    >
+      <rect
+        x={isMobile ? 0 : 0}
+        y={isMobile ? 0 : 0}
+        rx={isMobile ? 0 : 15}
+        ry={isMobile ? 0 : 15}
+        width={isMobile ? 300 : 300}
+        height={isMobile ? 45 : 45}
+      />
+    </ContentLoader>
+  );
+};

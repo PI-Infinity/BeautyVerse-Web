@@ -12,6 +12,16 @@ import {
   FaWhatsapp,
   FaTelegram,
 } from 'react-icons/fa';
+import {
+  UpdateTargetUserPhone,
+  UpdateTargetUserWeb,
+  UpdateTargetUserFacebook,
+  UpdateTargetUserInstagram,
+  UpdateTargetUserTiktok,
+  UpdateTargetUserYoutube,
+  UpdateTargetUserWhatsapp,
+  UpdateTargetUserTelegram,
+} from '../../redux/user';
 import { AiOutlineMail } from 'react-icons/ai';
 import { useSelector, useDispatch } from 'react-redux';
 import { db } from '../../firebase';
@@ -23,6 +33,8 @@ import { IsMobile } from '../../functions/isMobile';
 import axios from 'axios';
 import { setRerenderCurrentUser } from '../../redux/rerenders';
 import { LinkLoader } from '../../components/loader';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 
 export const Links = ({ targetUser, loading }) => {
   const [edit, setEdit] = React.useState('');
@@ -35,10 +47,6 @@ export const Links = ({ targetUser, loading }) => {
   );
 
   const [changePhone, setChangePhone] = React.useState('');
-  const [countryCode, setCountryCode] = React.useState({
-    value: '+995',
-    label: 'Georgia',
-  });
   const [changeField, setChangeField] = React.useState('');
 
   const UpdateLink = async (field, value) => {
@@ -59,6 +67,7 @@ export const Links = ({ targetUser, loading }) => {
             parseLink = '';
           }
         }
+        dispatch(UpdateTargetUserWeb(parseLink));
         const response = await axios.patch(
           `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}`,
           {
@@ -71,6 +80,7 @@ export const Links = ({ targetUser, loading }) => {
         const data = await response.data;
         dispatch(setRerenderCurrentUser());
       } else if (edit === 'phone') {
+        dispatch(UpdateTargetUserPhone(value));
         const response = await axios.patch(
           `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}`,
           {
@@ -80,6 +90,15 @@ export const Links = ({ targetUser, loading }) => {
         const data = await response.data;
         dispatch(setRerenderCurrentUser());
       } else {
+        if (field === 'facebook') {
+          dispatch(UpdateTargetUserFacebook(value));
+        } else if (field === 'instagram') {
+          dispatch(UpdateTargetUserInstagram(value));
+        } else if (field === 'tiktok') {
+          dispatch(UpdateTargetUserTiktok(value));
+        } else if (field === 'youtube') {
+          dispatch(UpdateTargetUserYoutube(value));
+        }
         const response = await axios.patch(
           `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}`,
           {
@@ -156,6 +175,7 @@ export const Links = ({ targetUser, loading }) => {
   const AddWhatsapp = async () => {
     const base = doc(db, 'users', `${targetUser?._id}`);
     if (targetUser?.media?.whatsapp === true) {
+      dispatch(UpdateTargetUserWhatsapp(false));
       const response = await axios.patch(
         `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}`,
         {
@@ -168,6 +188,7 @@ export const Links = ({ targetUser, loading }) => {
       const data = await response.data;
       dispatch(setRerenderCurrentUser());
     } else {
+      dispatch(UpdateTargetUserWhatsapp(true));
       const response = await axios.patch(
         `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}`,
         {
@@ -183,6 +204,7 @@ export const Links = ({ targetUser, loading }) => {
   };
   const AddTelegram = async () => {
     if (targetUser?.media?.telegram === true) {
+      dispatch(UpdateTargetUserTelegram(false));
       const response = await axios.patch(
         `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}`,
         {
@@ -195,6 +217,7 @@ export const Links = ({ targetUser, loading }) => {
       const data = await response.data;
       dispatch(setRerenderCurrentUser());
     } else {
+      dispatch(UpdateTargetUserTelegram(true));
       const response = await axios.patch(
         `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}`,
         {
@@ -309,6 +332,33 @@ export const Links = ({ targetUser, loading }) => {
     }),
   };
 
+  // phone input styled
+  const containerStyle = {
+    width: '100%',
+    borderRadius: '4px',
+    background: 'none',
+    border: 'none',
+  };
+
+  const buttonStyle = {
+    background: 'none',
+  };
+
+  const inputStyle = {
+    background: 'none',
+    color: theme ? '#fff' : '#111',
+    width: '100%',
+    border: 'none',
+  };
+  const searchStyle = {
+    width: '80%',
+  };
+
+  const dropdownStyle = {
+    width: isMobile ? '45vw' : '18vw',
+    color: '#111',
+  };
+
   return (
     <LinksContainer>
       {loading ? (
@@ -327,103 +377,189 @@ export const Links = ({ targetUser, loading }) => {
             </SendMessage>
           )} */}
           {LinkList?.map((item, index) => {
-            if (item?.id === 'email') {
-              return (
-                <LinkContainer key={index} edit={edit}>
-                  {item.icon}
-                  <Link
-                    style={{ textDecoration: 'none', color: 'inherit' }}
-                    href={`mailto:${item?.value}`}
-                    target="_blank"
-                  >
-                    {item?.value}
-                  </Link>
-                </LinkContainer>
-              );
-            } else if (item.id === 'phone') {
-              if (targetUser?.type !== 'user') {
+            if (item?.value?.length > 0 || currentUser._id === targetUser._id) {
+              if (item?.id === 'email') {
                 return (
-                  <LinkContainer>
+                  <LinkContainer key={index} edit={edit}>
+                    {item.icon}
+                    <Link
+                      style={{ textDecoration: 'none', color: 'inherit' }}
+                      href={`mailto:${item?.value}`}
+                      target="_blank"
+                    >
+                      {item?.value}
+                    </Link>
+                  </LinkContainer>
+                );
+              } else if (item.id === 'phone') {
+                if (
+                  targetUser?.type !== 'user' ||
+                  currentUser._id === targetUser._id
+                ) {
+                  return (
+                    <LinkContainer>
+                      {item.icon}
+                      {edit == item.id ? (
+                        <PhoneInput
+                          containerStyle={containerStyle}
+                          searchStyle={searchStyle}
+                          inputStyle={inputStyle}
+                          dropdownStyle={dropdownStyle}
+                          country={'ge'}
+                          enableSearch
+                          value={changeField}
+                          onChange={(value) => {
+                            setChangeField(value);
+                          }}
+                        />
+                      ) : (
+                        <Link>
+                          <a
+                            style={{ color: 'inherit', textDecoration: 'none' }}
+                            href={`tel:${item.value}`}
+                          >
+                            {item.value}
+                          </a>
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '15px',
+                            }}
+                          >
+                            {whatsapp && (
+                              <a
+                                style={{
+                                  color: targetUser?.media?.whatsapp
+                                    ? 'inherit'
+                                    : 'gray',
+                                  textDecoration: 'none',
+                                }}
+                                onClick={
+                                  targetUser?._id === currentUser?._id
+                                    ? () => AddWhatsapp()
+                                    : false
+                                }
+                                href={
+                                  targetUser?._id !== currentUser?._id &&
+                                  `https://wa.me/${item.placeholder}`
+                                }
+                              >
+                                <FaWhatsapp className="icons" />
+                              </a>
+                            )}
+                            {telegram && (
+                              <a
+                                style={{
+                                  color: targetUser?.media?.telegram
+                                    ? 'inherit'
+                                    : 'gray',
+                                  textDecoration: 'none',
+                                }}
+                                onClick={
+                                  targetUser?._id === currentUser?._id
+                                    ? () => AddTelegram()
+                                    : false
+                                }
+                                href={
+                                  targetUser?._id !== currentUser?._id &&
+                                  ` https://t.me/${item.placeholder}`
+                                }
+                              >
+                                <FaTelegram className="icons" />
+                              </a>
+                            )}
+                          </div>
+                        </Link>
+                      )}
+                      {targetUser?._id === currentUser?._id && (
+                        <>
+                          {edit === item.id ? (
+                            <ImCheckmark
+                              className="confirmIcon"
+                              onClick={() => UpdateLink('phone', changeField)}
+                            />
+                          ) : (
+                            <RiEdit2Fill
+                              className="editIcon"
+                              onClick={() => {
+                                setEdit(item.id);
+                                setChangeField(item.value);
+                              }}
+                            />
+                          )}
+                        </>
+                      )}
+                    </LinkContainer>
+                  );
+                }
+              } else if (item?.id === 'web') {
+                return (
+                  <LinkContainer key={index} edit={edit}>
                     {item.icon}
                     {edit == item.id ? (
-                      <>
-                        <Select
-                          // placeholder={language?.language.Auth.auth.workingDays}
-                          defaultValue="+995"
-                          defaultInputValue="+995"
-                          placeholder="+995"
-                          value={countryCode}
-                          onChange={(value) => {
-                            setCountryCode(value);
-                          }}
-                          styles={CustomStyle}
-                          options={countries}
-                        />
-                        <LinkInput
-                          placeholder="Add phone number"
-                          type="tel"
-                          value={changeField}
-                          onChange={(e) => setChangeField(e.target.value)}
-                        />
-                      </>
+                      <LinkInput
+                        placeholder={item.placeholder}
+                        value={changeField}
+                        onChange={(e) => setChangeField(e.target.value)}
+                      />
                     ) : (
-                      <Link>
-                        <a
-                          style={{ color: 'inherit', textDecoration: 'none' }}
-                          href={`tel://${item.placeholder}`}
-                        >
-                          {item.value}
-                        </a>
-                        <div
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '15px',
-                          }}
-                        >
-                          {whatsapp && (
-                            <a
-                              style={{
-                                color: targetUser?.media?.whatsapp
-                                  ? 'inherit'
-                                  : 'gray',
-                                textDecoration: 'none',
+                      <Link
+                        style={{ textDecoration: 'none', color: 'inherit' }}
+                        href={`${item?.value}`}
+                        target="blank"
+                      >
+                        {item?.value?.slice(8)}
+                      </Link>
+                    )}
+                    {targetUser?._id === currentUser?._id &&
+                      item.id != 'email' && (
+                        <>
+                          {edit == item.id ? (
+                            <ImCheckmark
+                              className="confirmIcon"
+                              onClick={() => UpdateLink('web', changeField)}
+                            />
+                          ) : (
+                            <RiEdit2Fill
+                              className="editIcon"
+                              onClick={() => {
+                                setEdit(item.id);
+                                setChangeField(item?.value);
                               }}
-                              onClick={
-                                targetUser?._id === currentUser?._id
-                                  ? () => AddWhatsapp()
-                                  : false
-                              }
-                              href={
-                                targetUser?._id !== currentUser?._id &&
-                                `https://wa.me/${item.placeholder}`
-                              }
-                            >
-                              <FaWhatsapp className="icons" />
-                            </a>
+                            />
                           )}
-                          {telegram && (
-                            <a
-                              style={{
-                                color: targetUser?.media?.telegram
-                                  ? 'inherit'
-                                  : 'gray',
-                                textDecoration: 'none',
-                              }}
-                              onClick={
-                                targetUser?._id === currentUser?._id
-                                  ? () => AddTelegram()
-                                  : false
-                              }
-                              href={
-                                targetUser?._id !== currentUser?._id &&
-                                ` https://t.me/${item.placeholder}`
-                              }
-                            >
-                              <FaTelegram className="icons" />
-                            </a>
-                          )}
-                        </div>
+                        </>
+                      )}
+                  </LinkContainer>
+                );
+              } else if (item?.id === 'facebook') {
+                return (
+                  <LinkContainer key={index} edit={edit}>
+                    {item.icon}
+                    {edit == item.id ? (
+                      <LinkInput
+                        type="number"
+                        placeholder={item.placeholder}
+                        value={changeField}
+                        onChange={(e) => setChangeField(e.target.value)}
+                      />
+                    ) : (
+                      <Link
+                        style={{
+                          textDecoration: 'none',
+                          color: 'inherit',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                        }}
+                        href={
+                          isMobile
+                            ? `fb://profile/${item?.value}`
+                            : `https://facebook.com/profile/${item?.value}`
+                        }
+                        target="_blank"
+                      >
+                        {item?.value?.length > 0 ? 'Facebook' : item?.value}
                       </Link>
                     )}
                     {targetUser?._id === currentUser?._id && (
@@ -431,53 +567,7 @@ export const Links = ({ targetUser, loading }) => {
                         {edit == item.id ? (
                           <ImCheckmark
                             className="confirmIcon"
-                            onClick={() =>
-                              UpdateLink(
-                                'phone',
-                                countryCode?.value + changeField
-                              )
-                            }
-                          />
-                        ) : (
-                          <RiEdit2Fill
-                            className="editIcon"
-                            onClick={() => {
-                              setEdit(item.id);
-                              setChangeField(item.value?.slice(4));
-                            }}
-                          />
-                        )}
-                      </>
-                    )}
-                  </LinkContainer>
-                );
-              }
-            } else if (item?.id === 'web') {
-              return (
-                <LinkContainer key={index} edit={edit}>
-                  {item.icon}
-                  {edit == item.id ? (
-                    <LinkInput
-                      placeholder={item.placeholder}
-                      value={changeField}
-                      onChange={(e) => setChangeField(e.target.value)}
-                    />
-                  ) : (
-                    <Link
-                      style={{ textDecoration: 'none', color: 'inherit' }}
-                      href={`${item?.value}`}
-                      target="blank"
-                    >
-                      {item?.value?.slice(8)}
-                    </Link>
-                  )}
-                  {targetUser?._id === currentUser?._id &&
-                    item.id != 'email' && (
-                      <>
-                        {edit == item.id ? (
-                          <ImCheckmark
-                            className="confirmIcon"
-                            onClick={() => UpdateLink('web', changeField)}
+                            onClick={() => UpdateLink('facebook', changeField)}
                           />
                         ) : (
                           <RiEdit2Fill
@@ -490,191 +580,143 @@ export const Links = ({ targetUser, loading }) => {
                         )}
                       </>
                     )}
-                </LinkContainer>
-              );
-            } else if (item?.id === 'facebook') {
-              return (
-                <LinkContainer key={index} edit={edit}>
-                  {item.icon}
-                  {edit == item.id ? (
-                    <LinkInput
-                      type="number"
-                      placeholder={item.placeholder}
-                      value={changeField}
-                      onChange={(e) => setChangeField(e.target.value)}
-                    />
-                  ) : (
-                    <Link
-                      style={{
-                        textDecoration: 'none',
-                        color: 'inherit',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                      }}
-                      href={
-                        isMobile
-                          ? `fb://profile/${item?.value}`
-                          : `https://facebook.com/profile/${item?.value}`
-                      }
-                      target="_blank"
-                    >
-                      {item?.value?.length > 0 ? 'Facebook' : item?.value}
-                    </Link>
-                  )}
-                  {targetUser?._id === currentUser?._id && (
-                    <>
-                      {edit == item.id ? (
-                        <ImCheckmark
-                          className="confirmIcon"
-                          onClick={() => UpdateLink('facebook', changeField)}
-                        />
-                      ) : (
-                        <RiEdit2Fill
-                          className="editIcon"
-                          onClick={() => {
-                            setEdit(item.id);
-                            setChangeField(item?.value);
-                          }}
-                        />
-                      )}
-                    </>
-                  )}
-                </LinkContainer>
-              );
-            } else if (item?.id === 'instagram') {
-              return (
-                <LinkContainer key={index} edit={edit}>
-                  {item.icon}
-                  {edit == item.id ? (
-                    <LinkInput
-                      placeholder={item.placeholder}
-                      value={changeField}
-                      onChange={(e) => setChangeField(e.target.value)}
-                    />
-                  ) : (
-                    <Link
-                      style={{
-                        textDecoration: 'none',
-                        color: 'inherit',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                      }}
-                      href={`https://www.instagram.com/${item?.value?.slice(
-                        1
-                      )}/`}
-                      target="_blank"
-                    >
-                      {item?.value}
-                    </Link>
-                  )}
-                  {targetUser?._id === currentUser?._id && (
-                    <>
-                      {edit == item.id ? (
-                        <ImCheckmark
-                          className="confirmIcon"
-                          onClick={() => UpdateLink('instagram', changeField)}
-                        />
-                      ) : (
-                        <RiEdit2Fill
-                          className="editIcon"
-                          onClick={() => {
-                            setEdit(item.id);
-                            setChangeField(item?.value);
-                          }}
-                        />
-                      )}
-                    </>
-                  )}
-                </LinkContainer>
-              );
-            } else if (item?.id === 'tiktok') {
-              return (
-                <LinkContainer key={index} edit={edit}>
-                  {item.icon}
-                  {edit == item.id ? (
-                    <LinkInput
-                      placeholder={item.placeholder}
-                      value={changeField}
-                      onChange={(e) => setChangeField(e.target.value)}
-                    />
-                  ) : (
-                    <Link
-                      style={{
-                        textDecoration: 'none',
-                        color: 'inherit',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                      }}
-                      href={`https://www.tiktok.com/${item.value}`}
-                      target="_blank"
-                    >
-                      {item?.value}
-                    </Link>
-                  )}
-                  {targetUser?._id === currentUser?._id && (
-                    <>
-                      {edit == item.id ? (
-                        <ImCheckmark
-                          className="confirmIcon"
-                          onClick={() => UpdateLink('tiktok', changeField)}
-                        />
-                      ) : (
-                        <RiEdit2Fill
-                          className="editIcon"
-                          onClick={() => {
-                            setEdit(item.id);
-                            setChangeField(item?.value);
-                          }}
-                        />
-                      )}
-                    </>
-                  )}
-                </LinkContainer>
-              );
-            } else if (item?.id === 'youtube') {
-              return (
-                <LinkContainer key={index} edit={edit}>
-                  {item.icon}
-                  {edit == item.id ? (
-                    <LinkInput
-                      placeholder={item.placeholder}
-                      value={changeField}
-                      onChange={(e) => setChangeField(e.target.value)}
-                    />
-                  ) : (
-                    <Link
-                      style={{
-                        textDecoration: 'none',
-                        color: 'inherit',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                      }}
-                      href={`https://www.youtube.com/${item?.value}/`}
-                      target="_blank"
-                    >
-                      {item?.value}
-                    </Link>
-                  )}
-                  {targetUser?._id === currentUser?._id && (
-                    <>
-                      {edit == item.id ? (
-                        <ImCheckmark
-                          className="confirmIcon"
-                          onClick={() => UpdateLink('youtube', changeField)}
-                        />
-                      ) : (
-                        <RiEdit2Fill
-                          className="editIcon"
-                          onClick={() => {
-                            setEdit(item.id);
-                            setChangeField(item?.value);
-                          }}
-                        />
-                      )}
-                    </>
-                  )}
-                </LinkContainer>
-              );
+                  </LinkContainer>
+                );
+              } else if (item?.id === 'instagram') {
+                return (
+                  <LinkContainer key={index} edit={edit}>
+                    {item.icon}
+                    {edit == item.id ? (
+                      <LinkInput
+                        placeholder={item.placeholder}
+                        value={changeField}
+                        onChange={(e) => setChangeField(e.target.value)}
+                      />
+                    ) : (
+                      <Link
+                        style={{
+                          textDecoration: 'none',
+                          color: 'inherit',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                        }}
+                        href={`https://www.instagram.com/${item?.value?.slice(
+                          1
+                        )}/`}
+                        target="_blank"
+                      >
+                        {item?.value}
+                      </Link>
+                    )}
+                    {targetUser?._id === currentUser?._id && (
+                      <>
+                        {edit == item.id ? (
+                          <ImCheckmark
+                            className="confirmIcon"
+                            onClick={() => UpdateLink('instagram', changeField)}
+                          />
+                        ) : (
+                          <RiEdit2Fill
+                            className="editIcon"
+                            onClick={() => {
+                              setEdit(item.id);
+                              setChangeField(item?.value);
+                            }}
+                          />
+                        )}
+                      </>
+                    )}
+                  </LinkContainer>
+                );
+              } else if (item?.id === 'tiktok') {
+                return (
+                  <LinkContainer key={index} edit={edit}>
+                    {item.icon}
+                    {edit == item.id ? (
+                      <LinkInput
+                        placeholder={item.placeholder}
+                        value={changeField}
+                        onChange={(e) => setChangeField(e.target.value)}
+                      />
+                    ) : (
+                      <Link
+                        style={{
+                          textDecoration: 'none',
+                          color: 'inherit',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                        }}
+                        href={`https://www.tiktok.com/${item.value}`}
+                        target="_blank"
+                      >
+                        {item?.value}
+                      </Link>
+                    )}
+                    {targetUser?._id === currentUser?._id && (
+                      <>
+                        {edit == item.id ? (
+                          <ImCheckmark
+                            className="confirmIcon"
+                            onClick={() => UpdateLink('tiktok', changeField)}
+                          />
+                        ) : (
+                          <RiEdit2Fill
+                            className="editIcon"
+                            onClick={() => {
+                              setEdit(item.id);
+                              setChangeField(item?.value);
+                            }}
+                          />
+                        )}
+                      </>
+                    )}
+                  </LinkContainer>
+                );
+              } else if (item?.id === 'youtube') {
+                return (
+                  <LinkContainer key={index} edit={edit}>
+                    {item.icon}
+                    {edit == item.id ? (
+                      <LinkInput
+                        placeholder={item.placeholder}
+                        value={changeField}
+                        onChange={(e) => setChangeField(e.target.value)}
+                      />
+                    ) : (
+                      <Link
+                        style={{
+                          textDecoration: 'none',
+                          color: 'inherit',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                        }}
+                        href={`https://www.youtube.com/${item?.value}/`}
+                        target="_blank"
+                      >
+                        {item?.value}
+                      </Link>
+                    )}
+                    {targetUser?._id === currentUser?._id && (
+                      <>
+                        {edit == item.id ? (
+                          <ImCheckmark
+                            className="confirmIcon"
+                            onClick={() => UpdateLink('youtube', changeField)}
+                          />
+                        ) : (
+                          <RiEdit2Fill
+                            className="editIcon"
+                            onClick={() => {
+                              setEdit(item.id);
+                              setChangeField(item?.value);
+                            }}
+                          />
+                        )}
+                      </>
+                    )}
+                  </LinkContainer>
+                );
+              }
             }
           })}
         </>
@@ -762,7 +804,7 @@ const LinkContainer = styled.div`
   border-bottom: 1px solid ${(props) => props.theme.lineColor};
 
   @media only screen and (max-width: 600px) {
-    width: 100vw;
+    width: 70vw;
     height: 9vw;
     box-sizing: border-box;
     max-width: 100vw;

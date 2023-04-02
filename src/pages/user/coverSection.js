@@ -23,6 +23,11 @@ import {
   setTargetUserAddress,
 } from '../../redux/user';
 import { TitleLoader, MapLoader } from '../../components/loader';
+import Error from '../../snackBars/success';
+import AddressAutocomplete from '../../components/addresAutocomplete';
+import Button from '@mui/material/Button';
+import { BiLocationPlus } from 'react-icons/bi';
+import { AiOutlineReload } from 'react-icons/ai';
 
 const CoverSection = React.memo(function ({
   targetUser,
@@ -33,6 +38,8 @@ const CoverSection = React.memo(function ({
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const isMobile = IsMobile();
+
+  const [alert, setAlert] = React.useState([]);
 
   // import current user from localstorage
   const currentUser = JSON.parse(
@@ -47,6 +54,7 @@ const CoverSection = React.memo(function ({
 
   const UpdateName = async () => {
     try {
+      dispatch(setTargetUserName(editName));
       const response = await axios.patch(
         `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}`,
         {
@@ -54,7 +62,7 @@ const CoverSection = React.memo(function ({
         }
       );
       const data = await response.data;
-      dispatch(setTargetUserName(editName));
+
       setEdit(false);
       setEditName('');
     } catch (error) {
@@ -67,16 +75,17 @@ const CoverSection = React.memo(function ({
 
   const [username, setUsername] = React.useState('');
 
-  const UpdateUsername = async () => {
+  const UpdateUsername = async (newUsername) => {
     try {
+      dispatch(setTargetUsername(newUsername));
       const response = await axios.patch(
         `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}`,
         {
-          username: username,
+          username: newUsername,
         }
       );
       const data = await response.data;
-      dispatch(setTargetUsername(username));
+
       setEditUsername(false);
       setUsername('');
     } catch (error) {
@@ -146,6 +155,12 @@ const CoverSection = React.memo(function ({
         latitude: map.latitude,
         longitude: map.longitude,
       };
+      await dispatch(
+        setTargetUserAddress({
+          index: currentAddress,
+          data: newAddress,
+        })
+      );
       const response = await axios.patch(
         `https://beautyverse.herokuapp.com/api/v1/users/${
           targetUser?._id
@@ -157,12 +172,7 @@ const CoverSection = React.memo(function ({
       );
       const data = await response.data;
       SetEditAddress(false);
-      await dispatch(
-        setTargetUserAddress({
-          index: currentAddress,
-          data: newAddress,
-        })
-      );
+
       dispatch(setRerenderCurrentUser());
     } catch (error) {
       console.error(error);
@@ -210,6 +220,14 @@ const CoverSection = React.memo(function ({
   // function to follow user
   const FollowToUser = async () => {
     try {
+      setFollowerDefined({
+        followerId: currentUser?._id,
+        followerAuthId: currentUser?._id,
+        followerName: currentUser?.name,
+        followerCover: currentUser?.cover,
+        followingId: targetUser?._id,
+        followAt: new Date(),
+      });
       await axios.post(
         `https://beautyverse.herokuapp.com/api/v1/users/${currentUser?._id}/followings`,
         {
@@ -245,6 +263,7 @@ const CoverSection = React.memo(function ({
           }
         );
       }
+
       // const data = await response.data;
     } catch (error) {
       console.error(error);
@@ -254,6 +273,7 @@ const CoverSection = React.memo(function ({
   // function to unfollow user
   const UnFollowToUser = async (id) => {
     try {
+      setFollowerDefined('');
       const url = `https://beautyverse.herokuapp.com/api/v1/users/${currentUser?._id}/followings/${targetUser?._id}`;
       await fetch(url, { method: 'DELETE' })
         .then((response) => response.json())
@@ -275,6 +295,10 @@ const CoverSection = React.memo(function ({
     }
     setRender(!render);
   };
+
+  // open add addresses
+  const [openAddresses, setOpenAddresses] = React.useState(false);
+
   setTimeout(() => {
     setLoading(false);
   }, 500);
@@ -315,13 +339,19 @@ const CoverSection = React.memo(function ({
                 />
               </div>
             </Wrapper2>
+
             <ImCheckmark
               className="uploaderIcon"
               color="green"
               onClick={
                 username?.length < 31
-                  ? () => UpdateUsername()
-                  : () => alert('Max length 30 letters')
+                  ? () => UpdateUsername(username)
+                  : () =>
+                      setAlert({
+                        active: true,
+                        title: 'Max length 30 letters',
+                        type: 'error',
+                      })
               }
             />
           </Wrapper1>
@@ -334,6 +364,13 @@ const CoverSection = React.memo(function ({
                 <Type>
                   {targetUser?.username ? targetUser?.username : type}
                 </Type>
+                {currentUser?._id === targetUser?._id &&
+                  targetUser?.username && (
+                    <AiOutlineReload
+                      className="editIcon"
+                      onClick={() => UpdateUsername('')}
+                    />
+                  )}
                 {currentUser?._id === targetUser?._id && (
                   <RiEdit2Fill
                     className="editIcon"
@@ -342,7 +379,7 @@ const CoverSection = React.memo(function ({
                       setUsername(
                         targetUser?.username?.length > 0
                           ? targetUser?.username
-                          : targetUser?.type
+                          : type
                       );
                     }}
                   />
@@ -381,7 +418,11 @@ const CoverSection = React.memo(function ({
                     editName?.length < 31 && editName?.length > 1
                       ? () => UpdateName()
                       : () =>
-                          alert('Min length 1 letter, Max length 30 letters')
+                          setAlert({
+                            active: true,
+                            title: 'Min length 1 letter, Max length 30 letters',
+                            type: 'error',
+                          })
                   }
                 />
               </Wrapper1>
@@ -439,87 +480,12 @@ const CoverSection = React.memo(function ({
             </>
           )}
         </Title>
-
-        {/* {!isMobile && (
-          <About>
-            {editAbout ? (
-              <>
-                <Wrapper1>
-                  <Wrapper2>
-                    <WhiteBorderTextField
-                      editAbout={editAbout?.toString()}
-                      id="standard-basic"
-                      multiline
-                      rows={2}
-                      autoFocus
-                      placeholder={`Max. 100 letters`}
-                      label={`${about?.length} letters`}
-                      value={about}
-                      sx={{
-                        inputStyle: { color: theme ? '#fff' : '#151515' },
-                        input: { color: theme ? '#fff' : '#151515' },
-                        fontSize: '16px',
-                        fontWeight: 'normal',
-                        background: editAbout ? '#151515' : 'none',
-                        width: isMobile ? '100%' : '300px',
-                      }}
-                      onChange={(e) => setAbout(e.target.value)}
-                      variant="outlined"
-                    />
-                  </Wrapper2>
-                </Wrapper1>
-                <ImCheckmark
-                  className="followIcon"
-                  color="green"
-                  onClick={about?.length < 101 ? () => UpdateAbout() : () => alert('Max length 100 letters')}
-                />
-              </>
-            ) : (
-              <div style={{ display: 'flex' }}>
-                <div
-                  style={{
-                    height: '1.5vw',
-                    display: 'flex',
-                    alignItems: 'center',
-                    whiteSpace: 'normal',
-                    width: '100%',
-                  }}
-                >
-                  {targetUser?.about?.length > 0 && (
-                    <div
-                      style={{
-                        margin: 0,
-                        whiteSpace: 'normal',
-                        lineBreak: 'auto',
-                      }}
-                    >
-                      {targetUser?.about?.length < 1 || targetUser?.about === undefined ? (
-                        <span style={{ width: '80px' }}>About you</span>
-                      ) : (
-                        <span>{targetUser?.about}</span>
-                      )}
-                    </div>
-                  )}
-                  {currentUser?._id !== targetUser?._id && (
-                    <>
-                      {following?.id?.length > 0 ? (
-                        <ImCheckmark className="followIcon" following="true" onClick={UnFollowToUser} />
-                      ) : (
-                        <ImCheckmark
-                          className="followIcon"
-                          onClick={currentUser != undefined ? FollowToUser : () => navigate('/login')}
-                        />
-                      )}
-                    </>
-                  )}
-                </div>
-                {currentUser?._id === targetUser?._id && (
-                  <RiEdit2Fill className="editIcon" onClick={() => setEditAbout(true)} />
-                )}
-              </div>
-            )}
-          </About>
-        )} */}
+        <Error
+          open={alert?.active}
+          setOpen={setAlert}
+          type={alert?.type}
+          title={alert?.title}
+        />
       </TitleContainer>
 
       {loading && !isMobile ? (
@@ -535,14 +501,26 @@ const CoverSection = React.memo(function ({
           }}
         >
           {!isMobile && targetUser?._id === currentUser?._id && (
-            <AddAddress
-              language={language}
-              targetUser={targetUser}
-              type="dekstop"
-              address={address}
-              setAddress={setAddress}
-            />
+            <Button>
+              <BiLocationPlus
+                color="orange"
+                size={28}
+                onClick={() => setOpenAddresses(true)}
+              />
+            </Button>
           )}
+          {openAddresses &&
+            !isMobile &&
+            targetUser?._id === currentUser?._id && (
+              <AddAddress
+                language={language}
+                targetUser={targetUser}
+                type="dekstop"
+                address={address}
+                setAddress={setAddress}
+                setOpenAddresses={setOpenAddresses}
+              />
+            )}
           {addresses?.length > 1 && !isMobile && (
             <BsArrowLeftCircleFill
               size={24}
@@ -570,7 +548,8 @@ const CoverSection = React.memo(function ({
                 <MdLocationPin className="location" />{' '}
                 {editAddress ? (
                   <>
-                    <MapAutocomplete language={language} />
+                    <AddressAutocomplete />
+                    {/* <MapAutocomplete language={language} /> */}
                     <GiConfirmed
                       className="confirm"
                       onClick={async (e) => {
@@ -579,7 +558,7 @@ const CoverSection = React.memo(function ({
                           await UpdateAddress();
                           SetEditAddress(false);
                         } else {
-                          alert('Add address..');
+                          SetEditAddress(false);
                         }
                       }}
                     />
@@ -884,15 +863,18 @@ const WorkingInfo = styled.div`
 
 const StaticInfo = styled.div`
   z-index: 5;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 1vw;
-  margin: 0 0 0.5vw 0.5vw;
+  background: ${(props) => props.theme.background};
+  color: ${(props) => props.theme.font};
+  opacity: 0.95;
+  padding: 0.5vw 1vw;
+  margin: 0 0.5vw 0.5vw 0.5vw;
   border-radius: 0.5vw;
   display: flex;
   flex-direction: column;
   align-items: start;
   justify-content: start;
-  gap: 0.5vw;
+  width: 87%;
+  height: 2vw;
 
   @media only screen and (max-width: 600px) {
     display: none;
@@ -900,7 +882,7 @@ const StaticInfo = styled.div`
 `;
 
 const Location = styled.div`
-  color: #444;
+  color: ${(props) => props.theme.font};
   font-size: 14px;
   letter-spacing: 0.03vw;
   display: flex;
@@ -908,6 +890,7 @@ const Location = styled.div`
   justify-content: start;
   gap: 0.25vw;
   text-align: end;
+  width: 100%;
 
   .location {
     color: red;

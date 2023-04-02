@@ -7,6 +7,7 @@ import {
   setRerenderNotifications,
   setRerenderCurrentUser,
 } from '../redux/rerenders';
+import { setUserListClear } from '../redux/main';
 import Menu from '../components/menu';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
@@ -105,6 +106,18 @@ export const Header = (props) => {
   // define unread messages length
   const [chats, setChats] = React.useState([]);
 
+  // user destination
+  let userDestination;
+  if (currentUser?.type === 'user') {
+    if (isMobile) {
+      userDestination = `/api/v1/users/${currentUser?._id}/contact`;
+    } else {
+      userDestination = `/api/v1/users/${currentUser?._id}/audience`;
+    }
+  } else {
+    userDestination = `/api/v1/users/${currentUser?._id}`;
+  }
+
   return (
     <>
       {openNotifications && (
@@ -121,12 +134,16 @@ export const Header = (props) => {
             onClick={
               window.location.pathname != '/'
                 ? async () => {
+                    await props.setPage(1);
+                    await dispatch(setUserListClear());
                     await dispatch(setRerenderUserList());
                     dispatch(setRerenderCurrentUser());
                     navigate('/');
                     // dispatch(setFeedScrollY(0));
                   }
                 : async () => {
+                    await props.setPage(1);
+                    await dispatch(setUserListClear());
                     await dispatch(setRerenderUserList());
                     dispatch(setRerenderCurrentUser());
                     // dispatch(setFeedScrollY(0));
@@ -181,7 +198,7 @@ export const Header = (props) => {
             </div>
           )}
           <Link
-            to={currentUser ? `/api/v1/users/${currentUser?._id}` : '/login'}
+            to={currentUser ? userDestination : '/login'}
             style={{
               color: 'inherit',
               display: 'flex',

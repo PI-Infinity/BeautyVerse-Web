@@ -7,7 +7,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { IsMobile } from '../../functions/isMobile';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { Language } from '../../context/language';
-// import VisitorId from '../../functions/deviceUniqueId';
 import { setTargetUser } from '../../redux/user';
 import { setCoverUrl } from '../../redux/main';
 
@@ -35,7 +34,6 @@ const UserProfile = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  document.body.style.overflowY = 'hidden';
   /**
    *   // define user list
    */
@@ -132,6 +130,7 @@ const Container = styled.div`
   @media only screen and (max-width: 600px) {
     padding-top: 0;
     box-sizing: border-box;
+    padding-bottom: 7vh;
   }
 
   /* width */

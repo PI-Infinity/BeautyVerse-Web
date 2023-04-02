@@ -143,6 +143,7 @@ export default function Login() {
       setAlert({
         active: true,
         title: err.response.data.message,
+        type: 'error',
       });
     }
   };

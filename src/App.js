@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import styled, { ThemeProvider } from 'styled-components';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Main from './pages/main/main';
@@ -38,6 +38,7 @@ import {
   setLanguage,
   setCountry,
   setLoadFeeds,
+  setUserListClear,
 } from './redux/main';
 import { GlobalStyles, darkTheme, lightTheme } from './context/theme';
 import { Navigator } from './components/navigator';
@@ -47,6 +48,7 @@ import SimpleBackdrop from './components/backDrop';
 import { ChoiceCountry } from './components/choiceCountry';
 import Headroom from 'react-headroom';
 import { io } from 'socket.io-client';
+import axios from 'axios';
 import { setRerenderNotifications } from './redux/rerenders';
 
 function App() {
@@ -58,6 +60,41 @@ function App() {
     localStorage.getItem('Beautyverse:currentUser')
   );
 
+  /**
+   * Define machine unique id
+   */
+
+  // useEffect(() => {
+  //   const DefineMachineId = async () => {
+  //     try {
+  //       await axios.get('https://beautyverse.herokuapp.com/machineId').then((data) => {
+  //         console.log(data.data);
+  //       });
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   };
+  //   DefineMachineId();
+  // }, []);
+
+  // define last visit date
+  useEffect(() => {
+    const DefineMachineId = async () => {
+      try {
+        await axios.patch(
+          `https://beautyverse.herokuapp.com/api/v1/users/${currentUser?._id}`,
+          {
+            lastLoginAt: new Date(),
+          }
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    if (currentUser) {
+      DefineMachineId();
+    }
+  }, []);
   // socket server
   // const [socket, setSocket] = useState(null);
   // useEffect(() => {
@@ -68,6 +105,8 @@ function App() {
   //     socket?.emit('newUser', currentUser._id);
   //   }
   // }, [socket, currentUser]);
+
+  const [loading, setLoading] = useState(true);
 
   /**
    * define some needed functions
@@ -179,6 +218,22 @@ function App() {
   const specialist = useSelector((state) => state.storeFilter.specialist);
   const beautyCenter = useSelector((state) => state.storeFilter.object);
 
+  const userList = useSelector((state) => state.storeMain.userList);
+
+  const [page, setPage] = useState(1);
+
+  const observer = useRef();
+
+  const lastFeedElementRef = useCallback((node) => {
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        setPage((prevPage) => prevPage + 1);
+      }
+    });
+    if (node) observer.current.observe(node);
+  }, []);
+
   React.useEffect(() => {
     async function GetUsersWithOneFeed() {
       await dispatch(setLoadFeeds(true));
@@ -189,7 +244,7 @@ function App() {
           beautyCenter ? 'beautyCenter' : ''
         }&city=${city}&district=${district}&filter=${filter}&search=${search}&check=${
           currentUser !== null ? currentUser._id : ''
-        }`
+        }&page=${page}`
       )
         .then((response) => response.json())
         .then((data) => {
@@ -206,7 +261,7 @@ function App() {
     }
     GetUsersWithOneFeed();
   }, [
-    currentUser,
+    // currentUser,
     search,
     filter,
     city,
@@ -214,6 +269,7 @@ function App() {
     specialist,
     beautyCenter,
     rerenderUserList,
+    page,
   ]);
 
   /**
@@ -298,16 +354,40 @@ function App() {
   ) {
     nav = undefined;
   } else {
-    nav = <Navigator />;
+    nav = <Navigator setPage={setPage} />;
   }
 
   const headroomStyles = {
     zIndex: 2000, // Set a high z-index value for the Headroom component
   };
 
+  useEffect(() => {
+    setTimeout(() => {
+      setLoading(false);
+    }, 300);
+  }, []);
+
   return (
-    <ThemeProvider theme={!theme ? lightTheme : darkTheme}>
-      {/* {(!country || !language) && (
+    <>
+      {loading ? (
+        <div
+          style={{
+            width: width,
+            height: height,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '30px',
+            fontWeight: 'bold',
+            background: theme ? '#111' : '#fff',
+            color: theme ? '#fff' : '#111',
+          }}
+        >
+          Beautyverse
+        </div>
+      ) : (
+        <ThemeProvider theme={!theme ? lightTheme : darkTheme}>
+          {/* {(!country || !language) && (
         <div
           style={{
             position: 'fixed',
@@ -327,93 +407,119 @@ function App() {
           <ChoiceCountry />
         </div>
       )} */}
-      <GlobalStyles />
-      <TopLine />
-      {/* {loading && <Loading />} */}
-      <Container>
-        <SimpleBackdrop />
-        {!window.location.pathname?.includes('admin') && (
-          <>
-            {isMobile ? (
+          <GlobalStyles />
+          <TopLine />
+          {/* {loading && <Loading />} */}
+          <Container>
+            <SimpleBackdrop />
+            {!window.location.pathname?.includes('admin') && (
               <>
-                {!window.location.pathname.includes('/users') ? (
-                  <Headroom
-                    downTolerance={0}
-                    upTolerance={0}
-                    style={headroomStyles}
-                  >
-                    <Header />
-                  </Headroom>
+                {isMobile ? (
+                  <>
+                    <Headroom
+                      downTolerance={0}
+                      upTolerance={0}
+                      style={headroomStyles}
+                    >
+                      <Header setPage={setPage} />
+                    </Headroom>
+                  </>
                 ) : (
-                  <Header />
+                  <Header setPage={setPage} />
                 )}
               </>
-            ) : (
-              <Header />
             )}
-          </>
-        )}
-        {isMobile &&
+            {/* {isMobile &&
           (window.location.pathname === '/' ||
-            window.location.pathname === '/cards') && <Filter />}
-        <Routes>
-          <Route path="/" element={<Main />}>
-            <Route
-              index
-              element={<Feeds height={height} filterOpen={filterOpen} />}
-            />
-            <Route path="cards" element={<Specialists />} direction="row" />
-            <Route
-              path="filterMobile"
-              element={<FilterMobile />}
-              direction="row"
-            />
-            <Route path="add" element={<AddFeed />} direction="row" />
-            <Route path="recomended" element={<Recomended />} direction="row" />
-          </Route>
-          <Route
-            path="api/v1/users/:id/feeds/:feedId"
-            element={<OpenedFeed />}
-          />
-          <Route
-            path="api/v1/users/:id/feeds/:feedId/profile"
-            element={<OpenedFeed />}
-          />
-          <Route
-            path="/login"
-            element={
-              <RequireLogout>
-                <Login />
-              </RequireLogout>
-            }
-          />
-          <Route
-            path="/resetPassword/:resetId"
-            element={
-              <RequireLogout>
-                <ChangePassword />
-              </RequireLogout>
-            }
-          />
+            window.location.pathname === '/cards') && (
+            <Filter setPage={setPage} />
+          )} */}
+            <Routes>
+              <Route path="/" element={<Main setPage={setPage} />}>
+                <Route
+                  index
+                  element={
+                    <Feeds
+                      height={height}
+                      filterOpen={filterOpen}
+                      lastFeedElementRef={lastFeedElementRef}
+                    />
+                  }
+                />
+                <Route
+                  path="cards"
+                  element={
+                    <Specialists
+                      setPage={setPage}
+                      lastFeedElementRef={lastFeedElementRef}
+                    />
+                  }
+                  direction="row"
+                />
+                <Route
+                  path="filterMobile"
+                  element={<FilterMobile setPage={setPage} />}
+                  direction="row"
+                />
+                <Route
+                  path="add"
+                  element={<AddFeed setPage={setPage} />}
+                  direction="row"
+                />
+                <Route
+                  path="recomended"
+                  element={
+                    <Recomended
+                      setPage={setPage}
+                      lastFeedElementRef={lastFeedElementRef}
+                    />
+                  }
+                  direction="row"
+                />
+              </Route>
+              <Route
+                path="api/v1/users/:id/feeds/:feedId"
+                element={<OpenedFeed />}
+              />
+              <Route
+                path="api/v1/users/:id/feeds/:feedId/profile"
+                element={<OpenedFeed />}
+              />
+              <Route
+                path="/login"
+                element={
+                  <RequireLogout>
+                    <Login />
+                  </RequireLogout>
+                }
+              />
+              <Route
+                path="/resetPassword/:resetId"
+                element={
+                  <RequireLogout>
+                    <ChangePassword />
+                  </RequireLogout>
+                }
+              />
 
-          <Route path="api/v1/users/:id" element={<UserProfile />}>
-            <Route index element={<UserFeeds />} />
-            <Route path="services" element={<Services />} />
-            {/* <Route path="team" element={<Team />} /> */}
-            <Route path="contact" element={<Contact />} />
-            <Route path="audience" element={<Audience />} />
-            <Route path="statistics" element={<UserStatistics />} />
-            <Route
-              path="settings"
-              element={
-                <RequireAuth>
-                  <Settings />
-                </RequireAuth>
-              }
-            />
-            {/* <Route path="followings" element={<Followings />} /> */}
-          </Route>
-          {/* <Route path="/marketplace" element={<Marketplace />}>
+              <Route path="api/v1/users/:id" element={<UserProfile />}>
+                <Route index element={<UserFeeds />} />
+                <Route path="services" element={<Services />} />
+                {/* <Route path="team" element={<Team />} /> */}
+                <Route path="contact" element={<Contact />} />
+                <Route path="audience" element={<Audience />} />
+                {/* <Route path="statistics" element={<UserStatistics />} /> */}
+                <Route
+                  path="settings"
+                  element={
+                    <RequireAuth>
+                      <Settings />
+                    </RequireAuth>
+                  }
+                />
+                {/* <Route path="followings" element={<Followings />} /> */}
+              </Route>
+              {/* <Route path="/marketplace" element={<Marketplace />}>
               <Route index element={<MarketplaceMain />} />
               <Route path="cart" element={<Cart />} />
               <Route path="market" element={<Market />}>
@@ -424,64 +530,64 @@ function App() {
               path="/marketplace/:ShopId/product/:Id"
               element={<Product />}
             /> */}
-          <Route
-            path="admin"
-            element={
-              <RequireAdminAuth>
-                <AdminDashboard />
-              </RequireAdminAuth>
-            }
-          >
-            <Route
-              index
-              element={
-                <RequireAdminAuth>
-                  <Users />
-                </RequireAdminAuth>
-              }
-            />
-            <Route
-              path="statistics"
-              element={
-                <RequireAdminAuth>
-                  <Statistics />
-                </RequireAdminAuth>
-              }
-            />
-            <Route
-              path="notifications"
-              element={
-                <RequireAdminAuth>
-                  <Notifications />
-                </RequireAdminAuth>
-              }
-            />
-            <Route
-              path="reports"
-              element={
-                <RequireAdminAuth>
-                  <Reports />
-                </RequireAdminAuth>
-              }
-            />
-            <Route
-              path="messages"
-              element={
-                <RequireAdminAuth>
-                  <Messages />
-                </RequireAdminAuth>
-              }
-            />
-            <Route
-              path="feeds"
-              element={
-                <RequireAdminAuth>
-                  <AllFeeds />
-                </RequireAdminAuth>
-              }
-            />
-          </Route>
-          {/* <Route
+              <Route
+                path="admin"
+                element={
+                  <RequireAdminAuth>
+                    <AdminDashboard />
+                  </RequireAdminAuth>
+                }
+              >
+                <Route
+                  index
+                  element={
+                    <RequireAdminAuth>
+                      <Users />
+                    </RequireAdminAuth>
+                  }
+                />
+                <Route
+                  path="statistics"
+                  element={
+                    <RequireAdminAuth>
+                      <Statistics />
+                    </RequireAdminAuth>
+                  }
+                />
+                <Route
+                  path="notifications"
+                  element={
+                    <RequireAdminAuth>
+                      <Notifications />
+                    </RequireAdminAuth>
+                  }
+                />
+                <Route
+                  path="reports"
+                  element={
+                    <RequireAdminAuth>
+                      <Reports />
+                    </RequireAdminAuth>
+                  }
+                />
+                <Route
+                  path="messages"
+                  element={
+                    <RequireAdminAuth>
+                      <Messages />
+                    </RequireAdminAuth>
+                  }
+                />
+                <Route
+                  path="feeds"
+                  element={
+                    <RequireAdminAuth>
+                      <AllFeeds />
+                    </RequireAdminAuth>
+                  }
+                />
+              </Route>
+              {/* <Route
             path="/chat"
             element={
               <RequireAuth>
@@ -494,7 +600,7 @@ function App() {
               </RequireAuth>
             }
           /> */}
-          {/* <Route
+              {/* <Route
             path="/chat/:id"
             element={
               <RequireAuth>
@@ -502,38 +608,40 @@ function App() {
               </RequireAuth>
             }
           /> */}
-          <Route
-            path="/register"
-            element={
-              <RequireLogout>
-                <Register />
-              </RequireLogout>
-            }
-          ></Route>
-          <Route
-            path="/register/identify"
-            element={
-              <RequireLogout>
-                <Identify />
-              </RequireLogout>
-            }
-          ></Route>
-          <Route
-            path="/register/business"
-            element={
-              <RequireLogout>
-                <BusinessRegister />
-              </RequireLogout>
-            }
-          ></Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        {!window.location.pathname?.includes('admin') && <Footer />}
-        {!window.location.pathname?.includes('admin') &&
-          !window.location.pathname?.includes('feed/') && <>{nav}</>}
-      </Container>
-      {/* )} */}
-    </ThemeProvider>
+              <Route
+                path="/register"
+                element={
+                  <RequireLogout>
+                    <Register />
+                  </RequireLogout>
+                }
+              ></Route>
+              <Route
+                path="/register/identify"
+                element={
+                  <RequireLogout>
+                    <Identify />
+                  </RequireLogout>
+                }
+              ></Route>
+              <Route
+                path="/register/business"
+                element={
+                  <RequireLogout>
+                    <BusinessRegister />
+                  </RequireLogout>
+                }
+              ></Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            {!window.location.pathname?.includes('admin') && <Footer />}
+            {!window.location.pathname?.includes('admin') &&
+              !window.location.pathname?.includes('feed/') && <>{nav}</>}
+          </Container>
+          {/* )} */}
+        </ThemeProvider>
+      )}
+    </>
   );
 }
 

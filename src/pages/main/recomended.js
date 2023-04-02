@@ -18,7 +18,7 @@ import {
 import useScrollPosition from '../../functions/useScrollPosition';
 import { ProceduresOptions } from '../../data/registerDatas';
 
-export const Recomended = () => {
+export const Recomended = (props) => {
   const { saveScrollPosition } = useScrollPosition();
   const proceduresOptions = ProceduresOptions();
 
@@ -74,9 +74,8 @@ export const Recomended = () => {
                 (p) => p.value === item.procedures[0].value
               );
 
-              console.log(procedure);
               return (
-                <RecomendedItem key={item?._id}>
+                <RecomendedItem key={item?._id} ref={props.lastFeedElementRef}>
                   <UserCover
                     onClick={() => navigate(`/api/v1/users/${item._id}`)}
                   >

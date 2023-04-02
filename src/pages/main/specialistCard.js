@@ -62,7 +62,7 @@ export const SpecialistsCard = (props) => {
 
   const name = capitalizeFirstLetter(props?.name);
   let type;
-  if (props?.type === 'beautyCenter') {
+  if (props?.type === 'beautycfirenter') {
     type = language?.language.Main.feedCard.beautySalon;
   } else if (props?.type === 'specialist') {
     type = language?.language.Main.feedCard.specialist;
@@ -115,7 +115,7 @@ export const SpecialistsCard = (props) => {
   }, 200);
 
   return (
-    <Card>
+    <Card ref={props.lastFeedRef}>
       <Title
         onClick={() => {
           navigate(`/api/v1/users/${props._id}`);

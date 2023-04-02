@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import { GiFlexibleStar } from 'react-icons/gi';
 import { useNavigate, Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { setLoadFeed } from '../redux/main';
+import { setLoadFeed, setUserListClear } from '../redux/main';
 import { setFeedScrollY, setCardsScrollY } from '../redux/scroll';
 import {
   setRerenderUserList,
@@ -141,6 +141,17 @@ export const Navigator = (props) => {
     objectBadge = 0;
   }
 
+  let userDestination;
+  if (currentUser?.type === 'user') {
+    if (isMobile) {
+      userDestination = `/api/v1/users/${currentUser?._id}/contact`;
+    } else {
+      userDestination = `/api/v1/users/${currentUser?._id}/audience`;
+    }
+  } else {
+    userDestination = `/api/v1/users/${currentUser?._id}`;
+  }
+
   return (
     <>
       <NavigatorContainer
@@ -164,6 +175,8 @@ export const Navigator = (props) => {
               active === 'main'
                 ? async () => {
                     await window.scrollTo({ top: 0, behevoir: 'smooth' });
+                    await props.setPage(1);
+                    await dispatch(setUserListClear());
                     await dispatch(setRerenderUserList());
                     await dispatch(setRerenderNotifications());
                     await dispatch(setRerenderCurrentUser());
@@ -171,7 +184,8 @@ export const Navigator = (props) => {
                   }
                 : async () => {
                     // await dispatch(setNavigatorActive(0));
-                    await dispatch(setLoadFeed(true));
+                    await props.setPage(1);
+                    await dispatch(setUserListClear());
                     await dispatch(setRerenderUserList());
                     await dispatch(setRerenderNotifications());
                     await dispatch(setRerenderCurrentUser());
@@ -189,11 +203,14 @@ export const Navigator = (props) => {
               active === 'cards'
                 ? async () => {
                     await window.scrollTo({ top: 0, behevoir: 'smooth' });
+                    await props.setPage(1);
+                    await dispatch(setUserListClear());
                     await dispatch(setRerenderUserList());
                     await dispatch(setRerenderNotifications());
                   }
                 : async () => {
-                    // dispatch(setCardsScrollY(0));
+                    await props.setPage(1);
+                    await dispatch(setUserListClear());
                     await dispatch(setRerenderUserList());
                     await dispatch(setRerenderNotifications());
                     navigate('cards');
@@ -220,11 +237,14 @@ export const Navigator = (props) => {
               active === 'recomended'
                 ? async () => {
                     await window.scrollTo({ top: 0, behevoir: 'smooth' });
+                    await props.setPage(1);
+                    await dispatch(setUserListClear());
                     await dispatch(setRerenderUserList());
                     await dispatch(setRerenderNotifications());
                   }
                 : async () => {
-                    // dispatch(setCardsScrollY(0));
+                    await props.setPage(1);
+                    await dispatch(setUserListClear());
                     await dispatch(setRerenderUserList());
                     await dispatch(setRerenderNotifications());
                     navigate('recomended');
@@ -284,10 +304,8 @@ export const Navigator = (props) => {
           to={(() => {
             if (!currentUser) {
               return '/login';
-            } else if (currentUser?.type === 'user') {
-              return `/api/v1/users/${currentUser?._id}/contact`;
             } else {
-              return `/api/v1/users/${currentUser?._id}`;
+              return userDestination;
             }
           })()}
           style={{

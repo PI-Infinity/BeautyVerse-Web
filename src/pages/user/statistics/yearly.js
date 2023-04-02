@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { collection, getCountFromServer } from 'firebase/firestore';
 import { db } from '../../../firebase';
@@ -14,37 +14,51 @@ import { MdDynamicFeed } from 'react-icons/md';
 export function Yearly(props) {
   const isMobile = IsMobile();
 
-  // import followings
-  const followings = useSelector(
-    (state) => state.storeMain.followings?.length > 0 && JSON.parse(state.storeMain.followings)
-  );
+  /**
+   * Define start total
+   */
+  const [stars, setStars] = useState([]);
 
-  // feeds stats
-  const [count, setCount] = React.useState('');
+  let followings = useSelector((state) => state.storeUser.targetUserFollowings);
+  let followers = useSelector((state) => state.storeUser.targetUserFollowers);
+  let feeds = useSelector((state) => state.storeUser.targetUserFeeds);
+
+  async function GetStars() {
+    const response = await fetch(
+      `https://beautyverse.herokuapp.com/api/v1/users/${props?.user._id}/stars`
+    )
+      .then((response) => response.json())
+      .then(async (data) => {
+        setStars(data.data.stars);
+      })
+      .catch((error) => {
+        console.log('Error fetching data:', error);
+      });
+  }
+
   useEffect(() => {
-    const Getting = async () => {
-      const coll = collection(db, 'users', props?.user?.id, 'feeds');
-      const snapshot = await getCountFromServer(coll);
-      setCount(snapshot.data().count);
-    };
-    Getting();
+    GetStars();
   }, []);
 
   return (
     <>
       <Stats>
-        <ImCheckmark color="#2bdfd9" /> {props?.language?.language.User.userPage.followers}: {props?.followers?.length}
+        <ImCheckmark color="#2bdfd9" />{' '}
+        {props?.language?.language.User.userPage.followers}:{' '}
+        {followers?.list?.length}
       </Stats>
       <Stats>
-        <ImCheckmark color="orange" /> {props?.language?.language.User.userPage.followings}: {followings?.length}
+        <ImCheckmark color="orange" />{' '}
+        {props?.language?.language.User.userPage.followings}:{' '}
+        {followings?.list?.length}
       </Stats>
       <Stats>
         <BiStar color="#bb3394" />
-        {props?.language?.language.User.userPage.stars}: {props?.stars?.length}
+        {props?.language?.language.User.userPage.stars}: {stars}
       </Stats>
       <Stats>
         <MdDynamicFeed color="orange" />
-        {props?.language?.language.User.userPage.feeds}: {count}
+        {props?.language?.language.User.userPage.feeds}: {feeds?.length}
       </Stats>
     </>
   );

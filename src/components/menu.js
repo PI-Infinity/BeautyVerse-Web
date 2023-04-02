@@ -68,190 +68,202 @@ export default function Menu(props) {
     setActive(lang);
   }, [lang]);
 
-  const list = (anchor) => (
-    <Box
-      sx={{
-        width: anchor === 'top' || anchor === 'bottom' ? 'auto' : 360,
-      }}
-      role="presentation"
-      onClick={toggleDrawer(anchor, false)}
-      onKeyDown={toggleDrawer(anchor, false)}
-    >
-      <Cont>
-        <Items>
-          <div
-            onClick={
-              currentUser
-                ? () => {
-                    navigate(`/api/v1/users/${currentUser?._id}`);
-                  }
-                : () => {
-                    navigate('/login');
-                  }
-            }
-            style={{
-              color: 'inherit',
-              display: 'flex',
-              alignItems: 'center',
-              textDecoration: 'none',
-            }}
-          >
-            <Item>
-              <Profile>
-                {!currentUser?.cover ? (
-                  <FaUser className="user" />
-                ) : (
-                  <Img src={currentUser?.cover} alt="cover" />
-                )}
-              </Profile>
-              <span>{language?.language.Main.menu.profile}</span>
-            </Item>
-          </div>
-
-          <Item
-            onClick={
-              currentUser
-                ? () => props?.setOpen(true)
-                : () => navigate('/login')
-            }
-          >
-            <Badge
-              badgeContent={props?.notifLength}
-              overlap="circular"
-              color="secondary"
-            >
-              <MdCircleNotifications className="icon" />{' '}
-            </Badge>
-            <span>{language?.language.Main.menu.notifications}</span>
-          </Item>
-          <Item
-            onClick={async () => {
-              navigate('/rules');
-            }}
-          >
-            <FcRules className="icon" />
-            {language?.language.Main.menu.tr}
-          </Item>
-          <Item
-            onClick={async () => {
-              navigate('/privacy');
-            }}
-            style={{ flexDirection: 'column' }}
-          >
-            <MdSecurity className="icon" />
-            {language?.language.Main.menu.privacy?.split('', 9)}
-            {!language?.language.Main.menu.privacy?.includes('Pr') && '.'}
-          </Item>
-          <Item
-            onClick={async () => {
-              navigate('/howwokrs');
-            }}
-          >
-            <FcWorkflow className="icon" />
-            {language?.language.Main.menu.howitworks}
-          </Item>
-          <Item
-            onClick={async () => {
-              navigate('/questions');
-            }}
-          >
-            <BsQuestionLg className="icon" />
-            {language?.language.Main.menu.qa}
-          </Item>
-        </Items>
-        <div
-          style={{
-            width: '100%',
-            display: 'flex',
-            justifyContent: 'center',
-            marginTop: '30px',
-          }}
-        >
-          <DarkModeSwitch
-            onChange={() => {
-              mainDispatch(setTheme(!theme));
-              localStorage.setItem(
-                'BeautyVerse:ThemeMode',
-                JSON.stringify(!theme)
-              );
-            }}
-            checked={theme}
-            size={30}
-          />
-        </div>
-        <FooterContainer>
-          <FooterContent>
-            <Icons>
-              <LanguageBg>
-                <FaFacebook />
-              </LanguageBg>
-              <LanguageBg>
-                <FaInstagram />
-              </LanguageBg>
-              <LanguageBg>
-                <FaYoutube />
-              </LanguageBg>
-            </Icons>
-
-            <Languages>
-              <LanguageBg
-                active={active === 'ka' ? 'true' : 'false'}
-                onClick={() => {
-                  mainDispatch(setLanguage('ka'));
-                  localStorage.setItem(
-                    'BeautyVerse:Language',
-                    JSON.stringify('ka')
-                  );
-                }}
-              >
-                <Flag code="geo" className="lang" />
-              </LanguageBg>
-              <LanguageBg
-                active={active === 'en' ? 'true' : 'false'}
-                onClick={() => {
-                  mainDispatch(setLanguage('en'));
-                  localStorage.setItem(
-                    'BeautyVerse:Language',
-                    JSON.stringify('en')
-                  );
-                }}
-              >
-                <Flag code="usa" className="lang" />
-              </LanguageBg>
-              <LanguageBg
-                active={active === 'ru' ? 'true' : 'false'}
-                onClick={() => {
-                  mainDispatch(setLanguage('ru'));
-                  localStorage.setItem(
-                    'BeautyVerse:Language',
-                    JSON.stringify('ru')
-                  );
-                }}
-              >
-                <Flag code="rus" className="langR" />
-              </LanguageBg>
-            </Languages>
-          </FooterContent>
-          {currentUser != undefined ? (
-            <LogoutBtn onClick={Logout}>
-              <GiExitDoor />
-              {language?.language.Main.menu.logout}
-            </LogoutBtn>
-          ) : (
-            <LogoutBtn
-              onClick={async () => {
-                navigate('/login');
+  const list = (anchor) => {
+    let userDestination;
+    if (currentUser?.type === 'user') {
+      if (isMobile) {
+        userDestination = `/api/v1/users/${currentUser?._id}/contact`;
+      } else {
+        userDestination = `/api/v1/users/${currentUser?._id}/audience`;
+      }
+    } else {
+      userDestination = `/api/v1/users/${currentUser?._id}`;
+    }
+    return (
+      <Box
+        sx={{
+          width: anchor === 'top' || anchor === 'bottom' ? 'auto' : 360,
+        }}
+        role="presentation"
+        onClick={toggleDrawer(anchor, false)}
+        onKeyDown={toggleDrawer(anchor, false)}
+      >
+        <Cont>
+          <Items>
+            <div
+              onClick={
+                currentUser
+                  ? () => {
+                      navigate(userDestination);
+                    }
+                  : () => {
+                      navigate('/login');
+                    }
+              }
+              style={{
+                color: 'inherit',
+                display: 'flex',
+                alignItems: 'center',
+                textDecoration: 'none',
               }}
             >
-              <GiExitDoor />
-              {language?.language.Main.menu.login}
-            </LogoutBtn>
-          )}
-          {/* <Copyright>&#169; beautyverse</Copyright>{" "} */}
-        </FooterContainer>
-      </Cont>
-    </Box>
-  );
+              <Item>
+                <Profile>
+                  {!currentUser?.cover ? (
+                    <FaUser className="user" />
+                  ) : (
+                    <Img src={currentUser?.cover} alt="cover" />
+                  )}
+                </Profile>
+                <span>{language?.language.Main.menu.profile}</span>
+              </Item>
+            </div>
+
+            <Item
+              onClick={
+                currentUser
+                  ? () => props?.setOpen(true)
+                  : () => navigate('/login')
+              }
+            >
+              <Badge
+                badgeContent={props?.notifLength}
+                overlap="circular"
+                color="secondary"
+              >
+                <MdCircleNotifications className="icon" />{' '}
+              </Badge>
+              <span>{language?.language.Main.menu.notifications}</span>
+            </Item>
+            <Item
+              onClick={async () => {
+                navigate('/rules');
+              }}
+            >
+              <FcRules className="icon" />
+              {language?.language.Main.menu.tr}
+            </Item>
+            <Item
+              onClick={async () => {
+                navigate('/privacy');
+              }}
+              style={{ flexDirection: 'column' }}
+            >
+              <MdSecurity className="icon" />
+              {language?.language.Main.menu.privacy?.split('', 9)}
+              {!language?.language.Main.menu.privacy?.includes('Pr') && '.'}
+            </Item>
+            <Item
+              onClick={async () => {
+                navigate('/howwokrs');
+              }}
+            >
+              <FcWorkflow className="icon" />
+              {language?.language.Main.menu.howitworks}
+            </Item>
+            <Item
+              onClick={async () => {
+                navigate('/questions');
+              }}
+            >
+              <BsQuestionLg className="icon" />
+              {language?.language.Main.menu.qa}
+            </Item>
+          </Items>
+          <div
+            style={{
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+              marginTop: '30px',
+            }}
+          >
+            <DarkModeSwitch
+              onChange={() => {
+                mainDispatch(setTheme(!theme));
+                localStorage.setItem(
+                  'BeautyVerse:ThemeMode',
+                  JSON.stringify(!theme)
+                );
+              }}
+              checked={theme}
+              size={30}
+            />
+          </div>
+          <FooterContainer>
+            <FooterContent>
+              <Icons>
+                <LanguageBg>
+                  <FaFacebook />
+                </LanguageBg>
+                <LanguageBg>
+                  <FaInstagram />
+                </LanguageBg>
+                <LanguageBg>
+                  <FaYoutube />
+                </LanguageBg>
+              </Icons>
+
+              <Languages>
+                <LanguageBg
+                  active={active === 'ka' ? 'true' : 'false'}
+                  onClick={() => {
+                    mainDispatch(setLanguage('ka'));
+                    localStorage.setItem(
+                      'BeautyVerse:Language',
+                      JSON.stringify('ka')
+                    );
+                  }}
+                >
+                  <Flag code="geo" className="lang" />
+                </LanguageBg>
+                <LanguageBg
+                  active={active === 'en' ? 'true' : 'false'}
+                  onClick={() => {
+                    mainDispatch(setLanguage('en'));
+                    localStorage.setItem(
+                      'BeautyVerse:Language',
+                      JSON.stringify('en')
+                    );
+                  }}
+                >
+                  <Flag code="usa" className="lang" />
+                </LanguageBg>
+                <LanguageBg
+                  active={active === 'ru' ? 'true' : 'false'}
+                  onClick={() => {
+                    mainDispatch(setLanguage('ru'));
+                    localStorage.setItem(
+                      'BeautyVerse:Language',
+                      JSON.stringify('ru')
+                    );
+                  }}
+                >
+                  <Flag code="rus" className="langR" />
+                </LanguageBg>
+              </Languages>
+            </FooterContent>
+            {currentUser != undefined ? (
+              <LogoutBtn onClick={Logout}>
+                <GiExitDoor />
+                {language?.language.Main.menu.logout}
+              </LogoutBtn>
+            ) : (
+              <LogoutBtn
+                onClick={async () => {
+                  navigate('/login');
+                }}
+              >
+                <GiExitDoor />
+                {language?.language.Main.menu.login}
+              </LogoutBtn>
+            )}
+            {/* <Copyright>&#169; beautyverse</Copyright>{" "} */}
+          </FooterContainer>
+        </Cont>
+      </Box>
+    );
+  };
 
   const useStyles = makeStyles((theme) => ({
     root: {

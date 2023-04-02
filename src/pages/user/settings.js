@@ -14,6 +14,7 @@ import makeAnimated from 'react-select/animated';
 import Switch from '@mui/material/Switch';
 import { Spinner } from '../../components/loader';
 import axios from 'axios';
+import { UpdateTargetUserActiveStatus } from '../../redux/user';
 
 const animatedComponents = makeAnimated();
 
@@ -34,19 +35,6 @@ export const Settings = () => {
       navigate('/');
     }
   }, []);
-
-  // useEffect(() => {
-  //   const getPass = async () => {
-  //     await axios
-  //       .get(
-  //         '/api/v1/users/' + currentUser._id + '/password'
-  //       )
-  //       .then((data) => {
-  //         console.log(data.data.data.user.password);
-  //       });
-  //   };
-  //   getPass();
-  // }, []);
 
   // success messaage open
   const [open, setOpen] = React.useState(false);
@@ -140,6 +128,7 @@ export const Settings = () => {
   // deactivate or active account
   const ControlActivity = async () => {
     try {
+      dispatch(UpdateTargetUserActiveStatus(!targetUser?.active));
       const response = await axios.patch(
         `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}`,
         {
@@ -162,30 +151,18 @@ export const Settings = () => {
   }, 300);
 
   return (
-    <>
-      {loading ? (
-        <Content
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Spinner />
-        </Content>
-      ) : (
-        <Content>
-          <Success
-            open={open}
-            setOpen={setOpen}
-            title={language?.language.User.userPage.succesChange}
-          />
-          <ChangePassword
-            targetUser={targetUser}
-            setOpen={setOpen}
-            language={language}
-          />
-          {/* <div
+    <Content>
+      <Success
+        open={open}
+        setOpen={setOpen}
+        title={language?.language.User.userPage.succesChange}
+      />
+      <ChangePassword
+        targetUser={targetUser}
+        setOpen={setOpen}
+        language={language}
+      />
+      {/* <div
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -209,72 +186,72 @@ export const Settings = () => {
               options={countries}
             />
           </div> */}
-          {targetUser?._id === currentUser?._id && (
-            <>
-              {targetUser?.active ? (
-                <div>
-                  <h4
-                    style={{
-                      color: theme ? '#fff' : '#111',
-                      margin: '30px 0 0 0',
-                    }}
-                  >
-                    Deactivate account!
-                  </h4>
-                  <div
-                    style={{
-                      color: theme ? '#666' : '#111',
-                      margin: '5px 0 10px 0',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                    }}
-                  >
-                    <AiOutlineEye />
-                    <span>(Everyone can see your profile now)</span>
-                  </div>
-                  <div>
-                    <Switch
-                      size="large"
-                      checked={targetUser?.active}
-                      onChange={ControlActivity}
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <h4
-                    style={{
-                      color: theme ? '#fff' : '#111',
-                      margin: '50px 0 0 0',
-                    }}
-                  >
-                    Active account!
-                  </h4>
-                  <div
-                    style={{
-                      color: theme ? '#666' : '#111',
-                      margin: '5px 0 10px 0',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                    }}
-                  >
-                    <AiOutlineEyeInvisible />
-                    <span>(Nobody can see your profile now)</span>
-                  </div>
-                  <div>
-                    <Switch
-                      size="large"
-                      checked={targetUser?.active}
-                      onChange={ControlActivity}
-                    />
-                  </div>
-                </div>
-              )}
-            </>
+      {targetUser?._id === currentUser?._id && (
+        <>
+          {targetUser?.active ? (
+            <div>
+              <h4
+                style={{
+                  color: theme ? '#fff' : '#111',
+                  margin: '30px 0 0 0',
+                }}
+              >
+                Deactivate account!
+              </h4>
+              <div
+                style={{
+                  color: theme ? '#666' : '#111',
+                  margin: '5px 0 10px 0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                }}
+              >
+                <AiOutlineEye />
+                <span>(Everyone can see your profile now)</span>
+              </div>
+              <div>
+                <Switch
+                  size="large"
+                  checked={targetUser?.active}
+                  onChange={ControlActivity}
+                />
+              </div>
+            </div>
+          ) : (
+            <div>
+              <h4
+                style={{
+                  color: theme ? '#fff' : '#111',
+                  margin: '30px 0 0 0',
+                }}
+              >
+                Active account!
+              </h4>
+              <div
+                style={{
+                  color: theme ? '#666' : '#111',
+                  margin: '5px 0 10px 0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                }}
+              >
+                <AiOutlineEyeInvisible />
+                <span>(Nobody can see your profile now)</span>
+              </div>
+              <div>
+                <Switch
+                  size="large"
+                  checked={targetUser?.active}
+                  onChange={ControlActivity}
+                />
+              </div>
+            </div>
           )}
-          {/* {targetUser?._id === currentUser?._id && (
+        </>
+      )}
+      {/* {targetUser?._id === currentUser?._id && (
             <>
               {!requested?.request ? (
                 <div>
@@ -321,9 +298,7 @@ export const Settings = () => {
               )}
             </>
           )} */}
-        </Content>
-      )}
-    </>
+    </Content>
   );
 };
 

@@ -3,9 +3,7 @@ import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import { TiDeleteOutline } from 'react-icons/ti';
 import { MdOutlinePlaylistAdd } from 'react-icons/md';
-import { ImCheckmark } from 'react-icons/im';
 import { GiConfirmed } from 'react-icons/gi';
-import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
 import { workingDaysOptions } from '../../data/registerDatas';
 import useWindowDimensions from '../../functions/dimensions';
@@ -15,6 +13,7 @@ import AlertDialog from '../../components/dialog';
 import Warrning from '../../snackBars/success';
 import axios from 'axios';
 import { setRerenderCurrentUser } from '../../redux/rerenders';
+import { UpdateWDHours } from '../../redux/user';
 
 const animatedComponents = makeAnimated();
 
@@ -39,7 +38,7 @@ export const WorkingDays = ({ targetUser, language }) => {
   // add service to firebase
   const AddWorkingDay = async () => {
     var val = targetUser?.workingDays?.find(
-      (item) => item.value === addWorkingDayInput.value
+      (item) => item.value === addWorkingDayInput
     );
     if (addWorkingDayInput === '') {
       setEditWorkingDay(false);
@@ -55,7 +54,7 @@ export const WorkingDays = ({ targetUser, language }) => {
         const response = await axios.post(
           `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}/workingdays`,
           {
-            value: addWorkingDayInput.value,
+            value: addWorkingDayInput,
           }
         );
         const data = await response.data;
@@ -66,13 +65,22 @@ export const WorkingDays = ({ targetUser, language }) => {
     }
   };
   // add service to firebase
-  const AddWorkingDayHours = async (itemId, itemValue) => {
+  const AddWorkingDayHours = async (itemId, itemValue, indx) => {
     if (!addHoursInput && addHoursFirstlyInput === '') {
       setAlert({
         active: true,
         title: 'Hours not defined',
       });
     } else {
+      dispatch(
+        UpdateWDHours({
+          index: indx,
+          newHours:
+            editHours.value === itemValue
+              ? addHoursInput
+              : addHoursFirstlyInput,
+        })
+      );
       await axios.patch(
         `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}/workingdays/${itemId}`,
         {
@@ -126,67 +134,6 @@ export const WorkingDays = ({ targetUser, language }) => {
 
   // color mode
   const theme = useSelector((state) => state.storeMain.theme);
-  const CustomStyle = {
-    singleValue: (base, state) => ({
-      ...base,
-      color: state.isSelected
-        ? theme
-          ? '#333'
-          : '#f3f3f3'
-        : theme
-        ? '#f3f3f3'
-        : '#333',
-    }),
-    placeholder: (base, state) => ({
-      ...base,
-      color: state.isSelected
-        ? theme
-          ? '#333'
-          : '#f3f3f3'
-        : theme
-        ? '#f3f3f3'
-        : '#333',
-    }),
-    input: (base, state) => ({
-      ...base,
-      color: theme ? '#f3f3f3' : '#333',
-      fontSize: '16px',
-    }),
-    menuList: (base, state) => ({
-      ...base,
-      backgroundColor: theme ? '#333' : '#f3f3f3',
-    }),
-    option: (base, state) => ({
-      ...base,
-      backgroundColor: state.isSelected
-        ? theme
-          ? '#f3f3f3'
-          : '#333'
-        : theme
-        ? '#333'
-        : '#f3f3f3',
-      color: state.isSelected
-        ? theme
-          ? '#333'
-          : '#f3f3f3'
-        : theme
-        ? '#f3f3f3'
-        : '#333',
-      fontSize: '14px',
-    }),
-    control: (baseStyles, state) => ({
-      ...baseStyles,
-      backgroundColor: theme ? '#333' : '#fff',
-      borderColor: state.isFocused ? 'rgba(0,0,0,0)' : 'rgba(0,0,0,0.1)',
-      width: '38vw',
-      minHeight: '2vw',
-      cursor: 'pointer',
-      '@media only screen and (max-width: 1200px)': {
-        width: '80vw',
-        fontSize: '14px',
-      },
-    }),
-  };
 
   return (
     <SectionContainer>
@@ -205,17 +152,28 @@ export const WorkingDays = ({ targetUser, language }) => {
           </>
         )}
         {editWorkingDay && (
-          <SelectContainer style={{ display: 'flex', gap: '10px' }}>
+          <SelectContainer
+            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
+          >
             <Select
-              placeholder={language?.language.User.userPage.workingDays}
-              components={animatedComponents}
-              onChange={(value) => {
-                setAddWorkingDayInput(value);
+              onChange={(e) => {
+                setAddWorkingDayInput(e.target.value);
               }}
-              styles={CustomStyle}
-              options={workingDaysOpt}
+              value={addWorkingDayInput}
+            >
+              {workingDaysOpt?.map((item, index) => {
+                return (
+                  <option key={index} value={item.value}>
+                    {item.label}
+                  </option>
+                );
+              })}
+            </Select>
+            <GiConfirmed
+              className="add"
+              onClick={AddWorkingDay}
+              style={{ fontSize: '22px' }}
             />
-            <ImCheckmark className="add" onClick={AddWorkingDay} />
           </SelectContainer>
         )}
         <SectionList>
@@ -225,7 +183,7 @@ export const WorkingDays = ({ targetUser, language }) => {
               <SectionItemContainer key={index}>
                 <SectionItem>
                   <span>{item?.label}</span>
-                  {targetUser?.authenticationId !== currentUser?.uid ? (
+                  {targetUser?._id !== currentUser?._id ? (
                     <>
                       {wd?.hours && (
                         <AddationalValue>
@@ -258,7 +216,8 @@ export const WorkingDays = ({ targetUser, language }) => {
                                 ? addHoursInput
                                 : addHoursFirstlyInput
                             }
-                            placeholder="10:00 - 18:00"
+                            placeholder="ex: 10:00 - 18:00"
+                            autoFocus
                             onChange={
                               editHours.value === wd.value
                                 ? (e) => setAddHoursInput(e.target.value)
@@ -268,22 +227,19 @@ export const WorkingDays = ({ targetUser, language }) => {
 
                           <GiConfirmed
                             onClick={async () => {
-                              await AddWorkingDayHours(wd._id, wd.value);
+                              await AddWorkingDayHours(wd._id, wd.value, index);
                               editHours.value === wd.value
                                 ? setEditHours(false)
                                 : setAddHoursFirstlyInput('');
                             }}
-                            style={{
-                              color: 'green',
-                              cursor: 'pointer',
-                            }}
+                            className="confirm"
                           />
                         </InputContainer>
                       )}
                     </>
                   )}
                 </SectionItem>
-                {targetUser?.authenticationId === currentUser?.uid && (
+                {targetUser?._id === currentUser?._id && (
                   <>
                     <TiDeleteOutline
                       className="remove"
@@ -317,107 +273,6 @@ export const WorkingDays = ({ targetUser, language }) => {
   );
 };
 
-const Content = styled.div`
-  display: flex;
-  align-items: start;
-  justify-content: start;
-  padding-top: 1vw;
-  padding-left: 1.5vw;
-  width: 100%;
-  height: 100%;
-  flex-wrap: wrap;
-  gap: 0.5vw;
-  margin-bottom: 5vw;
-  background: green;
-
-  @media only screen and (max-width: 600px) {
-    width: 90vw;
-  }
-
-  .loadingIcon {
-    font-size: 3vw;
-  }
-`;
-
-const ContentContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: start;
-  justify-content: start;
-  padding-top: 1vw;
-  padding-left: 4vw;
-  width: 100%;
-  // min-height: 57vh;
-  height: 60vh;
-  gap: 1vw;
-  padding-bottom: 3vw;
-  overflow-y: scroll;
-  overflow-x: hidden;
-
-  @media only screen and (max-width: 600px) {
-    width: 90vw;
-    height: calc(${(props) => props.height}px - 72vw);
-    padding-top: 5vw;
-    padding-left: 2vw;
-    gap: 5vw;
-  }
-
-  animation: fadeIn 0.5s;
-  -webkit-animation: fadeIn 0.5s;
-  -moz-animation: fadeIn 0.5s;
-  -o-animation: fadeIn 0.5s;
-  -ms-animation: fadeIn 0.5s;
-
-  @keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-
-  @-moz-keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-
-  @-webkit-keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-
-  @-o-keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-
-  @-ms-keyframes fadeIn {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-
-  .loadingIcon {
-    font-size: 3vw;
-  }
-`;
-
 const WrapperOne = styled.div`
   width: auto;
   display: flex;
@@ -435,8 +290,23 @@ const WrapperOne = styled.div`
 
 const SelectContainer = styled.div`
   width: 42vw;
+  height: 2.5vw;
   @media only screen and (max-width: 600px) {
     width: 90vw;
+    height: 7.5vw;
+  }
+`;
+
+const Select = styled.select`
+  padding: 7px 15px;
+  border-radius: 5px;
+  border: none;
+  background: ${(props) => props.theme.secondLevel};
+  color: ${(props) => props.theme.font};
+  cursor: pointer;
+
+  :focus {
+    outline: none;
   }
 `;
 
@@ -480,6 +350,7 @@ const SectionContainer = styled.div`
     gap: 3vw;
     margin-top: 3vw;
     font-size: 3.5vw;
+    height: auto;
   }
 `;
 
@@ -507,7 +378,7 @@ const SectionWrapper = styled.div`
     cursor: pointer;
 
     @media only screen and (max-width: 600px) {
-      font-size: 6vw;
+      font-size: 6.5vw;
       flex-direction: column;
     }
 
@@ -537,7 +408,7 @@ const SectionItemContainer = styled.div`
   padding: 10px;
   display: flex;
   align-items: center;
-  font-size: 14px;
+  font-size: 12px;
   transition: ease 200;
   color: ${(props) => props.theme.font};
 
@@ -546,8 +417,9 @@ const SectionItemContainer = styled.div`
   // }
 
   @media only screen and (max-width: 600px) {
-    width: 87vw;
+    width: 91vw;
     padding-right: 3vw;
+    height: 7vw;
     gap: 1vw;
   }
 `;
@@ -565,6 +437,7 @@ const SectionItem = styled.div`
   width: 100%;
   color: ${(props) => props.theme.font};
   height: 2.5vw;
+  white-space: nowrap;
 
   @media only screen and (max-width: 600px) {
     width: 81vw;
@@ -613,13 +486,24 @@ const InputContainer = styled.div`
   border-radius: 0.25vw;
   box-sizing: border-box;
   background: ${(props) => props.theme.secondLevel};
+
   @media only screen and (max-width: 600px) {
     position: relative;
     border-radius: 1vw;
     gap: 1vw;
-    height: 7.5vw;
-    width: 28vw;
-    padding: 0 2vw;
+    height: 6.5vw;
+    width: 37vw;
+    padding: 0;
+  }
+
+  .confirm {
+    color: green;
+    cursor: pointer;
+    font-size: 18px;
+
+    @media only screen and (max-width: 600px) {
+      margin-right: 2vw;
+    }
   }
 `;
 
@@ -635,14 +519,14 @@ const Input = styled.input`
   font-size: 16px;
 
   @media only screen and (max-width: 600px) {
-    width: 10vw;
+    width: 25vw;
     border-radius: 50vw;
     padding-left: 3vw;
     height: 70%;
   }
 
-  :placeholder {
-    font-size: 14px;
+  ::placeholder {
+    font-size: 12px;
   }
 
   :focus {

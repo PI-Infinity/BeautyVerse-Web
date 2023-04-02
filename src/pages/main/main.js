@@ -35,20 +35,20 @@ const Main = (props) => {
 
   return (
     <>
-      {isMobile && (
+      {/* {isMobile && (
         <MobileFilter filterOpen={filterOpen}>
-          <FilterMobile />
+          <FilterMobile setPage={props.setPage} />
         </MobileFilter>
-      )}
+      )} */}
       <Container height={height}>
         {!isMobile && (
           <FilterSection>
-            <Filter />
+            <Filter setPage={props.setPage} />
           </FilterSection>
         )}
         <MainSection>
           <FilterContainer>
-            <CategoryFilter />
+            <CategoryFilter setPage={props.setPage} />
             <Ads
               left={true}
               leftAd="https://res.cloudinary.com/dmmumy2b1/image/upload/v1668849735/Beautyverse/shop_ggr6lu.jpg"

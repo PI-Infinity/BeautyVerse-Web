@@ -16,24 +16,24 @@ export const ReviewList = (props) => {
   const DeleteReview = async (id) => {
     const url = `https://beautyverse.herokuapp.com/api/v1/users/${props.targetUser?._id}/feeds/${props?.currentFeed?._id}/reviews/${id}`;
     try {
+      props.setFeedObj((prev) => {
+        return {
+          ...prev,
+          feed: {
+            ...prev.feed,
+            reviews: prev.feed.reviews.filter(
+              (review) => review.reviewId !== id
+            ),
+          },
+          next: prev.next,
+        };
+      });
       const response = await fetch(url, { method: 'DELETE' });
 
       if (response.status === 200) {
         const data = await response.json();
 
         // Update the feed.reviews array by filtering out the deleted review
-        props.setFeedObj((prev) => {
-          return {
-            ...prev,
-            feed: {
-              ...prev.feed,
-              reviews: prev.feed.reviews.filter(
-                (review) => review.reviewId !== id
-              ),
-            },
-            next: prev.next,
-          };
-        });
       } else {
         console.error('Error deleting review:', response.status);
       }
@@ -41,6 +41,8 @@ export const ReviewList = (props) => {
       console.log('Error fetching data:', error);
     }
   };
+
+  //
 
   return (
     <ReviewListContainer>
@@ -55,8 +57,8 @@ export const ReviewList = (props) => {
                 width: '100%',
               }}
             >
-              {item.reviewer.cover ? (
-                <Img src={item.reviewer.cover} alt="beautyverse" />
+              {item?.reviewer.cover ? (
+                <Img src={item.reviewer?.cover} alt="beautyverse" />
               ) : (
                 <UserProfileEmpty>
                   <FaUser className="user" />
@@ -87,9 +89,9 @@ export const ReviewList = (props) => {
                 width: '100%',
               }}
             >
-              <Text>{item.text}</Text>
-              {(props.currentUser?._id === item.reviewer.id ||
-                props.id === props.currentUser._id) && (
+              <Text>{item?.text}</Text>
+              {(props.currentUser?._id === item.reviewer?.id ||
+                props?.id === props.currentUser?._id) && (
                 <MdOutlineRemove
                   onClick={() => DeleteReview(item.reviewId)}
                   style={{
@@ -97,6 +99,7 @@ export const ReviewList = (props) => {
                     textAlign: 'center',
                     fontSize: '16px',
                     cursor: 'pointer',
+                    color: 'red',
                   }}
                   className="remove"
                 />

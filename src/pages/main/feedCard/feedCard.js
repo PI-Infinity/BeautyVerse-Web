@@ -29,8 +29,8 @@ export const FeedCard = (props) => {
   const [render, setRender] = useState(false);
 
   const [starObj, setStarObj] = useState({
-    check: props.feed.checkIfStared,
-    starsLength: props.feed.starsLength,
+    check: props?.feed?.checkIfStared,
+    starsLength: props?.feed?.starsLength,
   });
 
   // loading feeds
@@ -63,6 +63,7 @@ export const FeedCard = (props) => {
   // give heart to user
   const SetStar = async () => {
     try {
+      setStarObj({ check: true, starsLength: starObj.starsLength + 1 });
       await axios.post(
         `https://beautyverse.herokuapp.com/api/v1/users/${props?._id}/feeds/${props?.feed?._id}/stars`,
         {
@@ -70,7 +71,7 @@ export const FeedCard = (props) => {
           createdAt: new Date(),
         }
       );
-      if (currentUser?.uid !== props?._id) {
+      if (currentUser?._id !== props?._id) {
         await axios.post(
           `https://beautyverse.herokuapp.com/api/v1/users/${props?._id}/notifications`,
           {
@@ -94,7 +95,6 @@ export const FeedCard = (props) => {
         //   feed: `/api/v1/users/${props?._id}/feeds/${props.feed?._id}`,
         // });
       }
-      setStarObj({ check: true, starsLength: starObj.starsLength + 1 });
     } catch (error) {
       console.error(error);
     }
@@ -102,16 +102,18 @@ export const FeedCard = (props) => {
 
   // remove heart
   const RemoveStar = async () => {
-    const url = `https://beautyverse.herokuapp.com/api/v1/users/${props?._id}/feeds/${props?.feed?._id}/stars/${currentUser?._id}`;
-    const response = await fetch(url, { method: 'DELETE' })
-      .then((response) => response.json())
-      .then(async (data) => {
-        setStarObj({ check: false, starsLength: starObj.starsLength - 1 });
-      })
+    try {
+      setStarObj({ check: false, starsLength: starObj.starsLength - 1 });
+      const url = `https://beautyverse.herokuapp.com/api/v1/users/${props?._id}/feeds/${props?.feed?._id}/stars/${currentUser?._id}`;
+      const response = await fetch(url, { method: 'DELETE' })
+        .then((response) => response.json())
 
-      .catch((error) => {
-        console.log('Error fetching data:', error);
-      });
+        .catch((error) => {
+          console.log('Error fetching data:', error);
+        });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   // open report
@@ -167,7 +169,7 @@ export const FeedCard = (props) => {
   }, [props?.feed]);
 
   return (
-    <Main feed={props?.feed?.name}>
+    <Main feed={props?.feed?.name} ref={props.lastFeedRef}>
       <Container
         onClick={
           props?.feed?.fileFormat === 'video'

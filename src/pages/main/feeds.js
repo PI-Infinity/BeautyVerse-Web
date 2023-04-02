@@ -30,15 +30,28 @@ export const Feeds = (props) => {
       <Wrapper id="feed">
         {feeds?.map((item, index) => {
           if (item.feed) {
-            return (
-              <FeedCard
-                key={index}
-                {...item}
-                index={index}
-                filterOpen={props.filterOpen}
-                socket={props.socket}
-              />
-            );
+            if (feeds.length === index + 1) {
+              return (
+                <FeedCard
+                  lastFeedRef={props.lastFeedElementRef}
+                  key={index}
+                  {...item}
+                  index={index}
+                  filterOpen={props.filterOpen}
+                  socket={props.socket}
+                />
+              );
+            } else {
+              return (
+                <FeedCard
+                  key={index}
+                  {...item}
+                  index={index}
+                  filterOpen={props.filterOpen}
+                  socket={props.socket}
+                />
+              );
+            }
           }
         })}
       </Wrapper>

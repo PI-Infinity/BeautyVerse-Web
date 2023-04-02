@@ -5,6 +5,7 @@ import { CgSearch } from 'react-icons/cg';
 import { MdClear, MdOutlinePersonPin } from 'react-icons/md';
 import { TbArrowBigRightLines } from 'react-icons/tb';
 import { setSearch } from '../../redux/filter';
+import { setUserListClear } from '../../redux/main';
 import { ProceduresOptions } from '../../data/registerDatas';
 import { useNavigate } from 'react-router-dom';
 import { Language } from '../../context/language';
@@ -81,6 +82,8 @@ export const Search = (props) => {
         return (
           <Item
             onClick={async () => {
+              await props.setPage(1);
+              await dispatch(setUserListClear());
               await dispatch(setSearch(item.value));
               await setSrch(item.label);
               await dispatch(setRerenderUserList());
@@ -154,6 +157,8 @@ export const Search = (props) => {
           <MdClear
             className="clearicon"
             onClick={async () => {
+              await props.setPage(1);
+              await dispatch(setUserListClear());
               await setSrch('');
               await dispatch(setSearch(''));
               setFocus(false);
@@ -164,10 +169,16 @@ export const Search = (props) => {
           className="profileicon"
           onClick={
             window.location.pathname === '/'
-              ? () => {
+              ? async () => {
+                  await props.setPage(1);
+                  await dispatch(setUserListClear());
+                  await dispatch(setRerenderUserList());
                   navigate('/cards');
                 }
-              : () => {
+              : async () => {
+                  await props.setPage(1);
+                  await dispatch(setUserListClear());
+                  await dispatch(setRerenderUserList());
                   navigate('/');
                 }
           }

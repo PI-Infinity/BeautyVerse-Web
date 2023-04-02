@@ -3,9 +3,9 @@ import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import { TiDeleteOutline } from 'react-icons/ti';
 import { MdOutlinePlaylistAdd } from 'react-icons/md';
-import { ImCheckmark } from 'react-icons/im';
 import { GiConfirmed } from 'react-icons/gi';
 import Select from 'react-select';
+import { UpdateProcedurePrice, setTargetUser } from '../../redux/user';
 import makeAnimated from 'react-select/animated';
 import {
   ProceduresOptions,
@@ -24,13 +24,16 @@ import { WorkingDays } from '../../pages/user/workingDays';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import { Language } from '../../context/language';
 
 const animatedComponents = makeAnimated();
 
 export const Services = () => {
   const proceduresOptions = ProceduresOptions();
   const [loading, setLoading] = useState(true);
-  const [targetUser, language] = useOutletContext();
+  const language = Language();
+  const targetUser = useSelector((state) => state.storeUser.targetUser);
+
   const currentUser = JSON.parse(
     localStorage.getItem('Beautyverse:currentUser')
   );
@@ -47,8 +50,6 @@ export const Services = () => {
   const [addPriceFirstly, setAddPriceFirstly] = useState('');
 
   const [alert, setAlert] = useState('');
-
-  console.log(targetUser.procedures);
 
   // add service to firebase
   const AddProcedure = async () => {
@@ -78,14 +79,24 @@ export const Services = () => {
       }
     }
   };
+
   // add service to firebase
-  const AddProcedurePrice = async (itemId, itemValue) => {
+  const AddProcedurePrice = async (itemId, itemValue, indx) => {
     if (!addProcedurePriceInput && addPriceFirstly === '') {
       setAlert({
         active: true,
         title: 'input field',
       });
     } else {
+      dispatch(
+        UpdateProcedurePrice({
+          index: indx,
+          newPrice:
+            editProcedurePrice.value === itemValue
+              ? addProcedurePriceInput
+              : addPriceFirstly,
+        })
+      );
       let response;
       await axios.patch(
         `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}/procedures/${itemId}`,
@@ -108,7 +119,7 @@ export const Services = () => {
   // delete service
   const Deleting = async (itemId) => {
     if (targetUser?.procedures?.length > 1) {
-      const url = `/api/v1/users/${targetUser?._id}/procedures/${itemId}`;
+      const url = `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}/procedures/${itemId}`;
       const response = await fetch(url, { method: 'DELETE' })
         .then((response) => response.json())
         .then(() => dispatch(setRerenderCurrentUser()))
@@ -199,7 +210,7 @@ export const Services = () => {
       ...baseStyles,
       backgroundColor: theme ? '#333' : '#fff',
       borderColor: state.isFocused ? 'rgba(0,0,0,0)' : 'rgba(0,0,0,0.1)',
-      width: '38vw',
+      width: '20vw',
       minHeight: '2vw',
       cursor: 'pointer',
       '@media only screen and (max-width: 1200px)': {
@@ -211,64 +222,35 @@ export const Services = () => {
 
   // create tab navigator
   // tab state
-  const [value, setValue] = React.useState(0);
-  const [filterItem, setFilterItem] = React.useState('Hairdressing');
-
-  const StyledTab = styled(Tab)({
-    '&.Mui-selected': {
-      color: 'secondary',
-      fontSize: '14px',
-      '@media only screen and (max-width: 1200px)': {
-        fontSize: '12px',
-      },
-    },
-    '&.MuiTab-root': {
-      color: '#ee99fc',
-      fontSize: '14px',
-      '@media only screen and (max-width: 1200px)': {
-        fontSize: '12px',
-      },
-    },
-  });
+  const [activeFilter, setActiveFilter] = useState('');
 
   function CenteredTabs({ value, setValue, language }) {
-    const handleChange = (event, newValue) => {
-      setValue(newValue);
-    };
-
-    const uniqueLabels = new Set();
-    const tabs = targetUser?.procedures?.map((item, index) => {
-      let x = item.value.indexOf('-');
-      let result = item.value.substring(0, x - 1);
-      let label = proceduresOptions.find((it) => it.value === result);
-      if (label && !uniqueLabels.has(label.value)) {
-        uniqueLabels.add(label.value);
-        return (
-          <StyledTab
-            label={label.label}
-            key={index}
-            onClick={() => setFilterItem(label.value)}
-          />
-        );
-      }
-      return null;
-    });
-
-    return (
-      <Box sx={{ width: '100%', color: '#fff' }}>
-        <Tabs
-          value={value}
-          onChange={handleChange}
-          variant="scrollable"
-          scrollButtons="auto"
-          aria-label="scrollable auto tabs example"
-          indicatorColor="secondary"
-          textColor="secondary"
-        >
-          {tabs}
-        </Tabs>
-      </Box>
-    );
+    const tabs = (() => {
+      const uniqueLabels = new Set();
+      return targetUser?.procedures
+        ?.map((item, index) => {
+          let x = item.value.split(' -');
+          let result = x[0];
+          let label = proceduresOptions.find(
+            (it) => it.value.toLowerCase() === result.toLowerCase()
+          );
+          if (label && !uniqueLabels.has(label.value)) {
+            uniqueLabels.add(label.value);
+            return (
+              <div
+                className={activeFilter === label.value ? 'active' : 'unactive'}
+                key={index}
+                onClick={() => setActiveFilter(label.value)}
+              >
+                {label.label}
+              </div>
+            );
+          }
+          return null;
+        })
+        .filter((tab) => tab !== null);
+    })();
+    return tabs;
   }
 
   setTimeout(() => {
@@ -276,203 +258,207 @@ export const Services = () => {
   }, 300);
 
   return (
-    <>
-      {loading ? (
-        <ContentContainer
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Spinner />
-        </ContentContainer>
-      ) : (
-        <ContentContainer height={height}>
-          <WrapperOne>
-            <WorkingDays targetUser={targetUser} language={language} />
+    <ContentContainer height={height}>
+      <WrapperOne>
+        <WorkingDays targetUser={targetUser} language={language} />
 
-            {/**
-             *
-             *  Procedures Options
-             *
-             */}
-            <SectionContainer>
-              <span style={{ fontWeight: 'bold', marginTop: '1vw' }}>
-                {language?.language.User.userPage.memberServices}:
-              </span>
+        {/**
+         *
+         *  Procedures Options
+         *
+         */}
+        <SectionContainer>
+          <span style={{ fontWeight: 'bold', marginTop: '1vw' }}>
+            {language?.language.User.userPage.memberServices}:
+          </span>
 
-              <SectionWrapper>
-                {targetUser?._id === currentUser?._id && (
-                  <>
-                    {!editProcedure && (
-                      <MdOutlinePlaylistAdd
-                        className="open"
-                        onClick={() => setEditProcedure(true)}
-                      />
-                    )}
-                  </>
-                )}
-                {editProcedure && (
-                  <SelectContainer style={{ display: 'flex', gap: '10px' }}>
-                    <Select
-                      placeholder={language?.language.User.userPage.addService}
-                      components={animatedComponents}
-                      onChange={(value) => {
-                        setAddProcedureInput(value);
-                      }}
-                      styles={CustomStyle}
-                      options={proceduresOptions?.filter((item) => {
-                        let symbolCount = 0;
-                        for (let i = 0; i < item.value.length; i++) {
-                          if (item.value[i] === '-') {
-                            symbolCount++;
-                          }
-                        }
-                        return symbolCount === 2;
-                      })}
-                    />
-                    <ImCheckmark className="add" onClick={AddProcedure} />
-                  </SelectContainer>
-                )}
-                <div style={{ margin: '0 0 5% 0', height: '35px' }}>
-                  <CenteredTabs
-                    value={value}
-                    setValue={setValue}
-                    language={language}
+          <SectionWrapper>
+            {targetUser?._id === currentUser?._id && (
+              <>
+                {!editProcedure && (
+                  <MdOutlinePlaylistAdd
+                    className="open"
+                    onClick={() => setEditProcedure(true)}
                   />
-                </div>
-                <SectionList>
-                  {targetUser?.procedures
-                    ?.filter((item) => item.value.includes(filterItem))
-                    ?.map((cat, index) => {
-                      var item = proceduresOptions?.find(
-                        (item) => item.value === cat.value
-                      );
-                      return (
-                        <SectionItemContainer key={index}>
-                          <SectionItem>
-                            <span>{item?.label}</span>
-                            {targetUser?._id !== currentUser?._id ? (
-                              <>
-                                {cat?.price && (
-                                  <AddationalValue>
-                                    <h4>
-                                      {cat.price}
-                                      {`\u20BE`}
-                                    </h4>
-                                  </AddationalValue>
-                                )}
-                              </>
-                            ) : (
-                              <>
-                                {cat?.price &&
-                                editProcedurePrice.value !== cat.value ? (
-                                  <AddationalValue>
-                                    <h4>
-                                      {cat.price}
-                                      {`\u20BE`}
-                                    </h4>
-                                    <RiEdit2Fill
-                                      className="editIcon"
-                                      onClick={() => {
-                                        setEditProcedurePrice({
-                                          active: true,
-                                          value: cat.value,
-                                        });
-                                        setAddProcedurePriceInput(cat?.price);
-                                      }}
-                                    />
-                                  </AddationalValue>
-                                ) : (
-                                  <InputContainer>
-                                    <Input
-                                      type="number"
-                                      value={
-                                        editProcedurePrice.value === cat.value
-                                          ? addProcedurePriceInput
-                                          : addPriceFirstly
-                                      }
-                                      placeholder={
-                                        language?.language.User.userPage.price
-                                      }
-                                      onFocus={() =>
-                                        setEditProcedurePrice({
-                                          active: true,
-                                          value: cat.value,
-                                        })
-                                      }
-                                      onChange={
-                                        editProcedurePrice.value === cat.value
-                                          ? (e) =>
-                                              setAddProcedurePriceInput(
-                                                e.target.value
-                                              )
-                                          : (e) =>
-                                              setAddPriceFirstly(e.target.value)
-                                      }
-                                    />
-                                    {`\u20BE`}
+                )}
+              </>
+            )}
+            {editProcedure && (
+              <SelectContainer
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                }}
+              >
+                <Select
+                  placeholder={language?.language.User.userPage.addService}
+                  components={animatedComponents}
+                  onChange={(value) => {
+                    setAddProcedureInput(value);
+                  }}
+                  styles={CustomStyle}
+                  options={proceduresOptions?.filter((item) => {
+                    let symbolCount = 0;
+                    for (let i = 0; i < item.value.length; i++) {
+                      if (item.value[i] === '-') {
+                        symbolCount++;
+                      }
+                    }
+                    return symbolCount === 2;
+                  })}
+                />
+                <GiConfirmed
+                  className="add"
+                  onClick={AddProcedure}
+                  style={{ fontSize: '26px' }}
+                />
+              </SelectContainer>
+            )}
+            <FilterNavigator>
+              <div
+                className={activeFilter === '' ? 'active' : 'unactive'}
+                onClick={() => setActiveFilter('')}
+              >
+                {lang === 'ka' ? 'ყველა' : lang === 'ru' ? 'все' : 'All'}
+              </div>
 
-                                    <GiConfirmed
-                                      onClick={async () => {
-                                        await AddProcedurePrice(
-                                          cat._id,
-                                          cat.value
-                                        );
-                                        editProcedurePrice.value === cat.value
-                                          ? setEditProcedurePrice(false)
-                                          : setAddPriceFirstly(false);
-                                      }}
-                                      style={{
-                                        color: 'green',
-                                        cursor: 'pointer',
-                                      }}
-                                    />
-                                  </InputContainer>
-                                )}
-                              </>
+              <CenteredTabs width={width} />
+            </FilterNavigator>
+            <SectionList>
+              {targetUser?.procedures
+                ?.filter((item) =>
+                  item.value
+                    .toLowerCase()
+                    .startsWith(activeFilter.toLowerCase())
+                )
+                ?.map((cat, index) => {
+                  var item = proceduresOptions?.find(
+                    (item) => item.value === cat.value
+                  );
+                  return (
+                    <SectionItemContainer key={index}>
+                      <SectionItem>
+                        <div style={{ width: '70%' }}>{item?.label}</div>
+                        {targetUser?._id !== currentUser?._id ? (
+                          <>
+                            {cat?.price && (
+                              <AddationalValue>
+                                <h4>
+                                  {cat.price}
+                                  {`\u20BE`}
+                                </h4>
+                              </AddationalValue>
                             )}
-                          </SectionItem>
-                          {targetUser?._id === currentUser?._id && (
-                            <>
-                              <TiDeleteOutline
-                                className="remove"
-                                onClick={() => {
-                                  setConfirmRemove(true);
-                                  setRemoveData(cat?._id);
-                                }}
-                              />
-                              <AlertDialog
-                                title={language?.language.User.userPage.confirm}
-                                text={
-                                  language?.language.User.userPage
-                                    .removeServiceText
-                                }
-                                open={confirmRemove}
-                                setOpen={setConfirmRemove}
-                                function={() => Deleting(removeData)}
-                                language={language}
-                              />
-                            </>
-                          )}
-                        </SectionItemContainer>
-                      );
-                    })}
-                </SectionList>
-              </SectionWrapper>
-            </SectionContainer>
-          </WrapperOne>
+                          </>
+                        ) : (
+                          <>
+                            {cat?.price &&
+                            editProcedurePrice.value !== cat.value ? (
+                              <AddationalValue>
+                                <h4>
+                                  {cat.price}
+                                  {`\u20BE`}
+                                </h4>
+                                <RiEdit2Fill
+                                  className="editIcon"
+                                  onClick={() => {
+                                    setEditProcedurePrice({
+                                      active: true,
+                                      value: cat.value,
+                                    });
+                                    setAddProcedurePriceInput(cat?.price);
+                                  }}
+                                />
+                              </AddationalValue>
+                            ) : (
+                              <InputContainer>
+                                <Input
+                                  type="number"
+                                  value={
+                                    editProcedurePrice.value === cat.value
+                                      ? addProcedurePriceInput
+                                      : addPriceFirstly
+                                  }
+                                  placeholder={
+                                    language?.language.User.userPage.price
+                                  }
+                                  onFocus={() =>
+                                    setEditProcedurePrice({
+                                      active: true,
+                                      value: cat.value,
+                                    })
+                                  }
+                                  onChange={
+                                    editProcedurePrice.value === cat.value
+                                      ? (e) =>
+                                          setAddProcedurePriceInput(
+                                            e.target.value
+                                          )
+                                      : (e) =>
+                                          setAddPriceFirstly(e.target.value)
+                                  }
+                                />
+                                {`\u20BE`}
 
-          <Warrning
-            open={alert?.active}
-            setOpen={setAlert}
-            type="error"
-            title={alert?.title}
-          />
-        </ContentContainer>
-      )}
-    </>
+                                <GiConfirmed
+                                  onClick={async () => {
+                                    await AddProcedurePrice(
+                                      cat._id,
+                                      cat.value,
+                                      index
+                                    );
+                                    editProcedurePrice.value === cat.value
+                                      ? setEditProcedurePrice(false)
+                                      : setAddPriceFirstly(false);
+                                  }}
+                                  style={{
+                                    color: 'green',
+                                    cursor: 'pointer',
+                                    fontSize: '18px',
+                                  }}
+                                />
+                              </InputContainer>
+                            )}
+                          </>
+                        )}
+                      </SectionItem>
+                      {targetUser?._id === currentUser?._id && (
+                        <>
+                          <TiDeleteOutline
+                            className="remove"
+                            onClick={() => {
+                              setConfirmRemove(true);
+                              setRemoveData(cat?._id);
+                            }}
+                          />
+                          <AlertDialog
+                            title={language?.language.User.userPage.confirm}
+                            text={
+                              language?.language.User.userPage.removeServiceText
+                            }
+                            open={confirmRemove}
+                            setOpen={setConfirmRemove}
+                            function={() => Deleting(removeData)}
+                            language={language}
+                          />
+                        </>
+                      )}
+                    </SectionItemContainer>
+                  );
+                })}
+            </SectionList>
+          </SectionWrapper>
+        </SectionContainer>
+      </WrapperOne>
+
+      <Warrning
+        open={alert?.active}
+        setOpen={setAlert}
+        type="error"
+        title={alert?.title}
+      />
+    </ContentContainer>
   );
 };
 
@@ -516,7 +502,7 @@ const ContentContainer = styled.div`
 
   @media only screen and (max-width: 600px) {
     width: 100vw;
-    height: calc(${(props) => props.height}px - 72vw);
+    height: auto;
     padding-top: 5vw;
     padding-left: 4vw;
     padding-right: 0;
@@ -697,7 +683,7 @@ const SectionItemContainer = styled.div`
   padding: 10px;
   display: flex;
   align-items: center;
-  font-size: 14px;
+  font-size: 12px;
   transition: ease 200;
   color: ${(props) => props.theme.font};
 
@@ -706,7 +692,7 @@ const SectionItemContainer = styled.div`
   // }
 
   @media only screen and (max-width: 600px) {
-    width: 87vw;
+    width: 91vw;
     padding-right: 3vw;
     gap: 1vw;
   }
@@ -725,6 +711,8 @@ const SectionItem = styled.div`
   width: 100%;
   color: ${(props) => props.theme.font};
   height: 2.5vw;
+  white-space: nowrap;
+  overflow: hidden;
 
   @media only screen and (max-width: 600px) {
     width: 81vw;
@@ -773,12 +761,13 @@ const InputContainer = styled.div`
   border-radius: 0.25vw;
   box-sizing: border-box;
   background: ${(props) => props.theme.secondLevel};
+
   @media only screen and (max-width: 600px) {
     position: relative;
     border-radius: 1vw;
     gap: 1vw;
-    height: 7.5vw;
-    width: 28vw;
+    height: 6.5vw;
+    width: 31vw;
     padding: 0 2vw;
   }
 `;
@@ -795,17 +784,74 @@ const Input = styled.input`
   font-size: 16px;
 
   @media only screen and (max-width: 600px) {
-    width: 10vw;
+    width: 15vw;
     border-radius: 50vw;
     padding-left: 3vw;
-    height: 70%;
+    height: 60%;
   }
 
-  :placeholder {
-    font-size: 14px;
+  ::placeholder {
+    font-size: 12px;
   }
 
   :focus {
     outline: none;
+  }
+`;
+
+const FilterNavigator = styled.div`
+  display: flex;
+  align-items: center;
+  height: 30px;
+  padding: 5px 0;
+  margin-top: 5px;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  width: 40vw;
+
+  @media only screen and (max-width: 600px) {
+    width: 95vw;
+  }
+
+  .active {
+    width: 100%;
+    padding: 10px 15px;
+    font-size: 12px;
+    background: ${(props) => props.theme.secondLevel};
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 10px;
+    white-space: nowrap;
+  }
+  .unactive {
+    width: 100%;
+    padding: 10px 15px;
+    font-size: 12px;
+    background: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 10px;
+    white-space: nowrap;
+  }
+
+  /* width */
+  ::-webkit-scrollbar {
+    width: 0vw;
+    height: 0vw;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background-color: #222;
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #1e1e1e;
   }
 `;

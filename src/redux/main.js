@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, current } from '@reduxjs/toolkit';
 
 const initialState = {
   enterSearch: false,
@@ -38,9 +38,13 @@ export const main = createSlice({
     setOpenMobileMenu: (state, action) => {
       state.openMobileMenu = action.payload;
     },
+
+    // target user
     setTargetUser: (state, action) => {
       state.targetUser = action.payload;
     },
+
+    //
     setCoverToGallery: (state, action) => {
       state.coverToGallery = action.payload;
     },
@@ -60,7 +64,21 @@ export const main = createSlice({
       state.followings = action.payload;
     },
     setUserList: (state, action) => {
-      state.userList = action.payload;
+      const newFeeds = action.payload;
+
+      // Create a map from the new feeds list
+      const newFeedsMap = new Map(newFeeds.map((feed) => [feed._id, feed]));
+
+      // Remove duplicates from the current state
+      state.userList = state.userList.filter(
+        (feed) => !newFeedsMap.has(feed._id)
+      );
+
+      // Merge the current state with the new feeds
+      state.userList = [...state.userList, ...newFeeds];
+    },
+    setUserListClear: (state, action) => {
+      state.userList = [];
     },
     UpdateUserList: (state, action) => {
       state.userList.pop();
@@ -111,11 +129,13 @@ export const {
   setOpenMobileMenu,
   setUser,
   setTargetUser,
+  UpdateProcedurePrice,
   setCoverToGallery,
   setCoverUrl,
   setRerender,
   setLoading,
   setUserList,
+  setUserListClear,
   UpdateUserList,
   setCoverInfo,
   setFollowings,

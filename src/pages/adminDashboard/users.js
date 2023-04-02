@@ -160,7 +160,7 @@ export default function Users() {
               <h4>{rows?.length}</h4>
             </div>
             {checkedUsers?.length === 1 && checkedUsers[0]?.type !== 'user' && (
-              <ProceduresList id={checkedUsers[0]?.uid} />
+              <ProceduresList id={checkedUsers[0]?._id} />
             )}
             {/* {checkedUsers?.length === 1 && checkedUsers[0]?.type !== "user" && (
               <EditUser />

@@ -3,41 +3,33 @@ import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   setName,
+  setUserType,
   setEmail,
   setPhoneNumber,
   setPassword,
-  setCountryCode,
   setConfirmPassowrd,
 } from '../../redux/register';
 import { FaUserEdit } from 'react-icons/fa';
 import { ImProfile } from 'react-icons/im';
 import { MdAddBusiness } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
-import MapAutocomplete from '../../components/mapAutocomplete';
+import AddressAutocomplete from '../../components/addresAutocomplete';
 import { RiShoppingCartFill } from 'react-icons/ri';
-import ReactGoogleMapLoader from 'react-google-maps-loader';
 import useWindowDimensions from '../../functions/dimensions';
 import { Button } from '../../components/button';
 import { Language } from '../../context/language';
 import { IsMobile } from '../../functions/isMobile';
-import { countries } from '../../data/countryCodes';
-import Select from 'react-select';
 import VerifyEmail from '../../pages/register/verifyPopup';
 import Error from '../../snackBars/success';
 import axios from 'axios';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 
 export const Identify = (props) => {
   const language = Language();
   const isMobile = IsMobile();
   const { height, width } = useWindowDimensions();
 
-  <ReactGoogleMapLoader
-    // params={{
-    //   key: 'AIzaSyBxx8CORlQQBBkbGc-F0yu95DMZaiJkMmo', // Define your api key here
-    //   libraries: 'places,geometry', // To request multiple libraries, separate them with a comma
-    // }}
-    render={(googleMaps) => googleMaps && <div>Google Maps is loaded !</div>}
-  />;
   const mainDispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -57,8 +49,7 @@ export const Identify = (props) => {
             name: registerFields?.name,
             type: type,
             email: registerFields?.email,
-            phone:
-              registerFields?.countryCode?.value + registerFields?.phoneNumber,
+            phone: registerFields?.phoneNumber,
             password: registerFields?.password,
             confirmPassword: registerFields?.confirmPassowrd,
             address: {
@@ -87,7 +78,17 @@ export const Identify = (props) => {
               'Beautyverse:currentUser',
               JSON.stringify(data.data.newUser)
             );
-            navigate(`/api/v1/users/${data.data.newUser._id}`);
+            if (isMobile) {
+              navigate(`/api/v1/users/${data.data.newUser._id}/contact`);
+            } else {
+              navigate(`/api/v1/users/${data.data.newUser._id}/audience`);
+            }
+            mainDispatch(setName(''));
+            mainDispatch(setUserType(''));
+            mainDispatch(setEmail(''));
+            mainDispatch(setPhoneNumber(''));
+            mainDispatch(setPassword(''));
+            mainDispatch(setConfirmPassowrd(''));
           });
       } catch (err) {
         setAlert({
@@ -96,12 +97,23 @@ export const Identify = (props) => {
         });
       }
     } else {
-      navigate(`/register/business`);
+      if (
+        registerFields.name?.length < 3 ||
+        registerFields.phoneNumber?.length < 8 ||
+        registerFields.email?.length < 5 ||
+        registerFields.password?.length < 8 ||
+        registerFields.confirmPassowrd?.length < 8 ||
+        map.length < 1
+      ) {
+        console.log('input fields');
+      } else {
+        navigate(`/register/business`);
+      }
     }
   };
 
   const handleKey = (e) => {
-    e.code === 'Enter' && Register(e);
+    e.code === 'Enter' && SendEmail(e);
   };
 
   // define title icon
@@ -200,18 +212,45 @@ export const Identify = (props) => {
   const [verifyCode, setVerifyCode] = useState('');
   const [verify, setVerify] = useState(false);
 
-  // function SendEmail() {
-  //   const email = registerFields?.email;
-  //   fetch(`https://beautyverse.herokuapp.com/verify?email=${email}`)
-  //     .then((response) => response.json())
-  //     .then((data) => {
-  //       setVerifyCode(data);
-  //       setVerify(true);
-  //     })
-  //     .catch((error) => {
-  //       console.log('Error fetching data:', error);
-  //     });
-  // }
+  function SendEmail() {
+    const email = registerFields?.email;
+    fetch(`https://beautyverse.herokuapp.com/api/v1/verify?email=${email}`)
+      .then((response) => response.json())
+      .then((data) => {
+        setVerifyCode(data);
+        setVerify(true);
+      })
+      .catch((error) => {
+        console.log('Error fetching data:', error);
+      });
+  }
+
+  // phone input styled
+  const containerStyle = {
+    width: '100%',
+    borderRadius: '4px',
+    background: 'none',
+    border: 'none',
+  };
+
+  const buttonStyle = {
+    background: 'none',
+  };
+
+  const inputStyle = {
+    background: 'none',
+    color: theme ? '#fff' : '#111',
+    width: '100%',
+    border: 'none',
+  };
+  const searchStyle = {
+    width: '80%',
+  };
+
+  const dropdownStyle = {
+    width: isMobile ? '45vw' : '18vw',
+    color: '#111',
+  };
 
   return (
     <>
@@ -237,7 +276,13 @@ export const Identify = (props) => {
           {icon}
           <span>{language?.language.Auth.auth.identify}</span>
         </Title>
-        <WrapperContainer onSubmit={Register}>
+        <WrapperContainer
+          onSubmit={
+            type === 'user'
+              ? () => SendEmail()
+              : () => navigate('/register/business')
+          }
+        >
           {!isMobile && (
             <Button
               title={language?.language.Auth.auth.back}
@@ -270,13 +315,13 @@ export const Identify = (props) => {
                     value={registerFields?.name}
                   />
                 </InputWrapper>
-                {/* <InputWrapper> */}
-                <MapAutocomplete
-                  language={language}
-                  address={address}
-                  setAddress={setAddress}
-                />
-                {/* </InputWrapper> */}
+                <InputWrapper>
+                  <AddressAutocomplete
+                    language={language}
+                    address={address}
+                    setAddress={setAddress}
+                  />
+                </InputWrapper>
               </Wrapper>
             </>
             <>
@@ -295,7 +340,19 @@ export const Identify = (props) => {
                   />
                 </InputWrapper>
                 <InputWrapper style={{ display: 'flex', flexDirection: 'row' }}>
-                  <Select
+                  <PhoneInput
+                    containerStyle={containerStyle}
+                    searchStyle={searchStyle}
+                    inputStyle={inputStyle}
+                    dropdownStyle={dropdownStyle}
+                    country={'ge'}
+                    enableSearch
+                    value={registerFields?.countryCode?.code}
+                    onChange={(value) => {
+                      mainDispatch(setPhoneNumber(value));
+                    }}
+                  />
+                  {/* <Select
                     // placeholder={language?.language.Auth.auth.workingDays}
                     defaultValue="+995"
                     defaultInputValue="+995"
@@ -315,7 +372,7 @@ export const Identify = (props) => {
                       mainDispatch(setPhoneNumber(e.target.value))
                     }
                     value={registerFields?.phoneNumber}
-                  />
+                  /> */}
                 </InputWrapper>
               </Wrapper>
             </>
@@ -347,7 +404,7 @@ export const Identify = (props) => {
                     onChange={(e) =>
                       mainDispatch(setConfirmPassowrd(e.target.value))
                     }
-                    onKeyDown={handleKey}
+                    onKeyDown={type === 'user' ? () => handleKey() : undefined}
                   />
                 </InputWrapper>
               </Wrapper>
@@ -362,7 +419,11 @@ export const Identify = (props) => {
                   : language?.language.Auth.auth.next
               }
               type="Submit"
-              function={Register}
+              function={
+                type === 'user'
+                  ? () => SendEmail()
+                  : () => navigate('/register/business')
+              }
             />
           )}
         </WrapperContainer>
@@ -383,7 +444,11 @@ export const Identify = (props) => {
                 : language?.language.Auth.auth.next
             }
             type="Submit"
-            function={Register}
+            function={
+              type === 'user'
+                ? () => SendEmail()
+                : () => navigate('/register/business')
+            }
           />
         </MobileButtons>
       </Container>

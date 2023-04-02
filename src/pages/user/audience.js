@@ -6,6 +6,7 @@ import Avatar from '@mui/material/Avatar';
 import AvatarGroup from '@mui/material/AvatarGroup';
 import UserListDialogMain from '../../pages/user/userListPopup';
 import { Spinner } from '../../components/loader';
+import { AudienceLoader } from '../../components/loader';
 
 export const Audience = () => {
   const [targetUser, language] = useOutletContext();
@@ -58,108 +59,87 @@ export const Audience = () => {
 
   setTimeout(() => {
     setLoading(false);
-  }, 300);
+  }, 400);
 
   return (
-    <>
-      {loading ? (
-        <Content
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Spinner />
-        </Content>
-      ) : (
-        <Content>
-          {!followers && !followings ? (
-            <div
-              style={{
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#ccc',
-              }}
-            >
-              0 {language?.language.User.userPage.user}
-            </div>
+    <Content>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '15px',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          {loading ? (
+            <AudienceLoader />
           ) : (
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '15px',
-              }}
-            >
-              <div
-                style={{ display: 'flex', alignItems: 'center', gap: '15px' }}
-              >
-                {followers && (
-                  <UserListDialogMain
-                    title={language?.language.User.userPage.followers}
-                    users={followers?.list}
-                    type="followers"
-                    targetUser={targetUser}
-                    language={language}
-                    setRender={setRender}
-                    render={render}
-                  />
-                )}
-                <AvatarGroup total={followers?.length}>
-                  {followers?.list.map((item, index) => {
-                    // let us = users?.find((it) => it.id === item.id);
-                    return (
-                      <Avatar
-                        alt={item?.followerName}
-                        src={item?.followerCover}
-                        onClick={() =>
-                          navigate(`/api/v1/users/${item?.followerAuthId}`)
-                        }
-                        style={{ cursor: 'pointer' }}
-                      />
-                    );
-                  })}
-                </AvatarGroup>
-              </div>
-              <div
-                style={{ display: 'flex', alignItems: 'center', gap: '15px' }}
-              >
-                {followings && (
-                  <UserListDialogMain
-                    title={language?.language.User.userPage.followings}
-                    users={followings?.list}
-                    type="followings"
-                    targetUser={targetUser}
-                    language={language}
-                    setRender={setRender}
-                    render={render}
-                  />
-                )}
-                <AvatarGroup total={followings?.length}>
-                  {followings?.list.map((item, index) => {
-                    // let us = users?.find((it) => it.id === item.id);
-                    return (
-                      <Avatar
-                        alt={item?.followingName}
-                        src={item?.followingCover}
-                        onClick={() =>
-                          navigate(`/api/v1/users/${item?.followingAuthId}`)
-                        }
-                        style={{ cursor: 'pointer' }}
-                      />
-                    );
-                  })}
-                </AvatarGroup>
-              </div>
-            </div>
+            <>
+              {followers && (
+                <UserListDialogMain
+                  title={language?.language.User.userPage.followers}
+                  users={followers?.list}
+                  type="followers"
+                  targetUser={targetUser}
+                  language={language}
+                  setRender={setRender}
+                  render={render}
+                />
+              )}
+              <AvatarGroup total={followers?.length}>
+                {followers?.list.map((item, index) => {
+                  // let us = users?.find((it) => it.id === item.id);
+                  return (
+                    <Avatar
+                      alt={item?.followerName}
+                      src={item?.followerCover}
+                      onClick={() =>
+                        navigate(`/api/v1/users/${item?.followerAuthId}`)
+                      }
+                      style={{ cursor: 'pointer' }}
+                    />
+                  );
+                })}
+              </AvatarGroup>
+            </>
           )}
-        </Content>
-      )}
-    </>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          {loading ? (
+            <AudienceLoader />
+          ) : (
+            <>
+              {followings && (
+                <UserListDialogMain
+                  title={language?.language.User.userPage.followings}
+                  users={followings?.list}
+                  type="followings"
+                  targetUser={targetUser}
+                  language={language}
+                  setRender={setRender}
+                  render={render}
+                />
+              )}
+              <AvatarGroup total={followings?.length}>
+                {followings?.list.map((item, index) => {
+                  // let us = users?.find((it) => it.id === item.id);
+                  return (
+                    <Avatar
+                      alt={item?.followingName}
+                      src={item?.followingCover}
+                      onClick={() =>
+                        navigate(`/api/v1/users/${item?.followingAuthId}`)
+                      }
+                      style={{ cursor: 'pointer' }}
+                    />
+                  );
+                })}
+              </AvatarGroup>{' '}
+            </>
+          )}
+        </div>
+      </div>
+    </Content>
   );
 };
 
@@ -184,6 +164,7 @@ const Content = styled.div`
   }
 
   @media only screen and (max-width: 600px) {
+    height: auto;
     justify-content: start;
     padding-top: 6vw;
     padding-left: 12vw;

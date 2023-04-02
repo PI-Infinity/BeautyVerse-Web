@@ -16,7 +16,7 @@ export default function AlertDialog(props) {
   };
 
   return (
-    <div>
+    <div style={{ position: 'absolute', zIndex: 10010 }}>
       <Dialog
         open={props?.open}
         onClose={handleClose}

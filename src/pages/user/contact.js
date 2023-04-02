@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { Links } from '../../pages/user/links';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import MapAutocomplete from '../../components/mapAutocomplete';
+import AddressAutocomplete from '../../components/addresAutocomplete';
 import Map from '../../components/map';
 import useWindowDimensions from '../../functions/dimensions';
 import { GiConfirmed } from 'react-icons/gi';
@@ -16,6 +16,8 @@ import { setAddress } from '../../redux/register';
 import { Spinner } from '../../components/loader';
 import axios from 'axios';
 import { setRerenderCurrentUser } from '../../redux/rerenders';
+import Button from '@mui/material/Button';
+import { BiLocationPlus } from 'react-icons/bi';
 
 export const Contact = () => {
   const [targetUser, language] = useOutletContext();
@@ -91,6 +93,9 @@ export const Contact = () => {
     }
   };
 
+  // open add addresses
+  const [openAddresses, setOpenAddresses] = React.useState(false);
+
   setTimeout(() => {
     setLoading(false);
   }, 300);
@@ -128,9 +133,14 @@ export const Contact = () => {
               <>
                 {editAddress ? (
                   <div
-                    style={{ display: 'flex', alignItems: 'start', gap: '5px' }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'start',
+                      gap: '5px',
+                      width: '80%',
+                    }}
                   >
-                    <MapAutocomplete
+                    <AddressAutocomplete
                       language={language}
                       userMobile="true"
                       address={address}
@@ -138,11 +148,15 @@ export const Contact = () => {
                     />
                     <GiConfirmed
                       className="confirm"
-                      onClick={async (e) => {
-                        e.preventDefault();
-                        await UpdateAddress();
-                        SetEditAddress(false);
-                      }}
+                      onClick={
+                        map?.country?.length > 0
+                          ? async (e) => {
+                              e.preventDefault();
+                              await UpdateAddress();
+                              SetEditAddress(false);
+                            }
+                          : () => SetEditAddress(false)
+                      }
                     />
                   </div>
                 ) : (
@@ -156,7 +170,7 @@ export const Contact = () => {
                   >
                     <MdLocationPin className="location" />
                     {addressDefined}
-                    {targetUser?._id === targetUser?._id && (
+                    {currentUser?._id === targetUser?._id && (
                       <FiEdit
                         className="edit"
                         onClick={() => {
@@ -196,12 +210,22 @@ export const Contact = () => {
                     )}
                   </div>
                   {targetUser?._id === currentUser?._id && (
+                    <Button>
+                      <BiLocationPlus
+                        color="orange"
+                        size={28}
+                        onClick={() => setOpenAddresses(true)}
+                      />
+                    </Button>
+                  )}
+                  {openAddresses && targetUser?._id === currentUser?._id && (
                     <AddAddress
                       language={language}
                       targetUser={targetUser}
                       address={address}
                       setAddress={setAddress}
                       type="true"
+                      setOpenAddresses={setOpenAddresses}
                     />
                   )}
                   <div>
@@ -245,7 +269,8 @@ const Container = styled.div`
     gap: 5vw;
     overflow-x: hidden;
     overflow-y: scroll;
-    height: calc(${(props) => props.height}px - 70vw);
+    height: auto;
+
     width: 100%;
     color: ${(props) => props.theme.font};
   }

@@ -8,6 +8,7 @@ import {
   setSpecialist,
   setObject,
 } from '../../redux/filter';
+import { setUserListClear } from '../../redux/main';
 import Select from 'react-select';
 import { useNavigate } from 'react-router-dom';
 import CheckBox from '@mui/material/Checkbox';
@@ -134,7 +135,7 @@ export const Filter = (props) => {
 
   return (
     <FilterContainer scroll={scroll?.toString()}>
-      {!props.mobile && <Search />}
+      {!props.mobile && <Search setPage={props.setPage} />}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         <Select
           className="basic-single"
@@ -148,6 +149,8 @@ export const Filter = (props) => {
           className="react-select-container"
           styles={CustomStyle}
           onChange={(value) => {
+            props.setPage(1);
+            dispatch(setUserListClear());
             dispatch(setCityFilter(value.value));
           }}
           options={cities?.map((item, index) => {
@@ -158,6 +161,8 @@ export const Filter = (props) => {
           <MdClear
             className="clearicon"
             onClick={() => {
+              props.setPage(1);
+              dispatch(setUserListClear());
               dispatch(setCityFilter(''));
               dispatch(setDistrictFilter(''));
             }}
@@ -178,6 +183,8 @@ export const Filter = (props) => {
             isDisabled={false}
             isLoading={false}
             onChange={(value) => {
+              props.setPage(1);
+              dispatch(setUserListClear());
               dispatch(setDistrictFilter(value.value));
             }}
             className="react-select-container"
@@ -190,7 +197,11 @@ export const Filter = (props) => {
         {districtFilter?.length > 0 && (
           <MdClear
             className="clearicon"
-            onClick={() => dispatch(setDistrictFilter(''))}
+            onClick={() => {
+              props.setPage(1);
+              dispatch(setUserListClear());
+              dispatch(setDistrictFilter(''));
+            }}
           />
         )}
       </div>
@@ -202,6 +213,8 @@ export const Filter = (props) => {
           id="specialists"
           checked={specialist}
           onChange={() => {
+            props.setPage(1);
+            dispatch(setUserListClear());
             dispatch(setSpecialist(!specialist));
           }}
         />
@@ -222,6 +235,8 @@ export const Filter = (props) => {
           name="physical"
           checked={physicalObject}
           onChange={() => {
+            props.setPage(1);
+            dispatch(setUserListClear());
             dispatch(setObject(!physicalObject));
           }}
         />
@@ -240,8 +255,16 @@ export const Filter = (props) => {
           color="f2cd38"
           onClick={
             window.location.pathname === '/recomended'
-              ? () => navigate('/')
-              : () => navigate('/recomended')
+              ? () => {
+                  props.setPage(1);
+                  dispatch(setUserListClear());
+                  navigate('/');
+                }
+              : () => {
+                  props.setPage(1);
+                  dispatch(setUserListClear());
+                  navigate('/recomended');
+                }
           }
           size={22}
           style={{ cursor: 'pointer' }}

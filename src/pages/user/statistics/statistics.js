@@ -15,15 +15,64 @@ import { Monthly } from '../../../pages/user/statistics/monthly';
 import { Yearly } from '../../../pages/user/statistics/yearly';
 import useWindowDimensions from '../../../functions/dimensions';
 import { Spinner } from '../../../components/loader';
+import {
+  setTargetUserFollowers,
+  setTargetUserFollowings,
+} from '../../../redux/user';
 
 export const UserStatistics = () => {
-  const [user, language] = useOutletContext();
+  const [targetUser, language] = useOutletContext();
   const [loading, setLoading] = React.useState(true);
 
   // import current user from redux state
   const currentUser = JSON.parse(
     localStorage.getItem('Beautyverse:currentUser')
   );
+
+  useEffect(() => {
+    async function GetAudience(userId) {
+      const response = await fetch(
+        `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}/followings`
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          dispatch(
+            setTargetUserFollowings({
+              length: data.length,
+              list: data.data.followings,
+            })
+          );
+        })
+        .catch((error) => {
+          console.log('Error fetching data:', error);
+        });
+    }
+    if (currentUser) {
+      GetAudience();
+    }
+  }, [targetUser?._id]);
+  useEffect(() => {
+    async function GetAudience(userId) {
+      const response = await fetch(
+        `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}/followers`
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          dispatch(
+            setTargetUserFollowers({
+              length: data.length,
+              list: data.data.followers,
+            })
+          );
+        })
+        .catch((error) => {
+          console.log('Error fetching data:', error);
+        });
+    }
+    if (currentUser) {
+      GetAudience();
+    }
+  }, [targetUser?._id]);
 
   const { height, width } = useWindowDimensions();
   const isMobile = IsMobile();
@@ -36,116 +85,16 @@ export const UserStatistics = () => {
   // tab state
   const [value, setValue] = React.useState(0);
 
-  /**
-   * get statistics from firebase
-   */
-  const [stats, setStats] = useState([]);
-
-  useEffect(() => {
-    const data = onSnapshot(
-      collection(db, 'users', `${currentUser?._id}`, 'visitors-profile'),
-      (snapshot) => {
-        setStats(snapshot.docs.map((doc) => doc.data()));
-      }
-    );
-    return data;
-  }, [currentUser]);
-
-  // define followers
-  const [followers, setFollowers] = useState([]);
-  React.useEffect(() => {
-    const data = onSnapshot(
-      collection(db, 'users', `${user?.id}`, 'followers'),
-      (snapshot) => {
-        setFollowers(snapshot.docs.map((doc) => doc.data()));
-      }
-    );
-  }, [currentUser]);
-  /**
-   * Define starts
-   */
-  const [stars, setStars] = useState([]);
-  const DefineStars = () => {
-    const starsGroupRef = onSnapshot(
-      collectionGroup(db, `${user?.id + '+stars'}`),
-      (snapshot) => {
-        setStars(snapshot.docs.map((doc) => doc.data()));
-      }
-    );
-  };
-
-  useEffect(() => {
-    DefineStars();
-  }, [currentUser]);
-
-  // weekly
-  const weekly = stats?.filter((item, index) => {
-    if (
-      item?.indicator?.slice(0, 3) === new Date().toString().slice(4, 7) &&
-      item?.indicator?.slice(7, 11) === new Date().toString().slice(11, 15)
-    ) {
-      if (
-        item.indicator.slice(4, 6) === new Date().toString().slice(8, 10) ||
-        parseInt(item.indicator.slice(4, 6)) ===
-          parseInt(new Date().toString().slice(8, 10) - 1) ||
-        parseInt(item.indicator.slice(4, 6)) ===
-          parseInt(new Date().toString().slice(8, 10) - 2) ||
-        parseInt(item.indicator.slice(4, 6)) ===
-          parseInt(new Date().toString().slice(8, 10) - 3) ||
-        parseInt(item.indicator.slice(4, 6)) ===
-          parseInt(new Date().toString().slice(8, 10) - 4) ||
-        parseInt(item.indicator.slice(4, 6)) ===
-          parseInt(new Date().toString().slice(8, 10) - 5) ||
-        parseInt(item.indicator.slice(4, 6)) ===
-          parseInt(new Date().toString().slice(8, 10) - 6)
-      )
-        return item;
-    }
-  });
-
   // define active tab
   let activeTab;
   if (value === 0) {
-    activeTab = (
-      <Daily
-        stats={stats}
-        theme={theme}
-        followers={followers}
-        stars={stars}
-        language={language}
-      />
-    );
+    activeTab = <Daily theme={theme} language={language} />;
   } else if (value === 1) {
-    activeTab = (
-      <Weekly
-        stats={stats}
-        theme={theme}
-        followers={followers}
-        stars={stars}
-        language={language}
-      />
-    );
+    activeTab = <Weekly theme={theme} language={language} />;
   } else if (value === 2) {
-    activeTab = (
-      <Monthly
-        stats={stats}
-        theme={theme}
-        followers={followers}
-        stars={stars}
-        language={language}
-      />
-    );
+    activeTab = <Monthly theme={theme} language={language} />;
   } else {
-    activeTab = (
-      <Yearly
-        stats={stats}
-        theme={theme}
-        followers={followers}
-        stars={stars}
-        user={user}
-        language={language}
-      />
-    );
+    activeTab = <Yearly theme={theme} user={targetUser} language={language} />;
   }
 
   setTimeout(() => {
@@ -153,31 +102,12 @@ export const UserStatistics = () => {
   }, 300);
 
   return (
-    <>
-      {loading ? (
-        <Container
-          height={height}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Spinner />
-        </Container>
-      ) : (
-        <Container height={height}>
-          <div style={{ margin: '2% 0 0 2%', height: '60px' }}>
-            <CenteredTabs
-              value={value}
-              setValue={setValue}
-              language={language}
-            />
-          </div>
-          <Content>{activeTab}</Content>
-        </Container>
-      )}
-    </>
+    <Container height={height}>
+      <div style={{ margin: '2% 0 0 2%', height: '60px' }}>
+        <CenteredTabs value={value} setValue={setValue} language={language} />
+      </div>
+      <Content>{activeTab}</Content>
+    </Container>
   );
 };
 

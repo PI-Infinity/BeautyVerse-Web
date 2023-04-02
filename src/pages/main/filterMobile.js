@@ -21,8 +21,9 @@ import Tab from '@mui/material/Tab';
 import Badge from '@mui/material/Badge';
 import { MdDeleteForever } from 'react-icons/md';
 import { MdClear } from 'react-icons/md';
+import { setUserListClear } from '../../redux/main';
 
-export const FilterMobile = () => {
+export const FilterMobile = (props) => {
   const { height, width } = useWindowDimensions();
   const [loading, setLoading] = React.useState(true);
   const dispatch = useDispatch();
@@ -163,6 +164,8 @@ export const FilterMobile = () => {
               color="red"
               size={22}
               onClick={() => {
+                props.setPage(1);
+                dispatch(setUserListClear());
                 dispatch(setCityFilter(''));
                 dispatch(setDistrictFilter(''));
                 dispatch(setFilter(''));
@@ -176,12 +179,12 @@ export const FilterMobile = () => {
       </div>
       {value === 'filter' ? (
         <>
-          <Filter />
-          <CategoryFilter />
+          <Filter setPage={props.setPage} />
+          <CategoryFilter setPage={props.setPage} />
         </>
       ) : (
         <div style={{ width: '100%' }}>
-          <Search />
+          <Search setPage={props.setPage} />
         </div>
       )}
       {/* <div style={{ margin: "5vw 0 10vw 0" }}>
@@ -219,7 +222,7 @@ const Container = styled.div`
   }
 `;
 
-export const Filter = () => {
+export const Filter = (props) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const language = Language();
@@ -351,6 +354,8 @@ export const Filter = () => {
           isLoading={false}
           className="react-select-container"
           onChange={(value) => {
+            props.setPage(1);
+            dispatch(setUserListClear());
             dispatch(setCityFilter(value.value));
           }}
           styles={CustomStyle}
@@ -362,6 +367,8 @@ export const Filter = () => {
           <MdClear
             className="clearicon"
             onClick={() => {
+              props.setPage(1);
+              dispatch(setUserListClear());
               dispatch(setCityFilter(''));
               dispatch(setDistrictFilter(''));
             }}
@@ -388,6 +395,8 @@ export const Filter = () => {
             isDisabled={false}
             isLoading={false}
             onChange={(value) => {
+              props.setPage(1);
+              dispatch(setUserListClear());
               dispatch(setDistrictFilter(value.value));
             }}
             styles={CustomStyle}
@@ -399,7 +408,11 @@ export const Filter = () => {
         {districtFilter?.length > 0 && (
           <MdClear
             className="clearicon"
-            onClick={() => dispatch(setDistrictFilter(''))}
+            onClick={() => {
+              props.setPage(1);
+              dispatch(setUserListClear());
+              dispatch(setDistrictFilter(''));
+            }}
           />
         )}
       </div>
@@ -411,6 +424,8 @@ export const Filter = () => {
             name="Specialists"
             checked={specialist}
             onChange={() => {
+              props.setPage(1);
+              dispatch(setUserListClear());
               dispatch(setSpecialist(!specialist));
             }}
           />
@@ -425,6 +440,8 @@ export const Filter = () => {
             name="physical"
             checked={physicalObject}
             onChange={() => {
+              props.setPage(1);
+              dispatch(setUserListClear());
               dispatch(setObject(!physicalObject));
             }}
           />

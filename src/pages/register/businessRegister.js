@@ -2,7 +2,16 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import { Button } from '../../components/button';
 import { useSelector, useDispatch } from 'react-redux';
-import { setCategories, setWorkingDays } from '../../redux/register';
+import {
+  setCategories,
+  setWorkingDays,
+  setName,
+  setUserType,
+  setEmail,
+  setPhoneNumber,
+  setPassword,
+  setConfirmPassowrd,
+} from '../../redux/register';
 import { useNavigate } from 'react-router-dom';
 import { AiOutlineProfile } from 'react-icons/ai';
 import Select from 'react-select';
@@ -90,6 +99,14 @@ export const BusinessRegister = (props) => {
             'Beautyverse:currentUser',
             JSON.stringify(data.data.newUser)
           );
+          mainDispatch(setName(''));
+          mainDispatch(setUserType(''));
+          mainDispatch(setEmail(''));
+          mainDispatch(setPhoneNumber(''));
+          mainDispatch(setPassword(''));
+          mainDispatch(setConfirmPassowrd(''));
+          mainDispatch(setWorkingDays(''));
+          mainDispatch(setCategories(''));
           navigate(`/api/v1/users/${data.data.newUser._id}`);
         });
     } catch (err) {
@@ -100,7 +117,7 @@ export const BusinessRegister = (props) => {
     }
   };
   const handleKey = (e) => {
-    e.code === 'Enter' && Register();
+    e.code === 'Enter' && SendEmail();
   };
 
   // defined procedures which specialist or salon can to choise
@@ -138,7 +155,7 @@ export const BusinessRegister = (props) => {
         : theme
         ? '#f3f3f3'
         : '#333',
-      maxHeight: '50px',
+      // maxHeight: '50px',
     }),
     input: (base, state) => ({
       ...base,
@@ -221,22 +238,15 @@ export const BusinessRegister = (props) => {
 
   function SendEmail() {
     const email = registerFields?.email;
-    if (registerFields?.email) {
-      fetch(`https://beautyverse.herokuapp.com/emails/verify?email=${email}`)
-        .then((response) => response.json())
-        .then((data) => {
-          setVerifyCode(data);
-          setVerify(true);
-        })
-        .catch((error) => {
-          console.log('Error fetching data:', error);
-        });
-    } else {
-      setAlert({
-        active: true,
-        title: language?.language.Auth.auth.emailUsed,
+    fetch(`https://beautyverse.herokuapp.com/api/v1/verify?email=${email}`)
+      .then((response) => response.json())
+      .then((data) => {
+        setVerifyCode(data);
+        setVerify(true);
+      })
+      .catch((error) => {
+        console.log('Error fetching data:', error);
       });
-    }
   }
 
   return (
@@ -265,7 +275,7 @@ export const BusinessRegister = (props) => {
             ? 'ინფორმაცია მაღაზიის შესახებ'
             : language?.language.Auth.auth.aboutSalon}
         </Title>
-        <WrapperContainer onSubmit={Register}>
+        <WrapperContainer onSubmit={SendEmail}>
           {!isMobile && (
             <Button
               title={language?.language.Auth.auth.back}
@@ -313,6 +323,7 @@ export const BusinessRegister = (props) => {
                     placeholder={language?.language.Auth.auth.workingDays}
                     isMulti
                     components={animatedComponents}
+                    value={registerFields?.workingDays}
                     onChange={(value) => {
                       mainDispatch(setWorkingDays(value));
                     }}
@@ -348,7 +359,7 @@ export const BusinessRegister = (props) => {
             <Button
               title={language?.language.Auth.auth.next}
               type="Submit"
-              function={Register}
+              function={SendEmail}
             />
           )}
         </WrapperContainer>
@@ -364,7 +375,7 @@ export const BusinessRegister = (props) => {
             type="Submit"
             function={
               registerFields?.categories?.length > 0
-                ? () => Register()
+                ? () => SendEmail()
                 : () =>
                     setAlert({
                       active: true,
@@ -403,7 +414,8 @@ export const BusinessRegister = (props) => {
 
 const Container = styled.div`
   width: 100%;
-  height: ${(props) => props.height}px;
+  min-height: ${(props) => props.height}px;
+  height: auto;
   box-sizing: border-box;
   padding-top: 3vw;
   padding-bottom: 5vw;
@@ -414,9 +426,10 @@ const Container = styled.div`
   gap: 2vw;
 
   @media only screen and (max-width: 600px) {
-    justify-content: start;
+    min-height: calc(${(props) => props.height}px - 30vw);
+    justify-content: center;
     padding-bottom: 15vw;
-    padding-top: 40vw;
+    height: auto;
   }
 
   .icon {
@@ -480,14 +493,12 @@ const Wrapper = styled.div`
   gap: 1vw;
   color: ${(props) => props.theme.font};
   background: ${(props) => props.theme.categoryItem};
-  max-height: 400px;
-  overflow-y: ${(props) => (props.cat > 30 ? 'scroll' : 'visible')};
+  // overflow-y: ${(props) => (props.cat > 30 ? 'scroll' : 'visible')};
   height: auto;
   z-index: 900;
 
   @media only screen and (max-width: 600px) {
     justify-content: start;
-    max-height: 300px;
   }
 
   /* width */
@@ -553,57 +564,6 @@ const Selected = styled.select`
 
   :focus {
     outline: none;
-  }
-`;
-
-const InputWrapper = styled.div`
-  width: 18.5vw;
-  height: 2.5vw;
-  border-radius: 0.5vw;
-  box-shadow: 0 0.1vw 0.3vw rgba(2, 2, 2, 0.1);
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: start;
-  gap: 0.5vw;
-  transition: ease-in 200ms;
-  box-sizing: border-box;
-
-  @media only screen and (max-width: 600px) {
-    box-shadow: 0 0.2vw 0.6vw rgba(2, 2, 2, 0.1);
-    width: 45vw;
-    height: 10vw;
-    border-radius: 1.5vw;
-    font-size: 16px;
-  }
-`;
-
-const Input = styled.input`
-  width: 100%;
-  height: 100%;
-  border-radius: 0.5vw;
-  border: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5vw;
-  transition: ease-in 200ms;
-  padding-left: 0.5vw;
-  box-sizing: border-box;
-
-  @media only screen and (max-width: 600px) {
-    border-radius: 1.5vw;
-    padding-left: 2vw;
-    font-size: 16px;
-  }
-
-  :focus {
-    outline: none;
-  }
-
-  ::placeholder {
-    font-size: 12px;
   }
 `;
 

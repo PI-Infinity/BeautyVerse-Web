@@ -1,12 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
 import { setFilter } from '../../redux/filter';
-import { setRerender } from '../../redux/main';
+import { setUserListClear } from '../../redux/main';
 import { useDispatch, useSelector } from 'react-redux';
 import { VerseCategories } from '../../data/categories';
 import useWindowDimensions from '../../functions/dimensions';
 
-export const CategoryFilter = () => {
+export const CategoryFilter = (props) => {
   const { height, width } = useWindowDimensions();
   const dispatch = useDispatch();
   const filter = useSelector((state) => state.storeFilter.filter);
@@ -23,7 +23,9 @@ export const CategoryFilter = () => {
     <FilterContainer height={height}>
       <List height={height}>
         {VerseCategories?.map((item, index) => {
-          return <CategoryItem key={item.id} {...item} />;
+          return (
+            <CategoryItem key={item.id} {...item} setPage={props.setPage} />
+          );
         })}
       </List>
     </FilterContainer>
@@ -86,8 +88,9 @@ const CategoryItem = (props) => {
       <CategoryItemContainer
         className={filter === props.value ? 'active' : ''}
         onClick={() => {
+          props.setPage(1);
+          dispatch(setUserListClear());
           dispatch(setFilter(props.value));
-          dispatch(setRerender());
         }}
         color={filter === props.value ? 'active' : 'none'}
       >

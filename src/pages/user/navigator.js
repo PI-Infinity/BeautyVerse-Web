@@ -91,19 +91,19 @@ export const Navigator = (props) => {
           : 'btn',
       icon: <FaUsers className="icon" />,
     },
-    {
-      id: 6,
-      value: 'statistics',
-      title: props?.language?.language.User.userPage.statistics,
-      onClick: () =>
-        navigate(`/api/v1/users/${props?.targetUser?._id}/statistics`),
-      className:
-        window.location.pathname ===
-        `/api/v1/users/${props?.targetUser?._id}/statistics`
-          ? 'active'
-          : 'btn',
-      icon: <ShowChartIcon className="icon" />,
-    },
+    // {
+    //   id: 6,
+    //   value: 'statistics',
+    //   title: props?.language?.language.User.userPage.statistics,
+    //   onClick: () =>
+    //     navigate(`/api/v1/users/${props?.targetUser?._id}/statistics`),
+    //   className:
+    //     window.location.pathname ===
+    //     `/api/v1/users/${props?.targetUser?._id}/statistics`
+    //       ? 'active'
+    //       : 'btn',
+    //   icon: <ShowChartIcon className="icon" />,
+    // },
     {
       id: 7,
       value: 'settings',
@@ -140,7 +140,7 @@ export const Navigator = (props) => {
     let withoutSettings = list?.filter((item, index) => {
       if (
         props?.currentUser == null ||
-        props?.currentUser?.uid !== props?.targetUser?._id
+        props?.currentUser?._id !== props?.targetUser?._id
       ) {
         return item.value !== 'settings' && item.value !== 'statistics';
       } else {

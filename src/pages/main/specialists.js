@@ -19,10 +19,6 @@ export const Specialists = (props) => {
   // import users
   const userList = useSelector((state) => state.storeMain.userList);
 
-  setTimeout(() => {
-    setLoading(false);
-  }, 500);
-
   const { saveScrollPosition } = useScrollPosition();
 
   useEffect(() => {
@@ -30,6 +26,10 @@ export const Specialists = (props) => {
       saveScrollPosition();
     };
   }, [saveScrollPosition]);
+
+  setTimeout(() => {
+    setLoading(false);
+  }, 500);
 
   return (
     <Container direction={props.direction} height={height}>
@@ -43,15 +43,28 @@ export const Specialists = (props) => {
         {userList ? (
           <>
             {userList?.map((item, index) => {
-              return (
-                <SpecialistsCard
-                  loading={loading}
-                  key={index}
-                  index={index}
-                  {...item}
-                  filterOpen={props.filterOpen}
-                />
-              );
+              if (userList.length === index + 1) {
+                return (
+                  <SpecialistsCard
+                    lastFeedRef={props.lastFeedElementRef}
+                    loading={loading}
+                    key={index}
+                    index={index}
+                    {...item}
+                    filterOpen={props.filterOpen}
+                  />
+                );
+              } else {
+                return (
+                  <SpecialistsCard
+                    loading={loading}
+                    key={index}
+                    index={index}
+                    {...item}
+                    filterOpen={props.filterOpen}
+                  />
+                );
+              }
             })}
           </>
         ) : (

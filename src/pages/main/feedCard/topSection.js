@@ -64,7 +64,7 @@ export const TopSection = (props) => {
               dispatch(setFeedScrollY(window.scrollY));
             }}
             alt={props?.name}
-            src={props?.cover !== undefined ? props?.cover : ''}
+            src={props?.cover ? props?.cover : ''}
             sx={{
               width: 42,
               height: 42,
@@ -100,7 +100,7 @@ export const TopSection = (props) => {
             {props.loading ? (
               <TypeLoader />
             ) : (
-              <>{props?.username !== undefined ? props?.username : type}</>
+              <>{props?.username ? props?.username : type}</>
             )}
           </Category>
         </div>

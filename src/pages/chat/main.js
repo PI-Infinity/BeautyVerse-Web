@@ -21,7 +21,6 @@ const Chat = ({ socket, handleRoomChange, room }) => {
   const [messages, setMessages] = useState([]);
   useEffect(() => {
     socket.on('message', (message) => {
-      console.log(message);
       setMessages((messages) => [...messages, message]);
     });
 

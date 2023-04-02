@@ -13,6 +13,8 @@ import { isWebpSupported } from 'react-image-webp/dist/utils';
 import AlertDialog from '../../components/dialog';
 import { Language } from '../../context/language';
 import { Spinner, CardImageLoader } from '../../components/loader';
+import { useSelector } from 'react-redux';
+import { setTargetUserFeeds } from '../../redux/user';
 
 export const UserFeeds = () => {
   const language = Language();
@@ -36,7 +38,7 @@ export const UserFeeds = () => {
 
   // remove confirming window
   const [confirm, setConfirm] = useState('');
-  const [feeds, setFeeds] = useState('');
+  const feeds = useSelector((state) => state.storeUser.targetUserFeeds);
   useEffect(() => {
     async function GetUser(userId) {
       const response = await fetch(
@@ -44,7 +46,7 @@ export const UserFeeds = () => {
       )
         .then((response) => response.json())
         .then((data) => {
-          setFeeds(data.data.feeds);
+          dispatch(setTargetUserFeeds(data.data.feeds));
         })
         .catch((error) => {
           console.log('Error fetching data:', error);
@@ -60,7 +62,7 @@ export const UserFeeds = () => {
     if (feedsData?.length > 0 && targetUser?.type !== 'user') {
       let list = feedsData.map((item, index) => {
         return (
-          <>
+          <div key={index}>
             {loading ? (
               <GalleryImg>
                 <CardImageLoader />
@@ -111,7 +113,7 @@ export const UserFeeds = () => {
                     controls
                     onClick={() =>
                       navigate(
-                        `/api/v1/users/${currentUser?._id}/feeds/${item?._id}/profile`
+                        `/api/v1/users/${targetUser?._id}/feeds/${item?._id}/profile`
                       )
                     }
                   >
@@ -127,7 +129,7 @@ export const UserFeeds = () => {
                           style={{ zIndex: 5 }}
                           onClick={() =>
                             navigate(
-                              `/api/v1/users/${currentUser?._id}/feeds/${item?._id}/profile`
+                              `/api/v1/users/${targetUser?._id}/feeds/${item?._id}/profile`
                             )
                           }
                         />
@@ -138,7 +140,7 @@ export const UserFeeds = () => {
                           style={{ zIndex: 5 }}
                           onClick={() =>
                             navigate(
-                              `/api/v1/users/${currentUser?._id}/feeds/${item?._id}/profile`
+                              `/api/v1/users/${targetUser?._id}/feeds/${item?._id}/profile`
                             )
                           }
                         />
@@ -150,13 +152,7 @@ export const UserFeeds = () => {
                         style={{ zIndex: 5 }}
                         onClick={() =>
                           navigate(
-                            `/api/v1/users/${currentUser?._id}/feeds/${item?._id}/profile`,
-                            {
-                              state: {
-                                data: item,
-                                targetUser: targetUser,
-                              },
-                            }
+                            `/api/v1/users/${targetUser?._id}/feeds/${item?._id}/profile`
                           )
                         }
                       />
@@ -165,17 +161,14 @@ export const UserFeeds = () => {
                 )}
               </GalleryImg>
             )}
-          </>
+          </div>
         );
       });
-      console.log(list);
       return list;
     }
   };
 
   const list = DefineList(feeds);
-
-  console.log(list);
 
   /** delete image from db and cloud */
   const Deleting = async (itemId, itemName, itemFormat) => {
@@ -343,7 +336,7 @@ const Container = styled.div`
   padding-bottom: 5vw;
 
   @media only screen and (max-width: 600px) {
-    height: calc(${(props) => props.height}px - 60vw);
+    height: auto;
     box-sizing: border-box;
     padding: 2vw 4vw;
   }

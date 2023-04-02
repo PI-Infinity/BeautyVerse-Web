@@ -19,6 +19,16 @@ export const AddReview = (props) => {
   // give heart to currentUser
   const SetStar = async () => {
     try {
+      props.setFeedObj((prev) => {
+        return {
+          ...prev,
+          feed: {
+            ...prev.feed,
+            starsLength: prev.feed.starsLength + 1,
+          },
+          checkIfStared: true,
+        };
+      });
       await axios.post(
         `https://beautyverse.herokuapp.com/api/v1/users/${props?.targetUser._id}/feeds/${props.currentFeed?._id}/stars`,
         {
@@ -39,16 +49,6 @@ export const AddReview = (props) => {
           }
         );
       }
-      props.setFeedObj((prev) => {
-        return {
-          ...prev,
-          feed: {
-            ...prev.feed,
-            starsLength: prev.feed.starsLength + 1,
-          },
-          checkIfStared: true,
-        };
-      });
     } catch (error) {
       console.error(error);
     }
@@ -58,26 +58,28 @@ export const AddReview = (props) => {
 
   // remove heart
   const RemoveStar = async () => {
-    const url = `https://beautyverse.herokuapp.com/api/v1/users/${props.targetUser?._id}/feeds/${props?.currentFeed?._id}/stars/${props.currentUser?._id}`;
-    const response = await fetch(url, { method: 'DELETE' })
-      .then((response) => response.json())
-      .then(async (data) => {
-        props.setFeedObj((prev) => {
-          return {
-            ...prev,
-            feed: {
-              ...prev.feed,
-              starsLength: prev.feed.starsLength - 1,
-            },
-            checkIfStared: false,
-            someobjects: prev.someobjects,
-          };
-        });
-      })
-
-      .catch((error) => {
-        console.log('Error fetching data:', error);
+    try {
+      props.setFeedObj((prev) => {
+        return {
+          ...prev,
+          feed: {
+            ...prev.feed,
+            starsLength: prev.feed.starsLength - 1,
+          },
+          checkIfStared: false,
+          someobjects: prev.someobjects,
+        };
       });
+      const url = `https://beautyverse.herokuapp.com/api/v1/users/${props.targetUser?._id}/feeds/${props?.currentFeed?._id}/stars/${props.currentUser?._id}`;
+      const response = await fetch(url, { method: 'DELETE' })
+        .then((response) => response.json())
+
+        .catch((error) => {
+          console.log('Error fetching data:', error);
+        });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   /**
@@ -87,6 +89,28 @@ export const AddReview = (props) => {
   const SetReview = async () => {
     const newId = v4();
     try {
+      props.setFeedObj((prev) => {
+        return {
+          ...prev,
+          feed: {
+            ...prev.feed,
+            reviews: [
+              {
+                reviewId: newId,
+                reviewer: {
+                  id: currentUser?._id,
+                  name: currentUser?.name,
+                  cover: currentUser.cover,
+                },
+                createdAt: new Date(),
+                text: text,
+              },
+              ...prev.feed.reviews,
+            ],
+          },
+          next: prev.next,
+        };
+      });
       await axios.post(
         `https://beautyverse.herokuapp.com/api/v1/users/${props?.targetUser._id}/feeds/${props.currentFeed?._id}/reviews`,
         {
@@ -114,28 +138,6 @@ export const AddReview = (props) => {
         );
       }
       setText('');
-      props.setFeedObj((prev) => {
-        return {
-          ...prev,
-          feed: {
-            ...prev.feed,
-            reviews: [
-              {
-                reviewId: newId,
-                reviewer: {
-                  id: currentUser?._id,
-                  name: currentUser?.name,
-                  cover: currentUser.cover,
-                },
-                createdAt: new Date(),
-                text: text,
-              },
-              ...prev.feed.reviews,
-            ],
-          },
-          next: prev.next,
-        };
-      });
     } catch (error) {
       console.error(error);
     }

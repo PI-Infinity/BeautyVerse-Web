@@ -6,7 +6,13 @@ import { AiOutlineCloseSquare } from 'react-icons/ai';
 import { storage } from '../../firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useNavigate } from 'react-router-dom';
-import { setRerender, setBackdropOpen, UpdateUserList } from '../../redux/main';
+import {
+  setRerender,
+  setBackdropOpen,
+  UpdateUserList,
+  setUserListClear,
+} from '../../redux/main';
+import { setRerenderUserList } from '../../redux/rerenders';
 import { v4 } from 'uuid';
 import useWindowDimensions from '../../functions/dimensions';
 import Success from '../../snackBars/success';
@@ -17,7 +23,7 @@ import { FaRegSmileBeam } from 'react-icons/fa';
 import { IsMobile } from '../../functions/isMobile';
 import axios from 'axios';
 
-const AddFeed = () => {
+const AddFeed = (props) => {
   const language = Language();
   const { height, width } = useWindowDimensions();
   const isMobile = IsMobile();
@@ -100,6 +106,10 @@ const AddFeed = () => {
                             post: text,
                             fileFormat: 'img',
                           };
+                          // dispatch(
+                          //   UpdateUserList({ ...currentUser, feed: newFeed })
+                          // );
+
                           const response = await axios.post(
                             `https://beautyverse.herokuapp.com/api/v1/users/${currentUser?._id}/feeds`,
                             newFeed
@@ -110,9 +120,8 @@ const AddFeed = () => {
                               lastPostCreatedAt: new Date(),
                             }
                           );
-                          dispatch(
-                            UpdateUserList({ ...currentUser, feed: newFeed })
-                          );
+                          await props.setPage(1);
+                          await dispatch(setUserListClear());
                         } catch (error) {
                           console.error(error);
                         }
@@ -152,7 +161,9 @@ const AddFeed = () => {
                 lastPostCreatedAt: new Date(),
               }
             );
-            dispatch(UpdateUserList({ ...currentUser, feed: newFeed }));
+            await props.setPage(1);
+            await dispatch(setUserListClear());
+            // await dispatch(UpdateUserList({ ...currentUser, feed: newFeed }));
           } catch (error) {
             console.error(error);
           }
@@ -160,6 +171,7 @@ const AddFeed = () => {
       });
     }
     setTimeout(async () => {
+      await dispatch(setRerenderUserList());
       await setFile(null);
       await setResizedObj('');
       await setText('');
