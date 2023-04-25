@@ -15,10 +15,7 @@ import { Monthly } from '../../../pages/user/statistics/monthly';
 import { Yearly } from '../../../pages/user/statistics/yearly';
 import useWindowDimensions from '../../../functions/dimensions';
 import { Spinner } from '../../../components/loader';
-import {
-  setTargetUserFollowers,
-  setTargetUserFollowings,
-} from '../../../redux/user';
+import { setStatistics } from '../../../redux/user';
 
 export const UserStatistics = () => {
   const [targetUser, language] = useOutletContext();
@@ -32,38 +29,11 @@ export const UserStatistics = () => {
   useEffect(() => {
     async function GetAudience(userId) {
       const response = await fetch(
-        `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}/followings`
+        `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}/statistics`
       )
         .then((response) => response.json())
         .then((data) => {
-          dispatch(
-            setTargetUserFollowings({
-              length: data.length,
-              list: data.data.followings,
-            })
-          );
-        })
-        .catch((error) => {
-          console.log('Error fetching data:', error);
-        });
-    }
-    if (currentUser) {
-      GetAudience();
-    }
-  }, [targetUser?._id]);
-  useEffect(() => {
-    async function GetAudience(userId) {
-      const response = await fetch(
-        `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}/followers`
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          dispatch(
-            setTargetUserFollowers({
-              length: data.length,
-              list: data.data.followers,
-            })
-          );
+          dispatch(setStatistics(data.data.data));
         })
         .catch((error) => {
           console.log('Error fetching data:', error);
@@ -160,7 +130,28 @@ const Container = styledcomponent.div`
   overflow-x: hidden;
   
   @media only screen and (max-width: 600px) {
-    height: calc(${(props) => props.height}px - 70vw);
+    height: auto;
+
+    /* width */
+::-webkit-scrollbar {
+  width: 0vw;
+  height: 0vw;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background-color: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background-color: #222;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background-color: #1e1e1e;
+}
   }
 `;
 

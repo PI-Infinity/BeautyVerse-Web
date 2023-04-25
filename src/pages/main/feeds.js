@@ -32,14 +32,16 @@ export const Feeds = (props) => {
           if (item.feed) {
             if (feeds.length === index + 1) {
               return (
-                <FeedCard
-                  lastFeedRef={props.lastFeedElementRef}
-                  key={index}
-                  {...item}
-                  index={index}
-                  filterOpen={props.filterOpen}
-                  socket={props.socket}
-                />
+                <>
+                  <FeedCard
+                    lastFeedRef={props.lastFeedElementRef}
+                    key={index}
+                    {...item}
+                    index={index}
+                    filterOpen={props.filterOpen}
+                    socket={props.socket}
+                  />
+                </>
               );
             } else {
               return (
@@ -68,6 +70,7 @@ const Container = styled.div`
   @media only screen and (max-width: 600px) {
     // height: ${(props) => props.height}px;
     width: 100vw;
+    overscroll-behavior: none;
   }
 `;
 
@@ -86,7 +89,6 @@ const Wrapper = styled.div`
   justify-content: start;
   flex-direction: column;
   align-items: center;
-  // overflow-y: scroll;
   overflow-x: hidden;
   box-sizing: border-box;
   padding: 1.5vw 0;

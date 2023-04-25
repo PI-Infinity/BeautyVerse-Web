@@ -33,6 +33,7 @@ export default function AlertDialog(props) {
           <Button onClick={handleClose}>
             {props?.language?.language.User.userPage.cancel}
           </Button>
+
           <Button onClick={handleClickOpen} autoFocus>
             {props?.language?.language.User.userPage.remove}
           </Button>

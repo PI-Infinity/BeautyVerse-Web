@@ -1,27 +1,49 @@
-import * as React from "react";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
+import * as React from 'react';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import { useNavigate } from 'react-router-dom';
+import {
+  setName,
+  setUserType,
+  setEmail,
+  setPhoneNumber,
+  setPassword,
+  setConfirmPassowrd,
+  setCurrentUser,
+} from '../../redux/register';
+import { useDispatch } from 'react-redux';
 
 export default function VerifyEmail({
   open,
   setOpen,
-  Register,
+  Verify,
   verifyCode,
   email,
   language,
+  code,
+  setCode,
 }) {
-  const [code, setCode] = React.useState("");
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
   const handleClickOpen = () => {
     setOpen(true);
   };
 
   const handleClose = () => {
     setOpen(false);
+    navigate('/login');
+    dispatch(setName(''));
+    dispatch(setUserType(''));
+    dispatch(setEmail(''));
+    dispatch(setPhoneNumber(''));
+    dispatch(setPassword(''));
+    dispatch(setConfirmPassowrd(''));
   };
 
   return (
@@ -48,13 +70,7 @@ export default function VerifyEmail({
           <Button onClick={handleClose}>
             {language?.language.Auth.auth.cancel}
           </Button>
-          <Button
-            onClick={
-              code === verifyCode
-                ? () => Register()
-                : () => alert(`${language?.language.Auth.auth.wrongVerifyCode}`)
-            }
-          >
+          <Button onClick={Verify}>
             {language?.language.Auth.auth.register}
           </Button>
         </DialogActions>

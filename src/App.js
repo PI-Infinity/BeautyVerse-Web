@@ -39,6 +39,7 @@ import {
   setCountry,
   setLoadFeeds,
   setUserListClear,
+  setMachineId,
 } from './redux/main';
 import { GlobalStyles, darkTheme, lightTheme } from './context/theme';
 import { Navigator } from './components/navigator';
@@ -50,8 +51,12 @@ import Headroom from 'react-headroom';
 import { io } from 'socket.io-client';
 import axios from 'axios';
 import { setRerenderNotifications } from './redux/rerenders';
+import ScrollDialog from './components/terms';
+import { Language } from './context/language';
+import { privacy, terms, qa, usage } from './data/pageTexts';
 
 function App() {
+  const language = Language();
   /**
    * get user
    */
@@ -64,22 +69,23 @@ function App() {
    * Define machine unique id
    */
 
-  // useEffect(() => {
-  //   const DefineMachineId = async () => {
-  //     try {
-  //       await axios.get('https://beautyverse.herokuapp.com/machineId').then((data) => {
-  //         console.log(data.data);
-  //       });
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   };
-  //   DefineMachineId();
-  // }, []);
+  useEffect(() => {
+    const GetMachineId = async () => {
+      const response = await axios.get(
+        'https://beautyverse.herokuapp.com/machineId'
+      );
+      dispatch(setMachineId(response.data));
+    };
+    try {
+      GetMachineId();
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
 
   // define last visit date
   useEffect(() => {
-    const DefineMachineId = async () => {
+    const GetLastVisit = async () => {
       try {
         await axios.patch(
           `https://beautyverse.herokuapp.com/api/v1/users/${currentUser?._id}`,
@@ -92,19 +98,9 @@ function App() {
       }
     };
     if (currentUser) {
-      DefineMachineId();
+      GetLastVisit();
     }
   }, []);
-  // socket server
-  // const [socket, setSocket] = useState(null);
-  // useEffect(() => {
-  //   setSocket(io('http://localhost:5000'));
-  // }, []);
-  // useEffect(() => {
-  //   if (currentUser) {
-  //     socket?.emit('newUser', currentUser._id);
-  //   }
-  // }, [socket, currentUser]);
 
   const [loading, setLoading] = useState(true);
 
@@ -124,8 +120,7 @@ function App() {
     (state) => state.storeRerenders.rerenderCurrentUser
   );
 
-  const language = useSelector((state) => state.storeMain.language);
-  const country = useSelector((state) => state.storeMain.country);
+  const lang = useSelector((state) => state.storeMain.language);
 
   // open mobile filter
   const filterOpen = useSelector((state) => state.storeMain.mobileFilter);
@@ -134,11 +129,13 @@ function App() {
    * Import current user
    */
   async function GetUser() {
+    console.log(currentUser);
     const response = await fetch(
-      `https://beautyverse.herokuapp.com/api/v1/users/${currentUser._id}`
+      `https://beautyverse.herokuapp.com/api/v1/users/${currentUser?._id}`
     )
       .then((response) => response.json())
       .then((data) => {
+        console.log(data.data.user);
         localStorage.setItem(
           'Beautyverse:currentUser',
           JSON.stringify(data.data.user)
@@ -157,55 +154,6 @@ function App() {
       GetUser();
     }
   }, [rerenderCurrentUser]);
-
-  // // connect socket connection
-  // const [socket, setSocket] = useState(null);
-  // const [room, setRoom] = useState('');
-
-  // useEffect(() => {
-  //   setRoom('');
-  // }, []);
-
-  // /**
-  //  * connect to socket, get messages, join to room
-  //  *  */
-
-  // const handleRoomChange = (x) => {
-  //   setRoom(x);
-  //   socket?.emit('join', { room: x });
-  // };
-
-  // useEffect(() => {
-  //   const socketConnection = socketIOClient(SOCKET_SERVER);
-  //   setSocket(socketConnection);
-
-  //   socketConnection.on('connect', () => {
-  //     socketConnection.emit('join', { room: room });
-  //   });
-
-  //   return () => {
-  //     socketConnection.disconnect();
-  //   };
-  // }, [SOCKET_SERVER]);
-
-  // /**
-  //  * get chats
-  //  *  */
-
-  // useEffect(() => {
-  //   console.log('get chats');
-  //   if (!socket) return;
-  //   socket?.emit('getchats', (data) => {
-  //     console.log('getchats:', data);
-  //   });
-  //   socket?.on('sendChats', (data) => {
-  //     dispatch(setUserChats(data));
-  //   });
-
-  //   return () => {
-  //     socket.off('getchats');
-  //   };
-  // }, [socket]);
 
   /**
    * get users with last feed
@@ -248,6 +196,7 @@ function App() {
       )
         .then((response) => response.json())
         .then((data) => {
+          console.log(data.data.feedList);
           dispatch(setUserList(data.data.feedList));
         })
         .then(() => {
@@ -283,11 +232,11 @@ function App() {
     return currentUser ? children : <Navigate to="/login" />;
   };
   const RequireLogout = ({ children }) => {
-    return !currentUser ? (
-      children
-    ) : (
-      <Navigate to={`/api/v1/users/${currentUser?._id}`} />
-    );
+    if (!currentUser) {
+      return children;
+    } else {
+      return <Navigate to={`/api/v1/users/${currentUser?._id}`} />;
+    }
   };
 
   /**
@@ -298,15 +247,16 @@ function App() {
       dispatch(
         setTheme(JSON.parse(localStorage.getItem('BeautyVerse:ThemeMode')))
       );
-    localStorage.getItem('BeautyVerse:Language') !== null &&
-      dispatch(
-        setLanguage(JSON.parse(localStorage.getItem('BeautyVerse:Language')))
-      );
+    localStorage.getItem('BeautyVerse:Language') !== null
+      ? dispatch(
+          setLanguage(JSON.parse(localStorage.getItem('BeautyVerse:Language')))
+        )
+      : dispatch(setLanguage('en'));
     localStorage.getItem('BeautyVerse:Country') !== null &&
       dispatch(
         setCountry(JSON.parse(localStorage.getItem('BeautyVerse:Country')))
       );
-  }, [currentUser, country, language]);
+  }, [currentUser, lang]);
 
   /**
    * Define active theme mode
@@ -327,19 +277,6 @@ function App() {
   }, [currentUser, theme]);
 
   /**
-   * Add local storage in redux
-   */
-  // React.useEffect(() => {
-  //   // add cart items in redux
-  //   let cart = localStorage.getItem('BeautyVerse:shoppingCart');
-  //   if (cart?.length > 0) {
-  //     dispatch(setCartList(JSON.parse(cart)));
-  //   } else {
-  //     dispatch(setCartList([]));
-  //   }
-  // }, [currentUser, country]);
-
-  /**
    * Define paths where mobile navigator is hidden
    */
   let nav;
@@ -358,8 +295,17 @@ function App() {
   }
 
   const headroomStyles = {
-    zIndex: 2000, // Set a high z-index value for the Headroom component
+    zIndex: 1000, // Set a high z-index value for the Headroom component
   };
+
+  // open terms and rules
+  const [openTerms, setOpenTerms] = React.useState(false);
+  // open privacy police
+  const [openPrivacy, setOpenPrivacy] = React.useState(false);
+  // open how works
+  const [openUsage, setOpenUsage] = React.useState(false);
+  // open question and answers
+  const [openQA, setOpenQA] = React.useState(false);
 
   useEffect(() => {
     setTimeout(() => {
@@ -409,6 +355,42 @@ function App() {
       )} */}
           <GlobalStyles />
           <TopLine />
+          <ScrollDialog
+            page="terms and rules"
+            title={language.language.Pages.pages.terms}
+            open={openTerms}
+            text={terms}
+            setOpen={setOpenTerms}
+            button={language.language.Pages.pages.accept}
+            button2={language.language.Pages.pages.dontAccept}
+            targetUser={currentUser}
+          />
+          <ScrollDialog
+            page="privacy police"
+            title={language.language.Pages.pages.privacy}
+            open={openPrivacy}
+            text={privacy}
+            setOpen={setOpenPrivacy}
+            button={language.language.Pages.pages.accept}
+            button2={language.language.Pages.pages.dontAccept}
+            targetUser={currentUser}
+          />
+          <ScrollDialog
+            page="how to use?"
+            title={language.language.Pages.pages.usage}
+            open={openUsage}
+            text={usage}
+            setOpen={setOpenUsage}
+            button={language.language.Pages.pages.close}
+          />
+          <ScrollDialog
+            page="questions and answers"
+            title={language.language.Pages.pages.qa}
+            open={openQA}
+            text={qa}
+            setOpen={setOpenQA}
+            button={language.language.Pages.pages.close}
+          />
           {/* {loading && <Loading />} */}
           <Container>
             <SimpleBackdrop />
@@ -417,15 +399,28 @@ function App() {
                 {isMobile ? (
                   <>
                     <Headroom
-                      downTolerance={0}
-                      upTolerance={0}
+                      downTolerance={10}
+                      upTolerance={10}
                       style={headroomStyles}
                     >
-                      <Header setPage={setPage} />
+                      <Header
+                        setPage={setPage}
+                        setOpenTerms={setOpenTerms}
+                        setOpenPrivacy={setOpenPrivacy}
+                        setOpenUsage={setOpenUsage}
+                        setOpenQA={setOpenQA}
+                      />
                     </Headroom>
                   </>
                 ) : (
-                  <Header setPage={setPage} />
+                  <Header
+                    setPage={setPage}
+                    openTerms={openTerms}
+                    setOpenTerms={setOpenTerms}
+                    setOpenPrivacy={setOpenPrivacy}
+                    setOpenUsage={setOpenUsage}
+                    setOpenQA={setOpenQA}
+                  />
                 )}
               </>
             )}
@@ -488,9 +483,8 @@ function App() {
               <Route
                 path="/login"
                 element={
-                  <RequireLogout>
-                    <Login />
-                  </RequireLogout>
+                  // <RequireLogout>
+                  <Login />
                 }
               />
               <Route
@@ -504,11 +498,17 @@ function App() {
 
               <Route path="api/v1/users/:id" element={<UserProfile />}>
                 <Route index element={<UserFeeds />} />
+
                 <Route path="services" element={<Services />} />
+
+                {/* */}
                 {/* <Route path="team" element={<Team />} /> */}
+                {/*  */}
                 <Route path="contact" element={<Contact />} />
                 <Route path="audience" element={<Audience />} />
+
                 {/* <Route path="statistics" element={<UserStatistics />} /> */}
+
                 <Route
                   path="settings"
                   element={
@@ -517,7 +517,6 @@ function App() {
                     </RequireAuth>
                   }
                 />
-                {/* <Route path="followings" element={<Followings />} /> */}
               </Route>
               {/* <Route path="/marketplace" element={<Marketplace />}>
               <Route index element={<MarketplaceMain />} />

@@ -1,19 +1,39 @@
-export default function GetTimesAgo(x, y) {
-  if (x) {
-    const timesAgoInSeconds = ((new Date().getTime() - x) / 1000).toFixed(0);
-    const timesAgoInMinutes = (timesAgoInSeconds / 60).toFixed(0);
-    const timesAgoInHours = (timesAgoInMinutes / 60).toFixed(0);
-    let currentPostTime;
-    if (timesAgoInSeconds < 61) {
-      currentPostTime = { numbers: '', title: 'Just Now' };
-    } else if (timesAgoInSeconds > 60 && timesAgoInSeconds < 3601) {
-      currentPostTime = { numbers: timesAgoInMinutes, title: 'min' };
-    } else if (timesAgoInSeconds > 3601 && timesAgoInSeconds < 86400) {
-      currentPostTime = { numbers: timesAgoInHours, title: 'h' };
-    } else {
-      currentPostTime = { numbers: '', title: y?.slice(0, 10) };
-    }
+export default function GetTimesAgo(date, justNow) {
+  if (typeof date === 'string') {
+    date = new Date(date);
+  }
 
-    return currentPostTime;
+  // Calculate time difference in seconds
+  const timeDiff = Math.floor((new Date() - date) / 1000);
+
+  // Define time units in seconds
+  const minute = 60;
+  const hour = minute * 60;
+  const day = hour * 24;
+  const week = day * 7;
+  const month = day * 30;
+  const year = day * 365;
+
+  // Return appropriate time unit based on time difference
+  if (timeDiff < minute) {
+    return 'j';
+  } else if (timeDiff < hour) {
+    const minutesAgo = Math.floor(timeDiff / minute);
+    return `${minutesAgo}min`;
+  } else if (timeDiff < day) {
+    const hoursAgo = Math.floor(timeDiff / hour);
+    return `${hoursAgo}h`;
+  } else if (timeDiff < week) {
+    const daysAgo = Math.floor(timeDiff / day);
+    return `${daysAgo}d`;
+  } else if (timeDiff < month) {
+    const weeksAgo = Math.floor(timeDiff / week);
+    return `${weeksAgo}w`;
+  } else if (timeDiff < year) {
+    const monthsAgo = Math.floor(timeDiff / month);
+    return `${monthsAgo}mo`;
+  } else {
+    const yearsAgo = Math.floor(timeDiff / year);
+    return `${yearsAgo}y`;
   }
 }

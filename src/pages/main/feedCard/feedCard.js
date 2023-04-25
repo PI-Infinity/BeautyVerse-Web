@@ -14,7 +14,8 @@ import { Language } from '../../../context/language';
 import { SiGoogletranslate } from 'react-icons/si';
 import { SlReload } from 'react-icons/sl';
 import axios from 'axios';
-import { format } from 'timeago.js';
+import GetTimesAgo from '../../../functions/getTimesAgo';
+import { UpdateUser } from '../../../redux/main';
 
 export const FeedCard = (props) => {
   const currentUser = JSON.parse(
@@ -27,11 +28,6 @@ export const FeedCard = (props) => {
   const language = Language();
 
   const [render, setRender] = useState(false);
-
-  const [starObj, setStarObj] = useState({
-    check: props?.feed?.checkIfStared,
-    starsLength: props?.feed?.starsLength,
-  });
 
   // loading feeds
   const [loading, setLoading] = React.useState(true);
@@ -61,9 +57,32 @@ export const FeedCard = (props) => {
   }, [props?._id, rerenderUserList]);
 
   // give heart to user
+  const userList = useSelector((state) => state.storeMain.userList);
   const SetStar = async () => {
     try {
-      setStarObj({ check: true, starsLength: starObj.starsLength + 1 });
+      const handleReview = (userId, isDecrement) => {
+        const user = userList.find((u) => u._id === userId);
+        if (user) {
+          const newStarsLength = isDecrement
+            ? user.feed.starsLength - 1
+            : user.feed.starsLength + 1;
+          const updatedUser = {
+            ...user,
+            feed: {
+              ...user.feed,
+              starsLength: newStarsLength,
+              checkIfStared:
+                newStarsLength > user.feed.starsLength
+                  ? true
+                  : newStarsLength < user.feed.starsLength
+                  ? false
+                  : user.feed.checkIfStared,
+            },
+          };
+          dispatch(UpdateUser(updatedUser));
+        }
+      };
+      handleReview(props?._id);
       await axios.post(
         `https://beautyverse.herokuapp.com/api/v1/users/${props?._id}/feeds/${props?.feed?._id}/stars`,
         {
@@ -103,7 +122,27 @@ export const FeedCard = (props) => {
   // remove heart
   const RemoveStar = async () => {
     try {
-      setStarObj({ check: false, starsLength: starObj.starsLength - 1 });
+      const handleReview = (userId, isDecrement) => {
+        const user = userList.find((u) => u._id === userId);
+        if (user) {
+          const newStarsLength = user.feed.starsLength - 1;
+          const updatedUser = {
+            ...user,
+            feed: {
+              ...user.feed,
+              starsLength: newStarsLength,
+              checkIfStared:
+                newStarsLength > user.feed.starsLength
+                  ? true
+                  : newStarsLength < user.feed.starsLength
+                  ? false
+                  : user.feed.checkIfStared,
+            },
+          };
+          dispatch(UpdateUser(updatedUser, isDecrement));
+        }
+      };
+      handleReview(props?._id);
       const url = `https://beautyverse.herokuapp.com/api/v1/users/${props?._id}/feeds/${props?.feed?._id}/stars/${currentUser?._id}`;
       const response = await fetch(url, { method: 'DELETE' })
         .then((response) => response.json())
@@ -149,16 +188,44 @@ export const FeedCard = (props) => {
       });
   };
 
-  const createdAt = format(props?.feed?.createdAt);
+  // define times ago
+
+  const currentPostTime = GetTimesAgo(
+    new Date(props?.feed?.createdAt).getTime()
+  );
+
+  let definedTime;
+  if (currentPostTime?.includes('min')) {
+    definedTime =
+      currentPostTime?.slice(0, -3) + language?.language.Main.feedCard.min;
+  } else if (currentPostTime?.includes('h')) {
+    definedTime =
+      currentPostTime?.slice(0, -1) + language?.language.Main.feedCard.h;
+  } else if (currentPostTime?.includes('d')) {
+    definedTime =
+      currentPostTime?.slice(0, -1) + language?.language.Main.feedCard.d;
+  } else if (currentPostTime?.includes('j')) {
+    definedTime =
+      currentPostTime?.slice(0, -1) + language?.language.Main.feedCard.justNow;
+  } else if (currentPostTime?.includes('w')) {
+    definedTime =
+      currentPostTime?.slice(0, -1) + language?.language.Main.feedCard.w;
+  } else if (currentPostTime?.includes('mo')) {
+    definedTime =
+      currentPostTime?.slice(0, -2) + language?.language.Main.feedCard.mo;
+  } else if (currentPostTime?.includes('y')) {
+    definedTime =
+      currentPostTime?.slice(0, -1) + language?.language.Main.feedCard.y;
+  }
 
   const [imageHeight, setImageHeight] = useState(null);
 
   useEffect(() => {
     const img = new Image();
     if (isMobile) {
-      img.src = props?.feed?.mobileJpeg;
+      img.src = props?.feed?.mobile;
     } else {
-      img.src = props?.feed?.desktopUrl;
+      img.src = props?.feed?.desktop;
     }
     img.onload = () => {
       setImageHeight(img.height - (img.width - width));
@@ -167,6 +234,76 @@ export const FeedCard = (props) => {
       }, 200);
     };
   }, [props?.feed]);
+
+  // video
+
+  // function captureFrameAt(videoUrl, frameNumber, fps, callback) {
+  //   const video = document.createElement('video');
+  //   const canvas = document.createElement('canvas');
+  //   const context = canvas.getContext('2d');
+
+  //   video.src = videoUrl;
+
+  //   const seekToFrame = () => {
+  //     // Calculate the time of the 100th frame
+  //     const time = frameNumber / fps;
+  //     video.currentTime = time;
+  //   };
+
+  //   video.addEventListener('loadeddata', seekToFrame);
+
+  //   video.addEventListener('seeked', () => {
+  //     canvas.width = video.videoWidth;
+  //     canvas.height = video.videoHeight;
+  //     context.drawImage(video, 0, 0, canvas.width, canvas.height);
+  //     const frameDataUrl = canvas.toDataURL('image/jpeg');
+  //     callback(frameDataUrl);
+  //   });
+  // }
+
+  const videoRef = React.useRef();
+  // const [posterUrl, setPosterUrl] = useState('');
+  // console.log(posterUrl);
+  const [videoHeight, setVideoHeight] = useState(null);
+  // useEffect(() => {
+  //   const handleVideoLoadedMetadata = () => {
+  //     const videoWidth = videoRef.current.videoWidth;
+  //     const videoHeight = videoRef.current.videoHeight;
+  //     const aspectRatio = videoHeight / videoWidth;
+
+  //     setVideoHeight(window.innerWidth * aspectRatio);
+  //   };
+
+  //   videoRef.current?.addEventListener(
+  //     'loadedmetadata',
+  //     handleVideoLoadedMetadata
+  //   );
+
+  //   return () => {
+  //     videoRef.current?.removeEventListener(
+  //       'loadedmetadata',
+  //       handleVideoLoadedMetadata
+  //     );
+  //   };
+  // }, [props?.feed]);
+
+  // useEffect(() => {
+  //   captureFrameAt(props.feed?.videoUrl, 100, 100);
+  //   setTimeout(() => {
+  //     setLoading(false);
+  //   }, 200);
+  //   if (videoRef.current) {
+  //     videoRef.current.play();
+  //   }
+  // }, [videoRef, props]);
+
+  // useEffect(() => {
+  //   if (videoRef.current) {
+  //     videoRef.current.play();
+  //   }
+  // }, [videoRef]);
+
+  // console.log(props?.feed);
 
   return (
     <Main feed={props?.feed?.name} ref={props.lastFeedRef}>
@@ -243,11 +380,28 @@ export const FeedCard = (props) => {
           {props?.feed && (
             <>
               {props?.feed?.fileFormat === 'video' ? (
-                <FileContainer>
+                <FileContainer
+                  imageHeight={
+                    props?.fileFormat === 'img' ? imageHeight : videoHeight
+                  }
+                  onClick={(event) => {
+                    event.stopPropagation();
+                  }}
+                >
                   {loading ? (
                     <ImgLoader />
                   ) : (
-                    <Video width="100%" height="auto" controls autoplay muted>
+                    <Video
+                      ref={videoRef}
+                      width="100%"
+                      height="auto"
+                      controls
+                      // autoplay
+                      muted
+                      playsInline
+                      preload="metadata"
+                      poster={props.cover}
+                    >
                       <source src={props?.feed?.videoUrl} type="video/mp4" />
                     </Video>
                   )}
@@ -266,32 +420,19 @@ export const FeedCard = (props) => {
                   ) : (
                     <>
                       {isMobile ? (
-                        isWebpSupported() ? (
-                          <Cover
-                            src={props?.feed?.mobileWebp}
-                            active={props.active}
-                            onClick={() => {
-                              dispatch(setFeedScrollY(window.scrollY));
-                              navigate(
-                                `api/v1/users/${props?._id}/feeds/${props?.feed?._id}`
-                              );
-                            }}
-                          />
-                        ) : (
-                          <Cover
-                            src={props?.feed?.mobileJpeg}
-                            active={props.active}
-                            onClick={() => {
-                              dispatch(setFeedScrollY(window.scrollY));
-                              navigate(
-                                `api/v1/users/${props?._id}/feeds/${props?.feed?._id}`
-                              );
-                            }}
-                          />
-                        )
+                        <Cover
+                          src={props?.feed?.mobile}
+                          active={props.active}
+                          onClick={() => {
+                            dispatch(setFeedScrollY(window.scrollY));
+                            navigate(
+                              `api/v1/users/${props?._id}/feeds/${props?.feed?._id}`
+                            );
+                          }}
+                        />
                       ) : (
                         <Cover
-                          src={props?.feed?.desktopUrl}
+                          src={props?.feed?.desktop}
                           active={props.active}
                           onClick={() => {
                             dispatch(setFeedScrollY(window.scrollY));
@@ -310,26 +451,30 @@ export const FeedCard = (props) => {
         </div>
         {/* )} */}
 
-        <Review>
+        <Review
+          onClick={(event) => {
+            event.stopPropagation();
+          }}
+        >
           {loading ? (
             <LineLoader />
           ) : (
             <>
               <div style={{ flex: 1 }}>
-                <Likes>
-                  {starObj?.check ? (
+                <Likes
+                  onClick={(event) => {
+                    event.stopPropagation();
+                  }}
+                >
+                  {props?.feed?.checkIfStared ? (
                     <BiStar className="likedIcon" onClick={RemoveStar} />
                   ) : (
                     <BiStar
                       className="unlikedIcon"
-                      onClick={
-                        currentUser != undefined
-                          ? SetStar
-                          : () => navigate('/login')
-                      }
+                      onClick={currentUser ? SetStar : () => navigate('/login')}
                     />
                   )}
-                  {starObj.starsLength}
+                  {props?.feed?.starsLength}
                 </Likes>
               </div>
 
@@ -350,7 +495,7 @@ export const FeedCard = (props) => {
                 </TextReview>
               </div>
               <PostTime>
-                <span>{createdAt}</span>
+                <span>{definedTime}</span>
               </PostTime>
             </>
           )}
@@ -404,13 +549,13 @@ const PostContainer = styled.div`
   padding: 0 25px 10px 20px;
   margin: 0;
   max-height: ${(props) => (props.openPost ? '100%' : '55px')};
-  height: auto,
+  height: auto;
   overflow: ${(props) => (props.openPost ? 'visible' : 'hidden')};
   cursor: pointer;
   background: ${(props) => props.theme.background};
   display: flex;
   justify-content: space-between;
-  
+
   & > p {
     color: ${(props) => props.theme.font};
     background: ${(props) => props.theme.background};
@@ -419,7 +564,6 @@ const PostContainer = styled.div`
   @media only screen and (max-width: 600px) {
     padding: 0 4.3vw 10px 10px;
   }
- 
 `;
 
 const Translater = styled.div`

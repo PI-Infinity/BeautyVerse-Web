@@ -90,10 +90,10 @@ export default function AddAddress({
         }}
       >
         <Title>
-          <GrMapLocation
+          {/* <GrMapLocation
             className="icon"
             style={{ fontSize: '20px', color: 'red', marginRight: '10px' }}
-          />{' '}
+          />{' '} */}
           {language?.language.User.userPage.address}
         </Title>
         <Address>
@@ -116,7 +116,7 @@ export default function AddAddress({
                     gap: '5px',
                   }}
                 >
-                  <GrLocation className="icon" color="orange" />
+                  N{index + 1}
                   <b>
                     {language?.language.User.userPage.address}
                     {index === 0 ? '' : index}:
@@ -194,10 +194,10 @@ const Wrapper = styled.div`
 const Container = styled.div`
   background: ${(props) => props.theme.secondLevel};
   border-radius: 5px;
-  padding: 1vw;
+  padding: 1vw 1.5vw;
 
   @media only screen and (max-width: 600px) {
-    padding: 4vw;
+    padding: 4vw 5vw;
   }
 `;
 

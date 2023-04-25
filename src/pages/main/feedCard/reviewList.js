@@ -5,14 +5,19 @@ import { FaUser } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import GetTimesAgo from '../../../functions/getTimesAgo';
 import { Language } from '../../../context/language';
-import { format } from 'timeago.js';
+import { useSelector, useDispatch } from 'react-redux';
+import { UpdateUser } from '../../../redux/main';
+import { IsMobile } from '../../../functions/isMobile';
 
 export const ReviewList = (props) => {
   const language = Language();
-
+  const isMobile = IsMobile();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const [reviewers, setReviewers] = useState([]);
+
+  const userList = useSelector((state) => state.storeMain.userList);
   const DeleteReview = async (id) => {
     const url = `https://beautyverse.herokuapp.com/api/v1/users/${props.targetUser?._id}/feeds/${props?.currentFeed?._id}/reviews/${id}`;
     try {
@@ -28,6 +33,17 @@ export const ReviewList = (props) => {
           next: prev.next,
         };
       });
+      const handleReview = (userId) => {
+        const user = userList.find((u) => u._id === userId);
+        if (user) {
+          const updatedUser = {
+            ...user,
+            feed: { ...user.feed, reviewsLength: user.feed.reviewsLength - 1 },
+          };
+          dispatch(UpdateUser(updatedUser));
+        }
+      };
+      handleReview(props?.targetUser._id);
       const response = await fetch(url, { method: 'DELETE' });
 
       if (response.status === 200) {
@@ -42,11 +58,39 @@ export const ReviewList = (props) => {
     }
   };
 
-  //
-
   return (
     <ReviewListContainer>
       {props?.reviews?.map((item, index) => {
+        const currentPostTime = GetTimesAgo(
+          new Date(item?.createdAt).getTime()
+        );
+        // get times ago
+        let definedTime;
+        if (currentPostTime?.includes('min')) {
+          definedTime =
+            currentPostTime?.slice(0, -3) +
+            language?.language.Main.feedCard.min;
+        } else if (currentPostTime?.includes('h')) {
+          definedTime =
+            currentPostTime?.slice(0, -1) + language?.language.Main.feedCard.h;
+        } else if (currentPostTime?.includes('d')) {
+          definedTime =
+            currentPostTime?.slice(0, -1) + language?.language.Main.feedCard.d;
+        } else if (currentPostTime?.includes('j')) {
+          definedTime =
+            currentPostTime?.slice(0, -1) +
+            language?.language.Main.feedCard.justNow;
+        } else if (currentPostTime?.includes('w')) {
+          definedTime =
+            currentPostTime?.slice(0, -1) + language?.language.Main.feedCard.w;
+        } else if (currentPostTime?.includes('mo')) {
+          definedTime =
+            currentPostTime?.slice(0, -2) + language?.language.Main.feedCard.mo;
+        } else if (currentPostTime?.includes('y')) {
+          definedTime =
+            currentPostTime?.slice(0, -1) + language?.language.Main.feedCard.y;
+        }
+
         return (
           <ReviewItem key={index}>
             <div
@@ -66,7 +110,16 @@ export const ReviewList = (props) => {
               )}
 
               <Reviewer
-                onClick={() => navigate(`/api/v1/users/${item?.reviewer.id}`)}
+                onClick={
+                  item?.reviewer.type === 'user'
+                    ? () =>
+                        navigate(
+                          isMobile
+                            ? `/api/v1/users/${item?.reviewer.id}/contact`
+                            : `/api/v1/users/${item?.reviewer.id}/audience`
+                        )
+                    : () => navigate(`/api/v1/users/${item?.reviewer.id}`)
+                }
               >
                 {item.reviewer.name}
               </Reviewer>
@@ -78,7 +131,7 @@ export const ReviewList = (props) => {
                   marginLeft: 'auto',
                 }}
               >
-                {format(item?.createdAt)}
+                {definedTime}
               </span>
             </div>
             <div

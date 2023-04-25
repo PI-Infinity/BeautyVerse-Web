@@ -8,6 +8,7 @@ import {
   setPhoneNumber,
   setPassword,
   setConfirmPassowrd,
+  setCurrentUser,
 } from '../../redux/register';
 import { FaUserEdit } from 'react-icons/fa';
 import { ImProfile } from 'react-icons/im';
@@ -24,13 +25,15 @@ import Error from '../../snackBars/success';
 import axios from 'axios';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
+import SimpleBackdrop from '../../components/backDrop';
+import { setBackdropOpen } from '../../redux/main';
 
 export const Identify = (props) => {
   const language = Language();
   const isMobile = IsMobile();
   const { height, width } = useWindowDimensions();
 
-  const mainDispatch = useDispatch();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   // define user type
@@ -39,81 +42,65 @@ export const Identify = (props) => {
   const map = useSelector((state) => state.storeRegister.map);
 
   const [alert, setAlert] = useState(false);
+  const [verify, setVerify] = useState(false);
 
   const Register = async (e) => {
-    if (type === 'user') {
-      try {
-        // Signup user
-        const response = await axios
-          .post('https://beautyverse.herokuapp.com/api/v1/signup', {
-            name: registerFields?.name,
-            type: type,
-            email: registerFields?.email,
-            phone: registerFields?.phoneNumber,
-            password: registerFields?.password,
-            confirmPassword: registerFields?.confirmPassowrd,
-            address: {
-              country: map.country,
-              region: map.region,
-              city: map.city,
-              district: map.district,
-              street: map.street,
-              number: map.number,
-              latitude: map.latitude,
-              longitude: map.longitude,
+    try {
+      dispatch(setBackdropOpen(true));
+      // Signup user
+      const response = await axios.post(
+        'https://beautyverse.herokuapp.com/api/v1/signup',
+        {
+          name: registerFields?.name,
+          type: type,
+          email: registerFields?.email,
+          phone: registerFields?.phoneNumber,
+          password: registerFields?.password,
+          confirmPassword: registerFields?.confirmPassowrd,
+          address: {
+            country: map.country,
+            region: map.region,
+            city: map.city,
+            district: map.district,
+            street: map.street,
+            number: map.number,
+            latitude: map.latitude,
+            longitude: map.longitude,
+          },
+          media: {
+            facebook: '',
+            instagram: '',
+            tiktok: '',
+            youtube: '',
+            telegram: false,
+            whatsapp: false,
+          },
+          notifications: [
+            {
+              senderId: 'Beautyverse',
+              text: `${language?.language.Auth.auth.successRegister}`,
+              date: new Date(),
+              type: 'welcome',
+              status: 'unread',
+              feed: '',
             },
-            notifications: [
-              {
-                senderId: 'Beautyverse',
-                text: `${language?.language.Auth.auth.successRegister}`,
-                date: new Date(),
-                type: 'welcome',
-                status: 'unread',
-                feed: '',
-              },
-            ],
-          })
-          .then(async (data) => {
-            await localStorage.setItem(
-              'Beautyverse:currentUser',
-              JSON.stringify(data.data.newUser)
-            );
-            if (isMobile) {
-              navigate(`/api/v1/users/${data.data.newUser._id}/contact`);
-            } else {
-              navigate(`/api/v1/users/${data.data.newUser._id}/audience`);
-            }
-            mainDispatch(setName(''));
-            mainDispatch(setUserType(''));
-            mainDispatch(setEmail(''));
-            mainDispatch(setPhoneNumber(''));
-            mainDispatch(setPassword(''));
-            mainDispatch(setConfirmPassowrd(''));
-          });
-      } catch (err) {
-        setAlert({
-          active: true,
-          title: err.response.data.message,
-        });
-      }
-    } else {
-      if (
-        registerFields.name?.length < 3 ||
-        registerFields.phoneNumber?.length < 8 ||
-        registerFields.email?.length < 5 ||
-        registerFields.password?.length < 8 ||
-        registerFields.confirmPassowrd?.length < 8 ||
-        map.length < 1
-      ) {
-        console.log('input fields');
-      } else {
-        navigate(`/register/business`);
-      }
+          ],
+        }
+      );
+      await setVerify(true);
+      dispatch(setBackdropOpen(false));
+    } catch (err) {
+      dispatch(setBackdropOpen(false));
+      setAlert({
+        active: true,
+        type: 'error',
+        title: err.response.data.message,
+      });
     }
   };
 
   const handleKey = (e) => {
-    e.code === 'Enter' && SendEmail(e);
+    e.code === 'Enter' && Register(e);
   };
 
   // define title icon
@@ -209,20 +196,48 @@ export const Identify = (props) => {
    * send identify email
    */
 
-  const [verifyCode, setVerifyCode] = useState('');
-  const [verify, setVerify] = useState(false);
+  const [code, setCode] = React.useState('');
 
-  function SendEmail() {
-    const email = registerFields?.email;
-    fetch(`https://beautyverse.herokuapp.com/api/v1/verify?email=${email}`)
-      .then((response) => response.json())
-      .then((data) => {
-        setVerifyCode(data);
-        setVerify(true);
-      })
-      .catch((error) => {
-        console.log('Error fetching data:', error);
+  async function Verify() {
+    try {
+      const response = await axios.post(
+        'https://beautyverse.herokuapp.com/api/v1/verifyEmail',
+        {
+          email: registerFields?.email,
+          code: code,
+        }
+      );
+
+      const newUser = response.data.data.newUser;
+
+      if (type === 'user') {
+        await localStorage.setItem(
+          'Beautyverse:currentUser',
+          JSON.stringify(newUser)
+        );
+        if (isMobile) {
+          navigate(`/api/v1/users/${newUser._id}/contact`);
+        } else {
+          navigate(`/api/v1/users/${newUser._id}/audience`);
+        }
+      } else {
+        dispatch(setCurrentUser(newUser));
+        navigate(`/register/business`);
+      }
+
+      dispatch(setName(''));
+      dispatch(setUserType(''));
+      dispatch(setEmail(''));
+      dispatch(setPhoneNumber(''));
+      dispatch(setPassword(''));
+      dispatch(setConfirmPassowrd(''));
+    } catch (err) {
+      setAlert({
+        active: true,
+        type: 'error',
+        title: err.response.data.message,
       });
+    }
   }
 
   // phone input styled
@@ -245,6 +260,8 @@ export const Identify = (props) => {
   };
   const searchStyle = {
     width: '80%',
+    fontSize: '16px',
+    backgroundColor: '#fff',
   };
 
   const dropdownStyle = {
@@ -252,8 +269,17 @@ export const Identify = (props) => {
     color: '#111',
   };
 
+  const handleFocus = (event) => {
+    event.target.focus();
+  };
+
+  const handleBlur = (event) => {
+    event.target.blur();
+  };
+
   return (
     <>
+      <SimpleBackdrop />
       <Error
         open={alert?.active}
         setOpen={setAlert}
@@ -263,10 +289,11 @@ export const Identify = (props) => {
       <VerifyEmail
         open={verify}
         setOpen={setVerify}
-        Register={Register}
-        verifyCode={verifyCode}
+        Verify={Verify}
         email={registerFields?.email}
         language={language}
+        code={code}
+        setCode={setCode}
       />
       <Container
         height={height}
@@ -276,13 +303,7 @@ export const Identify = (props) => {
           {icon}
           <span>{language?.language.Auth.auth.identify}</span>
         </Title>
-        <WrapperContainer
-          onSubmit={
-            type === 'user'
-              ? () => SendEmail()
-              : () => navigate('/register/business')
-          }
-        >
+        <WrapperContainer onSubmit={Register}>
           {!isMobile && (
             <Button
               title={language?.language.Auth.auth.back}
@@ -311,7 +332,7 @@ export const Identify = (props) => {
                         ? language?.language.Auth.auth.title
                         : language?.language.Auth.auth.name
                     }
-                    onChange={(e) => mainDispatch(setName(e.target.value))}
+                    onChange={(e) => dispatch(setName(e.target.value))}
                     value={registerFields?.name}
                   />
                 </InputWrapper>
@@ -335,8 +356,10 @@ export const Identify = (props) => {
                     required
                     type="text"
                     placeholder={language?.language.Auth.auth.email}
-                    onChange={(e) => mainDispatch(setEmail(e.target.value))}
+                    onChange={(e) => dispatch(setEmail(e.target.value))}
                     value={registerFields?.email}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
                   />
                 </InputWrapper>
                 <InputWrapper style={{ display: 'flex', flexDirection: 'row' }}>
@@ -349,7 +372,7 @@ export const Identify = (props) => {
                     enableSearch
                     value={registerFields?.countryCode?.code}
                     onChange={(value) => {
-                      mainDispatch(setPhoneNumber(value));
+                      dispatch(setPhoneNumber(value));
                     }}
                   />
                   {/* <Select
@@ -359,7 +382,7 @@ export const Identify = (props) => {
                     placeholder="+995"
                     value={registerFields?.countryCode?.code}
                     onChange={(value) => {
-                      mainDispatch(setCountryCode(value));
+                      dispatch(setCountryCode(value));
                     }}
                     styles={CustomStyle}
                     options={countries}
@@ -369,7 +392,7 @@ export const Identify = (props) => {
                     type="tel"
                     placeholder={language?.language.Auth.auth.phone}
                     onChange={(e) =>
-                      mainDispatch(setPhoneNumber(e.target.value))
+                      dispatch(setPhoneNumber(e.target.value))
                     }
                     value={registerFields?.phoneNumber}
                   /> */}
@@ -391,7 +414,7 @@ export const Identify = (props) => {
                     required
                     type="password"
                     placeholder={language?.language.Auth.auth.password}
-                    onChange={(e) => mainDispatch(setPassword(e.target.value))}
+                    onChange={(e) => dispatch(setPassword(e.target.value))}
                     value={registerFields?.password}
                   />
                 </InputWrapper>
@@ -402,9 +425,9 @@ export const Identify = (props) => {
                     placeholder={language?.language.Auth.auth.confirmPassword}
                     value={registerFields?.confirmPassowrd}
                     onChange={(e) =>
-                      mainDispatch(setConfirmPassowrd(e.target.value))
+                      dispatch(setConfirmPassowrd(e.target.value))
                     }
-                    onKeyDown={type === 'user' ? () => handleKey() : undefined}
+                    onKeyDown={handleKey}
                   />
                 </InputWrapper>
               </Wrapper>
@@ -419,11 +442,7 @@ export const Identify = (props) => {
                   : language?.language.Auth.auth.next
               }
               type="Submit"
-              function={
-                type === 'user'
-                  ? () => SendEmail()
-                  : () => navigate('/register/business')
-              }
+              function={Register}
             />
           )}
         </WrapperContainer>
@@ -444,11 +463,7 @@ export const Identify = (props) => {
                 : language?.language.Auth.auth.next
             }
             type="Submit"
-            function={
-              type === 'user'
-                ? () => SendEmail()
-                : () => navigate('/register/business')
-            }
+            function={() => Register()}
           />
         </MobileButtons>
       </Container>

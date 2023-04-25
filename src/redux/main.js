@@ -1,6 +1,7 @@
 import { createSlice, current } from '@reduxjs/toolkit';
 
 const initialState = {
+  machineId: null,
   enterSearch: false,
   openMenu: false,
   openMobileMenu: false,
@@ -29,6 +30,9 @@ export const main = createSlice({
   name: 'main',
   initialState,
   reducers: {
+    setMachineId: (state, action) => {
+      state.machineId = action.payload;
+    },
     setEnterSearch: (state, action) => {
       state.enterSearch = action.payload;
     },
@@ -84,6 +88,12 @@ export const main = createSlice({
       state.userList.pop();
       state.userList.unshift(action.payload);
     },
+    UpdateUser: (state, action) => {
+      const updatedUserList = state.userList.map((u) =>
+        u._id === action.payload._id ? action.payload : u
+      );
+      state.userList = updatedUserList;
+    },
     setOpenImg: (state, action) => {
       state.openImg = action.payload;
     },
@@ -124,6 +134,7 @@ export const main = createSlice({
 });
 
 export const {
+  setMachineId,
   setEnterSearch,
   setOpenMenu,
   setOpenMobileMenu,
@@ -137,6 +148,7 @@ export const {
   setUserList,
   setUserListClear,
   UpdateUserList,
+  UpdateUser,
   setCoverInfo,
   setFollowings,
   setOpenImg,

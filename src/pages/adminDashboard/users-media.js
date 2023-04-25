@@ -51,8 +51,10 @@ BootstrapDialogTitle.propTypes = {
   onClose: PropTypes.func.isRequired,
 };
 
-export default function ProceduresList({ procedures }) {
+export default function MediaList({ media }) {
   const [open, setOpen] = React.useState(false);
+
+  console.log(media);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -64,7 +66,7 @@ export default function ProceduresList({ procedures }) {
   return (
     <div>
       <Button variant="outlined" onClick={handleClickOpen}>
-        <BsListCheck /> Procedures
+        <BsListCheck /> Media
       </Button>
       <BootstrapDialog
         onClose={handleClose}
@@ -75,7 +77,7 @@ export default function ProceduresList({ procedures }) {
           id="customized-dialog-title"
           onClose={handleClose}
         >
-          Procedures
+          Media
         </BootstrapDialogTitle>
         <div
           style={{
@@ -85,17 +87,27 @@ export default function ProceduresList({ procedures }) {
             gap: '10px',
           }}
         >
-          {procedures?.map((item, index) => {
-            return (
-              <div key={index}>
-                <b>{index + 1}.</b> {item.value}{' '}
-                <b>
-                  {item?.price}
-                  {item?.price?.length > 0 && ' Gel'}
-                </b>
-              </div>
-            );
-          })}
+          <span>
+            Web: <b>{media?.web}</b>
+          </span>
+          <span>
+            Instagram: <b>{media?.instagram}</b>
+          </span>
+          <span>
+            Facebook: <b>{media?.facebook}</b>
+          </span>
+          <span>
+            Tiktok: <b>{media?.tiktok}</b>
+          </span>
+          <span>
+            Youtube: <b>{media?.youtube}</b>
+          </span>
+          <span>
+            Whatsapp: <b>{media?.whatsapp?.toString()}</b>
+          </span>
+          <span>
+            Telegram: <b>{media?.telegram.toString()}</b>
+          </span>
         </div>
         <DialogActions>
           <Button autoFocus onClick={handleClose}>

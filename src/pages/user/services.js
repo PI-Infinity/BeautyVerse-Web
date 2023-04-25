@@ -250,7 +250,10 @@ export const Services = () => {
         })
         .filter((tab) => tab !== null);
     })();
-    return tabs;
+    console.log(tabs);
+    if (tabs?.length > 1) {
+      return tabs;
+    }
   }
 
   setTimeout(() => {
@@ -338,8 +341,21 @@ export const Services = () => {
                   );
                   return (
                     <SectionItemContainer key={index}>
-                      <SectionItem>
-                        <div style={{ width: '70%' }}>{item?.label}</div>
+                      <SectionItem
+                        current={(
+                          targetUser?._id !== currentUser?._id
+                        ).toString()}
+                      >
+                        <div
+                          style={{
+                            width:
+                              targetUser?._id !== currentUser?._id
+                                ? '100%'
+                                : '70%',
+                          }}
+                        >
+                          {item?.label}
+                        </div>
                         {targetUser?._id !== currentUser?._id ? (
                           <>
                             {cat?.price && (
@@ -715,10 +731,11 @@ const SectionItem = styled.div`
   overflow: hidden;
 
   @media only screen and (max-width: 600px) {
-    width: 81vw;
+    width: ${(props) => (props.current === 'false' ? '81vw' : '95%')};
     height: 8vw;
     border-radius: 1vw;
-    padding: 0 1.5vw 0 2vw;
+    padding: ${(props) =>
+      props.current === 'false' ? '0 1.5vw 0 2vw' : '0 0 0 2vw'};
   }
 `;
 
@@ -814,7 +831,7 @@ const FilterNavigator = styled.div`
   }
 
   .active {
-    width: 100%;
+    width: auto;
     padding: 10px 15px;
     font-size: 12px;
     background: ${(props) => props.theme.secondLevel};
@@ -824,7 +841,7 @@ const FilterNavigator = styled.div`
     white-space: nowrap;
   }
   .unactive {
-    width: 100%;
+    width: auto;
     padding: 10px 15px;
     font-size: 12px;
     background: none;

@@ -16,12 +16,17 @@ import Avatar from '@mui/material/Avatar';
 import { SiGoogletranslate } from 'react-icons/si';
 import { SlReload } from 'react-icons/sl';
 import { Language } from '../../../context/language';
-import { format } from 'timeago.js';
 import useScrollPosition from '../../../functions/useScrollPosition';
 import { AddReviewLoader } from '../../../components/loader';
 import axios from 'axios';
+import Backdrop from '../../../components/backDrop';
+import { setBackdropOpen } from '../../../redux/main';
+import GetTimesAgo from '../../../functions/getTimesAgo';
 
 export const OpenedFeed = (props) => {
+  useEffect(() => {
+    dispatch(setBackdropOpen(true));
+  }, []);
   const { height, width } = useWindowDimensions();
   const { saveScrollPositionWhenClose, saveScrollPosition, scrollPosition } =
     useScrollPosition();
@@ -29,9 +34,7 @@ export const OpenedFeed = (props) => {
   const navigate = useNavigate();
   const isMobile = IsMobile();
   const language = Language();
-
-  const [loading, setLoading] = useState(true);
-
+  const backdropOpen = useSelector((state) => state.storeMain.backdrop);
   const path = window.location.pathname;
   const splited = path.split('/');
   const userId = splited[4];
@@ -46,7 +49,6 @@ export const OpenedFeed = (props) => {
   const rerender = useSelector((state) => state.storeMain.rerender);
   useEffect(() => {
     window.scrollTo(0, 0);
-
     if (feedId) {
       GetFeedObj();
     }
@@ -145,32 +147,118 @@ export const OpenedFeed = (props) => {
     }
   };
 
+  // get times ago
+
+  const currentPostTime = GetTimesAgo(
+    new Date(feedObj?.feed?.createdAt).getTime()
+  );
+
+  let definedTime;
+  if (currentPostTime?.includes('min')) {
+    definedTime =
+      currentPostTime?.slice(0, -3) + language?.language.Main.feedCard.min;
+  } else if (currentPostTime?.includes('h')) {
+    definedTime =
+      currentPostTime?.slice(0, -1) + language?.language.Main.feedCard.h;
+  } else if (currentPostTime?.includes('d')) {
+    definedTime =
+      currentPostTime?.slice(0, -1) + language?.language.Main.feedCard.d;
+  } else if (currentPostTime?.includes('j')) {
+    definedTime =
+      currentPostTime?.slice(0, -1) + language?.language.Main.feedCard.justNow;
+  } else if (currentPostTime?.includes('w')) {
+    definedTime =
+      currentPostTime?.slice(0, -1) + language?.language.Main.feedCard.w;
+  } else if (currentPostTime?.includes('mo')) {
+    definedTime =
+      currentPostTime?.slice(0, -2) + language?.language.Main.feedCard.mo;
+  } else if (currentPostTime?.includes('y')) {
+    definedTime =
+      currentPostTime?.slice(0, -1) + language?.language.Main.feedCard.y;
+  }
+
   const [imageHeight, setImageHeight] = useState(null);
 
   useEffect(() => {
     const img = new Image();
     if (isMobile) {
-      img.src = feedObj?.feed?.mobileJpeg;
+      img.src = feedObj?.feed?.mobile;
     } else {
-      img.src = feedObj?.feed?.desktopUrl;
+      img.src = feedObj?.feed?.desktop;
     }
     img.onload = () => {
       setImageHeight(img.height - (img.width - width));
       setTimeout(() => {
-        setLoading(false);
+        dispatch(setBackdropOpen(false));
       }, 200);
     };
   }, [feedObj?.feed?.name]);
 
+  // video
+
+  // function captureFirstFrame(videoUrl, callback) {
+  //   const video = document.createElement('video');
+  //   const canvas = document.createElement('canvas');
+  //   const context = canvas.getContext('2d');
+
+  //   video.src = videoUrl;
+  //   video.addEventListener('loadeddata', () => {
+  //     canvas.width = video.videoWidth;
+  //     canvas.height = video.videoHeight;
+  //     context.drawImage(video, 0, 0, canvas.width, canvas.height);
+  //     const firstFrameDataUrl = canvas.toDataURL('image/jpeg');
+  //     callback(firstFrameDataUrl);
+  //   });
+  // }
+
+  const videoRef = React.useRef();
+  // const [posterUrl, setPosterUrl] = useState('');
+  const [videoHeight, setVideoHeight] = useState(null);
+  // useEffect(() => {
+  //   const handleVideoLoadedMetadata = () => {
+  //     const videoWidth = videoRef.current.videoWidth;
+  //     const videoHeight = videoRef.current.videoHeight;
+  //     const aspectRatio = videoHeight / videoWidth;
+
+  //     setVideoHeight(window.innerWidth * aspectRatio);
+  //   };
+
+  //   videoRef.current?.addEventListener(
+  //     'loadedmetadata',
+  //     handleVideoLoadedMetadata
+  //   );
+
+  //   return () => {
+  //     videoRef.current?.removeEventListener(
+  //       'loadedmetadata',
+  //       handleVideoLoadedMetadata
+  //     );
+  //   };
+  // }, [feedObj?.feed]);
+
+  // useEffect(() => {
+  //   captureFirstFrame(feedObj?.feed?.videoUrl, setPosterUrl);
+  //   setTimeout(() => {
+  //     dispatch(setBackdropOpen(false));
+  //   }, 200);
+  //   if (videoRef.current) {
+  //     videoRef.current.play();
+  //   }
+  // }, [videoRef, feedObj]);
+
+  // useEffect(() => {
+  //   if (videoRef.current) {
+  //     videoRef.current.play();
+  //   }
+  // }, [videoRef]);
+
+  // console.log(feedObj);
+
   return (
     <Container height={height}>
       <Wrapper height={height} id="wrapper">
-        {loading && (
-          <LoaderContainer loading={loading.toString()}>
-            <Spinner />
-          </LoaderContainer>
-        )}
-        <ImgContainer loading={loading?.toString()} imageHeight={imageHeight}>
+        <Backdrop />
+        <ImgContainer imageHeight={imageHeight}>
           {feedObj?.prev && (
             <Arrow
               right="true"
@@ -184,29 +272,23 @@ export const OpenedFeed = (props) => {
             </Arrow>
           )}
 
-          {feedObj?.feed?.name?.toLowerCase().endsWith('mp4') ? (
-            <Video width="100%" height="auto" controls autoplay muted>
+          {feedObj?.feed?.fileFormat === 'video' ? (
+            <Video
+              ref={videoRef}
+              width="100%"
+              height="auto"
+              controls
+              muted
+              poster={props.cover}
+            >
               <source src={feedObj?.feed?.videoUrl} type="video/mp4" />
             </Video>
           ) : (
             <>
               {isMobile ? (
-                isWebpSupported() ? (
-                  <MainImg
-                    src={feedObj?.feed?.mobileWebp}
-                    active={props.active}
-                  />
-                ) : (
-                  <MainImg
-                    src={feedObj?.feed?.mobileJpeg}
-                    active={props.active}
-                  />
-                )
+                <MainImg src={feedObj?.feed?.mobile} active={props.active} />
               ) : (
-                <MainImg
-                  src={feedObj?.feed?.desktopUrl}
-                  active={props.active}
-                />
+                <MainImg src={feedObj?.feed?.desktop} active={props.active} />
               )}
             </>
           )}
@@ -223,141 +305,144 @@ export const OpenedFeed = (props) => {
             </Arrow>
           )}
         </ImgContainer>
-
-        <PostSide loading={loading.toString()}>
-          <UserInfo>
-            <Avatar
-              onClick={() =>
-                navigate(`/api/v1/users/${feedObj.feedOwner?._id}`)
-              }
-              alt={feedObj?.feedOwner?.name}
-              src={feedObj?.feedOwner?.cover ? feedObj?.feedOwner?.cover : ''}
-              sx={{ width: 42, height: 42, cursor: 'pointer' }}
-            />
-
-            <UserName
-              onClick={() =>
-                navigate(`/api/v1/users/${feedObj.feedOwner?._id}`)
-              }
-            >
-              {feedObj?.feedOwner?.name}
-            </UserName>
-            {<PostTime>{format(feedObj?.feed?.createdAt)}</PostTime>}
-
-            <ClosePost onClick={closeOpenedFeed}>
-              <MdOutlineCloseFullscreen className="closeIcon" />
-            </ClosePost>
-          </UserInfo>
-          <Post>
-            {openEditPost ? (
-              <div
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '10px',
-                }}
-              >
-                <Text
-                  value={editPost}
-                  onChange={(e) => setEditPost(e.target.value)}
-                />
-                <Button onClick={UpdatePost}>Update</Button>
-              </div>
-            ) : (
-              <>{translated ? translated : feedObj?.feed?.post}</>
-            )}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              {currentUser?._id === userId &&
-                !openEditPost &&
-                feedObj?.feed?.post && (
-                  <AiFillEdit
-                    style={{ cursor: 'pointer' }}
-                    size={20}
-                    onClick={() => {
-                      setOpenEditPost(true);
-                      setEditPost(feedObj?.feed?.post);
-                    }}
-                  />
-                )}
-              {feedObj?.feed?.post && !openEditPost && (
-                <div style={{ cursor: 'pointer' }}>
-                  {translated?.length < 1 ? (
-                    <div style={{ padding: '2px' }}>
-                      <SiGoogletranslate
-                        onClick={() => GetLanguages(feedObj?.feed?.post)}
-                        size={14}
-                        color="#ddd"
-                        style={{ cursor: 'pointer' }}
-                      />
-                    </div>
-                  ) : (
-                    <div style={{ padding: '2px' }}>
-                      <SlReload
-                        onClick={() => setTranslated('')}
-                        size={14}
-                        color="#ddd"
-                        style={{ cursor: 'pointer' }}
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </Post>
-          <ReviewList
-            reviews={feedObj?.feed?.reviews}
-            currentUser={currentUser}
-            id={userId}
-            currentFeed={feedObj?.feed}
-            setFeedObj={setFeedObj}
-            targetUser={feedObj?.feedOwner}
-          />
-          <>
-            {!isMobile && (
-              <AddReview
-                opened={true}
-                render={render}
-                setRender={setRender}
-                checkIfStared={feedObj?.checkIfStared}
-                targetUser={feedObj?.feedOwner}
-                name={feedObj?.feedOwner?.name}
-                id={userId}
-                cover={feedObj?.feedOwner?.cover}
-                isStarGiven={isStarGiven}
-                starsLength={feedObj?.feed.starsLength}
-                setFeedObj={setFeedObj}
-                currentFeed={feedObj?.feed}
-                setOpenFeed={setOpenFeed}
+        {!backdropOpen && (
+          <PostSide>
+            <UserInfo>
+              <Avatar
+                onClick={() =>
+                  navigate(`/api/v1/users/${feedObj.feedOwner?._id}`)
+                }
+                alt={feedObj?.feedOwner?.name}
+                src={feedObj?.feedOwner?.cover ? feedObj?.feedOwner?.cover : ''}
+                sx={{ width: 42, height: 42, cursor: 'pointer' }}
               />
-            )}
-          </>
-        </PostSide>
+
+              <UserName
+                onClick={() =>
+                  navigate(`/api/v1/users/${feedObj.feedOwner?._id}`)
+                }
+              >
+                {feedObj?.feedOwner?.name}
+              </UserName>
+              <PostTime>{definedTime}</PostTime>
+
+              <ClosePost onClick={closeOpenedFeed}>
+                <MdOutlineCloseFullscreen className="closeIcon" />
+              </ClosePost>
+            </UserInfo>
+            <Post>
+              {openEditPost ? (
+                <div
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px',
+                  }}
+                >
+                  <Text
+                    value={editPost}
+                    onChange={(e) => setEditPost(e.target.value)}
+                  />
+                  <Button onClick={UpdatePost}>Update</Button>
+                </div>
+              ) : (
+                <>{translated ? translated : feedObj?.feed?.post}</>
+              )}
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: '15px' }}
+              >
+                {currentUser?._id === userId &&
+                  !openEditPost &&
+                  feedObj?.feed?.post && (
+                    <AiFillEdit
+                      style={{ cursor: 'pointer' }}
+                      size={20}
+                      onClick={() => {
+                        setOpenEditPost(true);
+                        setEditPost(feedObj?.feed?.post);
+                      }}
+                    />
+                  )}
+                {feedObj?.feed?.post && !openEditPost && (
+                  <div style={{ cursor: 'pointer' }}>
+                    {translated?.length < 1 ? (
+                      <div style={{ padding: '2px' }}>
+                        <SiGoogletranslate
+                          onClick={() => GetLanguages(feedObj?.feed?.post)}
+                          size={14}
+                          color="#ddd"
+                          style={{ cursor: 'pointer' }}
+                        />
+                      </div>
+                    ) : (
+                      <div style={{ padding: '2px' }}>
+                        <SlReload
+                          onClick={() => setTranslated('')}
+                          size={14}
+                          color="#ddd"
+                          style={{ cursor: 'pointer' }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </Post>
+            <ReviewList
+              reviews={feedObj?.feed?.reviews}
+              currentUser={currentUser}
+              id={userId}
+              currentFeed={feedObj?.feed}
+              setFeedObj={setFeedObj}
+              targetUser={feedObj?.feedOwner}
+            />
+            <>
+              {!isMobile && (
+                <AddReview
+                  opened={true}
+                  render={render}
+                  setRender={setRender}
+                  checkIfStared={feedObj?.checkIfStared}
+                  targetUser={feedObj?.feedOwner}
+                  name={feedObj?.feedOwner?.name}
+                  id={userId}
+                  cover={feedObj?.feedOwner?.cover}
+                  isStarGiven={isStarGiven}
+                  starsLength={feedObj?.feed.starsLength}
+                  setFeedObj={setFeedObj}
+                  currentFeed={feedObj?.feed}
+                  setOpenFeed={setOpenFeed}
+                />
+              )}
+            </>
+          </PostSide>
+        )}
       </Wrapper>
 
       {isMobile && (
         <>
-          {!loading ? (
-            <AddReview
-              opened={true}
-              render={render}
-              setRender={setRender}
-              checkIfStared={feedObj?.checkIfStared}
-              targetUser={feedObj?.feedOwner}
-              name={feedObj?.feedOwner?.name}
-              id={userId}
-              cover={feedObj?.feedOwner?.cover}
-              isStarGiven={isStarGiven}
-              starsLength={feedObj?.feed.starsLength}
-              setFeedObj={setFeedObj}
-              currentFeed={feedObj?.feed}
-              setOpenFeed={setOpenFeed}
-            />
-          ) : (
+          {/* {!loading ? ( */}
+          <AddReview
+            opened={true}
+            render={render}
+            setRender={setRender}
+            checkIfStared={feedObj?.checkIfStared}
+            targetUser={feedObj?.feedOwner}
+            name={feedObj?.feedOwner?.name}
+            id={userId}
+            cover={feedObj?.feedOwner?.cover}
+            isStarGiven={isStarGiven}
+            starsLength={feedObj?.feed.starsLength}
+            setFeedObj={setFeedObj}
+            currentFeed={feedObj?.feed}
+            setOpenFeed={setOpenFeed}
+          />
+          {/* ) : (
             <div style={{ position: 'fixed', bottom: 0, zindex: 10007 }}>
               <AddReviewLoader width={width} />
             </div>
-          )}
+          )} */}
         </>
       )}
     </Container>
@@ -440,16 +525,13 @@ const ImgContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #050505;
+  background: ${(props) => props.theme.background};
 
   @media only screen and (max-width: 600px) {
     width: 100vw;
-    // min-height: ${(props) => props.imageHeight}px;
     height: ${(props) => props.imageHeight}px;
-    // min-height: ${(props) => (props.loading === 'true' ? '400px' : 'auto')};
     align-items: ${(props) => (props.loading === 'true' ? 'center' : 'start')};
     position: relative;
-    background: #050505;
   }
 `;
 

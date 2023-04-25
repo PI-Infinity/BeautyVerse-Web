@@ -13,53 +13,89 @@ import { MdDynamicFeed } from 'react-icons/md';
 
 export function Yearly(props) {
   const isMobile = IsMobile();
+  const statistics = useSelector((state) => state.storeUser.statistics);
 
-  /**
-   * Define start total
-   */
-  const [stars, setStars] = useState([]);
+  const DefineData = () => {
+    const labels = [
+      'Weeks',
+      `${props?.language?.language.User.userPage.visitors}`,
+      `${props?.language?.language.User.userPage.followers}`,
+      `${props?.language?.language.User.userPage.stars}`,
+    ];
 
-  let followings = useSelector((state) => state.storeUser.targetUserFollowings);
-  let followers = useSelector((state) => state.storeUser.targetUserFollowers);
-  let feeds = useSelector((state) => state.storeUser.targetUserFeeds);
+    const dataPoints = statistics.dinamically.yearlyStatsInLastYear?.map(
+      (item, index) => {
+        return item;
+      }
+    );
 
-  async function GetStars() {
-    const response = await fetch(
-      `https://beautyverse.herokuapp.com/api/v1/users/${props?.user._id}/stars`
-    )
-      .then((response) => response.json())
-      .then(async (data) => {
-        setStars(data.data.stars);
-      })
-      .catch((error) => {
-        console.log('Error fetching data:', error);
-      });
-  }
+    return [labels].concat(dataPoints);
+  };
 
-  useEffect(() => {
-    GetStars();
-  }, []);
+  const data = DefineData();
+
+  const options = {
+    chart: {},
+    backgroundColor: props?.theme ? '#222' : 'rgba(255,255,255,0)',
+    colors: ['orange', '#2bdfd9', '#bb3394'],
+    title: 'Yearly stats',
+    titleTextStyle: {
+      color: props?.theme ? '#fff' : '#222', // color 'red' or '#cc00cc'
+      fontName: 'Courier New', // 'Times New Roman'
+      fontSize: 14, // 12, 18
+      bold: true, // true or false
+    },
+    hAxis: {
+      textStyle: {
+        fontSize: 12,
+        color: props?.theme ? '#fff' : '#222',
+      },
+    },
+    vAxis: {
+      textStyle: {
+        fontSize: 12,
+        color: props?.theme ? '#fff' : '#222',
+      },
+    },
+    legend: {
+      textStyle: {
+        fontSize: 12,
+        color: props?.theme ? '#fff' : '#222',
+      },
+    },
+  };
 
   return (
     <>
       <Stats>
         <ImCheckmark color="#2bdfd9" />{' '}
         {props?.language?.language.User.userPage.followers}:{' '}
-        {followers?.list?.length}
+        {statistics.followers?.all}
       </Stats>
       <Stats>
         <ImCheckmark color="orange" />{' '}
         {props?.language?.language.User.userPage.followings}:{' '}
-        {followings?.list?.length}
+        {statistics.followings?.all}
       </Stats>
       <Stats>
         <BiStar color="#bb3394" />
-        {props?.language?.language.User.userPage.stars}: {stars}
+        {props?.language?.language.User.userPage.stars}: {statistics.stars?.all}
       </Stats>
       <Stats>
         <MdDynamicFeed color="orange" />
-        {props?.language?.language.User.userPage.feeds}: {feeds?.length}
+        {props?.language?.language.User.userPage.feeds}: {statistics.feeds?.all}
       </Stats>
+      <Scrollable>
+        <div>
+          <Chart
+            chartType="AreaChart"
+            width={isMobile ? '1800px' : '950px'}
+            height="250px"
+            data={data}
+            options={options}
+          />
+        </div>
+      </Scrollable>
     </>
   );
 }

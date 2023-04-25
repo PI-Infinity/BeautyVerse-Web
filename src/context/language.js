@@ -9,6 +9,7 @@ import Menu from '../languages/components/menu';
 import User from '../languages/pages/user/user';
 import Chat from '../languages/pages/chat/chat';
 import Auth from '../languages/pages/auth/auth';
+import Pages from '../languages/pages/pages';
 
 export const Language = () => {
   const lang = useSelector((state) => state.storeMain.language);
@@ -34,6 +35,9 @@ export const Language = () => {
         Auth: {
           auth: Auth.en,
         },
+        Pages: {
+          pages: Pages.en,
+        },
       },
     };
   } else if (lang === 'ka') {
@@ -57,6 +61,9 @@ export const Language = () => {
         Auth: {
           auth: Auth.ka,
         },
+        Pages: {
+          pages: Pages.ka,
+        },
       },
     };
   } else if (lang === 'ru') {
@@ -79,6 +86,9 @@ export const Language = () => {
         },
         Auth: {
           auth: Auth.ru,
+        },
+        Pages: {
+          pages: Pages.ru,
         },
       },
     };

@@ -1,19 +1,24 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { ImCheckmark } from 'react-icons/im';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Language } from '../../context/language';
 import Avatar from '@mui/material/Avatar';
+import { IsMobile } from '../../functions/isMobile';
 
 export const Favorites = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
+  const isMobile = IsMobile();
   const language = Language();
 
   const currentUser = JSON.parse(
     localStorage.getItem('Beautyverse:currentUser')
+  );
+
+  const rerenderUserList = useSelector(
+    (state) => state.storeRerenders.rerenderUserList
   );
 
   const [followings, setFollowings] = useState();
@@ -34,7 +39,7 @@ export const Favorites = () => {
     if (currentUser) {
       GetAudience();
     }
-  }, [currentUser?._id]);
+  }, [currentUser?._id, rerenderUserList]);
 
   return (
     <Container>
@@ -48,11 +53,15 @@ export const Favorites = () => {
             return (
               <Item
                 key={index}
-                // onClick={() =>
-                //   dispatch(setTargetUser({ id: item.id, name: item.name }))
-                // }
-                onClick={() =>
-                  navigate(`/api/v1/users/${item.followingAuthId}`)
+                onClick={
+                  item?.followingType === 'user'
+                    ? () =>
+                        navigate(
+                          isMobile
+                            ? `/api/v1/users/${item?.followingId}/contact`
+                            : `/api/v1/users/${item?.followingId}/audience`
+                        )
+                    : () => navigate(`/api/v1/users/${item?.followingId}`)
                 }
               >
                 <Avatar
@@ -61,6 +70,9 @@ export const Favorites = () => {
                   sx={{ width: 30, height: 30 }}
                 />
                 <span>{item?.followingName}</span>
+                <span style={{ filter: 'brightness(0.7)' }}>
+                  {item?.followingType}
+                </span>
               </Item>
             );
           })}

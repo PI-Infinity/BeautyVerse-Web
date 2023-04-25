@@ -14,6 +14,7 @@ import { BsQuestionLg } from 'react-icons/bs';
 import { FaFacebook, FaInstagram, FaYoutube } from 'react-icons/fa';
 import Flag from 'react-world-flags';
 import { setTheme, setLanguage } from '../redux/main';
+import { setRerenderNotifications } from '../redux/rerenders';
 import useWindowDimensions from '../functions/dimensions';
 import { GiExitDoor } from 'react-icons/gi';
 import { IsMobile } from '../functions/isMobile';
@@ -24,10 +25,12 @@ import { Language } from '../context/language';
 export default function Menu(props) {
   const { height, width } = useWindowDimensions();
   const language = Language();
+  const dispatch = useDispatch();
 
   const Logout = async () => {
     await localStorage.removeItem('Beautyverse:currentUser');
-    navigate('/login');
+    await navigate('/login');
+    dispatch(setRerenderNotifications());
   };
 
   const theme = useSelector((state) => state.storeMain.theme);
@@ -122,8 +125,12 @@ export default function Menu(props) {
             <Item
               onClick={
                 currentUser
-                  ? () => props?.setOpen(true)
-                  : () => navigate('/login')
+                  ? () => {
+                      props?.setOpen(true);
+                    }
+                  : () => {
+                      navigate('/login');
+                    }
               }
             >
               <Badge
@@ -137,7 +144,7 @@ export default function Menu(props) {
             </Item>
             <Item
               onClick={async () => {
-                navigate('/rules');
+                props.setOpenTerms(true);
               }}
             >
               <FcRules className="icon" />
@@ -145,7 +152,7 @@ export default function Menu(props) {
             </Item>
             <Item
               onClick={async () => {
-                navigate('/privacy');
+                props.setOpenPrivacy(true);
               }}
               style={{ flexDirection: 'column' }}
             >
@@ -155,7 +162,7 @@ export default function Menu(props) {
             </Item>
             <Item
               onClick={async () => {
-                navigate('/howwokrs');
+                props.setOpenUsage(true);
               }}
             >
               <FcWorkflow className="icon" />
@@ -163,7 +170,7 @@ export default function Menu(props) {
             </Item>
             <Item
               onClick={async () => {
-                navigate('/questions');
+                props.setOpenQA(true);
               }}
             >
               <BsQuestionLg className="icon" />

@@ -17,11 +17,11 @@ import { Spinner } from '../../components/loader';
 import axios from 'axios';
 import { setRerenderCurrentUser } from '../../redux/rerenders';
 import Button from '@mui/material/Button';
-import { BiLocationPlus } from 'react-icons/bi';
+import { FaListOl } from 'react-icons/fa';
+import { LinkLoader } from '../../components/loader';
 
 export const Contact = () => {
-  const [targetUser, language] = useOutletContext();
-  const [loading, setLoading] = useState(true);
+  const [targetUser, language, loading] = useOutletContext();
   // get user by params id
   const { Id } = useParams();
   const { height, width } = useWindowDimensions();
@@ -96,166 +96,160 @@ export const Contact = () => {
   // open add addresses
   const [openAddresses, setOpenAddresses] = React.useState(false);
 
-  setTimeout(() => {
-    setLoading(false);
-  }, 300);
-
   return (
-    <>
-      {loading ? (
-        <Container
-          height={height}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Spinner />
-        </Container>
-      ) : (
-        <Container style={{ padding: '3vw 0' }} height={height}>
-          <Links targetUser={targetUser} />
-          <span
-            style={{
-              fontWeight: 'bold',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '50px',
-            }}
-          >
-            {/* <BsArrowLeftCircleFill /> */}
-            {language?.language.User.userPage.address}:
-            {/* <BsArrowRightCircleFill /> */}
-          </span>
+    <Container style={{ padding: '3vw 0' }} height={height}>
+      <Links targetUser={targetUser} loading={loading} />
+      <span
+        style={{
+          fontWeight: 'bold',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '50px',
+        }}
+      >
+        {/* <BsArrowLeftCircleFill /> */}
+        {!loading && language?.language.User.userPage.address + ':'}
+        {/* <BsArrowRightCircleFill /> */}
+      </span>
+      <>
+        {
           <>
-            {
-              <>
-                {editAddress ? (
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'start',
-                      gap: '5px',
-                      width: '80%',
-                    }}
-                  >
-                    <AddressAutocomplete
-                      language={language}
-                      userMobile="true"
-                      address={address}
-                      setAddress={setAddress}
-                    />
-                    <GiConfirmed
-                      className="confirm"
-                      onClick={
-                        map?.country?.length > 0
-                          ? async (e) => {
-                              e.preventDefault();
-                              await UpdateAddress();
-                              SetEditAddress(false);
-                            }
-                          : () => SetEditAddress(false)
-                      }
-                    />
-                  </div>
-                ) : (
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                      fontSize: '12px',
-                    }}
-                  >
-                    <MdLocationPin className="location" />
-                    {addressDefined}
-                    {currentUser?._id === targetUser?._id && (
-                      <FiEdit
-                        className="edit"
-                        onClick={() => {
-                          SetEditAddress(true);
-                        }}
-                      />
-                    )}
-                  </div>
-                )}
-
-                <div>
-                  <Map latitude={latitude} longitude={longitude} />
-                </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    width: '100%',
-                    alignItems: 'center',
-                    justifyContent: 'space-evenly',
-                  }}
-                >
-                  <div>
-                    {addresses?.length > 1 && (
-                      <BsArrowLeftCircleFill
-                        size={24}
-                        color={'#ccc'}
-                        style={{
-                          cursor: currentAddress === 0 ? 'auto' : 'pointer',
-                          opacity: currentAddress === 0 ? '0.5' : 1,
-                        }}
-                        onClick={
-                          currentAddress !== 0
-                            ? () => setCurrentAddress(currentAddress - 1)
-                            : false
+            {editAddress ? (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'start',
+                  gap: '5px',
+                  width: '80%',
+                }}
+              >
+                <AddressAutocomplete
+                  language={language}
+                  userMobile="true"
+                  address={address}
+                  setAddress={setAddress}
+                />
+                <GiConfirmed
+                  className="confirm"
+                  onClick={
+                    map?.country?.length > 0
+                      ? async (e) => {
+                          e.preventDefault();
+                          await UpdateAddress();
+                          SetEditAddress(false);
                         }
-                      />
-                    )}
-                  </div>
-                  {targetUser?._id === currentUser?._id && (
-                    <Button>
-                      <BiLocationPlus
+                      : () => SetEditAddress(false)
+                  }
+                />
+              </div>
+            ) : (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '5px',
+                  fontSize: '12px',
+                  width: '95%',
+                }}
+              >
+                {!loading && (
+                  <>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                      }}
+                    >
+                      <MdLocationPin className="location" />
+                      {addressDefined}
+                      {currentUser?._id === targetUser?._id && (
+                        <FiEdit
+                          className="edit"
+                          onClick={() => {
+                            SetEditAddress(true);
+                          }}
+                        />
+                      )}
+                    </div>
+                    {targetUser?._id === currentUser?._id && (
+                      <FaListOl
                         color="orange"
-                        size={28}
+                        size={20}
                         onClick={() => setOpenAddresses(true)}
-                      />
-                    </Button>
-                  )}
-                  {openAddresses && targetUser?._id === currentUser?._id && (
-                    <AddAddress
-                      language={language}
-                      targetUser={targetUser}
-                      address={address}
-                      setAddress={setAddress}
-                      type="true"
-                      setOpenAddresses={setOpenAddresses}
-                    />
-                  )}
-                  <div>
-                    {addresses?.length > 1 && (
-                      <BsArrowRightCircleFill
-                        size={24}
-                        color={'#ccc'}
-                        style={{
-                          cursor:
-                            currentAddress < addresses?.length - 1
-                              ? 'pointer'
-                              : 'auto',
-                          opacity:
-                            currentAddress < addresses?.length - 1 ? 1 : 0.5,
-                        }}
-                        onClick={
-                          currentAddress < addresses?.length - 1
-                            ? () => setCurrentAddress(currentAddress + 1)
-                            : undefined
-                        }
+                        style={{ marginLeft: '10px' }}
                       />
                     )}
-                  </div>
-                </div>
-              </>
-            }
+                  </>
+                )}
+              </div>
+            )}
+
+            <div>
+              {!loading && <Map latitude={latitude} longitude={longitude} />}
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                width: '100%',
+                alignItems: 'start',
+                justifyContent: 'start',
+              }}
+            >
+              <div>
+                {addresses?.length > 1 && (
+                  <BsArrowLeftCircleFill
+                    size={24}
+                    color={'#ccc'}
+                    style={{
+                      cursor: currentAddress === 0 ? 'auto' : 'pointer',
+                      opacity: currentAddress === 0 ? '0.5' : 1,
+                    }}
+                    onClick={
+                      currentAddress !== 0
+                        ? () => setCurrentAddress(currentAddress - 1)
+                        : false
+                    }
+                  />
+                )}
+              </div>
+
+              {openAddresses && targetUser?._id === currentUser?._id && (
+                <AddAddress
+                  language={language}
+                  targetUser={targetUser}
+                  address={address}
+                  setAddress={setAddress}
+                  type="true"
+                  setOpenAddresses={setOpenAddresses}
+                />
+              )}
+              <div>
+                {addresses?.length > 1 && (
+                  <BsArrowRightCircleFill
+                    size={24}
+                    color={'#ccc'}
+                    style={{
+                      cursor:
+                        currentAddress < addresses?.length - 1
+                          ? 'pointer'
+                          : 'auto',
+                      opacity: currentAddress < addresses?.length - 1 ? 1 : 0.5,
+                    }}
+                    onClick={
+                      currentAddress < addresses?.length - 1
+                        ? () => setCurrentAddress(currentAddress + 1)
+                        : undefined
+                    }
+                  />
+                )}
+              </div>
+            </div>
           </>
-        </Container>
-      )}
-    </>
+        }
+      </>
+    </Container>
   );
 };
 
@@ -265,13 +259,13 @@ const Container = styled.div`
   @media only screen and (max-width: 600px) {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: start;
     gap: 5vw;
     overflow-x: hidden;
     overflow-y: scroll;
     height: auto;
 
-    width: 100%;
+    width: 90%;
     color: ${(props) => props.theme.font};
   }
 

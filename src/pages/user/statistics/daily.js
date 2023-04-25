@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import { Chart } from 'react-google-charts';
 import { IsMobile } from '../../../functions/isMobile';
@@ -10,36 +10,24 @@ import { useSelector } from 'react-redux';
 
 export function Daily(props) {
   const isMobile = IsMobile();
-  const followers = useSelector((state) => state.storeUser.targetUserFollowers);
-  const dailyfollowers = followers?.list?.filter(
-    (item) =>
-      item?.followAt?.slice(0, 10) === new Date()?.toISOString().slice(0, 10)
-  );
-
-  // cretate chart
-
+  const statistics = useSelector((state) => state.storeUser.statistics);
+  console.log(statistics?.dinamically?.dailyInLastMonth);
+  console.log(statistics);
   const DefineData = () => {
-    const dat = [
-      [
-        'Days',
-        `${props?.language?.language.User.userPage.visitors}`,
-        `${props?.language?.language.User.userPage.followers}`,
-        `${props?.language?.language.User.userPage.stars}`,
-      ],
+    const labels = [
+      'Days',
+      `${props?.language?.language.User.userPage.visitors}`,
+      `${props?.language?.language.User.userPage.followers}`,
+      `${props?.language?.language.User.userPage.stars}`,
     ];
-    for (var i = 1; i <= parseInt(new Date()?.toString().slice(8, 10)); i++) {
-      // let obj = DefineVisitoris(i - 1);
-      // let visitors = parseInt(obj?.length);
-      // let obj2 = DefineFollowers(i - 1);
-      // let followers = parseInt(obj2?.length);
-      // let obj3 = DefineStars(i - 1);
-      // let stars = parseInt(obj3?.length);
-      // let day =
-      //   `${new Date()?.toString().slice(8, 10) - i + 1}` +
-      //   ` ${new Date()?.toString().slice(4, 7)}`;
-      // dat.push([day, visitors, followers, stars]);
-    }
-    return dat;
+
+    const dataPoints = statistics?.dinamically?.dailyInLastMonth?.map(
+      (item, index) => {
+        return item;
+      }
+    );
+
+    return [labels].concat(dataPoints);
   };
 
   const data = DefineData();
@@ -80,16 +68,18 @@ export function Daily(props) {
     <>
       <Stats>
         <AiOutlineEye color="orange" />{' '}
-        {/* {props?.language?.language.User.userPage.todayVisitors}: {daily?.length} */}
+        {props?.language?.language.User.userPage.visitors}:{' '}
+        {statistics?.visitors?.daily}
       </Stats>
       <Stats>
         <ImCheckmark color="#2bdfd9" />{' '}
-        {props?.language?.language.User.userPage.todayFollowers}:{' '}
-        {dailyfollowers?.length}
+        {props?.language?.language.User.userPage.followers}:{' '}
+        {statistics?.followers?.daily}
       </Stats>
       <Stats>
         <BiStar color="#bb3394" />{' '}
-        {/* {props?.language?.language.User.userPage.todayStars}: {stars?.length} */}
+        {props?.language?.language.User.userPage.stars}:{' '}
+        {statistics?.stars?.daily}
       </Stats>
       <Stats>
         {props?.language?.language.User.userPage.lastMonthStats}{' '}

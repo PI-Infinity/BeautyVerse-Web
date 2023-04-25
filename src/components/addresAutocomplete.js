@@ -3,15 +3,14 @@ import styled from 'styled-components';
 import { useLoadScript, Autocomplete } from '@react-google-maps/api';
 import { setMap, setAddress } from '../redux/register';
 import { useDispatch, useSelector } from 'react-redux';
+import { Language } from '../context/language';
 
 const apiKey = 'AIzaSyBxx8CORlQQBBkbGc-F0yu95DMZaiJkMmo';
 const libraries = ['places'];
 
 function AddressAutocomplete() {
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: apiKey,
-    libraries,
-  });
+  const language = Language();
+
   const dispatch = useDispatch();
 
   const autocompleteRef = useRef(null);
@@ -65,23 +64,20 @@ function AddressAutocomplete() {
     );
   };
 
-  if (loadError) {
-    return <div>Error loading Google Maps API</div>;
+  if (window.google === undefined) {
+    return <div>Loading Google Maps API...</div>;
   }
-
-  if (!isLoaded) {
-    return <div></div>;
-  }
-
   return (
     <Cont>
       <Autocomplete
         onLoad={(ref) => (autocompleteRef.current = ref)}
         onPlaceChanged={handlePlaceChanged}
-        options={{ language: 'en' }}
       >
         <Container>
-          <Input type="text" placeholder="Enter an address" />
+          <Input
+            type="text"
+            placeholder={language?.language.User.userPage.addAddress}
+          />
         </Container>
       </Autocomplete>
     </Cont>

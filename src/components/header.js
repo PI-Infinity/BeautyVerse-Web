@@ -25,6 +25,7 @@ export const Header = (props) => {
   const navigate = useNavigate();
   const openMenu = useSelector((state) => state.storeMain.openMenu);
   const openMobileMenu = useSelector((state) => state.storeMain.openMobileMenu);
+  const userList = useSelector((state) => state.storeMain.userList);
 
   // import current user from redux state
   const currentUser = JSON.parse(
@@ -61,9 +62,6 @@ export const Header = (props) => {
     (state) => state.storeRerenders?.rerenderCurrentUser
   );
 
-  // define scroll
-  // const scroll = useSelector((state) => state.storeScroll.scroll);
-
   // styled badge for menu
 
   const StyledBadge = styled(Badge)(({ theme }) => ({
@@ -74,29 +72,7 @@ export const Header = (props) => {
     },
   }));
 
-  // get notificationst
-  const [notifications, setNotifications] = useState([]);
-
-  useEffect(() => {
-    setNotifications(currentUser?.notifications);
-  }, [rerenderNotifications]);
-
-  // console.log(notifications);
-
-  // useEffect(() => {
-  //   const handleGetNotification = (data) => {
-  //     console.log(data);
-  //     setNotifications((prev) => [data.data, ...prev]);
-  //   };
-
-  //   props.socket?.on('getNotification', handleGetNotification);
-
-  //   return () => {
-  //     props.socket?.off('getNotification', handleGetNotification);
-  //   };
-  // }, [props.socket]);
-
-  const notifLength = notifications?.filter(
+  const notifLength = currentUser?.notifications?.filter(
     (item) => item?.status === 'unread'
   );
 
@@ -124,8 +100,8 @@ export const Header = (props) => {
         <Notifications
           open={openNotifications}
           setOpen={setOpenNotifications}
-          notifications={notifications}
-          setNotifications={setNotifications}
+          title="Notifications"
+          button="Close"
         />
       )}
       <Container isMobile={isMobile}>
@@ -221,6 +197,10 @@ export const Header = (props) => {
               color="secondary"
             >
               <Menu
+                setOpenTerms={props.setOpenTerms}
+                setOpenPrivacy={props.setOpenPrivacy}
+                setOpenUsage={props.setOpenUsage}
+                setOpenQA={props.setOpenQA}
                 notifLength={notifLength?.length}
                 open={openNotifications}
                 setOpen={setOpenNotifications}
@@ -228,6 +208,11 @@ export const Header = (props) => {
             </StyledBadge>
           ) : (
             <Menu
+              setOpenTerms={props.setOpenTerms}
+              setOpenPrivacy={props.setOpenPrivacy}
+              setOpenUsage={props.setOpenUsage}
+              setOpenUsage={props.setOpenUsage}
+              setOpenQA={props.setOpenQA}
               notifLength={notifLength?.length}
               open={openNotifications}
               setOpen={setOpenNotifications}

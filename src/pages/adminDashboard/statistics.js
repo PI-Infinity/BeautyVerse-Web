@@ -1,11 +1,13 @@
 import React from 'react';
 import { Chart } from 'react-google-charts';
 import styled from 'styled-components';
-import { UserPie } from '../../pages/adminDashboard/statistics-userPie';
+import { Types } from '../../pages/adminDashboard/statistics-types';
+import { Location } from '../../pages/adminDashboard/statistics-location';
 import { useSelector, useDispatch } from 'react-redux';
+import { useOutletContext } from 'react-router-dom';
 
 export default function Statistics() {
-  const Data = useSelector((state) => state.storeMain?.userList?.length > 0 && JSON.parse(state.storeMain?.userList));
+  const [types] = useOutletContext();
 
   const data = [
     ['Year', 'Users', 'Salons', 'Specialists'],
@@ -23,12 +25,22 @@ export default function Statistics() {
 
   return (
     <Container>
-      <Chart chartType="Bar" width="80%" height="400px" data={data} options={options} />
-      <UserPie Data={Data} />
+      <Chart
+        chartType="Bar"
+        width="80%"
+        height="400px"
+        data={data}
+        options={options}
+      />
+      <Types Data={types} />
+      <Location Data={types} />
+      {/* <UserPie Data={types} /> */}
     </Container>
   );
 }
 
 const Container = styled.div`
   padding: 20px;
+  overflow-y: scroll;
+  height: 100%;
 `;

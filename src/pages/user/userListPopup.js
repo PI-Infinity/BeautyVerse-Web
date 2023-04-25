@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
+import { IsMobile } from '../../functions/isMobile';
 
 function UserListDialog(props) {
   const {
@@ -33,6 +34,7 @@ function UserListDialog(props) {
   );
 
   const navigate = useNavigate();
+  const isMobile = IsMobile();
 
   const handleClose = () => {
     onClose(selectedValue);
@@ -69,38 +71,64 @@ function UserListDialog(props) {
 
   return (
     <Dialog onClose={handleClose} open={open}>
-      <DialogTitle>{title}</DialogTitle>
+      <DialogTitle>
+        {title} ({users?.length})
+      </DialogTitle>
       <List sx={{ pt: 0 }}>
         {users?.map((item) => {
           return (
-            <ListItem disableGutters key={item._id} sx={{ pr: 3, pl: 3 }}>
+            <ListItem disableGutters key={item._doc._id} sx={{ pr: 3, pl: 3 }}>
               <ListItemButton
-                onClick={() =>
-                  navigate(
-                    `/api/v1/users/${
-                      item.followerAuthId || item.followingAuthId
-                    }`
-                  )
+                onClick={
+                  item?.followingType === 'user' ||
+                  item?.followerType === 'user'
+                    ? () =>
+                        navigate(
+                          `/api/v1/users/${
+                            type === 'followers'
+                              ? item._doc.followerId
+                              : item._doc.followingId
+                          }/contact`
+                        )
+                    : () =>
+                        navigate(
+                          `/api/v1/users/${
+                            type === 'followings'
+                              ? item._doc.followingId
+                              : item._doc.followerId
+                          }`
+                        )
                 }
-                key={item?.userName}
               >
                 <ListItemAvatar>
                   <Avatar
                     sx={{ bgcolor: blue[100], color: blue[600] }}
-                    src={item?.followingCover || item?.followerCover}
+                    src={
+                      type === 'followings'
+                        ? item?.followingCover
+                        : item?.followerCover
+                    }
                   >
                     <PersonIcon />
                   </Avatar>
                 </ListItemAvatar>
                 <ListItemText
-                  primary={item?.followingName || item?.followerName}
+                  primary={
+                    type === 'followings'
+                      ? item?.followingName
+                      : item?.followerName
+                  }
                 />
               </ListItemButton>
               {targetUser?._id === currentUser?._id && (
                 <Tooltip
                   title={language?.language.User.userPage.remove}
                   onClick={() =>
-                    DeleteUser(item.followerId, item.followingId, item._id)
+                    DeleteUser(
+                      item._doc.followerId,
+                      item._doc.followingId,
+                      item._id
+                    )
                   }
                 >
                   <IconButton>
@@ -140,10 +168,11 @@ export default function UserListDialogMain(props) {
       <Button
         variant="outlined"
         color="secondary"
-        onClick={handleClickOpen}
-        sx={{ width: '150px', color: 'purple' }}
+        onClick={props.users?.length !== 0 && handleClickOpen}
+        sx={{ width: '150px', color: 'purple', gap: '5px' }}
       >
-        {props.title}
+        {props.title}{' '}
+        <span style={{ fontWeight: 'normal' }}> ({props.users?.length})</span>
       </Button>
       <UserListDialog
         users={props.users}

@@ -62,7 +62,7 @@ export const SpecialistsCard = (props) => {
 
   const name = capitalizeFirstLetter(props?.name);
   let type;
-  if (props?.type === 'beautycfirenter') {
+  if (props?.type === 'beautycenter') {
     type = language?.language.Main.feedCard.beautySalon;
   } else if (props?.type === 'specialist') {
     type = language?.language.Main.feedCard.specialist;
@@ -79,7 +79,7 @@ export const SpecialistsCard = (props) => {
     icon = <FaUserEdit />;
   } else if (props?.type === 'specialist') {
     icon = <BsBrush />;
-  } else if (props?.type === 'beautyCenter') {
+  } else if (props?.type === 'beautycenter') {
     icon = <MdAddBusiness />;
   }
 

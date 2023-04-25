@@ -5,6 +5,7 @@ import { setUserListClear } from '../../redux/main';
 import { useDispatch, useSelector } from 'react-redux';
 import { VerseCategories } from '../../data/categories';
 import useWindowDimensions from '../../functions/dimensions';
+import { setRerenderUserList } from '../../redux/rerenders';
 
 export const CategoryFilter = (props) => {
   const { height, width } = useWindowDimensions();
@@ -87,11 +88,20 @@ const CategoryItem = (props) => {
     <Wrapper color={props.color}>
       <CategoryItemContainer
         className={filter === props.value ? 'active' : ''}
-        onClick={() => {
-          props.setPage(1);
-          dispatch(setUserListClear());
-          dispatch(setFilter(props.value));
-        }}
+        onClick={
+          filter === ''
+            ? () => {
+                props.setPage(1);
+                dispatch(setUserListClear());
+                dispatch(setFilter(props.value));
+                dispatch(setRerenderUserList());
+              }
+            : () => {
+                props.setPage(1);
+                dispatch(setUserListClear());
+                dispatch(setFilter(props.value));
+              }
+        }
         color={filter === props.value ? 'active' : 'none'}
       >
         <div

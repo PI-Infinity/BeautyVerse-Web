@@ -8,7 +8,6 @@ import { RiEdit2Fill } from 'react-icons/ri';
 import Map from '../../components/map';
 import { GiConfirmed } from 'react-icons/gi';
 import { FiEdit } from 'react-icons/fi';
-import MapAutocomplete from '../../components/mapAutocomplete';
 import { useNavigate } from 'react-router-dom';
 import { BsArrowRightCircleFill, BsArrowLeftCircleFill } from 'react-icons/bs';
 import AddAddress from '../../pages/user/addAddressPopup';
@@ -26,7 +25,7 @@ import { TitleLoader, MapLoader } from '../../components/loader';
 import Error from '../../snackBars/success';
 import AddressAutocomplete from '../../components/addresAutocomplete';
 import Button from '@mui/material/Button';
-import { BiLocationPlus } from 'react-icons/bi';
+import { FaListOl } from 'react-icons/fa';
 import { AiOutlineReload } from 'react-icons/ai';
 
 const CoverSection = React.memo(function ({
@@ -206,7 +205,7 @@ const CoverSection = React.memo(function ({
       )
         .then((response) => response.json())
         .then(async (data) => {
-          setFollowerDefined(data.data.follower);
+          setFollowerDefined(data.data?.follower);
         })
         .catch((error) => {
           console.log('Error fetching data:', error);
@@ -222,9 +221,9 @@ const CoverSection = React.memo(function ({
     try {
       setFollowerDefined({
         followerId: currentUser?._id,
-        followerAuthId: currentUser?._id,
         followerName: currentUser?.name,
         followerCover: currentUser?.cover,
+        followerType: currentUser?.type,
         followingId: targetUser?._id,
         followAt: new Date(),
       });
@@ -232,9 +231,6 @@ const CoverSection = React.memo(function ({
         `https://beautyverse.herokuapp.com/api/v1/users/${currentUser?._id}/followings`,
         {
           followingId: targetUser?._id,
-          followingAuthId: targetUser?._id,
-          followingName: targetUser?.name,
-          followingCover: targetUser?.cover,
           followerId: currentUser?._id,
           followAt: new Date(),
         }
@@ -243,9 +239,6 @@ const CoverSection = React.memo(function ({
         `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}/followers`,
         {
           followerId: currentUser?._id,
-          followerAuthId: currentUser?._id,
-          followerName: currentUser?.name,
-          followerCover: currentUser?.cover,
           followingId: targetUser?._id,
           followAt: new Date(),
         }
@@ -254,7 +247,7 @@ const CoverSection = React.memo(function ({
         await axios.post(
           `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}/notifications`,
           {
-            senderId: targetUser?._id,
+            senderId: currentUser?._id,
             text: `გამოიწერა თქვენი გვერდი!`,
             date: new Date(),
             type: 'star',
@@ -393,23 +386,21 @@ const CoverSection = React.memo(function ({
             <>
               <Wrapper1>
                 <Wrapper2>
-                  <div>
-                    <WhiteBorderTextField
-                      size="small"
-                      autoFocus
-                      placeholder={`Max. 30 letters`}
-                      label={`${editName?.length} letters`}
-                      value={editName}
-                      sx={{
-                        input: { color: theme ? '#fff' : '#151515' },
-                        fontSize: '16px',
-                        fontWeight: 'bold',
-                      }}
-                      onChange={(e) => setEditName(e.target.value)}
-                      id="standard-basic"
-                      variant="outlined"
-                    />
-                  </div>
+                  <WhiteBorderTextField
+                    size="small"
+                    autoFocus
+                    placeholder={`Max. 30 letters`}
+                    label={`${editName?.length} letters`}
+                    value={editName}
+                    sx={{
+                      input: { color: theme ? '#fff' : '#151515' },
+                      fontSize: '16px',
+                      fontWeight: 'bold',
+                    }}
+                    onChange={(e) => setEditName(e.target.value)}
+                    id="standard-basic"
+                    variant="outlined"
+                  />
                 </Wrapper2>
                 <ImCheckmark
                   className="uploaderIcon"
@@ -455,7 +446,7 @@ const CoverSection = React.memo(function ({
                               <ImCheckmark
                                 className="followIcon"
                                 onClick={
-                                  targetUser
+                                  currentUser
                                     ? FollowToUser
                                     : () => navigate('/login')
                                 }
@@ -502,9 +493,9 @@ const CoverSection = React.memo(function ({
         >
           {!isMobile && targetUser?._id === currentUser?._id && (
             <Button>
-              <BiLocationPlus
+              <FaListOl
                 color="orange"
-                size={28}
+                size={20}
                 onClick={() => setOpenAddresses(true)}
               />
             </Button>
@@ -549,7 +540,6 @@ const CoverSection = React.memo(function ({
                 {editAddress ? (
                   <>
                     <AddressAutocomplete />
-                    {/* <MapAutocomplete language={language} /> */}
                     <GiConfirmed
                       className="confirm"
                       onClick={async (e) => {
@@ -730,7 +720,7 @@ const Title = styled.h2`
 const Wrapper1 = styled.div`
   display: flex;
   align-items: center;
-  gap: 10px;
+  // gap: 10px;
 
   .uploaderIcon {
     font-size: 1vw;
@@ -744,7 +734,7 @@ const Wrapper1 = styled.div`
 `;
 const Wrapper2 = styled.div`
   width: 350px;
-  height: 1.5vw;
+  // height: 1.5vw;
 
   @media only screen and (max-width: 600px) {
     width: 60vw;

@@ -17,14 +17,17 @@ import { countries } from '../../data/countries';
 import { IsMobile } from '../../functions/isMobile';
 import { auth } from '../../firebase';
 import axios from 'axios';
-import { sendPasswordResetEmail } from 'firebase/auth';
+import { setCurrentUser } from '../../redux/register';
+import VerifyEmail from '../../pages/register/verifyPopup';
+import SimpleBackdrop from '../../components/backDrop';
+import { setBackdropOpen } from '../../redux/main';
 
 const animatedComponents = makeAnimated();
 
 export default function Login() {
   const language = Language();
   const { height, width } = useWindowDimensions();
-  const mainDispatch = useDispatch();
+  const dispatch = useDispatch();
   const isMobile = IsMobile();
 
   const country = useSelector((state) => state.storeMain.country);
@@ -108,7 +111,6 @@ export default function Login() {
   };
 
   //signin with email and password
-  const [code, setCode] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -123,23 +125,77 @@ export default function Login() {
     });
   }, []);
 
+  const [verify, setVerify] = useState(false);
+  const [code, setCode] = useState('');
+
+  async function Verify() {
+    try {
+      const response = await axios.post(
+        'https://beautyverse.herokuapp.com/api/v1/verifyEmail',
+        {
+          email: email,
+          code: code,
+        }
+      );
+
+      const newUser = response.data.data.newUser;
+
+      if (newUser?.type === 'user') {
+        await localStorage.setItem(
+          'Beautyverse:currentUser',
+          JSON.stringify(newUser)
+        );
+        if (isMobile) {
+          navigate(`/api/v1/users/${newUser._id}/contact`);
+        } else {
+          navigate(`/api/v1/users/${newUser._id}/audience`);
+        }
+      } else {
+        dispatch(setCurrentUser(newUser));
+        navigate(`/register/business`);
+      }
+
+      dispatch(setEmail(''));
+      dispatch(setPassword(''));
+    } catch (err) {
+      setAlert({
+        active: true,
+        type: 'error',
+        title: err.response.data.message,
+      });
+    }
+  }
+
   const Login = async () => {
     try {
+      dispatch(setBackdropOpen(true));
       await axios
         .post('https://beautyverse.herokuapp.com/api/v1/login', {
           email: email,
           password: password,
         })
         .then(async (data) => {
-          await localStorage.setItem(
-            'Beautyverse:currentUser',
-            JSON.stringify(data.data.filteredUser)
-          );
-        })
-        .then(() => {
-          navigate('/');
+          if (data.data.filteredUser.verifiedEmail) {
+            if (
+              data.data.filteredUser.type !== 'user' &&
+              data.data.filteredUser.procedures?.length < 1
+            ) {
+              dispatch(setCurrentUser(data.data.filteredUser));
+              navigate(`/register/business`);
+            } else {
+              await localStorage.setItem(
+                'Beautyverse:currentUser',
+                JSON.stringify(data.data.filteredUser)
+              );
+              navigate('/');
+            }
+          } else {
+            setVerify(true);
+          }
         });
+      dispatch(setBackdropOpen(false));
     } catch (err) {
+      dispatch(setBackdropOpen(false));
       setAlert({
         active: true,
         title: err.response.data.message,
@@ -195,6 +251,16 @@ export default function Login() {
 
   return (
     <>
+      <SimpleBackdrop />
+      <VerifyEmail
+        open={verify}
+        setOpen={setVerify}
+        Verify={Verify}
+        email={email}
+        language={language}
+        code={code}
+        setCode={setCode}
+      />
       <Error
         open={alert?.active}
         setOpen={setAlert}
@@ -206,9 +272,9 @@ export default function Login() {
         <Form onSubmit={Login} method="post" action="/form">
           <InputWrapper>
             <Input
-              type="email"
+              id="email"
+              type="text"
               value={email}
-              required
               placeholder={language?.language.Auth.auth.email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -220,7 +286,6 @@ export default function Login() {
               id="new-password"
               value={password}
               required
-              autocomplete="new-password"
               placeholder={language?.language.Auth.auth.password}
               onChange={(e) => setPassword(e.target.value)}
               onKeyDown={handleKey}
@@ -267,7 +332,7 @@ export default function Login() {
               placeholder={country}
               components={animatedComponents}
               onChange={(value) => {
-                mainDispatch(setCountry(value?.value));
+                dispatch(setCountry(value?.value));
                 localStorage.setItem(
                   'BeautyVerse:Country',
                   JSON.stringify(value?.value)
@@ -295,8 +360,12 @@ const Container = styled.div`
   align-items: center;
   justify-content: center;
   gap: 2vw;
+  position: absolute;
+  z-index: 100000;
+  top: 0;
 
   @media only screen and (max-width: 600px) {
+    // height: calc(${(props) => props.height}px - 50px);
     padding-top: 0vw;
     padding-bottom: 5vw;
   }
@@ -383,6 +452,7 @@ const InputWrapper = styled.div`
 
     :focus {
       outline: none;
+      font-size: 16px !important;
     }
   }
 `;
@@ -412,6 +482,7 @@ const Input = styled.input`
 
   :focus {
     outline: none;
+    font-size: 16px !important;
   }
 
   ::placeholder {

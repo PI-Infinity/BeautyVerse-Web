@@ -64,10 +64,9 @@ const AddFeed = (props) => {
   async function FileUpload() {
     await dispatch(setBackdropOpen(true));
     //create id
-    let folderId = resizedObj.desktopJPEG?.name + v4();
-    let imageId = resizedObj.desktopJPEG?.name + v4();
-    let imageId2 = resizedObj.mobileJPEG?.name + v4();
-    let imageId3 = resizedObj.mobileWEBP?.name + v4();
+    let folderId = resizedObj.desktop?.name + v4();
+    let imageId = resizedObj.desktop?.name + v4();
+    let imageId2 = resizedObj.desktop?.name + v4();
     // check file
     if (resizedObj !== null && !resizedObj?.name?.endsWith('mp4')) {
       let desktopRefs = ref(
@@ -78,61 +77,44 @@ const AddFeed = (props) => {
         storage,
         `images/${currentUser?._id}/feeds/${folderId}/${imageId2}/`
       );
-      let mobileWebpRef = ref(
-        storage,
-        `images/${currentUser?._id}/feeds/${folderId}/${imageId3}/`
-      );
       if (desktopRefs) {
         // add desktop version
 
-        await uploadBytes(desktopRefs, resizedObj.desktopJPEG).then(
-          (snapshot) => {
-            getDownloadURL(snapshot.ref).then(async (url) => {
-              await uploadBytes(mobileJpegRef, resizedObj.mobileJPEG).then(
-                (snapshot2) => {
-                  getDownloadURL(snapshot2.ref).then(async (url2) => {
-                    await uploadBytes(
-                      mobileWebpRef,
-                      resizedObj.mobileWEBP
-                    ).then((snapshot3) => {
-                      getDownloadURL(snapshot3.ref).then(async (url3) => {
-                        try {
-                          const newFeed = {
-                            desktopUrl: url,
-                            mobileJpeg: url2,
-                            mobileWebp: url3,
-                            name: folderId,
-                            createdAt: new Date().toISOString(),
-                            post: text,
-                            fileFormat: 'img',
-                          };
-                          // dispatch(
-                          //   UpdateUserList({ ...currentUser, feed: newFeed })
-                          // );
+        await uploadBytes(desktopRefs, resizedObj.desktop).then((snapshot) => {
+          getDownloadURL(snapshot.ref).then(async (url) => {
+            await uploadBytes(mobileJpegRef, resizedObj.mobile).then(
+              (snapshot2) => {
+                getDownloadURL(snapshot2.ref).then(async (url2) => {
+                  try {
+                    const newFeed = {
+                      desktop: url,
+                      mobile: url2,
+                      name: folderId,
+                      createdAt: new Date().toISOString(),
+                      post: text,
+                      fileFormat: 'img',
+                    };
 
-                          const response = await axios.post(
-                            `https://beautyverse.herokuapp.com/api/v1/users/${currentUser?._id}/feeds`,
-                            newFeed
-                          );
-                          await axios.patch(
-                            `https://beautyverse.herokuapp.com/api/v1/users/${currentUser?._id}`,
-                            {
-                              lastPostCreatedAt: new Date(),
-                            }
-                          );
-                          await props.setPage(1);
-                          await dispatch(setUserListClear());
-                        } catch (error) {
-                          console.error(error);
-                        }
-                      });
-                    });
-                  });
-                }
-              );
-            });
-          }
-        );
+                    const response = await axios.post(
+                      `https://beautyverse.herokuapp.com/api/v1/users/${currentUser?._id}/feeds`,
+                      newFeed
+                    );
+                    await axios.patch(
+                      `https://beautyverse.herokuapp.com/api/v1/users/${currentUser?._id}`,
+                      {
+                        lastPostCreatedAt: new Date(),
+                      }
+                    );
+                    await props.setPage(1);
+                    await dispatch(setUserListClear());
+                  } catch (error) {
+                    console.error(error);
+                  }
+                });
+              }
+            );
+          });
+        });
       }
     } else if (resizedObj?.name?.endsWith('mp4')) {
       let videoId = resizedObj?.name + v4();
@@ -146,7 +128,6 @@ const AddFeed = (props) => {
             const newFeed = {
               videoUrl: url,
               name: videoId,
-              name: folderId,
               createdAt: new Date().toISOString(),
               post: text,
               fileFormat: 'video',
@@ -236,6 +217,7 @@ const AddFeed = (props) => {
         </Wrapper>
         <Result
           file={file}
+          setFile={setFile}
           {...currentUser}
           id={currentUser?._id}
           active={active}

@@ -349,6 +349,7 @@ export const Links = ({ targetUser, loading }) => {
     color: theme ? '#fff' : '#111',
     width: '100%',
     border: 'none',
+    fontSize: '16px',
   };
   const searchStyle = {
     width: '80%',
@@ -361,8 +362,10 @@ export const Links = ({ targetUser, loading }) => {
 
   return (
     <LinksContainer>
-      {loading ? (
-        <LinkLoader />
+      {loading && !isMobile ? (
+        <div style={{ height: '400px' }}>
+          <LinkLoader />
+        </div>
       ) : (
         <>
           {/* {targetUser?._id !== currentUser?._id && (
@@ -377,7 +380,10 @@ export const Links = ({ targetUser, loading }) => {
             </SendMessage>
           )} */}
           {LinkList?.map((item, index) => {
-            if (item?.value?.length > 0 || currentUser._id === targetUser._id) {
+            if (
+              item?.value?.length > 0 ||
+              currentUser?._id === targetUser?._id
+            ) {
               if (item?.id === 'email') {
                 return (
                   <LinkContainer key={index} edit={edit}>
@@ -394,10 +400,10 @@ export const Links = ({ targetUser, loading }) => {
               } else if (item.id === 'phone') {
                 if (
                   targetUser?.type !== 'user' ||
-                  currentUser._id === targetUser._id
+                  currentUser?._id === targetUser?._id
                 ) {
                   return (
-                    <LinkContainer>
+                    <LinkContainer key={index}>
                       {item.icon}
                       {edit == item.id ? (
                         <PhoneInput
@@ -833,6 +839,11 @@ const LinkInput = styled.input`
 
   :focus {
     outline: none;
+  }
+
+  @media only screen and (max-width: 600px) {
+    max-width: 40vw;
+    width: 40vw;
   }
 `;
 

@@ -105,7 +105,7 @@ export const TopSection = (props) => {
           </Category>
         </div>
       </div>
-      <TopRightSection>
+      {/* <TopRightSection>
         {props.loading ? (
           <IconLoader />
         ) : (
@@ -114,7 +114,7 @@ export const TopSection = (props) => {
             onClick={() => props.setReports(!props.reports)}
           />
         )}
-      </TopRightSection>
+      </TopRightSection> */}
     </TopSectionContainer>
   );
 };

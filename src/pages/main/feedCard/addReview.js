@@ -5,9 +5,12 @@ import { FiSend } from 'react-icons/fi';
 import { BiStar } from 'react-icons/bi';
 import axios from 'axios';
 import { v4 } from 'uuid';
+import { useSelector, useDispatch } from 'react-redux';
+import { UpdateUser } from '../../../redux/main';
 
 export const AddReview = (props) => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [text, setText] = useState();
 
@@ -29,6 +32,29 @@ export const AddReview = (props) => {
           checkIfStared: true,
         };
       });
+      const handleReview = (userId, isDecrement) => {
+        const user = userList.find((u) => u._id === userId);
+        if (user) {
+          const newStarsLength = isDecrement
+            ? user.feed.starsLength - 1
+            : user.feed.starsLength + 1;
+          const updatedUser = {
+            ...user,
+            feed: {
+              ...user.feed,
+              starsLength: newStarsLength,
+              checkIfStared:
+                newStarsLength > user.feed.starsLength
+                  ? true
+                  : newStarsLength < user.feed.starsLength
+                  ? false
+                  : user.feed.checkIfStared,
+            },
+          };
+          dispatch(UpdateUser(updatedUser));
+        }
+      };
+      handleReview(props?.targetUser._id);
       await axios.post(
         `https://beautyverse.herokuapp.com/api/v1/users/${props?.targetUser._id}/feeds/${props.currentFeed?._id}/stars`,
         {
@@ -67,9 +93,29 @@ export const AddReview = (props) => {
             starsLength: prev.feed.starsLength - 1,
           },
           checkIfStared: false,
-          someobjects: prev.someobjects,
         };
       });
+      const handleReview = (userId, isDecrement) => {
+        const user = userList.find((u) => u._id === userId);
+        if (user) {
+          const newStarsLength = user.feed.starsLength - 1;
+          const updatedUser = {
+            ...user,
+            feed: {
+              ...user.feed,
+              starsLength: newStarsLength,
+              checkIfStared:
+                newStarsLength > user.feed.starsLength
+                  ? true
+                  : newStarsLength < user.feed.starsLength
+                  ? false
+                  : user.feed.checkIfStared,
+            },
+          };
+          dispatch(UpdateUser(updatedUser, isDecrement));
+        }
+      };
+      handleReview(props?.targetUser._id);
       const url = `https://beautyverse.herokuapp.com/api/v1/users/${props.targetUser?._id}/feeds/${props?.currentFeed?._id}/stars/${props.currentUser?._id}`;
       const response = await fetch(url, { method: 'DELETE' })
         .then((response) => response.json())
@@ -86,6 +132,8 @@ export const AddReview = (props) => {
    * add review
    *  */
 
+  const userList = useSelector((state) => state.storeMain.userList);
+
   const SetReview = async () => {
     const newId = v4();
     try {
@@ -101,6 +149,7 @@ export const AddReview = (props) => {
                   id: currentUser?._id,
                   name: currentUser?.name,
                   cover: currentUser.cover,
+                  type: currentUser.type,
                 },
                 createdAt: new Date(),
                 text: text,
@@ -111,15 +160,22 @@ export const AddReview = (props) => {
           next: prev.next,
         };
       });
+      const handleReview = (userId) => {
+        const user = userList.find((u) => u._id === userId);
+        if (user) {
+          const updatedUser = {
+            ...user,
+            feed: { ...user.feed, reviewsLength: user.feed.reviewsLength + 1 },
+          };
+          dispatch(UpdateUser(updatedUser));
+        }
+      };
+      handleReview(props?.targetUser._id);
       await axios.post(
         `https://beautyverse.herokuapp.com/api/v1/users/${props?.targetUser._id}/feeds/${props.currentFeed?._id}/reviews`,
         {
           reviewId: newId,
-          reviewer: {
-            id: currentUser?._id,
-            name: currentUser?.name,
-            cover: currentUser.cover,
-          },
+          reviewer: currentUser?._id,
           createdAt: new Date(),
           text: text,
         }

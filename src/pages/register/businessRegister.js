@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Button } from '../../components/button';
 import { useSelector, useDispatch } from 'react-redux';
@@ -27,14 +27,22 @@ import { IsMobile } from '../../functions/isMobile';
 import VerifyEmail from '../../pages/register/verifyPopup';
 import Error from '../../snackBars/success';
 import axios from 'axios';
+import SimpleBackdrop from '../../components/backDrop';
+import { setBackdropOpen } from '../../redux/main';
 
 const animatedComponents = makeAnimated();
 
 export const BusinessRegister = (props) => {
+  const currentUser = useSelector((state) => state.storeRegister.currentUser);
+  useEffect(() => {
+    if (!currentUser) {
+      navigate('/register');
+    }
+  }, []);
   const language = Language();
   const { height, width } = useWindowDimensions();
   const isMobile = IsMobile();
-  const mainDispatch = useDispatch();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const page = useSelector((state) => state.storeRegister.page);
   const proceduresOptions = ProceduresOptions();
@@ -58,66 +66,40 @@ export const BusinessRegister = (props) => {
   }
 
   const [alert, setAlert] = useState(false);
+  const [verify, setVerify] = useState(false);
   //verify code
-  const Register = async (e) => {
+  const FillUp = async (e) => {
     try {
-      // Signup user
-      const response = await axios
-        .post('https://beautyverse.herokuapp.com/api/v1/signup', {
-          name: registerFields?.name,
-          type: type,
-          email: registerFields?.email,
-          phone:
-            registerFields?.countryCode?.value + registerFields?.phoneNumber,
-          password: registerFields?.password,
-          confirmPassword: registerFields?.confirmPassowrd,
-          address: {
-            country: map.country,
-            region: map.region,
-            city: map.city,
-            district: map.district,
-            street: map.street,
-            number: map.number,
-            latitude: map.latitude,
-            longitude: map.longitude,
-          },
-          procedures: categories,
-          workingDays: days,
-          notifications: [
-            {
-              senderId: 'Beautyverse',
-              text: `${language?.language.Auth.auth.successRegister}`,
-              date: new Date(),
-              type: 'welcome',
-              status: 'unread',
-              feed: '',
-            },
-          ],
-        })
-        .then(async (data) => {
-          await localStorage.setItem(
-            'Beautyverse:currentUser',
-            JSON.stringify(data.data.newUser)
-          );
-          mainDispatch(setName(''));
-          mainDispatch(setUserType(''));
-          mainDispatch(setEmail(''));
-          mainDispatch(setPhoneNumber(''));
-          mainDispatch(setPassword(''));
-          mainDispatch(setConfirmPassowrd(''));
-          mainDispatch(setWorkingDays(''));
-          mainDispatch(setCategories(''));
-          navigate(`/api/v1/users/${data.data.newUser._id}`);
+      if (categories) {
+        // Signup user
+        const response = await axios.patch(
+          'https://beautyverse.herokuapp.com/api/v1/users/' + currentUser?._id,
+          {
+            procedures: categories,
+            workingDays: days,
+          }
+        );
+        await localStorage.setItem(
+          'Beautyverse:currentUser',
+          JSON.stringify(response.data.data.updatedUser)
+        );
+        navigate(`/api/v1/users/${currentUser?._id}`);
+      } else {
+        setAlert({
+          active: true,
+          title: language?.language.Auth.auth.pleaseInput,
         });
+      }
     } catch (err) {
       setAlert({
         active: true,
+        type: 'error',
         title: err.response.data.message,
       });
     }
   };
   const handleKey = (e) => {
-    e.code === 'Enter' && SendEmail();
+    e.code === 'Enter' && FillUp();
   };
 
   // defined procedures which specialist or salon can to choise
@@ -233,24 +215,47 @@ export const BusinessRegister = (props) => {
    * send identify email
    */
 
-  const [verifyCode, setVerifyCode] = useState('');
-  const [verify, setVerify] = useState(false);
+  const [code, setCode] = React.useState('');
 
-  function SendEmail() {
-    const email = registerFields?.email;
-    fetch(`https://beautyverse.herokuapp.com/api/v1/verify?email=${email}`)
-      .then((response) => response.json())
-      .then((data) => {
-        setVerifyCode(data);
-        setVerify(true);
-      })
-      .catch((error) => {
-        console.log('Error fetching data:', error);
+  async function Verify() {
+    try {
+      const response = await axios.post(
+        'https://beautyverse.herokuapp.com/api/v1/verifyEmail',
+        {
+          email: registerFields?.email,
+          code: code,
+        }
+      );
+
+      const newUser = response.data.data.newUser;
+
+      await localStorage.setItem(
+        'Beautyverse:currentUser',
+        JSON.stringify(newUser)
+      );
+
+      navigate(`/api/v1/users/${newUser._id}`);
+
+      dispatch(setName(''));
+      dispatch(setUserType(''));
+      dispatch(setEmail(''));
+      dispatch(setPhoneNumber(''));
+      dispatch(setPassword(''));
+      dispatch(setConfirmPassowrd(''));
+      dispatch(setWorkingDays(''));
+      dispatch(setCategories(''));
+    } catch (err) {
+      setAlert({
+        active: true,
+        type: 'error',
+        title: err.response.data.message,
       });
+    }
   }
 
   return (
     <>
+      <SimpleBackdrop />
       <Error
         open={alert?.active}
         setOpen={setAlert}
@@ -258,10 +263,11 @@ export const BusinessRegister = (props) => {
         title={alert?.title}
       />
       <VerifyEmail
+        code={code}
+        setCode={setCode}
         open={verify}
         setOpen={setVerify}
-        Register={Register}
-        verifyCode={verifyCode}
+        Verify={Verify}
         email={registerFields?.email}
         language={language}
       />
@@ -275,7 +281,7 @@ export const BusinessRegister = (props) => {
             ? 'ინფორმაცია მაღაზიის შესახებ'
             : language?.language.Auth.auth.aboutSalon}
         </Title>
-        <WrapperContainer onSubmit={SendEmail}>
+        <WrapperContainer onSubmit={FillUp}>
           {!isMobile && (
             <Button
               title={language?.language.Auth.auth.back}
@@ -303,7 +309,7 @@ export const BusinessRegister = (props) => {
                   isMulti
                   components={animatedComponents}
                   onChange={(value) => {
-                    mainDispatch(setCategories(value));
+                    dispatch(setCategories(value));
                   }}
                   value={registerFields?.categories}
                   styles={CustomStyle}
@@ -325,7 +331,7 @@ export const BusinessRegister = (props) => {
                     components={animatedComponents}
                     value={registerFields?.workingDays}
                     onChange={(value) => {
-                      mainDispatch(setWorkingDays(value));
+                      dispatch(setWorkingDays(value));
                     }}
                     styles={CustomStyle}
                     options={wdOption}
@@ -345,7 +351,7 @@ export const BusinessRegister = (props) => {
                     isMulti
                     components={animatedComponents}
                     onChange={(value) => {
-                      mainDispatch(setWorkingPlace(value));
+                      dispatch(setWorkingPlace(value));
                     }}
                     styles={CustomStyle}
                     options={workingPlacesOptions}
@@ -359,7 +365,7 @@ export const BusinessRegister = (props) => {
             <Button
               title={language?.language.Auth.auth.next}
               type="Submit"
-              function={SendEmail}
+              function={FillUp}
             />
           )}
         </WrapperContainer>
@@ -373,15 +379,7 @@ export const BusinessRegister = (props) => {
           <Button
             title={language?.language.Auth.auth.register}
             type="Submit"
-            function={
-              registerFields?.categories?.length > 0
-                ? () => SendEmail()
-                : () =>
-                    setAlert({
-                      active: true,
-                      title: language?.language.Auth.auth.pleaseInput,
-                    })
-            }
+            function={FillUp}
           />
         </MobileButtons>
       </Container>

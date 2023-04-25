@@ -21,12 +21,19 @@ const initialState = {
   categories: '',
   workingDays: '',
   workingPlace: '',
+
+  //
+
+  currentUser: null,
 };
 
 export const register = createSlice({
   name: 'register',
   initialState,
   reducers: {
+    setCurrentUser: (state, action) => {
+      state.currentUser = action.payload;
+    },
     setRegisterPage: (state, action) => {
       state.page = action.payload;
     },
@@ -76,6 +83,7 @@ export const register = createSlice({
 });
 
 export const {
+  setCurrentUser,
   setRegisterPage,
   setUserType,
   setName,

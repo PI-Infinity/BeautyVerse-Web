@@ -40,20 +40,20 @@ export const UserFeeds = () => {
   const [confirm, setConfirm] = useState('');
   const feeds = useSelector((state) => state.storeUser.targetUserFeeds);
   useEffect(() => {
-    async function GetUser(userId) {
+    async function GetFeeds(userId) {
       const response = await fetch(
         `https://beautyverse.herokuapp.com/api/v1/users/${userId}/feeds`
       )
         .then((response) => response.json())
         .then((data) => {
-          dispatch(setTargetUserFeeds(data.data.feeds));
+          dispatch(setTargetUserFeeds(data.data?.feeds));
         })
         .catch((error) => {
           console.log('Error fetching data:', error);
         });
     }
     if (targetUser?._id) {
-      GetUser(targetUser?._id);
+      GetFeeds(targetUser?._id);
     }
   }, [targetUser, render]);
 
@@ -122,32 +122,19 @@ export const UserFeeds = () => {
                 ) : (
                   <>
                     {isMobile ? (
-                      isWebpSupported() ? (
-                        <Img
-                          src={item?.mobileWebp}
-                          alt="item"
-                          style={{ zIndex: 5 }}
-                          onClick={() =>
-                            navigate(
-                              `/api/v1/users/${targetUser?._id}/feeds/${item?._id}/profile`
-                            )
-                          }
-                        />
-                      ) : (
-                        <Img
-                          src={item?.mobileJpeg}
-                          alt="item"
-                          style={{ zIndex: 5 }}
-                          onClick={() =>
-                            navigate(
-                              `/api/v1/users/${targetUser?._id}/feeds/${item?._id}/profile`
-                            )
-                          }
-                        />
-                      )
+                      <Img
+                        src={item?.mobile}
+                        alt="item"
+                        style={{ zIndex: 5 }}
+                        onClick={() =>
+                          navigate(
+                            `/api/v1/users/${targetUser?._id}/feeds/${item?._id}/profile`
+                          )
+                        }
+                      />
                     ) : (
                       <Img
-                        src={item?.desktopUrl}
+                        src={item?.desktop}
                         alt="item"
                         style={{ zIndex: 5 }}
                         onClick={() =>
@@ -332,13 +319,14 @@ const Container = styled.div`
   box-sizing: border-box;
   overflow-y: scroll;
   overflow-x: hidden;
-  height: 29vw;
-  padding-bottom: 5vw;
+  height: 28vw;
+  padding-bottom: vw;
 
   @media only screen and (max-width: 600px) {
     height: auto;
     box-sizing: border-box;
     padding: 2vw 4vw;
+    overflow-y: visible;
   }
 
   /* width */
@@ -361,35 +349,6 @@ const Container = styled.div`
     background-color: #1e1e1e;
   }
 `;
-
-// const AddImg = styled.div`
-//   display: flex;
-//   align-items: center;
-//   justify-content: center;
-//   width: 14vw;
-//   height: 14vw;
-//   border: 0.25vw solid #fff;
-//   border-radius: 0.5vw;
-
-//   @media only screen and (max-width: 600px) {
-//     width: 27vw;
-//     height: 27vw;
-//     border-radius: 1.5vw;
-//     border: 0.75vw solid #fff;
-//   }
-
-//   .uploaderIcon {
-//     font-size: 5vw;
-//     color: #ccc;
-//     position: relative;
-//     left: 5vw;
-
-//     @media only screen and (max-width: 600px) {
-//       font-size: 12vw;
-//       left: 2vw;
-//     }
-//   }
-// `;
 
 const Content = styled.div`
   display: flex;

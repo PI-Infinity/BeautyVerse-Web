@@ -22,6 +22,7 @@ export const Audience = () => {
   const [followings, setFollowings] = useState();
 
   const [render, setRender] = useState(false);
+
   useEffect(() => {
     async function GetAudience(userId) {
       const response = await fetch(
@@ -29,13 +30,16 @@ export const Audience = () => {
       )
         .then((response) => response.json())
         .then((data) => {
-          setFollowings({ length: data.length, list: data.data.followings });
+          setFollowings({
+            length: data?.data?.followings.length,
+            list: data.data?.followings,
+          });
         })
         .catch((error) => {
           console.log('Error fetching data:', error);
         });
     }
-    if (currentUser) {
+    if (targetUser?._id) {
       GetAudience();
     }
   }, [targetUser?._id, render]);
@@ -46,13 +50,16 @@ export const Audience = () => {
       )
         .then((response) => response.json())
         .then((data) => {
-          setFollowers({ length: data.length, list: data.data.followers });
+          setFollowers({
+            length: data?.data?.followers.length,
+            list: data.data?.followers,
+          });
         })
         .catch((error) => {
           console.log('Error fetching data:', error);
         });
     }
-    if (currentUser) {
+    if (targetUser?._id) {
       GetAudience();
     }
   }, [targetUser?._id, render]);
@@ -88,13 +95,20 @@ export const Audience = () => {
               )}
               <AvatarGroup total={followers?.length}>
                 {followers?.list.map((item, index) => {
-                  // let us = users?.find((it) => it.id === item.id);
                   return (
                     <Avatar
                       alt={item?.followerName}
                       src={item?.followerCover}
-                      onClick={() =>
-                        navigate(`/api/v1/users/${item?.followerAuthId}`)
+                      onClick={
+                        item?.followerType === 'user'
+                          ? () =>
+                              navigate(
+                                isMobile
+                                  ? `/api/v1/users/${item._doc.followerId}/contact`
+                                  : `/api/v1/users/${item._doc.followerId}/audience`
+                              )
+                          : () =>
+                              navigate(`/api/v1/users/${item._doc.followerId}`)
                       }
                       style={{ cursor: 'pointer' }}
                     />
@@ -127,8 +141,16 @@ export const Audience = () => {
                     <Avatar
                       alt={item?.followingName}
                       src={item?.followingCover}
-                      onClick={() =>
-                        navigate(`/api/v1/users/${item?.followingAuthId}`)
+                      onClick={
+                        item?.followingType === 'user'
+                          ? () =>
+                              navigate(
+                                isMobile
+                                  ? `/api/v1/users/${item._doc.followingId}/contact`
+                                  : `/api/v1/users/${item._doc.followingId}/audience`
+                              )
+                          : () =>
+                              navigate(`/api/v1/users/${item._doc.followingId}`)
                       }
                       style={{ cursor: 'pointer' }}
                     />
@@ -167,7 +189,7 @@ const Content = styled.div`
     height: auto;
     justify-content: start;
     padding-top: 6vw;
-    padding-left: 12vw;
+    padding-left: 6vw;
   }
 `;
 

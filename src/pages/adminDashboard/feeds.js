@@ -18,24 +18,9 @@ export default function AllFeeds() {
   const [loading, setLoading] = React.useState(true);
 
   const language = Language();
-  const [feeds, setFeeds] = useState();
-  const [lim, setLim] = useState(50);
-  useEffect(() => {
-    const Getting = async () => {
-      const ref = query(collectionGroup(db, 'feeds'), limit(lim));
-      const docs = await getDocs(ref);
-      let list = [];
-      docs.forEach((doc) => {
-        // doc.data() is never undefined for query doc snapshots
-        list.push(doc.data());
-      });
-      setFeeds(list?.sort((a, b) => b.addTime - a.addTime));
-    };
-    Getting();
-  }, [lim]);
 
   // users
-  const Data = useSelector((state) => state.storeMain.userList);
+  const feeds = useSelector((state) => state.storeMain.userList);
 
   // open delete dialog
   const [openDelete, setOpenDelete] = useState(false);
@@ -70,7 +55,7 @@ export default function AllFeeds() {
               text="პოსტის ხარისხი არღვევს ბიუთივერსის წესებს!"
             />
             Limit:
-            <input onChange={(e) => setLim(e.target.value)} value={lim} />
+            {/* <input onChange={(e) => setLim(e.target.value)} value={lim} /> */}
           </div>
           <div
             style={{
@@ -80,8 +65,7 @@ export default function AllFeeds() {
               boxSizing: 'border-box',
             }}
           >
-            {feeds?.map((item, index) => {
-              let user = Data?.find((it) => it.id === item?.owner);
+            {/* {feeds?.map((item, index) => {
               return (
                 <div key={index}>
                   <div style={{ display: 'flex', gap: '10px' }}>
@@ -122,7 +106,7 @@ export default function AllFeeds() {
                   ></div>
                 </div>
               );
-            })}
+            })} */}
           </div>
         </>
       )}

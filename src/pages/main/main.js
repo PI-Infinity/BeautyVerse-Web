@@ -49,6 +49,7 @@ const Main = (props) => {
         <MainSection>
           <FilterContainer>
             <CategoryFilter setPage={props.setPage} />
+
             <Ads
               left={true}
               leftAd="https://res.cloudinary.com/dmmumy2b1/image/upload/v1668849735/Beautyverse/shop_ggr6lu.jpg"
@@ -84,6 +85,8 @@ const Container = styled.div`
   overflow: hidden;
 
   @media only screen and (max-width: 600px) {
+    oevrflow: visible;
+    overscroll-behavior: none;
     padding-top: 5vw;
     min-height: auto;
   }

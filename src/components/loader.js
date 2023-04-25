@@ -141,7 +141,7 @@ export const LinkLoader = (props) => {
     <ContentLoader
       speed={0.5}
       width={isMobile ? 150 : 250}
-      height={isMobile ? 25 : 200}
+      height={isMobile ? 200 : 200}
       backgroundColor={theme ? '#151515' : '#f3f3f3'}
       foregroundColor={theme ? '#30102E' : '#F7E6FF'}
       {...props}
@@ -156,7 +156,7 @@ export const LinkLoader = (props) => {
       />
       <rect
         x={isMobile ? 0 : 0}
-        y={isMobile ? 65 : 40}
+        y={isMobile ? 45 : 40}
         rx={isMobile ? 10 : 10}
         ry={isMobile ? 10 : 10}
         width={isMobile ? 100 : 150}
@@ -164,7 +164,7 @@ export const LinkLoader = (props) => {
       />
       <rect
         x={isMobile ? 0 : 0}
-        y={isMobile ? 70 : 75}
+        y={isMobile ? 95 : 75}
         rx={isMobile ? 10 : 10}
         ry={isMobile ? 10 : 10}
         width={isMobile ? 50 : 50}

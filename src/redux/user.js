@@ -2,9 +2,8 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   targetUser: null,
-  targetUserFollowers: [],
-  targetUserFollowings: [],
   targetUserFeeds: [],
+  statistics: [],
 };
 
 export const user = createSlice({
@@ -71,22 +70,34 @@ export const user = createSlice({
       state.targetUser.media.youtube = action.payload;
     },
     UpdateTargetUserWhatsapp: (state, action) => {
-      state.targetUser.media.whatsapp = action.payload;
+      if (state.targetUser.media.whatsapp) {
+        state.targetUser.media.whatsapp = action.payload;
+      } else {
+        state.targetUser.media = {
+          ...state.targetUser.media,
+          whatsapp: action.payload,
+        };
+      }
     },
     UpdateTargetUserTelegram: (state, action) => {
-      state.targetUser.media.telegram = action.payload;
+      if (state.targetUser.media.telegram) {
+        state.targetUser.media.telegram = action.payload;
+      } else {
+        state.targetUser.media = {
+          ...state.targetUser.media,
+          telegram: action.payload,
+        };
+      }
     },
+
     UpdateTargetUserActiveStatus: (state, action) => {
       state.targetUser.active = action.payload;
     },
-    setTargetUserFollowers: (state, action) => {
-      state.targetUserFollowers = action.payload;
-    },
-    setTargetUserFollowings: (state, action) => {
-      state.targetUserFollowings = action.payload;
-    },
     setTargetUserFeeds: (state, action) => {
       state.targetUserFeeds = action.payload;
+    },
+    setStatistics: (state, action) => {
+      state.statistics = action.payload;
     },
   },
 });
@@ -108,8 +119,7 @@ export const {
   UpdateTargetUserWhatsapp,
   UpdateTargetUserTelegram,
   UpdateTargetUserActiveStatus,
-  setTargetUserFollowers,
-  setTargetUserFollowings,
   setTargetUserFeeds,
+  setStatistics,
 } = user.actions;
 export default user.reducer;

@@ -101,7 +101,8 @@ export const Search = (props) => {
   const resultData = ResultData();
 
   const [resultList, setResultList] = useState('');
-  function GetName() {
+
+  function GetNames() {
     let em = srch?.toLowerCase();
     fetch(`https://beautyverse.herokuapp.com/api/v1/users/?name=${em}`)
       .then((response) => response.json())
@@ -113,8 +114,12 @@ export const Search = (props) => {
       });
   }
   React.useEffect(() => {
-    GetName();
+    GetNames();
   }, []);
+
+  let searchLabel = data?.find((item) =>
+    item.value?.toLowerCase()?.includes(search?.toLowerCase())
+  );
 
   return (
     <Container changeFeed={window.location.pathname.toString()}>
@@ -123,7 +128,11 @@ export const Search = (props) => {
           <CgSearch className="icon" />
           <Input
             id="search"
-            placeholder={language?.language.Main.filter.search}
+            placeholder={
+              search
+                ? searchLabel?.label
+                : language?.language.Main.filter.search
+            }
             // isMulti
             value={srch}
             onFocus={() => {
@@ -140,9 +149,25 @@ export const Search = (props) => {
             <TbArrowBigRightLines
               onClick={
                 isMobile
-                  ? () => navigate('/')
-                  : () => {
-                      dispatch(setSearch(srch));
+                  ? async () => {
+                      let vl = await data.find((item) =>
+                        item.label?.toLowerCase()?.includes(srch?.toLowerCase())
+                      );
+                      await props.setPage(1);
+                      await dispatch(setUserListClear());
+                      await dispatch(setSearch(vl.value));
+                      await dispatch(setRerenderUserList());
+                      setFocus(false);
+                      navigate('/');
+                    }
+                  : async () => {
+                      let vl = await data.find((item) =>
+                        item.label?.toLowerCase()?.includes(srch?.toLowerCase())
+                      );
+                      await props.setPage(1);
+                      await dispatch(setUserListClear());
+                      await dispatch(setSearch(vl.value));
+                      await dispatch(setRerenderUserList());
                       setFocus(false);
                     }
               }

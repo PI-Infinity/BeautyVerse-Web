@@ -181,12 +181,18 @@ export const WorkingDays = ({ targetUser, language }) => {
             var item = workingDaysOpt?.find((item) => item.value === wd.value);
             return (
               <SectionItemContainer key={index}>
-                <SectionItem>
+                <SectionItem
+                  current={(targetUser?._id !== currentUser?._id).toString()}
+                >
                   <span>{item?.label}</span>
                   {targetUser?._id !== currentUser?._id ? (
                     <>
                       {wd?.hours && (
-                        <AddationalValue>
+                        <AddationalValue
+                          current={(
+                            targetUser?._id !== currentUser?._id
+                          ).toString()}
+                        >
                           <h4>{wd.hours}</h4>
                         </AddationalValue>
                       )}
@@ -194,7 +200,11 @@ export const WorkingDays = ({ targetUser, language }) => {
                   ) : (
                     <>
                       {wd?.hours && editHours.value !== wd.value ? (
-                        <AddationalValue>
+                        <AddationalValue
+                          current={(
+                            targetUser?._id !== currentUser?._id
+                          ).toString()}
+                        >
                           <h4>{wd.hours}</h4>
                           <RiEdit2Fill
                             className="editIcon"
@@ -217,7 +227,6 @@ export const WorkingDays = ({ targetUser, language }) => {
                                 : addHoursFirstlyInput
                             }
                             placeholder="ex: 10:00 - 18:00"
-                            autoFocus
                             onChange={
                               editHours.value === wd.value
                                 ? (e) => setAddHoursInput(e.target.value)
@@ -250,7 +259,7 @@ export const WorkingDays = ({ targetUser, language }) => {
                     />
                     <AlertDialog
                       title={language?.language.User.userPage.confirm}
-                      text={language?.language.User.userPage.removeServiceText}
+                      text={language?.language.User.userPage.removeDays}
                       open={confirmRemove}
                       setOpen={setConfirmRemove}
                       function={() => Deleting(removeData)}
@@ -440,7 +449,7 @@ const SectionItem = styled.div`
   white-space: nowrap;
 
   @media only screen and (max-width: 600px) {
-    width: 81vw;
+    width: ${(props) => (props.current === 'false' ? '81vw' : '95%')};
     height: 8vw;
     border-radius: 1vw;
     padding: 0 1.5vw 0 2vw;
@@ -462,7 +471,7 @@ const AddationalValue = styled.div`
   @media only screen and (max-width: 600px) {
     gap: 2vw;
     height: 10vw;
-    width: 30vw;
+    width: ${(props) => (props.current === 'false' ? '30vw' : '23vw')};
   }
   .editIcon {
     color: ${(props) => props.theme.disabled};

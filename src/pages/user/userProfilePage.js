@@ -9,22 +9,26 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { Language } from '../../context/language';
 import { setTargetUser } from '../../redux/user';
 import { setCoverUrl } from '../../redux/main';
+import axios from 'axios';
 
 const UserProfile = () => {
   const [loading, setLoading] = useState(true);
   const dispatch = useDispatch();
   const language = Language();
   const navigate = useNavigate();
+  // define mobile or desktop
+  const isMobile = IsMobile();
 
-  const path = window.location.pathname;
-  const splited = path.split('/');
-  const userId = splited[4];
-
+  const visitor = useSelector((state) => state.storeMain.machineId);
   const targetUser = useSelector((state) => state.storeUser.targetUser);
 
   const currentUser = JSON.parse(
     localStorage.getItem('Beautyverse:currentUser')
   );
+
+  const path = window.location.pathname;
+  const splited = path.split('/');
+  const userId = splited[4];
 
   useEffect(() => {
     if (targetUser?.active === false && currentUser?._id !== targetUser?._id) {
@@ -44,10 +48,11 @@ const UserProfile = () => {
   useEffect(() => {
     async function GetUser(id) {
       const response = await fetch(
-        `https://beautyverse.herokuapp.com/api/v1/users/${id}?fields=notifications`
+        `https://beautyverse.herokuapp.com/api/v1/users/${id}`
       )
         .then((response) => response.json())
         .then((data) => {
+          console.log(data.data.user);
           if (
             data.data.user.active ||
             data.data.user._id === currentUser?._id
@@ -63,14 +68,27 @@ const UserProfile = () => {
     GetUser(userId);
   }, [userId, rerenderCurrentUser]);
 
-  // define mobile or desktop
-  const isMobile = IsMobile();
+  // send user visit
+  useEffect(() => {
+    const SendUserVisit = async () => {
+      await axios.post(
+        `https://beautyverse.herokuapp.com/api/v1/users/${targetUser?._id}/visitors`,
+        {
+          visitor,
+        }
+      );
+    };
+    try {
+      if (targetUser?._id !== currentUser?._id && targetUser) {
+        SendUserVisit();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }, [visitor]);
 
   return (
     <Container>
-      {/* {targetUser && targetUser?._id !== currentUser?._id && (
-        <VisitorId path="visitors-profile" targetUserId={targetUser._id} />
-      )} */}
       <CoverSection
         language={language}
         loading={loading}
@@ -93,13 +111,7 @@ const UserProfile = () => {
             currentUser={currentUser}
             language={language}
           />
-          {/* {loading ? (
-            <LoadingContainer>
-              <Spinner />
-            </LoadingContainer>
-          ) : ( */}
           <Outlet context={[targetUser, language, loading]} />
-          {/* )} */}
         </ContentRightSide>
       </ContentSide>
     </Container>
@@ -128,6 +140,7 @@ const Container = styled.div`
   background: ${(props) => props.theme.background};
 
   @media only screen and (max-width: 600px) {
+    overflow-y: auto;
     padding-top: 0;
     box-sizing: border-box;
     padding-bottom: 7vh;

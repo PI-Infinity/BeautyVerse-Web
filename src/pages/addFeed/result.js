@@ -40,21 +40,7 @@ export const Result = (props) => {
         'file'
       );
     });
-  const resizeFileMobileWebp = (file) =>
-    new Promise((resolve) => {
-      Resizer.imageFileResizer(
-        file,
-        640,
-        640,
-        'WEBP',
-        100,
-        0,
-        (uri) => {
-          resolve(uri);
-        },
-        'file'
-      );
-    });
+
   const resizeFileMobileJpeg = (file) =>
     new Promise((resolve) => {
       Resizer.imageFileResizer(
@@ -74,34 +60,40 @@ export const Result = (props) => {
   const DefineUrl = async () => {
     try {
       if (props?.file?.name?.length > 0) {
-        if (props?.file?.name?.toLowerCase()?.endsWith('mp4')) {
+        if (props?.file?.type.endsWith('mp4')) {
           props?.setResizedObj(props?.file);
         } else if (
-          props?.file?.name?.toLowerCase()?.endsWith('jpeg') ||
-          props?.file?.name?.toLowerCase()?.endsWith('png') ||
-          props?.file?.name?.toLowerCase()?.endsWith('jpg') ||
-          props?.file?.name?.toLowerCase()?.endsWith('webp')
+          props?.file?.type?.endsWith('jpeg') ||
+          props?.file?.type?.endsWith('png') ||
+          props?.file?.type?.endsWith('jpg')
         ) {
           const imageDesktop = await resizeFileDekstop(props?.file);
-          const imageMobile = await resizeFileMobileWebp(props?.file);
           const imageMobileJPEG = await resizeFileMobileJpeg(props?.file);
           if (props?.file) {
             props?.setResizedObj({
-              desktopJPEG: imageDesktop,
-              mobileWEBP: imageMobile,
-              mobileJPEG: imageMobileJPEG,
+              desktop: imageDesktop,
+              mobile: imageMobileJPEG,
             });
           }
         } else {
           alert('File Not Suported');
         }
+        return;
       }
     } catch (err) {
       console.log(err);
     }
   };
 
-  const url = React.useMemo(() => DefineUrl(), [props?.file]);
+  const url = React.useMemo(
+    props?.file?.type?.endsWith('mp4')
+      ? () => {
+          alert('Upload video not supported, we work to fix this issue');
+          props?.setFile(null);
+        }
+      : () => DefineUrl(),
+    [props?.file]
+  );
 
   return (
     <div
@@ -157,7 +149,7 @@ export const Result = (props) => {
                   <input
                     type="file"
                     id="img"
-                    accept=".jpg, .jpeg, .png, .mp4, .webp"
+                    accept=".mp4"
                     style={{ display: 'none' }}
                     onChange={props.onImageChange}
                   />
@@ -179,7 +171,7 @@ export const Result = (props) => {
                     type="file"
                     id="img"
                     style={{ display: 'none' }}
-                    accept=".jpg, .jpeg, .png, .mp4, .webp"
+                    accept=".jpg, .jpeg, .png"
                     onChange={props.onImageChange}
                   />
                   <label
@@ -187,28 +179,18 @@ export const Result = (props) => {
                     style={{ display: 'flex', alignItems: 'center' }}
                   >
                     {isMobile ? (
-                      isWebpSupported() ? (
-                        <Cover
-                          src={
-                            props?.resizedObj &&
-                            URL?.createObjectURL(props?.resizedObj.mobileWEBP)
-                          }
-                          active={props.active}
-                        />
-                      ) : (
-                        <Cover
-                          src={
-                            props?.resizedObj &&
-                            URL?.createObjectURL(props?.resizedObj.mobileJPEG)
-                          }
-                          active={props.active}
-                        />
-                      )
+                      <Cover
+                        src={
+                          props?.resizedObj &&
+                          URL?.createObjectURL(props?.resizedObj.mobile)
+                        }
+                        active={props.active}
+                      />
                     ) : (
                       <Cover
                         src={
                           props?.resizedObj &&
-                          URL?.createObjectURL(props?.resizedObj.desktopJPEG)
+                          URL?.createObjectURL(props?.resizedObj.desktop)
                         }
                         active={props.active}
                       />
@@ -239,7 +221,7 @@ export const Result = (props) => {
                 style={{ display: 'flex', alignItems: 'center' }}
               >
                 <IoMdImages className="icon" />
-                <span style={{ color: '#ccc' }}>(JPG / JPEG / PNG / MP4)</span>
+                <span style={{ color: '#ccc' }}>(JPG / JPEG / PNG)</span>
               </label>
             </div>
           )}

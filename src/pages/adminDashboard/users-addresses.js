@@ -51,7 +51,7 @@ BootstrapDialogTitle.propTypes = {
   onClose: PropTypes.func.isRequired,
 };
 
-export default function ProceduresList({ procedures }) {
+export default function AddressesList({ addresses }) {
   const [open, setOpen] = React.useState(false);
 
   const handleClickOpen = () => {
@@ -64,7 +64,7 @@ export default function ProceduresList({ procedures }) {
   return (
     <div>
       <Button variant="outlined" onClick={handleClickOpen}>
-        <BsListCheck /> Procedures
+        <BsListCheck /> Addresses
       </Button>
       <BootstrapDialog
         onClose={handleClose}
@@ -75,7 +75,7 @@ export default function ProceduresList({ procedures }) {
           id="customized-dialog-title"
           onClose={handleClose}
         >
-          Procedures
+          Addresses
         </BootstrapDialogTitle>
         <div
           style={{
@@ -85,14 +85,21 @@ export default function ProceduresList({ procedures }) {
             gap: '10px',
           }}
         >
-          {procedures?.map((item, index) => {
+          {addresses?.map((item, index) => {
             return (
               <div key={index}>
-                <b>{index + 1}.</b> {item.value}{' '}
-                <b>
-                  {item?.price}
-                  {item?.price?.length > 0 && ' Gel'}
-                </b>
+                <b>{index + 1}.</b>{' '}
+                {item.country +
+                  ' / ' +
+                  item.region +
+                  ' / ' +
+                  item.city +
+                  ' / ' +
+                  item.district +
+                  ' / ' +
+                  item.street +
+                  ' / ' +
+                  item.streetNumber}{' '}
               </div>
             );
           })}
