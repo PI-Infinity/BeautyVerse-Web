@@ -79,7 +79,7 @@ const UserProfile = () => {
       );
     };
     try {
-      if (targetUser?._id !== currentUser?._id && targetUser) {
+      if (targetUser?._id !== currentUser?._id && targetUser && visitor) {
         SendUserVisit();
       }
     } catch (error) {
