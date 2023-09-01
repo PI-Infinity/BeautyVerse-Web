@@ -54,6 +54,7 @@ import { setRerenderNotifications } from './redux/rerenders';
 import ScrollDialog from './components/terms';
 import { Language } from './context/language';
 import { privacy, terms, qa, usage } from './data/pageTexts';
+import RedirectPage from './pages/redirect';
 
 function App() {
   const language = Language();
@@ -129,13 +130,11 @@ function App() {
    * Import current user
    */
   async function GetUser() {
-    console.log(currentUser);
     const response = await fetch(
-      `https://beautyverse.herokuapp.com/api/v1/users/${currentUser?._id}`
+      `http://localhost:5000/api/v1/users/${currentUser?._id}`
     )
       .then((response) => response.json())
       .then((data) => {
-        console.log(data.data.user);
         localStorage.setItem(
           'Beautyverse:currentUser',
           JSON.stringify(data.data.user)
@@ -287,7 +286,8 @@ function App() {
     window.location.pathname.includes('/resetPassword') ||
     window.location.pathname == '/register' ||
     window.location.pathname == '/register/identify' ||
-    window.location.pathname == '/register/business'
+    window.location.pathname == '/register/business' ||
+    window.location.pathname == '/redirect'
   ) {
     nav = undefined;
   } else {
@@ -394,36 +394,37 @@ function App() {
           {/* {loading && <Loading />} */}
           <Container>
             <SimpleBackdrop />
-            {!window.location.pathname?.includes('admin') && (
-              <>
-                {isMobile ? (
-                  <>
-                    <Headroom
-                      downTolerance={10}
-                      upTolerance={10}
-                      style={headroomStyles}
-                    >
-                      <Header
-                        setPage={setPage}
-                        setOpenTerms={setOpenTerms}
-                        setOpenPrivacy={setOpenPrivacy}
-                        setOpenUsage={setOpenUsage}
-                        setOpenQA={setOpenQA}
-                      />
-                    </Headroom>
-                  </>
-                ) : (
-                  <Header
-                    setPage={setPage}
-                    openTerms={openTerms}
-                    setOpenTerms={setOpenTerms}
-                    setOpenPrivacy={setOpenPrivacy}
-                    setOpenUsage={setOpenUsage}
-                    setOpenQA={setOpenQA}
-                  />
-                )}
-              </>
-            )}
+            {!window.location.pathname?.includes('admin') &&
+              window.location.pathname !== '/redirect' && (
+                <>
+                  {isMobile ? (
+                    <>
+                      <Headroom
+                        downTolerance={10}
+                        upTolerance={10}
+                        style={headroomStyles}
+                      >
+                        <Header
+                          setPage={setPage}
+                          setOpenTerms={setOpenTerms}
+                          setOpenPrivacy={setOpenPrivacy}
+                          setOpenUsage={setOpenUsage}
+                          setOpenQA={setOpenQA}
+                        />
+                      </Headroom>
+                    </>
+                  ) : (
+                    <Header
+                      setPage={setPage}
+                      openTerms={openTerms}
+                      setOpenTerms={setOpenTerms}
+                      setOpenPrivacy={setOpenPrivacy}
+                      setOpenUsage={setOpenUsage}
+                      setOpenQA={setOpenQA}
+                    />
+                  )}
+                </>
+              )}
             {/* {isMobile &&
           (window.location.pathname === '/' ||
             window.location.pathname === '/cards') && (
@@ -632,6 +633,7 @@ function App() {
                 }
               ></Route>
               <Route path="*" element={<NotFound />} />
+              <Route path="/redirect" element={<RedirectPage />} />
             </Routes>
             {!window.location.pathname?.includes('admin') && <Footer />}
             {!window.location.pathname?.includes('admin') &&
