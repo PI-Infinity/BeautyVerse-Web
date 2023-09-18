@@ -6,6 +6,7 @@ function RedirectPage() {
     const path = window.location.search.substring(1);
 
     // Construct the new URL. This can be done more elegantly depending on your needs
+    // const newUrl = 'exp://192.168.0.103:19000?' + path.toString();
     const newUrl = 'beautyverse://?' + path.toString();
 
     // Try to open the Expo app
