@@ -1,5 +1,5 @@
 export default function GetTimesAgo(date, justNow) {
-  if (typeof date === 'string') {
+  if (typeof date === "string") {
     date = new Date(date);
   }
 
@@ -16,7 +16,7 @@ export default function GetTimesAgo(date, justNow) {
 
   // Return appropriate time unit based on time difference
   if (timeDiff < minute) {
-    return 'j';
+    return "j";
   } else if (timeDiff < hour) {
     const minutesAgo = Math.floor(timeDiff / minute);
     return `${minutesAgo}min`;

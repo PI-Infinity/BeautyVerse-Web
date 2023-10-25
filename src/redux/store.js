@@ -1,26 +1,24 @@
-import { configureStore } from '@reduxjs/toolkit';
-import mainReducer from './main';
-import registerReducer from './register';
-import chatReducer from './chat';
-import filterReducer from './filter';
-import userReducer from './user';
-import marketReducer from './marketplace/marketplace';
-import feedReducer from './feed';
-import scrollReducer from './scroll';
-import shppingCartReducer from './marketplace/shoppingCart';
-import rerendersReducer from './rerenders';
+import { configureStore } from "@reduxjs/toolkit";
+import AppReducer from "./app";
+import UserReducer from "./user";
+import FeedsReducer from "./feeds";
+import FeedReducer from "./feed";
+import CardsReducer from "./cards";
+import ShowRoom from "./showroom";
+import MarketplaceReducer from "./marketplace";
+import NotificationsReducer from "./notifications";
+import AuthReducer from "./auth";
 
 export const store = configureStore({
   reducer: {
-    storeMain: mainReducer,
-    storeFilter: filterReducer,
-    storeRegister: registerReducer,
-    storeChat: chatReducer,
-    storeUser: userReducer,
-    storeFeed: feedReducer,
-    storeMarket: marketReducer,
-    storeScroll: scrollReducer,
-    storeShoppingCart: shppingCartReducer,
-    storeRerenders: rerendersReducer,
+    storeApp: AppReducer,
+    storeUser: UserReducer,
+    storeFeeds: FeedsReducer,
+    storeFeed: FeedReducer,
+    storeCards: CardsReducer,
+    storeShowroom: ShowRoom,
+    storeMarketplace: MarketplaceReducer,
+    storeNotifications: NotificationsReducer,
+    storeAuth: AuthReducer,
   },
 });
