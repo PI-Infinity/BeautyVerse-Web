@@ -1,3 +1,9 @@
+Add project to github: https://github.com/PI-Infinity/BeautyVerse-Web.git
+
+- git add .
+- git commit -am "new commit"
+- git push origin
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
