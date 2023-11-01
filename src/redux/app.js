@@ -1,14 +1,16 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  // backendUrl: "http://192.168.0.105:5000",
-  backendUrl: "https://beautyverse.herokuapp.com",
-  language: "en",
+  // backendUrl: 'http://192.168.0.106:5000',
+  backendUrl: 'https://beautyverse.herokuapp.com',
+  language: 'en',
   scrollToTop: false,
+  backPath: null,
+  machineId: null,
 };
 
 export const App = createSlice({
-  name: "App",
+  name: 'App',
   initialState,
 
   reducers: {
@@ -18,8 +20,15 @@ export const App = createSlice({
     setScrollToTop: (state, action) => {
       state.scrollToTop = !state.scrollToTop;
     },
+    setBackPath: (state, action) => {
+      state.backPath = action.payload;
+    },
+    setMachineId: (state, action) => {
+      state.machineId = action.payload;
+    },
   },
 });
 
-export const { setLanguage, setScrollToTop } = App.actions;
+export const { setLanguage, setScrollToTop, setBackPath, setMachineId } =
+  App.actions;
 export default App.reducer;

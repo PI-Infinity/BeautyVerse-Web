@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import styled from "styled-components";
-import { setOpenedProduct } from "../../../../../redux/marketplace";
-import { useDispatch } from "react-redux";
-import { BiSolidShoppingBags } from "react-icons/bi";
-import { setTargetUser } from "../../../../../redux/user";
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+import { setOpenedProduct } from '../../../../../redux/marketplace';
+import { useDispatch } from 'react-redux';
+import { BiSolidShoppingBags } from 'react-icons/bi';
+import { setTargetUser } from '../../../../../redux/user';
+import { setBackPath } from '../../../../../redux/app';
 
 export const ProductCard = ({ item, to }) => {
   const navigate = useNavigate();
@@ -21,20 +22,27 @@ export const ProductCard = ({ item, to }) => {
     <Container>
       <div
         style={{
-          display: "flex",
-          alignItems: "center",
-          paddingLeft: "8px",
-          gap: "8px",
-          overflow: "hidden",
-          whiteSpace: "nowrap",
+          display: 'flex',
+          alignItems: 'center',
+          paddingLeft: '8px',
+          gap: '8px',
+          overflow: 'hidden',
+          whiteSpace: 'nowrap',
         }}
         onClick={() => {
           navigate(
-            `${location.pathname}/user/${item.owner._id}/${
-              item.owner.type === "shop" ? "showroom" : "feeds"
+            `/user/${item.owner?._id}/${
+              item.owner?.type === 'shop' ? 'showroom' : 'feeds'
             }`
           );
-          dispatch(setTargetUser(item.owner));
+          dispatch(setTargetUser(item?.owner));
+          dispatch(
+            setBackPath({
+              path: [location.pathname],
+              data: [],
+              activeLevel: 0,
+            })
+          );
         }}
       >
         <div
@@ -42,11 +50,11 @@ export const ProductCard = ({ item, to }) => {
             width: 25,
             height: 25,
             borderRadius: 50,
-            objectFit: "cover",
-            background: "rgba(255,255,255,0.1)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            objectFit: 'cover',
+            background: 'rgba(255,255,255,0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
           {item.owner?.cover ? (
@@ -56,9 +64,9 @@ export const ProductCard = ({ item, to }) => {
                 width: 25,
                 height: 25,
                 borderRadius: 50,
-                objectFit: "cover",
+                objectFit: 'cover',
                 opacity: opacity ? 1 : 0,
-                transition: "ease-in 500ms",
+                transition: 'ease-in 500ms',
               }}
             />
           ) : (
@@ -67,10 +75,10 @@ export const ProductCard = ({ item, to }) => {
         </div>
         <h5
           style={{
-            fontWeight: "bold",
+            fontWeight: 'bold',
             letterSpacing: 0.5,
             margin: 0,
-            color: "#ccc",
+            color: '#ccc',
           }}
         >
           {item?.owner.name}
@@ -82,41 +90,41 @@ export const ProductCard = ({ item, to }) => {
           navigate(to);
         }}
         style={{
-          width: "100%",
+          width: '100%',
           aspectRatio: 1,
-          overflow: "hidden",
-          borderRadius: "15px",
+          overflow: 'hidden',
+          borderRadius: '15px',
         }}
       >
         <img
           src={item?.gallery[item?.cover]?.url}
           style={{
-            width: "100%",
+            width: '100%',
             aspectRatio: 1,
-            objectFit: "cover",
-            borderRadius: "15px",
+            objectFit: 'cover',
+            borderRadius: '15px',
             opacity: opacity ? 1 : 0,
-            transition: "ease-in 500ms",
+            transition: 'ease-in 500ms',
           }}
         />
       </div>
       <div
         style={{
-          width: "100%",
-          color: "#ccc",
-          fontWeight: "bold",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          overflow: "hidden",
-          whiteSpace: "nowrap",
-          gap: "8px",
-          fontSize: "14px",
-          letterSpacing: "0.5px",
+          width: '100%',
+          color: '#ccc',
+          fontWeight: 'bold',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          overflow: 'hidden',
+          whiteSpace: 'nowrap',
+          gap: '8px',
+          fontSize: '14px',
+          letterSpacing: '0.5px',
         }}
       >
-        <span style={{ color: "#f866b1" }}>{item.title}</span>
-        <span style={{ fontWeight: "normal", fontSize: "12px" }}>
+        <span style={{ color: '#f866b1' }}>{item.title}</span>
+        <span style={{ fontWeight: 'normal', fontSize: '12px' }}>
           {item.brand}
         </span>
         {item.sale > 0 ? (
@@ -125,10 +133,10 @@ export const ProductCard = ({ item, to }) => {
             {item.currency}
             <span
               style={{
-                textDecorationLine: "line-through",
-                color: "#888",
-                marginLeft: "8px",
-                fontSize: "12px",
+                textDecorationLine: 'line-through',
+                color: '#888',
+                marginLeft: '8px',
+                fontSize: '12px',
               }}
             >
               {item.price}

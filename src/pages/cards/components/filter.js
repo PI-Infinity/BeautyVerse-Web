@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
-import styled from "styled-components";
-import { BsListCheck } from "react-icons/bs";
-import { MdDone } from "react-icons/md";
-import { VerseCategories } from "../../../datas/categories";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import { BsListCheck } from 'react-icons/bs';
+import { MdDone } from 'react-icons/md';
+import { VerseCategories } from '../../../datas/categories';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   setBeautyCenter,
   setCategoryFilter,
@@ -11,12 +11,22 @@ import {
   setDistrict,
   setShop,
   setSpecialist,
-} from "../../../redux/cards";
-import axios from "axios";
-import { BounceLoader } from "react-spinners";
-import { MdChecklistRtl } from "react-icons/md";
-import { FiType } from "react-icons/fi";
-import { GiModernCity, GiVillage } from "react-icons/gi";
+} from '../../../redux/cards';
+import axios from 'axios';
+import { BounceLoader } from 'react-spinners';
+import { MdChecklistRtl } from 'react-icons/md';
+import { FiType } from 'react-icons/fi';
+import { GiModernCity, GiVillage } from 'react-icons/gi';
+import {
+  FormControl,
+  FormControlLabel,
+  FormGroup,
+  IconButton,
+  Radio,
+  RadioGroup,
+} from '@mui/material';
+import Checkbox from '@mui/material/Checkbox';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 export const Filter = ({ setFilter, filter }) => {
   // redux dispatch
@@ -49,7 +59,7 @@ export const Filter = ({ setFilter, filter }) => {
       })
       .then(() => {})
       .catch((error) => {
-        console.log("Error fetching data:", error);
+        console.log('Error fetching data:', error);
       });
   }
 
@@ -72,7 +82,7 @@ export const Filter = ({ setFilter, filter }) => {
         setDistricts([...response.data.data.districts]);
       } else {
         setDistricts([]);
-        dispatch(setDistrict(""));
+        dispatch(setDistrict(''));
       }
       setTimeout(() => {
         setLoadDistricts(false);
@@ -89,7 +99,7 @@ export const Filter = ({ setFilter, filter }) => {
   }, [activeCity]);
 
   let filterBadge;
-  if (categoryFilter !== "") {
+  if (categoryFilter !== '') {
     filterBadge = 1;
   } else {
     filterBadge = 0;
@@ -104,7 +114,7 @@ export const Filter = ({ setFilter, filter }) => {
 
   // district state
   let districtBadge;
-  if (district !== "") {
+  if (district !== '') {
     districtBadge = 1;
   } else {
     districtBadge = 0;
@@ -140,66 +150,68 @@ export const Filter = ({ setFilter, filter }) => {
     shopBadge;
 
   return (
-    <div style={{ width: "100%" }}>
+    <div style={{ width: '100%' }}>
       {filter && (
         <div
           style={{
-            width: "100%",
-            height: "100%",
-            position: "fixed",
-            top: "0",
-            backdropFilter: "blur(10px)",
-            WebkitBackdropFilter: "blur(10px)",
-            background: "rgba(0, 0, 0, 0.2)",
+            width: '100%',
+            height: '100%',
+            position: 'fixed',
+            top: '0',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            background: 'rgba(0, 0, 0, 0.2)',
           }}
         />
       )}
-      <Container filter={filter ? "true" : "false"}>
+      <Container filter={filter ? 'true' : 'false'}>
         <div
           onClick={() => setFilter(!filter)}
           style={{
-            width: "100%",
-            height: "60px",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "flex-end",
-            background: "linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,1))",
-            borderBottom: "2px solid #f866b1",
-            position: "relative",
-            bottom: "62px",
+            width: '100%',
+            height: '60px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'flex-end',
+            background: 'linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,1))',
+            borderBottom: '2px solid #f866b1',
+            position: 'relative',
+            bottom: '62px',
           }}
         >
           <div
             style={{
-              width: "35px",
-              height: "30px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "#f866b1",
-              borderRadius: "5px 5px 0 0",
-              border: "1.5px solid rgba(255,255,255,0.3)",
-              position: "relative",
-              top: "2px",
-              zIndex: "-1px",
+              width: '35px',
+              height: '30px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: '#f866b1',
+              borderRadius: '5px 5px 0 0',
+              border: '1.5px solid rgba(255,255,255,0.3)',
+              position: 'relative',
+              top: '2px',
+              zIndex: '-1px',
             }}
           >
             {sum > 0 && (
               <div
                 style={{
-                  backgroundColor: "#ccc",
-                  position: "absolute",
+                  backgroundColor: '#f866b1',
+                  position: 'absolute',
                   zIndex: 1,
-                  top: "-5px",
-                  right: "-5px",
-                  borderRadius: "50px",
-                  width: "15px",
-                  height: "15px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "10px",
-                  fontWeight: "bold",
+                  top: '-5px',
+                  right: '-5px',
+                  borderRadius: '50px',
+                  width: '17px',
+                  height: '17px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  border: '2.5px solid #fff',
+                  color: '#000',
                 }}
               >
                 {sum}
@@ -212,37 +224,42 @@ export const Filter = ({ setFilter, filter }) => {
 
         <div
           style={{
-            width: "100%",
-            height: "100%",
-            boxSizing: "border-box",
-            padding: "15px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "8px",
-            overflowY: "scroll",
-            position: "absolute",
-            top: "15px",
+            width: '100%',
+            height: '100%',
+            boxSizing: 'border-box',
+            padding: '15px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+            overflowY: 'scroll',
+            position: 'absolute',
+            top: '15px',
             zIndex: 100,
-            paddingBottom: "100px",
+            paddingBottom: '100px',
           }}
         >
           {sum > 0 && (
             <div
               onClick={() => {
-                dispatch(setCategoryFilter(""));
-                dispatch(setCity(""));
-                dispatch(setDistrict(""));
+                dispatch(setCategoryFilter(''));
+                dispatch(setCity(''));
+                dispatch(setDistrict(''));
                 dispatch(setSpecialist(true));
                 dispatch(setBeautyCenter(true));
                 dispatch(setShop(true));
               }}
               style={{
-                width: "100%",
-                display: "flex",
-                justifyContent: "flex-end",
-                color: "red",
-                letterSpacing: "0.5px",
-                marginBottom: "2vw",
+                display: 'flex',
+                justifyContent: 'flex-end',
+                color: 'red',
+                letterSpacing: '0.5px',
+                position: 'absolute',
+                top: '25px',
+                right: '25px',
+                borderRadius: '50px',
+                fontWeight: '500',
+                background: 'rgba(255,255,255,0.1)',
+                padding: '5px 10px',
               }}
             >
               Clear
@@ -250,139 +267,131 @@ export const Filter = ({ setFilter, filter }) => {
           )}
           <div
             style={{
-              width: "100%",
-              boxSizing: "border-box",
-              background: "rgba(255,255,255,0.05)",
-              borderRadius: "10px",
-              padding: "8px 15px 25px 15px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "15px",
+              width: '100%',
+              boxSizing: 'border-box',
+              background: 'rgba(255,255,255,0.05)',
+              borderRadius: '10px',
+              padding: '8px 15px 25px 15px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '15px',
             }}
           >
             <div
               style={{
-                display: "flex",
-                alignItems: "center",
+                display: 'flex',
+                alignItems: 'center',
               }}
             >
               <FiType size={20} color="#ccc" />
 
               <h4
                 style={{
-                  color: "#ccc",
-                  margin: "10px 4px",
+                  color: '#ccc',
+                  margin: '10px 4px',
                   padding: 0,
-                  letterSpacing: "0.5px",
+                  letterSpacing: '0.5px',
                 }}
               >
                 Type:
               </h4>
             </div>
-            <div
-              onClick={
-                specialist
-                  ? () => dispatch(setSpecialist(false))
-                  : () => dispatch(setSpecialist(true))
-              }
-              style={{
-                width: "50%",
-                color: specialist ? "#f866b1" : "#ccc",
-                letterSpacing: "0.5px",
-                borderRadius: "50px",
-                border: `1.5px solid ${
-                  specialist ? "#f866b1" : "rgba(0,0,0,0)"
-                }`,
-                padding: "4px 8px",
-                display: "flex",
-                alignItems: "center",
-                gap: "15px",
-                fontSize: "14px",
-              }}
-            >
-              <div>Specialists</div>
-              {specialist && (
-                <MdDone
-                  size={16}
-                  color="#f866b1"
-                  style={{ position: "relative", right: "10px" }}
-                />
-              )}
-            </div>
-            <div
-              onClick={
-                beautyCenter
-                  ? () => dispatch(setBeautyCenter(false))
-                  : () => dispatch(setBeautyCenter(true))
-              }
-              style={{
-                width: "50%",
-                color: beautyCenter ? "#f866b1" : "#ccc",
-                border: `1.5px solid ${
-                  beautyCenter ? "#f866b1" : "rgba(0,0,0,0)"
-                }`,
-                padding: "4px 8px",
-                letterSpacing: "0.5px",
-                borderRadius: "50px",
-                display: "flex",
-                alignItems: "center",
-                gap: "15px",
-                fontSize: "14px",
-              }}
-            >
-              <div>Beauty Salons</div>
-              {beautyCenter && (
-                <MdDone
-                  size={16}
-                  color="#f866b1"
-                  style={{ position: "relative", right: "10px" }}
-                />
-              )}
-            </div>
-            <div
-              onClick={
-                shop
-                  ? () => dispatch(setShop(false))
-                  : () => dispatch(setShop(true))
-              }
-              style={{
-                width: "50%",
-                color: shop ? "#f866b1" : "#ccc",
-                letterSpacing: "0.5px",
-                borderRadius: "50px",
-                display: "flex",
-                alignItems: "center",
-                gap: "15px",
-                fontSize: "14px",
-                border: `1.5px solid ${shop ? "#f866b1" : "rgba(0,0,0,0)"}`,
-                padding: "4px 8px",
-              }}
-            >
-              <div>Shops</div>
-              {shop && (
-                <MdDone
-                  size={16}
-                  color="#f866b1"
-                  style={{ position: "relative", right: "10px" }}
-                />
-              )}
-            </div>
+
+            <FormGroup>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={specialist}
+                    onChange={
+                      specialist
+                        ? () => dispatch(setSpecialist(false))
+                        : () => dispatch(setSpecialist(true))
+                    }
+                    sx={{
+                      color: '#f866b1',
+                      '&.Mui-checked': {
+                        color: '#f866b1',
+                      },
+                    }}
+                  />
+                }
+                label="Specialists"
+                sx={{
+                  color: '#ccc',
+                  letterSpacing: '0.5px',
+                  '&.Mui-checked': {
+                    color: '#ccc',
+                    letterSpacing: '0.5px',
+                  },
+                }}
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={beautyCenter}
+                    onChange={
+                      beautyCenter
+                        ? () => dispatch(setBeautyCenter(false))
+                        : () => dispatch(setBeautyCenter(true))
+                    }
+                    sx={{
+                      color: '#f866b1',
+                      '&.Mui-checked': {
+                        color: '#f866b1',
+                      },
+                    }}
+                  />
+                }
+                label="Beauty Salons"
+                sx={{
+                  color: '#ccc',
+                  '&.Mui-checked': {
+                    color: '#ccc',
+                  },
+                }}
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={shop}
+                    onChange={
+                      shop
+                        ? () => dispatch(setShop(false))
+                        : () => dispatch(setShop(true))
+                    }
+                    sx={{
+                      color: '#f866b1',
+                      '&.Mui-checked': {
+                        color: '#f866b1',
+                      },
+                    }}
+                  />
+                }
+                label="Shops"
+                sx={{
+                  color: '#ccc',
+                  '&.Mui-checked': {
+                    color: '#ccc',
+                  },
+                }}
+              />
+            </FormGroup>
           </div>
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              paddingLeft: "15px",
+              display: 'flex',
+              alignItems: 'center',
+              paddingLeft: '15px',
             }}
           >
             <MdChecklistRtl size={20} color="#ccc" />
 
             <h4
               style={{
-                color: "#ccc",
-                margin: "10px 4px",
+                color: '#ccc',
+                margin: '10px 4px',
                 padding: 0,
-                letterSpacing: "0.5px",
+                letterSpacing: '0.5px',
               }}
             >
               Categories:
@@ -394,15 +403,15 @@ export const Filter = ({ setFilter, filter }) => {
                 key={index}
                 onClick={() => dispatch(setCategoryFilter(item.value))}
                 style={{
-                  color: item.value === categoryFilter ? "#f866b1" : "#ccc",
-                  letterSpacing: "0.5px",
-                  backgroundColor: "rgba(255,255,255,0.03)",
-                  padding: "8px",
-                  paddingLeft: "20px",
-                  borderRadius: "50px",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: "14px",
+                  color: item.value === categoryFilter ? '#f866b1' : '#ccc',
+                  letterSpacing: '0.5px',
+                  backgroundColor: 'rgba(255,255,255,0.03)',
+                  padding: '8px',
+                  paddingLeft: '20px',
+                  borderRadius: '50px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  fontSize: '14px',
                 }}
               >
                 {item?.eng}
@@ -410,7 +419,7 @@ export const Filter = ({ setFilter, filter }) => {
                   <MdDone
                     size={16}
                     color="#f866b1"
-                    style={{ position: "relative", right: "10px" }}
+                    style={{ position: 'relative', right: '10px' }}
                   />
                 )}
               </div>
@@ -419,15 +428,15 @@ export const Filter = ({ setFilter, filter }) => {
           {loadDistricts ? (
             <div
               style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                padding: "15px 0",
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                padding: '15px 0',
               }}
             >
               <BounceLoader
                 size={20}
-                color={"#f866b1"}
+                color={'#f866b1'}
                 loading={loadDistricts}
               />
             </div>
@@ -436,52 +445,52 @@ export const Filter = ({ setFilter, filter }) => {
               {districts?.length > 0 && (
                 <div
                   style={{
-                    background: "rgba(255,255,255,0.05)",
-                    borderRadius: "10px",
-                    marginTop: "10px",
-                    boxSizing: "border-box",
-                    padding: "8px 20px",
+                    background: 'rgba(255,255,255,0.05)',
+                    borderRadius: '10px',
+                    marginTop: '10px',
+                    boxSizing: 'border-box',
+                    padding: '8px 20px',
                   }}
                 >
                   <div
                     style={{
-                      display: "flex",
-                      alignItems: "center",
+                      display: 'flex',
+                      alignItems: 'center',
                     }}
                   >
                     <GiVillage size={18} color="#ccc" />
                     <h4
                       style={{
-                        color: "#ccc",
-                        margin: "8px",
+                        color: '#ccc',
+                        margin: '8px',
                         padding: 0,
-                        letterSpacing: "0.5px",
+                        letterSpacing: '0.5px',
                       }}
                     >
                       Districts:
                     </h4>
                   </div>
-                  <div style={{ marginTop: "15px" }}>
+                  <div style={{ marginTop: '15px' }}>
                     {districts?.map((item, index) => {
                       return (
                         <div
                           key={index}
                           onClick={
                             district?.length > 0
-                              ? () => dispatch(setDistrict(""))
+                              ? () => dispatch(setDistrict(''))
                               : () => dispatch(setDistrict(item))
                           }
                           style={{
                             color:
                               district?.toLowerCase() === item?.toLowerCase()
-                                ? "#f866b1"
-                                : "#ccc",
-                            padding: "6px 15px",
-                            borderRadius: "50px",
-                            background: "rgba(0,0,0,0.5)",
-                            margin: "10px",
-                            fontSize: "14px",
-                            letterSpacing: "0.5px",
+                                ? '#f866b1'
+                                : '#ccc',
+                            padding: '6px 15px',
+                            borderRadius: '50px',
+                            background: 'rgba(0,0,0,0.5)',
+                            margin: '10px',
+                            fontSize: '14px',
+                            letterSpacing: '0.5px',
                           }}
                         >
                           {item}
@@ -496,32 +505,32 @@ export const Filter = ({ setFilter, filter }) => {
 
           <div
             style={{
-              background: "rgba(255,255,255,0.05)",
-              borderRadius: "10px",
-              marginTop: "10px",
-              boxSizing: "border-box",
-              padding: "8px 20px",
+              background: 'rgba(255,255,255,0.05)',
+              borderRadius: '10px',
+              marginTop: '10px',
+              boxSizing: 'border-box',
+              padding: '8px 20px',
             }}
           >
             <div
               style={{
-                display: "flex",
-                alignItems: "center",
+                display: 'flex',
+                alignItems: 'center',
               }}
             >
               <GiModernCity size={18} color="#ccc" />
               <h4
                 style={{
-                  color: "#ccc",
-                  margin: "8px",
+                  color: '#ccc',
+                  margin: '8px',
                   padding: 0,
-                  letterSpacing: "0.5px",
+                  letterSpacing: '0.5px',
                 }}
               >
                 City:
               </h4>
             </div>
-            <div style={{ marginTop: "15px" }}>
+            <div style={{ marginTop: '15px' }}>
               {cities?.map((item, index) => {
                 return (
                   <div
@@ -530,7 +539,7 @@ export const Filter = ({ setFilter, filter }) => {
                       activeCity?.length > 0 &&
                       activeCity?.toLowerCase() === item?.toLowerCase()
                         ? () => {
-                            dispatch(setCity(""));
+                            dispatch(setCity(''));
                             setDistricts([]);
                           }
                         : () => dispatch(setCity(item))
@@ -538,14 +547,14 @@ export const Filter = ({ setFilter, filter }) => {
                     style={{
                       color:
                         activeCity?.toLowerCase() === item?.toLowerCase()
-                          ? "#f866b1"
-                          : "#ccc",
-                      padding: "6px 15px",
-                      borderRadius: "50px",
-                      background: "rgba(0,0,0,0.5)",
-                      margin: "10px",
-                      fontSize: "14px",
-                      letterSpacing: "0.5px",
+                          ? '#f866b1'
+                          : '#ccc',
+                      padding: '6px 15px',
+                      borderRadius: '50px',
+                      background: 'rgba(0,0,0,0.5)',
+                      margin: '10px',
+                      fontSize: '14px',
+                      letterSpacing: '0.5px',
                     }}
                   >
                     {item}
@@ -565,9 +574,9 @@ const Container = styled.div`
   height: 65vh;
   background: rgba(0, 0, 0, 0.9);
   position: fixed;
-  bottom: ${(props) => (props.filter === "true" ? "0" : "-59vh")};
+  bottom: ${(props) => (props.filter === 'true' ? '0' : '-59vh')};
   transition: ease-in-out 400ms;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  padding-bottom: ${(props) => (props.filter === "true" ? "50px" : "0")};
+  padding-bottom: ${(props) => (props.filter === 'true' ? '50px' : '0')};
 `;

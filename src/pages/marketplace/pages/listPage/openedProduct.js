@@ -1,19 +1,19 @@
-import axios from "axios";
-import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
-import styled from "styled-components";
-import { IoMdArrowDropdown } from "react-icons/io";
-import { ProductItem } from "../../../marketplace/pages/product/productItem";
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useLocation, useNavigate, useOutletContext } from 'react-router-dom';
+import styled from 'styled-components';
+import { IoMdArrowDropdown } from 'react-icons/io';
+import { ProductItem } from '../../../marketplace/pages/product/productItem';
 
-export const OpenedProductFromList = () => {
+const OpenedProductFromList = () => {
   // navigate
   const navigate = useNavigate();
   // location
   const location = useLocation();
 
   //define paths
-  let parts = location.pathname.split("/");
+  let parts = location.pathname.split('/');
   // product id
   let productId = parts[3];
 
@@ -28,7 +28,7 @@ export const OpenedProductFromList = () => {
   const GetProduct = async () => {
     try {
       const response = await axios.get(
-        backendUrl + "/api/v1/marketplace/" + productId
+        backendUrl + '/api/v1/marketplace/' + productId
       );
       setProduct(response.data.data.product);
     } catch (error) {
@@ -51,27 +51,27 @@ export const OpenedProductFromList = () => {
   return (
     <div
       style={{
-        background: "rgba(1, 2, 12, 0.2)",
-        backdropFilter: "blur(10px)",
-        WebkitBackdropFilter: "blur(10px)",
+        background: 'rgba(1, 2, 12, 0.2)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
         zIndex: 1001,
-        width: "100vw",
-        height: "100%",
-        position: "fixed",
-        top: "0",
-        left: "0",
+        width: '100vw',
+        height: '100%',
+        position: 'fixed',
+        top: '0',
+        left: '0',
       }}
     >
-      <Container openproduct={openProduct ? "true" : "false"}>
+      <Container openproduct={openProduct ? 'true' : 'false'}>
         <Header>
-          <div style={{ width: "30px" }}></div>
+          <div style={{ width: '30px' }}></div>
           <div>
             <h3
               style={{
-                color: "#ccc",
+                color: '#ccc',
                 margin: 0,
                 padding: 0,
-                letterSpacing: "0.5px",
+                letterSpacing: '0.5px',
               }}
             >
               {product?.title}
@@ -81,11 +81,11 @@ export const OpenedProductFromList = () => {
             onClick={() => {
               setOpenProduct(false);
               setTimeout(() => {
-                navigate("/marketplace/" + "list");
+                navigate('/marketplace/' + 'list');
               }, 300);
             }}
             style={{
-              padding: "5px",
+              padding: '5px',
 
               zIndex: 1000,
             }}
@@ -98,7 +98,7 @@ export const OpenedProductFromList = () => {
     </div>
   );
 };
-
+export default OpenedProductFromList;
 const Container = styled.div`
   width: 100vw;
   height: 100%;
@@ -108,7 +108,7 @@ const Container = styled.div`
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   transform: translateY(
-    ${(props) => (props.openproduct === "true" ? 0 : "100vh")}
+    ${(props) => (props.openproduct === 'true' ? 0 : '100vh')}
   );
   transition: ease-in 300ms;
   display: flex;

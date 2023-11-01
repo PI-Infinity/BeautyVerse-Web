@@ -1,24 +1,24 @@
-import React from "react";
-import { useOutletContext } from "react-router-dom";
-import styled from "styled-components";
-import { workingDaysOptions } from "../../../datas/registerDatas";
+import React from 'react';
+import { useOutletContext } from 'react-router-dom';
+import styled from 'styled-components';
+import { workingDaysOptions } from '../../../datas/registerDatas';
 
-export const WorkingInfo = () => {
+const WorkingInfo = () => {
   // get outlet props context
   const [targetUser] = useOutletContext();
-  let lang = "en";
+  let lang = 'en';
   return (
     <Container>
-      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {targetUser.workingDays?.length > 0 ? (
           targetUser.workingDays?.map((item, index) => {
             let label = workingDaysOptions.find(
               (i) => i.value.toLowerCase() === item.value.toLowerCase()
             );
             let labelLang;
-            if (lang === "en") {
+            if (lang === 'en') {
               labelLang = label?.en;
-            } else if (lang === "ka") {
+            } else if (lang === 'ka') {
               labelLang = label?.ka;
             } else {
               labelLang = label?.ru;
@@ -36,51 +36,51 @@ export const WorkingInfo = () => {
                 <div
                   style={{
                     // backgroundColor: currentTheme.background2,
-                    borderRadius: "50px",
-                    display: "flex",
-                    justifyContent: "center",
+                    borderRadius: '50px',
+                    display: 'flex',
+                    justifyContent: 'center',
                   }}
                 >
                   <div
                     style={{
-                      color: "#ccc",
-                      background: "rgba(255,255,255,0.05)",
-                      borderRadius: "50px",
-                      padding: "8px 15px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      width: "100%",
+                      color: '#ccc',
+                      background: 'rgba(255,255,255,0.05)',
+                      borderRadius: '50px',
+                      padding: '8px 15px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
                     }}
                   >
                     <div
                       style={{
-                        display: "flex",
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: "10px",
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: '10px',
                       }}
                     >
                       <div
                         style={{
-                          width: "10px",
-                          height: "10px",
-                          borderRadius: "10px",
-                          backgroundColor: "#f866b1",
+                          width: '10px',
+                          height: '10px',
+                          borderRadius: '10px',
+                          backgroundColor: '#f866b1',
                         }}
                       ></div>
                       <p
                         style={{
-                          color: "#ccc",
-                          letterSpacing: "0.5px",
+                          color: '#ccc',
+                          letterSpacing: '0.5px',
                           margin: 0,
-                          fontSize: "14px",
+                          fontSize: '14px',
                         }}
                       >
                         {labelLang}
                       </p>
                     </div>
-                    <span style={{ color: "#ccc", margin: 0 }}>
+                    <span style={{ color: '#ccc', margin: 0 }}>
                       {item?.hours}
                     </span>
                   </div>
@@ -90,7 +90,7 @@ export const WorkingInfo = () => {
           })
         ) : (
           <div>
-            <p style={{ color: "#888", letterSpacing: "0.5px" }}>Not found</p>
+            <p style={{ color: '#888', letterSpacing: '0.5px' }}>Not found</p>
           </div>
         )}
       </div>
@@ -99,11 +99,11 @@ export const WorkingInfo = () => {
           <>
             <h3
               style={{
-                marginVertical: "15px",
-                color: "#ccc",
-                fontWeight: "bold",
-                marginTop: "25px",
-                letterSpacing: "0.5px",
+                marginVertical: '15px',
+                color: '#ccc',
+                fontWeight: 'bold',
+                marginTop: '25px',
+                letterSpacing: '0.5px',
               }}
             >
               Experience
@@ -111,17 +111,17 @@ export const WorkingInfo = () => {
 
             <div
               style={{
-                width: "90%",
-                backgroundColor: "#111",
-                padding: "10px 15px",
-                borderRadius: "5px",
+                width: '90%',
+                backgroundColor: '#111',
+                padding: '10px 15px',
+                borderRadius: '5px',
               }}
             >
               <p
                 style={{
-                  color: "#ccc",
-                  lineHeight: "22px",
-                  letterSpacing: "0.5px",
+                  color: '#ccc',
+                  lineHeight: '22px',
+                  letterSpacing: '0.5px',
                 }}
               >
                 {targetUser?.experience}
@@ -133,6 +133,8 @@ export const WorkingInfo = () => {
     </Container>
   );
 };
+
+export default WorkingInfo;
 
 const Container = styled.div`
   box-sizing: border-box;

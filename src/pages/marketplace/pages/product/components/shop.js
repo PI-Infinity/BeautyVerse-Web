@@ -1,9 +1,10 @@
-import React from "react";
-import styled from "styled-components";
-import { BiSolidShoppingBags } from "react-icons/bi";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { setTargetUser } from "../../../../../redux/user";
+import React from 'react';
+import styled from 'styled-components';
+import { BiSolidShoppingBags } from 'react-icons/bi';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { setTargetUser } from '../../../../../redux/user';
+import { setBackPath } from '../../../../../redux/app';
 
 export const Shop = ({ product, to }) => {
   const navigate = useNavigate();
@@ -14,17 +15,24 @@ export const Shop = ({ product, to }) => {
     <Container
       onClick={() => {
         if (
-          location.pathname?.includes("/user") ||
-          location.pathname?.includes("/profile")
+          location.pathname?.includes('/user') ||
+          location.pathname?.includes('/profile')
         ) {
           return undefined;
         } else {
           navigate(
-            `${to}/${product.owner._id}/${
-              product.owner.type === "shop" ? "showroom" : "feeds"
+            `/user/${product.owner._id}/${
+              product.owner.type === 'shop' ? 'showroom' : 'feeds'
             }`
           );
           dispatch(setTargetUser(product.owner));
+          dispatch(
+            setBackPath({
+              path: [location.pathname],
+              data: [],
+              activeLevel: 0,
+            })
+          );
         }
       }}
     >
@@ -34,11 +42,11 @@ export const Shop = ({ product, to }) => {
           width: 25,
           height: 25,
           borderRadius: 50,
-          objectFit: "cover",
-          background: "rgba(255,255,255,0.1)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          objectFit: 'cover',
+          background: 'rgba(255,255,255,0.1)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
         {product.owner?.cover ? (
@@ -48,7 +56,7 @@ export const Shop = ({ product, to }) => {
               width: 25,
               height: 25,
               borderRadius: 50,
-              objectFit: "cover",
+              objectFit: 'cover',
             }}
           />
         ) : (
@@ -57,10 +65,10 @@ export const Shop = ({ product, to }) => {
       </div>
       <h2
         style={{
-          letterSpacing: "0.5px",
+          letterSpacing: '0.5px',
           margin: 0,
-          fontSize: "14px",
-          color: "#f866b1",
+          fontSize: '14px',
+          color: '#f866b1',
         }}
       >
         {product?.owner.name}

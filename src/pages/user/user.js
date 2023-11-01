@@ -9,8 +9,10 @@ import axios from 'axios';
 import { BounceLoader } from 'react-spinners';
 import { setLoading, setScrollYUser } from '../../redux/user';
 import Headroom from 'react-headroom';
+import { setBackPath } from '../../redux/app';
+import { ActionsOption } from './components/actionsOption';
 
-export const User = ({ back }) => {
+const User = () => {
   useEffect(() => {
     window.scrollTo({ top: 0 });
   }, []);
@@ -19,6 +21,9 @@ export const User = ({ back }) => {
 
   // defines backend url
   const backendUrl = useSelector((state) => state.storeApp.backendUrl);
+
+  // current user
+  const currentUser = useSelector((state) => state.storeUser.currentUser);
 
   // target user
   const targetUserRedux = useSelector((state) => state.storeUser.targetUser);
@@ -37,7 +42,7 @@ export const User = ({ back }) => {
   if (location.pathname?.startsWith('/marketplace/search')) {
     userId = location.pathname?.split('/')[4];
   } else {
-    userId = location.pathname?.split('/')[3];
+    userId = location.pathname?.split('/')[2];
   }
 
   useEffect(() => {
@@ -48,30 +53,33 @@ export const User = ({ back }) => {
           backendUrl + '/api/v1/users/' + userId
         );
         setTargetUser(response.data.data.user);
+        setTimeout(() => {
+          dispatch(setLoading(false));
+        }, 500);
       } catch (error) {
         console.log(error.response.data.message);
       }
     };
 
     if (userId && !targetUserRedux) {
+      dispatch(
+        setBackPath({
+          path: [`/feeds`],
+          data: [],
+          activeLevel: 0,
+        })
+      );
       GetUser();
     }
   }, []);
 
-  // current user
-  const currentUser = localStorage.getItem('Beautyverse:currentUser');
-
   let targetUser;
-  if (back) {
-    if (targetUserRedux) {
-      targetUser = targetUserRedux;
-    } else if (targetUserObj) {
-      targetUser = targetUserObj;
-    } else {
-      targetUser = undefined;
-    }
+  if (targetUserRedux) {
+    targetUser = targetUserRedux;
+  } else if (targetUserObj) {
+    targetUser = targetUserObj;
   } else {
-    targetUser = JSON.parse(currentUser);
+    targetUser = undefined;
   }
 
   // page animation transition
@@ -112,6 +120,8 @@ export const User = ({ back }) => {
     }, 1500);
   }, [rerenderCurrentUser]);
 
+  console.log(targetUser);
+
   return (
     <>
       {loading && (
@@ -140,7 +150,7 @@ export const User = ({ back }) => {
             upTolerance={10}
             styles={{ zIndex: 1000 }}
           >
-            <Header user={targetUser} back={back} />
+            <Header user={targetUser} />
           </Headroom>
 
           <div
@@ -159,13 +169,16 @@ export const User = ({ back }) => {
 
           <CoverSection user={targetUser} />
           <Navigator user={targetUser} />
-
+          {currentUser && targetUser?._id !== currentUser?._id && (
+            <ActionsOption user={targetUser} />
+          )}
           <Outlet context={[targetUser]} />
         </>
       </Container>
     </>
   );
 };
+export default User;
 
 const Container = styled.div`
   min-height: 100vh;

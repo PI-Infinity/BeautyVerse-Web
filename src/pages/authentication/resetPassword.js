@@ -1,7 +1,7 @@
-import { TextField, Button } from "@mui/material";
-import React from "react";
-import { IoMdArrowDropdown } from "react-icons/io";
-import styled from "styled-components";
+import { TextField, Button } from '@mui/material';
+import React from 'react';
+import { IoMdArrowDropdown } from 'react-icons/io';
+import styled from 'styled-components';
 
 export const ResetPassword = ({
   openReset,
@@ -11,7 +11,7 @@ export const ResetPassword = ({
   SendEmail,
 }) => {
   return (
-    <Container openreset={openReset === true ? "true" : "false"}>
+    <Container openreset={openReset === true ? 'true' : 'false'}>
       <Header>
         <div></div>
         <div
@@ -19,7 +19,7 @@ export const ResetPassword = ({
             setOpenReset(false);
           }}
           style={{
-            padding: "5px",
+            padding: '5px',
 
             zIndex: 1000,
           }}
@@ -27,17 +27,17 @@ export const ResetPassword = ({
           <IoMdArrowDropdown size={30} color="#f866b1" />
         </div>
       </Header>
-      <h3 style={{ color: "#ccc", margin: 0, padding: 0 }}>Reset Password</h3>
+      <h3 style={{ color: '#ccc', margin: 0, padding: 0 }}>Reset Password</h3>
       <p
         style={{
-          fontSize: "14px",
-          color: "#ccc",
-          letterSpacing: "0.5px",
-          textAlign: "center",
-          lineHeight: "24px",
+          fontSize: '14px',
+          color: '#ccc',
+          letterSpacing: '0.5px',
+          textAlign: 'center',
+          lineHeight: '24px',
         }}
       >
-        After sending, you will get link on email for to reset password!{" "}
+        After sending, you will get link on email for to reset password!{' '}
       </p>
       <TextField
         id="outlined-basic"
@@ -47,38 +47,38 @@ export const ResetPassword = ({
         type="text"
         onChange={(e) => setEmail(e.target.value)}
         sx={{
-          width: "75%",
-          "& .MuiOutlinedInput-root": {
-            height: "53px",
-            "& .MuiOutlinedInput-notchedOutline": {
-              borderColor: "rgba(255,255,255,0.1)",
-              borderRadius: "15px",
+          width: '85%',
+          '& .MuiOutlinedInput-root': {
+            height: '53px',
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: 'rgba(255,255,255,0.1)',
+              borderRadius: '15px',
             },
-            "&:hover .MuiOutlinedInput-notchedOutline": {
-              borderColor: "#f866b1",
+            '&:hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#f866b1',
             },
-            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-              borderColor: "#f866b1",
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#f866b1',
             },
           },
-          "& .MuiOutlinedInput-input": {
-            borderRadius: "15px",
-            color: "#ccc",
+          '& .MuiOutlinedInput-input': {
+            borderRadius: '15px',
+            color: '#ccc',
           },
-          "& label": {
-            color: "#888",
-            fontSize: "14px",
+          '& label': {
+            color: '#888',
+            fontSize: '14px',
           },
-          "& label.Mui-focused": {
-            color: "#ccc",
-            fontSize: "14px",
+          '& label.Mui-focused': {
+            color: '#ccc',
+            fontSize: '14px',
           },
         }}
       />
       <Button
         variant="contained"
-        style={{ backgroundColor: "#f866b1", color: "white" }}
-        sx={{ width: "40%", borderRadius: "50px", marginTop: "10px" }}
+        style={{ backgroundColor: '#f866b1', color: 'white' }}
+        sx={{ width: '40%', borderRadius: '50px', marginTop: '10px' }}
         onClick={SendEmail}
         //   {...props}
       >
@@ -98,7 +98,7 @@ const Container = styled.div`
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   transform: translateY(
-    ${(props) => (props.openreset === "true" ? 0 : "100vh")}
+    ${(props) => (props.openreset === 'true' ? 0 : '100vh')}
   );
   transition: ease-in 300ms;
   display: flex;

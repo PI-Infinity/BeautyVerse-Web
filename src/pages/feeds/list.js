@@ -1,15 +1,19 @@
-import axios from "axios";
-import React, { useState, useEffect, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import styled from "styled-components";
-import { FeedCard } from "./components/feedCard";
-import { BounceLoader } from "react-spinners";
-import { Outlet } from "react-router-dom";
-import { setPage, AddFeeds, setScrollYFeeds } from "../../redux/feeds";
+import axios from 'axios';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
+import { FeedCard } from './components/feedCard';
+import { BounceLoader } from 'react-spinners';
+import { Outlet } from 'react-router-dom';
+import { setPage, AddFeeds, setScrollYFeeds } from '../../redux/feeds';
+import { Options } from './components/options';
 
-export const Feeds = () => {
+const Feeds = () => {
   // redux dispatch
   const dispatch = useDispatch();
+
+  // current user state
+  const currentUser = useSelector((state) => state.storeUser.currentUser);
 
   // backend url
   const backendUrl = useSelector((state) => state.storeApp.backendUrl);
@@ -29,7 +33,9 @@ export const Feeds = () => {
   const AddUsersFeeds = async (currentPage) => {
     try {
       const response = await axios.get(
-        `${backendUrl}/api/v1/feeds?page=${currentPage}&limit=3`
+        `${backendUrl}/api/v1/feeds?page=${currentPage}${
+          currentUser ? '&check=' + currentUser._id : ''
+        }&limit=3`
       );
       const newFeeds = response.data.data.feedlist;
 
@@ -52,10 +58,10 @@ export const Feeds = () => {
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener('scroll', handleScroll);
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener('scroll', handleScroll);
     };
   }, [page]);
 
@@ -68,7 +74,7 @@ export const Feeds = () => {
       return;
     }
     // Perform some action when scrollToTop is true
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     // other logic you want to perform when scrollToTop changes
   }, [scrollToTop]);
@@ -91,37 +97,105 @@ export const Feeds = () => {
   // navigation between for you and followings feeds state
   const [activeList, setActiveList] = useState(false);
 
+  /**
+   * feed seen functionallity
+   */
+
+  // Ref to hold all feed item refs
+  const feedItemRefs = useRef([]);
+
+  // Function to add a feed item to the refs array
+  const addToRefs = (el) => {
+    if (el && !feedItemRefs.current.includes(el)) {
+      feedItemRefs.current.push(el);
+    }
+  };
+
+  const machineId = useSelector((state) => state.storeApp.machineId);
+  console.log(machineId);
+
+  // Callback function for the Intersection Observer
+  const handleIntersect = useCallback(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+          const Seen = async (userId, itemId) => {
+            console.log(itemId);
+            try {
+              if (userId !== currentUser?._id) {
+                const response = await axios.patch(
+                  backendUrl + '/api/v1/feeds/' + itemId + '/view',
+                  {
+                    view: machineId,
+                  }
+                );
+                console.log(response);
+              }
+            } catch (error) {
+              console.log(error);
+            }
+          };
+          if (machineId) {
+            Seen(entry.target.dataset.ownerId, entry.target.dataset.id);
+          }
+        }
+      });
+    },
+    [machineId]
+  );
+
+  // Setting up the Intersection Observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(handleIntersect, {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.6,
+    });
+
+    // Observe all current feed item refs
+    feedItemRefs.current.forEach((ref) => {
+      if (ref) observer.observe(ref);
+    });
+
+    // Cleanup function to unobserve all feed items
+    return () => {
+      feedItemRefs.current.forEach((ref) => {
+        if (ref) observer.unobserve(ref);
+      });
+    };
+  }, [feeds, handleIntersect, machineId]);
+
   return (
     <Container>
       <Outlet />
       {loading ? (
         <div
           style={{
-            position: "fixed",
-            top: "0px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "100%",
-            height: "100vh",
+            position: 'fixed',
+            top: '0px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            height: '100vh',
           }}
         >
-          <BounceLoader color={"#f866b1"} loading={loading} size={50} />
+          <BounceLoader color={'#f866b1'} loading={loading} size={50} />
         </div>
       ) : (
         <>
           <div
             style={{
-              height: refresh ? "60px" : 0,
+              height: refresh ? '60px' : 0,
               opacity: refresh ? 1 : 0,
-              width: "100%",
-              transition: "ease-in-out 300ms",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              width: '100%',
+              transition: 'ease-in-out 300ms',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
-            <BounceLoader color={"#f866b1"} loading={refresh} size={30} />
+            <BounceLoader color={'#f866b1'} loading={refresh} size={30} />
           </div>
           {/* <Navigator>
             <div
@@ -147,10 +221,20 @@ export const Feeds = () => {
               Followings
             </div>
           </Navigator> */}
-          <div style={{ display: "flex", width: "100vw" }}>
-            <ListContainer activelist={activeList === true ? "true" : "false"}>
+          <div style={{ display: 'flex', width: '100vw' }}>
+            <ListContainer activelist={activeList === true ? 'true' : 'false'}>
               {feeds?.map((item, index) => {
-                return <FeedCard key={index} item={item} />;
+                return (
+                  <div
+                    ref={addToRefs}
+                    data-id={item._id}
+                    data-owner-id={item?.owner._id}
+                    key={index}
+                    style={{ width: '100%' }}
+                  >
+                    <FeedCard item={item} />
+                  </div>
+                );
               })}
             </ListContainer>
             {/* <ListContainer activelist={activeList === true ? "true" : "false"}>
@@ -164,6 +248,8 @@ export const Feeds = () => {
     </Container>
   );
 };
+
+export default Feeds;
 
 const Container = styled.div`
   width: 100%;
@@ -209,6 +295,6 @@ const ListContainer = styled.div`
     position: relative;
     transition: ease-in 300ms;
     align-items: start;
-    right: ${(props) => (props.activelist === "true" ? "100vw" : "0")};
+    right: ${(props) => (props.activelist === 'true' ? '100vw' : '0')};
   }
 `;

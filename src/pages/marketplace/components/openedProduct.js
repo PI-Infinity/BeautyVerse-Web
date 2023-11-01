@@ -6,7 +6,7 @@ import styled from 'styled-components';
 import { IoMdArrowDropdown } from 'react-icons/io';
 import { ProductItem } from '../../marketplace/pages/product/productItem';
 
-export const OpenedProduct = () => {
+const OpenedProduct = () => {
   // navigate
   const navigate = useNavigate();
   // location
@@ -98,6 +98,8 @@ export const OpenedProduct = () => {
     </div>
   );
 };
+
+export default OpenedProduct;
 
 const Container = styled.div`
   width: 100vw;

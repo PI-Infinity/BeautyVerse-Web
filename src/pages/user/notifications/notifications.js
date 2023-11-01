@@ -11,14 +11,12 @@ import Headroom from 'react-headroom';
 import { Configs } from './configPopup';
 import { Outlet } from 'react-router-dom';
 
-export const Notifications = () => {
+const Notifications = () => {
   // redux dispatch
   const dispatch = useDispatch();
 
   // current user
-  const currentUser = JSON.parse(
-    localStorage.getItem('Beautyverse:currentUser')
-  );
+  const currentUser = useSelector((state) => state.storeUser.currentUser);
 
   // animation
   const [animation, setAnimation] = useState(false);
@@ -80,6 +78,8 @@ export const Notifications = () => {
     </>
   );
 };
+
+export default Notifications;
 
 const Container = styled.div`
   min-height: 100vh;

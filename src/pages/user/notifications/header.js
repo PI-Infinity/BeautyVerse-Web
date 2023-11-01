@@ -1,10 +1,10 @@
-import React from "react";
-import { IoMdAddCircleOutline, IoMdNotifications } from "react-icons/io";
-import styled from "styled-components";
-import { IoMdArrowRoundBack } from "react-icons/io";
-import { useLocation, useNavigate } from "react-router-dom";
-import { BiImageAdd } from "react-icons/bi";
-import { MdCircleNotifications, MdSettings } from "react-icons/md";
+import React from 'react';
+import { IoMdAddCircleOutline, IoMdNotifications } from 'react-icons/io';
+import styled from 'styled-components';
+import { IoMdArrowRoundBack } from 'react-icons/io';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { BiImageAdd } from 'react-icons/bi';
+import { MdCircleNotifications, MdSettings } from 'react-icons/md';
 
 /**
  *
@@ -20,20 +20,20 @@ export const Header = ({ back }) => {
       <IoMdArrowRoundBack
         size={30}
         color="#f866b1"
-        style={{ position: "relative", left: "15px" }}
+        style={{ position: 'relative', left: '15px' }}
         className="back"
         onClick={() => {
           setTimeout(() => {
             navigate(back);
-          }, 500);
+          }, 10);
         }}
       />
 
-      <LogoTitle style={{ position: "relative", left: 0 }}>
+      <LogoTitle style={{ position: 'relative', left: 0 }}>
         Notifications
       </LogoTitle>
 
-      <div style={{ width: "30px" }}></div>
+      <div style={{ width: '30px' }}></div>
     </Container>
   );
 };
@@ -62,7 +62,7 @@ const Container = styled.div`
 `;
 
 const LogoTitle = styled.h1`
-  color: ${(props) => (props.part === 1 ? "#f866b1" : "#ccc")};
+  color: ${(props) => (props.part === 1 ? '#f866b1' : '#ccc')};
   letter-spacing: 1.2px;
 
   @media only screen and (max-width: 600px) {

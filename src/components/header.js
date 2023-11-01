@@ -1,15 +1,15 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import styled from "styled-components";
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 
 export const Header = () => {
   const navigate = useNavigate();
   return (
     <Container>
-      <LogoTitle onClick={() => navigate("/")} part={1}>
+      <LogoTitle onClick={() => navigate('/')} part={1}>
         Beauty
       </LogoTitle>
-      <LogoTitle onClick={() => navigate("/")} part={2}>
+      <LogoTitle onClick={() => navigate('/')} part={2}>
         Verse
       </LogoTitle>
     </Container>
@@ -17,7 +17,7 @@ export const Header = () => {
 };
 
 const Container = styled.div`
-  background: rgba(1, 2, 12, 0.9);
+  background: rgba(1, 2, 12, 0.8);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   width: 100%;
@@ -34,7 +34,7 @@ const Container = styled.div`
 `;
 
 const LogoTitle = styled.h1`
-  color: ${(props) => (props.part === 1 ? "#f866b1" : "#ccc")};
+  color: ${(props) => (props.part === 1 ? '#f866b1' : '#ccc')};
   letter-spacing: 1.2px;
 
   @media only screen and (max-width: 600px) {

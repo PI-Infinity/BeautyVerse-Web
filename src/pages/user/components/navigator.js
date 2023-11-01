@@ -1,29 +1,46 @@
-import React from "react";
-import { Location, useLocation, useNavigate } from "react-router-dom";
-import styled from "styled-components";
+import React, { useEffect, useRef } from 'react';
+import { useSelector } from 'react-redux';
+import { Location, useLocation, useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
 
 export const Navigator = ({ user }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const active =
-    location.pathname.split("/")[location.pathname.split("/")?.length - 1];
+    location.pathname.split('/')[location.pathname.split('/')?.length - 1];
+
+  const scrollRef = useRef();
+
+  const back = useSelector((state) => state.storeApp.backPath);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      if (back && !back.back) {
+        scrollRef.current.scrollLeft = 0;
+      } else {
+        scrollRef.current.scrollLeft =
+          scrollRef.current.scrollWidth - scrollRef.current.clientWidth;
+      }
+    }
+  }, [back]);
 
   return (
-    <Container>
+    <Container ref={scrollRef}>
       {NavigatorItems?.map((item, index) => {
-        if (item.title === "Showroom" && user?.type !== "shop") {
+        if (item.title === 'Showroom' && user?.type !== 'shop') {
           return;
         }
-        if (item.title === "Procedures" && user?.type === "shop") {
+        if (item.title === 'Procedures' && user?.type === 'shop') {
           return;
         }
+
         if (
-          (item.title === "Feeds" ||
-            item.title === "Procedures" ||
-            item.title === "Products" ||
-            item.title === "Statistics" ||
-            item.title === "Working Info") &&
-          user?.type === "user"
+          (item.title === 'Feeds' ||
+            item.title === 'Procedures' ||
+            item.title === 'Products' ||
+            item.title === 'Statistics' ||
+            item.title === 'Working Info') &&
+          user?.type === 'user'
         ) {
           return;
         }
@@ -64,10 +81,10 @@ const Item = styled.div`
   color: #ccc;
   letter-spacing: 0.5px;
   font-size: 16px;
-  font-weight: bold;
+  font-weight: 500;
   border: 1.5px solid
     ${(props) =>
-      props.active === props.path ? "#f866b1" : "rgba(255,255,255,0.01)"};
+      props.active === props.path ? '#f866b1' : 'rgba(255,255,255,0.01)'};
   border-radius: 50px;
   padding: 4px 10px;
   white-space: nowrap;
@@ -84,28 +101,33 @@ const Item = styled.div`
 
 const NavigatorItems = [
   {
-    title: "Showroom",
-    icon: "",
-    path: "showroom",
+    title: 'Showroom',
+    icon: '',
+    path: 'showroom',
   },
   {
-    title: "Feeds",
-    icon: "",
-    path: "feeds",
+    title: 'Feeds',
+    icon: '',
+    path: 'feeds',
   },
   {
-    title: "Contact",
-    icon: "",
-    path: "contact",
+    title: 'Contact',
+    icon: '',
+    path: 'contact',
   },
   {
-    title: "Procedures",
-    icon: "",
-    path: "procedures",
+    title: 'Procedures',
+    icon: '',
+    path: 'procedures',
   },
   {
-    title: "Working Info",
-    icon: "",
-    path: "workinginfo",
+    title: 'Working Info',
+    icon: '',
+    path: 'workinginfo',
+  },
+  {
+    title: 'Audience',
+    icon: '',
+    path: 'audience',
   },
 ];

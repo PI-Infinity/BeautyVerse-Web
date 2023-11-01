@@ -15,7 +15,7 @@ import { FadeInImage } from './fadeInFeedImage';
 import { FadeInVideo } from './fadeInFeedVideo';
 import { setOpenedFeed } from '../../../redux/feed';
 
-export const UserFeeds = () => {
+const UserFeeds = () => {
   // get outlet props context
   const [targetUser] = useOutletContext();
 
@@ -31,18 +31,22 @@ export const UserFeeds = () => {
   // loading state
   const [feedsLoading, setFeedsLoading] = useState(true);
 
+  // get current user
+  const currentUser = useSelector((state) => state.storeUser.currentUser);
+
   // user feeds
   const [feeds, setFeeds] = useState([]);
   const [page, setPage] = useState(1);
 
-  // get user feeds
+  // get backend url
   const backendUrl = useSelector((state) => state.storeApp.backendUrl);
 
   useEffect(() => {
     async function GetFeeds(id) {
       try {
         const response = await axios.get(
-          `${backendUrl}/api/v1/feeds/${id}/feeds?page=1&limit=8&check=`
+          `${backendUrl}/api/v1/feeds/${id}/feeds?page=1&limit=8` +
+            `${currentUser ? '&check=' + currentUser._id : ''}`
         );
 
         setFeeds(response.data.data?.feeds);
@@ -60,29 +64,33 @@ export const UserFeeds = () => {
     if (targetUser) {
       GetFeeds(targetUser?._id);
     }
-  }, []);
+  }, [targetUser]);
 
   // add feeds
   async function AddFeeds(p) {
     try {
       const response = await axios.get(
-        `${backendUrl}/api/v1/feeds/${targetUser._id}/feeds?page=${p}&limit=8&check=`
+        `${backendUrl}/api/v1/feeds/${targetUser._id}/feeds?page=${p}&limit=8` +
+          `${currentUser ? '&check=' + currentUser._id : ''}`
       );
-      setFeeds((prev) => {
-        const newFeeds = response.data.data?.feeds;
-        if (newFeeds) {
-          const uniqueNewFeeds = newFeeds.filter(
-            (newFeed) => !prev.some((prevFeed) => prevFeed._id === newFeed._id)
-          );
+      if (response.data.data?.feeds) {
+        setFeeds((prev) => {
+          const newFeeds = response.data.data?.feeds;
+          if (newFeeds) {
+            const uniqueNewFeeds = newFeeds.filter(
+              (newFeed) =>
+                !prev.some((prevFeed) => prevFeed._id === newFeed._id)
+            );
 
-          return [...prev, ...uniqueNewFeeds];
-        } else {
-          return [...prev];
-        }
-      });
-      setPage(p);
+            return [...prev, ...uniqueNewFeeds];
+          } else {
+            return [...prev];
+          }
+        });
+        setPage(p);
+      }
     } catch (error) {
-      console.log(error.response.data.message);
+      console.log(error.response);
     }
   }
 
@@ -128,12 +136,10 @@ export const UserFeeds = () => {
                   onClick={() => {
                     dispatch(setOpenedFeed(item));
                     if (location.pathname?.startsWith('/profile')) {
-                      navigate(`/profile/feeds/${item._id}`);
+                      navigate(`/profile/feeds/${item._id}?review`);
                     } else {
                       navigate(
-                        `/${location.pathname?.split('/')[1]}/user/${
-                          targetUser?._id
-                        }/feeds/${item._id}`
+                        `/user/${targetUser?._id}/feeds/${item._id}?review`
                       );
                     }
                   }}
@@ -169,6 +175,8 @@ export const UserFeeds = () => {
     </Container>
   );
 };
+
+export default UserFeeds;
 
 const Container = styled.div`
   width: 100vw;

@@ -1,19 +1,27 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
+  currentUser: null,
   targetUser: null,
+  targetUserVisit: null,
   loading: false,
   rerenderCurrentUser: false,
   scrollY: 0,
 };
 
 export const User = createSlice({
-  name: "User",
+  name: 'User',
   initialState,
 
   reducers: {
+    setCurrentUser: (state, action) => {
+      state.currentUser = action.payload;
+    },
     setTargetUser: (state, action) => {
       state.targetUser = action.payload;
+    },
+    setTargetUserVisit: (state, action) => {
+      state.targetUserVisit = action.payload;
     },
     setLoading: (state, action) => {
       state.loading = action.payload;
@@ -28,7 +36,9 @@ export const User = createSlice({
 });
 
 export const {
+  setCurrentUser,
   setTargetUser,
+  setTargetUserVisit,
   setLoading,
   setRerenderCurrentUser,
   setScrollYUser,

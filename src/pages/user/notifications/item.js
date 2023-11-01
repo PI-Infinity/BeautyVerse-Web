@@ -10,14 +10,20 @@ import {
 } from 'react-icons/fa';
 import { MdSaveAlt } from 'react-icons/md';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { setTargetUser } from '../../../redux/user';
+import { setCurrentUser, setTargetUser } from '../../../redux/user';
 import { BiDotsVerticalRounded } from 'react-icons/bi';
-import { setRerenderNotifications } from '../../../redux/notifications';
+import {
+  setRerenderNotifications,
+  setUnreadNotidications,
+} from '../../../redux/notifications';
 import { BounceLoader } from 'react-spinners';
 import { setOpenedFeed } from '../../../redux/feed';
 import { setNotifications } from '../../../redux/notifications';
+import { setOpenedProduct } from '../../../redux/showroom';
+import { setBackPath } from '../../../redux/app';
+import logo from '../../../assets/logo.png';
 
 export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
   // sender user state
@@ -26,6 +32,8 @@ export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
   const navigate = useNavigate();
   // redux dispatch
   const dispatch = useDispatch();
+  // locaiton
+  const location = useLocation();
   // loading
   const [loading, setLoading] = useState(true);
   // backend url
@@ -57,8 +65,9 @@ export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
         let response = await axios.get(
           backendUrl + `/api/v1/feeds/${item.feed}?check=${currentUser._id}`
         );
-        console.log(response.data.data.feed);
-        setFeed(response.data.data.feed);
+        if (response.data.data.feed) {
+          setFeed(response.data.data.feed);
+        }
       }
     } catch (error) {
       console.log(error.response.data.message);
@@ -86,13 +95,15 @@ export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
   }
 
   useEffect(() => {
-    if (item) {
+    if (item && item.senderId !== 'Beautyverse') {
       GetUser();
       if (item?.feed?.length > 0) {
         GetFeedObj();
       } else if (item?.product?.length > 0) {
         GetProduct();
       }
+    } else {
+      setLoading(false);
     }
   }, [item]);
 
@@ -151,55 +162,64 @@ export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
 
   // notifications
   const list = useSelector((state) => state.storeNotifications.notifications);
+  const unreadList = useSelector(
+    (state) => state.storeNotifications.unreadNotifications
+  );
 
   const ReadNotification = async (id) => {
     try {
+      // Update notifications in the Redux store
       dispatch(
         setNotifications(
-          list.map((item) => {
-            // Check if the current item's _id matches the given id
-            if (item?._id === id) {
-              // Update the status of the matched notification to "read"
-              return {
-                ...item,
-                status: 'read',
-              };
-            }
-            // If the item's _id doesn't match, return the item unchanged
-            return item;
-          })
+          list.map((item) =>
+            item?._id === id ? { ...item, status: 'read' } : item
+          )
         )
       );
-      // Check if the current user and the notifications list exist
-      if (currentUser && currentUser.notifications) {
-        // Update the specific notification's status to "read"
-        currentUser.notifications = currentUser.notifications.map(
-          (notification) => {
-            if (notification?._id === id) {
-              console.log(notification._id);
-              return {
-                ...notification,
-                status: 'read',
-              };
-            }
-            return notification;
-          }
-        );
 
-        // Save the updated user back to local storage
-        localStorage.setItem(
-          'Beautyverse:currentUser',
-          JSON.stringify(currentUser)
-        );
-        dispatch(setRerenderNotifications());
-      }
+      // Update unread notifications in the Redux store
+      dispatch(
+        setUnreadNotidications(unreadList.filter((item) => item._id !== id))
+      );
+
+      // Update the current user's notifications
+      const newnotifs = currentUser.notifications
+        .filter((i) => i)
+        .map((notification) => {
+          if (notification) {
+            if (notification?._id === id) {
+              return { ...notification, status: 'read' };
+            } else {
+              return notification;
+            }
+          } else {
+            return;
+          }
+        });
+      const updatedUser = {
+        ...currentUser,
+        notifications: newnotifs,
+      };
+
+      // Save the updated user to local storage
+      localStorage.setItem(
+        'Beautyverse:currentUser',
+        JSON.stringify(updatedUser)
+      );
+
+      // Update the current user in the Redux store
+      dispatch(setCurrentUser(updatedUser));
+
+      // Trigger a re-render for notifications
+      dispatch(setNotifications(newnotifs));
+      dispatch(
+        setUnreadNotidications(newnotifs?.filter((i) => i.status === 'unread'))
+      );
 
       // Send a request to the backend to update the notification's status
       await axios.patch(
         `${backendUrl}/api/v1/users/${currentUser?._id}/notifications/${id}`,
-        {
-          status: 'read',
-        }
+        { status: 'read' }
       );
     } catch (error) {
       console.error(error);
@@ -224,7 +244,7 @@ export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
               : () => {
                   dispatch(setTargetUser(user));
                   navigate(
-                    '/profile/visit/' +
+                    '/user/' +
                       user?._id +
                       `${
                         user?.type === 'shop'
@@ -233,6 +253,13 @@ export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
                           ? '/contact'
                           : '/feeds'
                       }`
+                  );
+                  dispatch(
+                    setBackPath({
+                      path: [location.pathname],
+                      data: [],
+                      activeLevel: 0,
+                    })
                   );
                 }
           }
@@ -243,18 +270,32 @@ export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
             </div>
           ) : (
             <>
-              {user?.cover?.length > 0 ? (
+              {item.senderId === 'Beautyverse' ? (
                 <img
-                  src={user?.cover}
+                  src={logo}
                   style={{
-                    width: '40px',
-                    height: '40px',
+                    width: '60px',
+                    height: '60px',
                     borderRadius: '50px',
                     objectFit: 'cover',
                   }}
                 />
               ) : (
-                <FaUserCircle size="40px" />
+                <>
+                  {user?.cover?.length > 0 ? (
+                    <img
+                      src={user?.cover}
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50px',
+                        objectFit: 'cover',
+                      }}
+                    />
+                  ) : (
+                    <FaUserCircle size="40px" />
+                  )}
+                </>
               )}
             </>
           )}
@@ -278,8 +319,20 @@ export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
               }}
             ></div>
           ) : (
-            <span style={{ color: '#ccc', fontWeight: 'bold' }}>
-              {user?.name ? user?.name : 'Removed User'}
+            <span
+              style={{
+                color: '#ccc',
+                fontWeight: 'bold',
+                letterSpacing: '0.5px',
+              }}
+            >
+              <>
+                {item.senderId !== 'Beautyverse' ? (
+                  <>{user?.name ? user?.name : 'Removed User'}</>
+                ) : (
+                  'BeautyVerse'
+                )}
+              </>
             </span>
           )}
           {loading ? (
@@ -294,7 +347,9 @@ export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
               }}
             ></div>
           ) : (
-            <span style={{ color: '#ccc', fontSize: '12px' }}>{text}</span>
+            <span style={{ color: '#ccc', fontSize: '12px' }}>
+              {text?.length > 0 ? text : 'Welcome to Beauty universe!'}
+            </span>
           )}
         </div>
       </div>
@@ -312,7 +367,7 @@ export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
           item?.type === 'share') && (
           <FaImage
             onClick={() => {
-              navigate(`${feed?._id}`);
+              navigate(`feed/${feed?._id}?review`);
               dispatch(setOpenedFeed(feed));
             }}
             size={16}
@@ -321,6 +376,10 @@ export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
         )}
         {item?.type === 'saveProduct' && (
           <FaShoppingBag
+            onClick={() => {
+              navigate(`product/${product?._id}`);
+              dispatch(setOpenedProduct(product));
+            }}
             size={16}
             color={item?.status === 'unread' ? '#f1f1f1' : '#888'}
           />

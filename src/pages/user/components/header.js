@@ -3,38 +3,45 @@ import { BiImageAdd } from 'react-icons/bi';
 import { IoMdArrowRoundBack, IoMdNotifications } from 'react-icons/io';
 import { MdSettings } from 'react-icons/md';
 import { VscVerifiedFilled } from 'react-icons/vsc';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import Badge from '@mui/material/Badge';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { setTargetUser } from '../../../redux/user';
+import { setBackPath } from '../../../redux/app';
 
 /**
  *
  * user page
  */
 
-export const Header = ({ user, back }) => {
+export const Header = ({ user }) => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const unreadNotifications = useSelector(
-    (state) => state.storeNotifications.unreadNotifications
-  );
+  const back = useSelector((state) => state.storeApp.backPath);
 
   return (
     <Container>
-      {back && (
-        <IoMdArrowRoundBack
-          size={30}
-          color="#f866b1"
-          style={{ position: 'relative', left: '15px' }}
-          className="back"
-          onClick={() => {
-            setTimeout(() => {
-              navigate(back);
-            }, 500);
-          }}
-        />
-      )}
+      <IoMdArrowRoundBack
+        size={30}
+        color="#f866b1"
+        style={{ position: 'relative', left: '15px' }}
+        className="back"
+        onClick={() => {
+          navigate(back.path[back.activeLevel]);
+          dispatch(setTargetUser(back.data[back.activeLevel - 1]));
+          dispatch(
+            setBackPath({
+              path: back.path.slice(0, -1),
+              data: back.data.slice(0, -1),
+              activeLevel: back.activeLevel - 1,
+              back: true,
+            })
+          );
+        }}
+      />
+
       <div
         style={{
           display: 'flex',
@@ -49,52 +56,7 @@ export const Header = ({ user, back }) => {
           <VscVerifiedFilled color="#f866b1" size={18} />
         )}
       </div>
-      {back ? (
-        <div style={{ width: '30px' }}></div>
-      ) : (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '15px',
-            position: 'relative',
-            right: '15px',
-          }}
-        >
-          <div onClick={() => navigate('/profile/addfeed')}>
-            <BiImageAdd color="#f866b1" size={25} />
-          </div>
-          <div
-            onClick={() => navigate('/profile/notifications')}
-            style={{ position: 'relative', bottom: '1.5px' }}
-          >
-            <Badge
-              badgeContent={unreadNotifications?.length}
-              max={999}
-              invisible={false}
-              sx={{
-                '.MuiBadge-badge': {
-                  backgroundColor: '#f866b1',
-                  color: '#ffffff',
-                  minWidth: '16px',
-                  width: '15px',
-                  height: '15px',
-                  borderRadius: '8px',
-                  fontSize: '0.70rem',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                },
-              }}
-            >
-              <IoMdNotifications color="#ccc" size={23} />
-            </Badge>
-          </div>
-          <div onClick={() => navigate('/profile/settings')}>
-            <MdSettings color="#ccc" size={23} />
-          </div>
-        </div>
-      )}
+      <div style={{ width: '30px' }}></div>
     </Container>
   );
 };

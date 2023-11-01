@@ -2,18 +2,22 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { setRerenderCurrentUser } from '../../redux/user';
-import { setCurrentUser } from '../../redux/auth';
+import { setCurrentUser } from '../../redux/user';
+import { setCurrentUser as setCurrentUserAuth } from '../../redux/auth';
 import { TextField, Button, InputAdornment, IconButton } from '@mui/material';
 import styled from 'styled-components';
 import { ResetPassword } from './resetPassword';
 import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
-import SimpleBackdrop from '../../components/backdrop';
+import SimpleBackdrop from '../../components/backDrop';
 import Alert from '@mui/material/Alert';
 import { BounceLoader } from 'react-spinners';
 import { Language } from '../../context/language';
+import {
+  setNotifications,
+  setUnreadNotidications,
+} from '../../redux/notifications';
 
-export const Login = () => {
+const Login = () => {
   //language context
   const language = Language();
   // login email and password states
@@ -32,7 +36,7 @@ export const Login = () => {
   const navigate = useNavigate();
 
   // alert message
-  const [alert, setAlert] = useState({ active: false, text: '', type: '' });
+  const [alert, setAlert] = useState({ status: false, text: '', type: '' });
 
   // backend url
   const backendUrl = useSelector((state) => state.storeApp.backendUrl);
@@ -65,9 +69,24 @@ export const Login = () => {
               'Beautyverse:currentUser',
               JSON.stringify(data.data.filteredUser)
             );
+            const notifs = data.data.filteredUser?.notifications?.filter(
+              (item) => item
+            );
+            dispatch(
+              setCurrentUser({
+                ...data.data.filteredUser,
+                notifications: notifs,
+              })
+            );
+            dispatch(setNotifications(notifs));
+            dispatch(
+              setUnreadNotidications(
+                notifs?.filter((item) => item?.status === 'unread')
+              )
+            );
             navigate('/feeds');
           } else {
-            dispatch(setCurrentUser(data.data.filteredUser));
+            dispatch(setCurrentUserAuth(data.data.filteredUser));
             navigate('/register/personalinfo');
           }
           setSendingLoading(false);
@@ -99,7 +118,6 @@ export const Login = () => {
 
   async function SendEmail() {
     try {
-      setResetPopup(false);
       await axios.post(backendUrl + '/api/v1/forgotPassword', {
         email: emailInput,
       });
@@ -109,6 +127,7 @@ export const Login = () => {
         text: language?.language?.Auth?.auth?.requestSent,
         type: 'success',
       });
+      setResetPopup(false);
     } catch (error) {
       setAlert({
         status: true,
@@ -297,6 +316,8 @@ export const Login = () => {
     </Container>
   );
 };
+
+export default Login;
 
 const Container = styled.div`
   height: 80vh;

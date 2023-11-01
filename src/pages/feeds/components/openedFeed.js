@@ -1,22 +1,36 @@
-import axios from "axios";
-import React, { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
-import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
-import styled from "styled-components";
-import { FeedCard } from "../../feeds/components/feedCard";
-import { IoMdArrowRoundBack } from "react-icons/io";
-import { Reviews } from "../../feeds/components/reviews";
-import { IoMdArrowDropdown } from "react-icons/io";
+import axios from 'axios';
+import React, { useEffect, useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useLocation, useNavigate, useOutletContext } from 'react-router-dom';
+import styled from 'styled-components';
+import { FeedCard } from '../../feeds/components/feedCard';
+import { IoMdArrowRoundBack } from 'react-icons/io';
+import { Reviews } from '../../feeds/components/reviews';
+import { IoMdArrowDropdown } from 'react-icons/io';
 
-export const OpenedFeed = () => {
+const OpenedFeed = () => {
   // navigate
   const navigate = useNavigate();
   // location
   const location = useLocation();
   //define paths
-  let parts = location.pathname.split("/");
+  let parts = location.pathname.split('/');
   // feed id
-  let feedId = parts[1];
+  let feedId = parts[2];
+
+  // with this state feeds open with scale and opacity
+  const [openFeed, setOpenFeed] = useState(false);
+  useEffect(() => {
+    // Disable body scroll when the component is open
+    if (openFeed) {
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      // Re-enable body scroll when the component is closed
+      document.body.style.overflow = 'visible';
+    };
+  }, [openFeed]);
 
   // define feed context
   const activeFeedObj = useSelector((state) => state.storeFeed.openedFeed);
@@ -27,7 +41,7 @@ export const OpenedFeed = () => {
 
   const GetFeed = async () => {
     try {
-      const response = await axios.get(backendUrl + "/api/v1/feeds/" + feedId);
+      const response = await axios.get(backendUrl + '/api/v1/feeds/' + feedId);
       setFeedObjs((prev) => [...prev, response.data.data.feed]);
       GetUserFeeds(
         response.data.data.feed?._id,
@@ -63,8 +77,6 @@ export const OpenedFeed = () => {
   const [page, setPage] = useState(1);
 
   async function AddFeeds(p, userId) {
-    console.log(p);
-    console.log(userId);
     try {
       const response = await axios.get(
         `${backendUrl}/api/v1/feeds/${userId}/feeds?page=${p}&limit=3&check=`
@@ -108,25 +120,16 @@ export const OpenedFeed = () => {
     // Assign the scroll event to the specific element
     const currentScrollRef = scrollRef.current;
     if (currentScrollRef) {
-      currentScrollRef.addEventListener("scroll", handleScroll);
+      currentScrollRef.addEventListener('scroll', handleScroll);
     }
 
     return () => {
       // Cleanup - remove the event listener
       if (currentScrollRef) {
-        currentScrollRef.removeEventListener("scroll", handleScroll);
+        currentScrollRef.removeEventListener('scroll', handleScroll);
       }
     };
   }, [page, feedObjs]);
-
-  // with this state feeds open with scale and opacity
-  const [openFeed, setOpenFeed] = useState(false);
-
-  // if (openFeed) {
-  //   document.body.style.overflow = "hidden";
-  // } else {
-  //   document.body.style.overflow = "visible";
-  // }
 
   useEffect(() => {
     setOpenFeed(true);
@@ -136,53 +139,45 @@ export const OpenedFeed = () => {
       setFeedObjs((prev) => [...prev, activeFeedObj]);
       GetUserFeeds(activeFeedObj?._id, activeFeedObj?.owner?._id);
     }
-  }, []);
-
-  /**
-   * reviews
-   */
-  const [openReviews, setOpenReviews] = useState(true);
-
-  useEffect(() => {
-    // Disable body scroll when the component is open
-    if (openFeed) {
-      document.body.style.overflow = "hidden";
-    }
-
-    return () => {
-      // Re-enable body scroll when the component is closed
-      document.body.style.overflow = "visible";
-    };
-  }, [openFeed]);
+  }, [activeFeedObj, feedId]);
 
   return (
     <div
       style={{
-        background: !openFeed ? "rgba(1, 2, 12, 0.2)" : "rgba(1, 2, 12, 0)",
-        backdropFilter: "blur(10px)",
-        webkitBackdropFilter: "blur(10px)",
+        background: !openFeed ? 'rgba(1, 2, 12, 0.2)' : 'rgba(1, 2, 12, 0)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
         zIndex: 1001,
-        position: "fixed",
-        top: "0",
-        left: "0",
-        transition: "ease-in-out 220ms",
+        position: 'fixed',
+        top: '0',
+        left: '0',
+        transition: 'ease-in-out 220ms',
       }}
     >
-      <Container openfeed={openFeed ? "true" : "false"} ref={scrollRef}>
+      <Container openfeed={openFeed ? 'true' : 'false'} ref={scrollRef}>
         <Header>
-          <div style={{ width: "30px" }}></div>
+          <div style={{ width: '30px' }}></div>
           <div>
-            <h3 style={{ color: "#ccc", margin: 0, padding: 0 }}>Feeds</h3>
+            <h2
+              style={{
+                color: '#ccc',
+                margin: 0,
+                padding: 0,
+                letterSpacing: '0.5px',
+              }}
+            >
+              Feeds
+            </h2>
           </div>
           <div
             onClick={() => {
               setOpenFeed(false);
               setTimeout(() => {
-                navigate("/feeds");
+                navigate('/feeds');
               }, 300);
             }}
             style={{
-              padding: "5px",
+              padding: '5px',
 
               zIndex: 1000,
             }}
@@ -193,17 +188,16 @@ export const OpenedFeed = () => {
 
         {feedObjs?.map((item, index) => {
           return (
-            <div key={index}>
+            <div key={index} style={{ position: 'relative', right: '5px' }}>
               <FeedCard
                 goToFeeds={() => {
                   setOpenFeed(false);
                   setTimeout(() => {
-                    navigate("/feeds");
+                    navigate('/feeds');
                   }, 300);
                 }}
                 item={item}
               />
-              {openReviews && <Reviews item={item} />}
             </div>
           );
         })}
@@ -211,6 +205,8 @@ export const OpenedFeed = () => {
     </div>
   );
 };
+
+export default OpenedFeed;
 
 const Container = styled.div`
   width: 100vw;
@@ -221,7 +217,7 @@ const Container = styled.div`
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   transform: translateY(
-    ${(props) => (props.openfeed === "true" ? 0 : "100vh")}
+    ${(props) => (props.openfeed === 'true' ? 0 : '100vh')}
   );
   transition: ease-in 300ms;
   display: flex;

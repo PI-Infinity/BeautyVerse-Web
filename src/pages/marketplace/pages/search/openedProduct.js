@@ -6,7 +6,7 @@ import styled from 'styled-components';
 import { IoMdArrowDropdown } from 'react-icons/io';
 import { ProductItem } from '../../../marketplace/pages/product/productItem';
 
-export const OpenedProductFromSearch = () => {
+const OpenedProductFromSearch = () => {
   // navigate
   const navigate = useNavigate();
   // location
@@ -98,6 +98,8 @@ export const OpenedProductFromSearch = () => {
     </div>
   );
 };
+
+export default OpenedProductFromSearch;
 
 const Container = styled.div`
   width: 100vw;

@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from "react";
-import styled from "styled-components";
-import { useSelector } from "react-redux";
+import React, { useState, useRef, useEffect } from 'react';
+import styled from 'styled-components';
+import { useSelector } from 'react-redux';
+import { BounceLoader } from 'react-spinners';
 
 const Container = styled.div`
   display: flex;
@@ -38,8 +39,8 @@ const DotsContainer = styled.div`
 `;
 
 const Dot = styled.div`
-  width: ${(props) => (props.active === "true" ? "9px" : "7px")};
-  height: ${(props) => (props.active === "true" ? "9px" : "7px")};
+  width: ${(props) => (props.active === 'true' ? '9px' : '7px')};
+  height: ${(props) => (props.active === 'true' ? '9px' : '7px')};
   border-radius: 50%;
   background-color: ${(props) => props.color};
 `;
@@ -62,11 +63,11 @@ const Gallery = ({ product }) => {
       const offset = index * window.innerWidth;
       scrollView.scrollTo({
         left: offset,
-        behavior: "smooth",
+        behavior: 'smooth',
       });
     };
-    scrollView.addEventListener("scrollend", handleScrollEnd);
-    return () => scrollView.removeEventListener("scrollend", handleScrollEnd);
+    scrollView.addEventListener('scrollend', handleScrollEnd);
+    return () => scrollView.removeEventListener('scrollend', handleScrollEnd);
   }, []);
 
   const [opacity, setOpacity] = useState(true);
@@ -83,10 +84,11 @@ const Gallery = ({ product }) => {
           alt=""
           style={{
             opacity: opacity ? 0 : 1,
-            transition: "ease-in 700ms",
-            objectFit: "cover",
+            transition: 'ease-in 700ms',
+            objectFit: 'cover',
           }}
         />
+
         {product?.gallery?.map((item, index) => {
           if (index !== product?.cover)
             return (
@@ -94,11 +96,12 @@ const Gallery = ({ product }) => {
                 src={item.url}
                 alt=""
                 key={item.url}
-                style={{ objectFit: "cover" }}
+                style={{ objectFit: 'cover' }}
               />
             );
         })}
       </ScrollView>
+
       {product?.gallery?.length > 1 && (
         <DotsContainer>
           {product?.gallery?.map((item, index) => {
@@ -106,7 +109,7 @@ const Gallery = ({ product }) => {
               return (
                 <Dot
                   key={index}
-                  active={activeIndex === index ? "true" : "false"}
+                  active={activeIndex === index ? 'true' : 'false'}
                   color="#ccc"
                 />
               );

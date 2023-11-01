@@ -1,28 +1,28 @@
-import React, { useEffect, useState } from "react";
-import styled from "styled-components";
-import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
+import React, { useEffect, useState } from 'react';
+import styled from 'styled-components';
+import { useDispatch, useSelector } from 'react-redux';
+import axios from 'axios';
 import {
   useLocation,
   useNavigate,
   useOutletContext,
   Outlet,
-} from "react-router-dom";
-import { setLoading, setScrollYUser } from "../../../redux/user";
-import { BounceLoader } from "react-spinners";
-import { ProceduresOptions } from "../../../datas/registerDatas";
-import { setOpenedProduct } from "../../../redux/marketplace";
-import { Search } from "./showroomSearch";
-import { AddList, setSearch } from "../../../redux/showroom";
-import { Filter } from "./showroomFilter";
+} from 'react-router-dom';
+import { setLoading, setScrollYUser } from '../../../redux/user';
+import { BounceLoader } from 'react-spinners';
+import { ProceduresOptions } from '../../../datas/registerDatas';
+import { setOpenedProduct } from '../../../redux/marketplace';
+import { Search } from './showroomSearch';
+import { AddList, setSearch } from '../../../redux/showroom';
+import { Filter } from './showroomFilter';
 import {
   setPage,
   setList,
   setCategoriesList,
   setBrandsList,
-} from "../../../redux/showroom";
+} from '../../../redux/showroom';
 
-export const Showroom = () => {
+const Showroom = () => {
   // get outlet props context
   const [targetUser] = useOutletContext();
 
@@ -65,26 +65,26 @@ export const Showroom = () => {
       try {
         const response = await axios.get(
           backendUrl +
-            "/api/v1/marketplace/" +
+            '/api/v1/marketplace/' +
             targetUser._id +
-            "/products?page=1&limit=6&search=" +
+            '/products?page=1&limit=6&search=' +
             search +
-            "&categories=" +
+            '&categories=' +
             categoryFilter +
-            "&brand=" +
+            '&brand=' +
             brand +
-            "&discounts=" +
+            '&discounts=' +
             discounts +
-            "&minPrice=" +
+            '&minPrice=' +
             minPrice +
-            "&maxPrice=" +
+            '&maxPrice=' +
             maxPrice +
-            "&sex=" +
+            '&sex=' +
             sex +
-            "&type=" +
+            '&type=' +
             type +
-            "&from=showroom" +
-            "&check="
+            '&from=showroom' +
+            '&check='
         );
         if (response.data.data.products) {
           dispatch(setPage(1));
@@ -100,11 +100,11 @@ export const Showroom = () => {
     };
 
     try {
-      if (targetUser) {
+      if (targetUser?._id) {
         GetUserProducts();
       }
     } catch (error) {
-      console.log("Error in useEffect:", error);
+      console.log('Error in useEffect:', error);
     }
   }, [
     // rerenderProducts,
@@ -116,6 +116,7 @@ export const Showroom = () => {
     maxPrice,
     brand,
     discounts,
+    targetUser,
   ]);
 
   const AddUserProducts = async (p) => {
@@ -123,26 +124,26 @@ export const Showroom = () => {
     try {
       const response = await axios.get(
         backendUrl +
-          "/api/v1/marketplace/" +
+          '/api/v1/marketplace/' +
           targetUser._id +
           `/products?page=${p}&limit=6&search=` +
           search +
-          "&categories=" +
+          '&categories=' +
           categoryFilter +
-          "&brand=" +
+          '&brand=' +
           brand +
-          "&discounts=" +
+          '&discounts=' +
           discounts +
-          "&minPrice=" +
+          '&minPrice=' +
           minPrice +
-          "&maxPrice=" +
+          '&maxPrice=' +
           maxPrice +
-          "&sex=" +
+          '&sex=' +
           sex +
-          "&type=" +
+          '&type=' +
           type +
-          "&from=showroom" +
-          "&check="
+          '&from=showroom' +
+          '&check='
       );
       if (response.data.data.products) {
         const newProducts = response.data.data.products;
@@ -152,7 +153,7 @@ export const Showroom = () => {
         dispatch(setPage(p));
       }
     } catch (error) {
-      console.log("Error fetching user products:", error);
+      console.log('Error fetching user products:', error);
     }
   };
 
@@ -168,10 +169,10 @@ export const Showroom = () => {
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener('scroll', handleScroll);
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener('scroll', handleScroll);
     };
   }, [
     search,
@@ -189,10 +190,10 @@ export const Showroom = () => {
   // badge options
 
   // const [total, setTotal] = useState(0);
-  let minPriceTotal = minPrice === "" ? 0 : 1;
-  let maxPriceTotal = maxPrice === "" ? 0 : 1;
-  let typeTotal = type === "everyone" ? 0 : 1;
-  let sexTotal = sex === "all" ? 0 : 1;
+  let minPriceTotal = minPrice === '' ? 0 : 1;
+  let maxPriceTotal = maxPrice === '' ? 0 : 1;
+  let typeTotal = type === 'everyone' ? 0 : 1;
+  let sexTotal = sex === 'all' ? 0 : 1;
   let brandTotal = brand.length < 1 ? 0 : 1;
   let categoryTotal = categoryFilter?.length < 1 ? 0 : 1;
   let discountsTotal = discounts?.length < 1 ? 0 : 1;
@@ -214,7 +215,7 @@ export const Showroom = () => {
 
   return (
     <Container>
-      <div style={{ margin: "8px 0", width: "100%" }}>
+      <div style={{ margin: '8px 0', width: '100%' }}>
         <Search
           search={search}
           setSearch={setSearch}
@@ -227,10 +228,10 @@ export const Showroom = () => {
       <>
         <div
           style={{
-            width: "100%",
-            position: "relative",
-            display: "flex",
-            justifyContent: "center",
+            width: '100%',
+            position: 'relative',
+            display: 'flex',
+            justifyContent: 'center',
           }}
         >
           <Filter
@@ -252,14 +253,14 @@ export const Showroom = () => {
       {productsLoading ? (
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "100vw",
-            height: "50vh",
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100vw',
+            height: '37vh',
           }}
         >
-          <BounceLoader color={"#f866b1"} loading={productsLoading} size={50} />
+          <BounceLoader color={'#f866b1'} loading={productsLoading} size={50} />
         </div>
       ) : (
         <ListContainer>
@@ -273,11 +274,11 @@ export const Showroom = () => {
                 key={index}
                 onClick={() => {
                   dispatch(setOpenedProduct(item));
-                  if (location.pathname?.startsWith("/profile")) {
+                  if (location.pathname?.startsWith('/profile')) {
                     navigate(`/profile/showroom/${item._id}`);
                   } else {
                     navigate(
-                      `/${location.pathname.split("/")[1]}/user/${
+                      `/${location.pathname.split('/')[1]}/user/${
                         targetUser?._id
                       }/showroom/${item._id}`
                     );
@@ -286,52 +287,52 @@ export const Showroom = () => {
               >
                 <div
                   style={{
-                    width: "32vw",
+                    width: '32vw',
                     aspectRatio: 1,
-                    borderRadius: "15px",
-                    objectFit: "cover",
-                    background: "rgba(255,255,255,0.05)",
-                    overflow: "hidden",
+                    borderRadius: '15px',
+                    objectFit: 'cover',
+                    background: 'rgba(255,255,255,0.05)',
+                    overflow: 'hidden',
                   }}
                 >
                   <img
                     src={item?.gallery[0]?.url}
                     style={{
-                      width: "100%",
+                      width: '100%',
                       aspectRatio: 1,
-                      borderRadius: "15px",
-                      objectFit: "cover",
+                      borderRadius: '15px',
+                      objectFit: 'cover',
                       opacity: opacity ? 1 : 0,
-                      transition: "ease-in 500ms",
+                      transition: 'ease-in 500ms',
                     }}
                     onLoad={() => setOpacity(true)}
                   />
                 </div>
                 <div
                   style={{
-                    height: "100%",
-                    color: "#ccc",
-                    letterSpacing: "0.5px",
-                    width: "60vw",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
+                    height: '100%',
+                    color: '#ccc',
+                    letterSpacing: '0.5px',
+                    width: '60vw',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
                   }}
                 >
-                  <h3 style={{ margin: "8px 0", fontSize: "16px" }}>
+                  <h3 style={{ margin: '8px 0', fontSize: '16px' }}>
                     {item?.title}
                   </h3>
-                  <p style={{ margin: "8px 0", fontSize: "14px" }}>
+                  <p style={{ margin: '8px 0', fontSize: '14px' }}>
                     {item.brand}
                   </p>
-                  <p style={{ margin: "8px 0", fontSize: "14px" }}>{label}</p>
+                  <p style={{ margin: '8px 0', fontSize: '14px' }}>{label}</p>
                   <div
-                    style={{ display: "flex", gap: "10px", fontSize: "16px" }}
+                    style={{ display: 'flex', gap: '10px', fontSize: '16px' }}
                   >
                     <p
                       style={{
-                        margin: "8px 0",
-                        fontWeight: "bold",
-                        color: "#f866b1",
+                        margin: '8px 0',
+                        fontWeight: 'bold',
+                        color: '#f866b1',
                       }}
                     >
                       {item?.sale
@@ -339,19 +340,19 @@ export const Showroom = () => {
                             item?.price -
                             (item.price / 100) * item.sale
                           ).toFixed(2)
-                        : item.price}{" "}
-                      {item.owner.currency}
+                        : item.price}{' '}
+                      {item?.owner?.currency}
                     </p>
                     {item?.sale && (
                       <p
                         style={{
-                          margin: "8px 0",
-                          textDecorationLine: "line-through",
-                          color: "#888",
-                          fontWeight: "bold",
+                          margin: '8px 0',
+                          textDecorationLine: 'line-through',
+                          color: '#888',
+                          fontWeight: 'bold',
                         }}
                       >
-                        {item.price} {item.owner.currency}
+                        {item?.price} {item?.owner.currency}
                       </p>
                     )}
                   </div>
@@ -365,6 +366,8 @@ export const Showroom = () => {
     </Container>
   );
 };
+
+export default Showroom;
 
 const Container = styled.div`
   width: 100vw;

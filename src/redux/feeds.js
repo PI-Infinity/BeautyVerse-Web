@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   loading: true,
@@ -8,10 +8,11 @@ const initialState = {
   followingsPage: 1,
   scrollY: 0,
   rerenderFeeds: false,
+  rerenderUserFeeds: false,
 };
 
 export const Feeds = createSlice({
-  name: "Feeds",
+  name: 'Feeds',
   initialState,
 
   reducers: {
@@ -78,6 +79,9 @@ export const Feeds = createSlice({
     setRerenderFeeds: (state, action) => {
       state.rerenderFeeds = !state.rerenderFeeds;
     },
+    setRerenderUserFeeds: (state, action) => {
+      state.rerenderUserFeeds = !state.rerenderFeeds;
+    },
   },
 });
 
@@ -90,5 +94,6 @@ export const {
   AddFollowingsFeeds,
   setScrollYFeeds,
   setRerenderFeeds,
+  setRerenderUserFeeds,
 } = Feeds.actions;
 export default Feeds.reducer;

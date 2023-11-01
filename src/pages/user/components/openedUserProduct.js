@@ -6,7 +6,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { ProductItem } from '../../marketplace/pages/product/productItem';
 
-export const OpenedUserProduct = () => {
+const OpenedUserProduct = () => {
   // navigate
   const navigate = useNavigate();
   // location
@@ -117,6 +117,8 @@ export const OpenedUserProduct = () => {
     </div>
   );
 };
+
+export default OpenedUserProduct;
 
 const Container = styled.div`
   width: 100vw;

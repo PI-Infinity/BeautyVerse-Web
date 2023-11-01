@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 
 export const FadeInVideo = ({ src }) => {
   const [loaded, setLoaded] = useState(false);
@@ -16,7 +16,8 @@ export const FadeInVideo = ({ src }) => {
       loop
       style={{
         opacity: loaded ? 1 : 0,
-        transition: "opacity 500ms ease-in",
+        transition: 'opacity 500ms ease-in',
+        objectFit: 'cover',
       }}
     >
       <source src={src} type="video/mp4" />

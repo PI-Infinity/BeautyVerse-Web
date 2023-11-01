@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
-import styled, { keyframes, css } from "styled-components";
-import { HiBadgeCheck, HiLocationMarker, HiUsers } from "react-icons/hi";
-import { FaRegStar, FaHeart } from "react-icons/fa";
-import { FaUser } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
-import { setTargetUser } from "../../../redux/user";
-import { useDispatch } from "react-redux";
-import { VscVerifiedFilled } from "react-icons/vsc";
+import React, { useState, useEffect } from 'react';
+import styled, { keyframes, css } from 'styled-components';
+import { HiBadgeCheck, HiLocationMarker, HiUsers } from 'react-icons/hi';
+import { FaRegStar, FaHeart } from 'react-icons/fa';
+import { FaUser } from 'react-icons/fa';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { setTargetUser } from '../../../redux/user';
+import { useDispatch } from 'react-redux';
+import { VscVerifiedFilled } from 'react-icons/vsc';
+import { setBackPath } from '../../../redux/app';
 
 export const Card = ({ item }) => {
   // capitalize first letters function
@@ -19,12 +20,12 @@ export const Card = ({ item }) => {
   const name = capitalizeFirstLetter(item?.name);
 
   let type;
-  if (item.type === "specialist") {
+  if (item.type === 'specialist') {
     type = t;
-  } else if (item.type === "shop") {
+  } else if (item.type === 'shop') {
     type = t;
   } else {
-    type = "Beauty Salon";
+    type = 'Beauty Salon';
   }
 
   // navigate
@@ -32,6 +33,9 @@ export const Card = ({ item }) => {
 
   // redux dispatch
   const dispatch = useDispatch();
+
+  // location
+  const location = useLocation();
 
   // page animation opacity
   const [opacity, setOpacity] = useState(false);
@@ -43,12 +47,12 @@ export const Card = ({ item }) => {
   return (
     <Container>
       <NameContainer>
-        {item.subscription.status === "active" && (
+        {item.subscription.status === 'active' && (
           <div
             style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
             }}
           >
             <VscVerifiedFilled size={16} color="#f866b1" />
@@ -57,23 +61,28 @@ export const Card = ({ item }) => {
 
         <h3
           style={{
-            color: "#ccc",
+            color: '#ccc',
             margin: 0,
-            fontSize: "16px",
-            letterSpacing: "0.5px",
+            fontSize: '16px',
+            letterSpacing: '0.5px',
           }}
         >
           {name}
         </h3>
       </NameContainer>
       <ImageContainer
-        cover={item.cover?.length > 0 ? "true" : "false"}
+        cover={item.cover?.length > 0 ? 'true' : 'false'}
         onClick={() => {
           dispatch(setTargetUser(item));
           navigate(
-            `/cards/user/${item._id}/${
-              item.type === "shop" ? "showroom" : "feeds"
-            }`
+            `/user/${item._id}/${item.type === 'shop' ? 'showroom' : 'feeds'}`
+          );
+          dispatch(
+            setBackPath({
+              path: [location.pathname],
+              data: [],
+              activeLevel: 0,
+            })
           );
         }}
       >
@@ -83,44 +92,44 @@ export const Card = ({ item }) => {
             src={item.cover}
             width="100%"
             style={{
-              objectFit: "cover",
+              objectFit: 'cover',
               aspectRatio: 1,
-              borderRadius: "10px",
+              borderRadius: '10px',
               opacity: opacity ? 1 : 0,
-              transition: "ease-in 500ms",
+              transition: 'ease-in 500ms',
             }}
           />
         ) : (
           <FaUser size={80} color="#aaa" />
         )}
       </ImageContainer>
-      <h4 style={{ color: "#ccc", margin: 0, letterSpacing: "0.5px" }}>
+      <h4 style={{ color: '#ccc', margin: 0, letterSpacing: '0.5px' }}>
         {type}
       </h4>
       <div
         style={{
-          width: "100%",
-          display: "flex",
-          gap: "4px",
-          alignItems: "center",
-          overflow: "hidden",
-          whiteSpace: "nowrap",
+          width: '100%',
+          display: 'flex',
+          gap: '4px',
+          alignItems: 'center',
+          overflow: 'hidden',
+          whiteSpace: 'nowrap',
         }}
       >
         <HiLocationMarker size={14} color="#f866b1" />
 
-        <div style={{ width: "80%" }}>
+        <div style={{ width: '80%' }}>
           <span
             style={{
-              color: "#ccc",
+              color: '#ccc',
               margin: 0,
-              fontWeight: "normal",
-              fontSize: "14px",
+              fontWeight: 'normal',
+              fontSize: '14px',
               // whiteSpace: "nowrap",
             }}
           >
-            {item.address[0]?.city.replace("'", "")}
-            {item.address[0]?.street && " - "}
+            {item.address[0]?.city.replace("'", '')}
+            {item.address[0]?.street && ' - '}
             {item.address[0]?.street}
           </span>
         </div>
@@ -209,7 +218,7 @@ const ImageContainer = styled.div`
   align-items: center;
   justify-content: center;
   ${(props) =>
-    props.cover === "true" &&
+    props.cover === 'true' &&
     css`
       animation: ${pulse} 1.5s ease-in-out infinite;
     `}

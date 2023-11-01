@@ -30,27 +30,30 @@ export const Configs = ({ openConfig, setOpenConfig, currentUser }) => {
       // Check if the current user and the notifications list exist
       if (currentUser && currentUser?.notifications) {
         // Filter out the deleted notification
-        currentUser.notifications = currentUser?.notifications.filter(
+        console.log(currentUser.notifications);
+        const updatedNotifications = currentUser?.notifications.filter(
           (notification) => notification?._id !== id
         );
-
+        console.log(updatedNotifications);
         // Save the updated user back to local storage
         localStorage.setItem(
           'Beautyverse:currentUser',
-          JSON.stringify(currentUser)
+          JSON.stringify({
+            ...currentUser,
+            notifications: updatedNotifications,
+          })
         );
-        dispatch(setRerenderNotifications());
       }
-
-      setTransition(true);
-      setTimeout(() => {
-        setOpenConfig({ active: false, id: null });
-      }, 300);
 
       // Send a request to the backend to delete the notification
       await axios.delete(
         `${backendUrl}/api/v1/users/${currentUser?._id}/notifications/${id}`
       );
+      setTransition(true);
+      setTimeout(() => {
+        setOpenConfig({ active: false, id: null });
+        dispatch(setRerenderNotifications());
+      }, 300);
     } catch (error) {
       console.error(
         error?.response?.data?.message ||
@@ -72,7 +75,7 @@ export const Configs = ({ openConfig, setOpenConfig, currentUser }) => {
           ? 'rgba(1, 2, 12, 0.2)'
           : 'rgba(1, 2, 12, 0)',
         backdropFilter: 'blur(10px)',
-        webkitBackdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
         zIndex: 1001,
         position: 'fixed',
         top: '0',

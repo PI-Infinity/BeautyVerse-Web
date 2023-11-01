@@ -5,8 +5,9 @@ import { useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 import styled from 'styled-components';
 import { IoMdArrowDropdown } from 'react-icons/io';
 import { FeedCard } from '../../feeds/components/feedCard';
+import { Reviews } from '../../feeds/components/reviews';
 
-export const OpenedUserFeedNotifications = () => {
+const OpenedUserFeedNotifications = () => {
   // navigate
   const navigate = useNavigate();
   // location
@@ -15,30 +16,43 @@ export const OpenedUserFeedNotifications = () => {
   let parts = location.pathname.split('/');
   // feed id
   let feedId = parts[3];
-  console.log(feedId);
+
+  // with this state feeds open with scale and opacity
+  const [openFeed, setOpenFeed] = useState(false);
+  useEffect(() => {
+    // Disable body scroll when the component is open
+    if (openFeed) {
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      // Re-enable body scroll when the component is closed
+      document.body.style.overflow = 'visible';
+    };
+  }, [openFeed]);
+
   // define feed context
   const activeFeedObj = useSelector((state) => state.storeFeed.openedFeed);
 
   // if outlet context isnt defined get feed from db. this usually happens when user loads feed by link and data does not come from Outlet context;
-  const [feedObj, setFeedObj] = useState(null);
+  const [feedObjs, setFeedObjs] = useState([]);
   const backendUrl = useSelector((state) => state.storeApp.backendUrl);
 
   const GetFeed = async () => {
     try {
       const response = await axios.get(backendUrl + '/api/v1/feeds/' + feedId);
-      setFeedObj(response.data.data.feed);
+      setFeedObjs((prev) => [...prev, response.data.data.feed]);
     } catch (error) {
       console.log(error.response.data.message);
     }
   };
 
-  // with this state feeds open with scale and opacity
-  const [openFeed, setOpenFeed] = useState(false);
-
   useEffect(() => {
     setOpenFeed(true);
     if (!activeFeedObj) {
       GetFeed();
+    } else {
+      setFeedObjs((prev) => [...prev, activeFeedObj]);
     }
   }, []);
 
@@ -46,7 +60,7 @@ export const OpenedUserFeedNotifications = () => {
   if (activeFeedObj) {
     feed = activeFeedObj;
   } else {
-    feed = feedObj;
+    feed = feedObjs[0];
   }
 
   return (
@@ -97,6 +111,8 @@ export const OpenedUserFeedNotifications = () => {
     </div>
   );
 };
+
+export default OpenedUserFeedNotifications;
 
 const Container = styled.div`
   width: 100vw;

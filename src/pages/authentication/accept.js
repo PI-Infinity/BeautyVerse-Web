@@ -1,12 +1,17 @@
-import { Checkbox, FormControlLabel, Button, Alert } from "@mui/material";
-import axios from "axios";
-import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import styled from "styled-components";
-import SimpleBackdrop from "../../components/backdrop";
+import { Checkbox, FormControlLabel, Button, Alert } from '@mui/material';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+import SimpleBackdrop from '../../components/backDrop';
+import { setCurrentUser } from '../../redux/user';
+import {
+  setNotifications,
+  setUnreadNotidications,
+} from '../../redux/notifications';
 
-export const Accept = () => {
+const Accept = () => {
   // accept state
   const [accept, setAccept] = useState(false);
   const [acceptP, setAcceptP] = useState(false);
@@ -14,11 +19,14 @@ export const Accept = () => {
   // navigate
   const navigate = useNavigate();
 
+  // dispatch
+  const dispatch = useDispatch();
+
   // current user
   const currentUser = useSelector((state) => state.storeAuth.currentUser);
   useEffect(() => {
     if (!currentUser) {
-      navigate("/login");
+      navigate('/login');
     }
   }, []);
   // user type
@@ -28,7 +36,7 @@ export const Accept = () => {
   const [loading, setLoading] = useState(false);
 
   // alert message
-  const [alert, setAlert] = useState({ active: false, text: "", type: "" });
+  const [alert, setAlert] = useState({ active: false, text: '', type: '' });
 
   // backend url
   const backendUrl = useSelector((state) => state.storeApp.backendUrl);
@@ -41,31 +49,46 @@ export const Accept = () => {
     if (accept && acceptP) {
       try {
         const response = await axios.patch(
-          backendUrl + "/api/v1/users/" + currentUser._id,
+          backendUrl + '/api/v1/users/' + currentUser._id,
           {
             type: type,
             acceptPrivacy: true,
             acceptTerms: true,
             active: true,
-            registerStage: "done",
+            registerStage: 'done',
             notifications: [
               {
-                senderId: "Beautyverse",
-                text: "Welcome Beautyverse",
+                senderId: 'Beautyverse',
+                text: 'Welcome Beautyverse',
                 date: new Date(),
-                type: "welcome",
-                status: "unread",
-                feed: "",
+                type: 'welcome',
+                status: 'unread',
+                feed: '',
               },
             ],
             verifyedEmail: true,
           }
         );
         localStorage.setItem(
-          "Beautyverse:currentUser",
+          'Beautyverse:currentUser',
           JSON.stringify(response.data.data.updatedUser)
         );
-        navigate("/feeds");
+        const notifs = response.data.data.updatedUser?.notifications?.filter(
+          (item) => item
+        );
+        dispatch(
+          setCurrentUser({
+            ...response.data.data.updatedUser,
+            notifications: notifs,
+          })
+        );
+        dispatch(setNotifications(notifs));
+        dispatch(
+          setUnreadNotidications(
+            notifs?.filter((item) => item?.status === 'unread')
+          )
+        );
+        navigate('/feeds');
         setLoading(false);
       } catch (error) {
         console.log(error);
@@ -74,8 +97,8 @@ export const Accept = () => {
       setLoading(false);
       setAlert({
         status: true,
-        text: "You have to accept Tearms & Rules and Privacy Police to confirm Register",
-        type: "error",
+        text: 'You have to accept Tearms & Rules and Privacy Police to confirm Register',
+        type: 'error',
       });
     }
   };
@@ -86,7 +109,7 @@ export const Accept = () => {
     setTransition(true);
   }, []);
   return (
-    <Container transition={transition ? "true" : "false"}>
+    <Container transition={transition ? 'true' : 'false'}>
       <Inputs>
         <FormControlLabel
           control={
@@ -94,14 +117,14 @@ export const Accept = () => {
               checked={accept}
               onChange={() => setAccept(!accept)}
               sx={{
-                color: "#f866b1",
-                "&.Mui-checked": { color: "#f866b1" },
+                color: '#f866b1',
+                '&.Mui-checked': { color: '#f866b1' },
               }}
             />
           }
           label="Accept Terms & Rules"
           labelPlacement="end"
-          style={{ color: "#ccc", letterSpacing: "0.5px" }}
+          style={{ color: '#ccc', letterSpacing: '0.5px' }}
         />
 
         <FormControlLabel
@@ -110,28 +133,28 @@ export const Accept = () => {
               checked={acceptP}
               onChange={() => setAcceptP(!acceptP)}
               sx={{
-                color: "#f866b1",
-                "&.Mui-checked": { color: "#f866b1" },
+                color: '#f866b1',
+                '&.Mui-checked': { color: '#f866b1' },
               }}
             />
           }
           label="Accept Privacy"
           labelPlacement="end"
-          style={{ color: "#ccc", letterSpacing: "0.5px" }}
+          style={{ color: '#ccc', letterSpacing: '0.5px' }}
         />
         <div
           style={{
-            width: "100%",
-            display: "flex",
-            justifyContent: "center",
-            marginTop: "20px",
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            marginTop: '20px',
           }}
         >
           <Button
             className="button"
             variant="contained"
-            style={{ backgroundColor: "#f866b1", color: "white" }}
-            sx={{ width: "80%", borderRadius: "50px" }}
+            style={{ backgroundColor: '#f866b1', color: 'white' }}
+            sx={{ width: '80%', borderRadius: '50px' }}
             onClick={Confirm}
             //   {...props}
           >
@@ -142,11 +165,11 @@ export const Accept = () => {
       <SimpleBackdrop open={loading} setOpen={setLoading} />
       {alert?.status && (
         <Alert
-          onClick={() => setAlert({ type: "", text: "", status: false })}
+          onClick={() => setAlert({ type: '', text: '', status: false })}
           style={{
-            position: "absolute",
-            bottom: "10px",
-            width: "60vw",
+            position: 'absolute',
+            bottom: '10px',
+            width: '60vw',
           }}
           severity={alert?.type}
         >
@@ -157,6 +180,8 @@ export const Accept = () => {
   );
 };
 
+export default Accept;
+
 const Container = styled.div`
   height: 80vh;
   width: 100vw;
@@ -165,8 +190,8 @@ const Container = styled.div`
   align-items: center;
   justify-content: center;
   position: relative;
-  right: ${(props) => (props.transition === "true" ? 0 : "-100vw")};
-  opacity: ${(props) => (props.transition === "true" ? "1" : "0")};
+  right: ${(props) => (props.transition === 'true' ? 0 : '-100vw')};
+  opacity: ${(props) => (props.transition === 'true' ? '1' : '0')};
   transition: ease-in-out 200ms;
 `;
 const Inputs = styled.div`

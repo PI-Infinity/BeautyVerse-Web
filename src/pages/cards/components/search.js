@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
-import styled from "styled-components";
-import { BsFillSearchHeartFill } from "react-icons/bs";
-import { MdClear } from "react-icons/md";
-import { ProceduresOptions } from "../../../datas/registerDatas";
-import { setSearch } from "../../../redux/cards";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import { BsFillSearchHeartFill } from 'react-icons/bs';
+import { MdClear } from 'react-icons/md';
+import { ProceduresOptions } from '../../../datas/registerDatas';
+import { setSearch } from '../../../redux/cards';
+import { useDispatch, useSelector } from 'react-redux';
 
 export const Search = () => {
   // redux dispatch
@@ -25,13 +25,15 @@ export const Search = () => {
   return (
     <div
       style={{
-        width: animation ? "100%" : "30px",
-        transition: "ease-in 200ms",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
+        width: animation ? '100%' : '30px',
+        transition: 'ease-in 200ms',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
         opacity: animation ? 1 : 0,
+        boxSizing: 'border-box',
+        overflow: 'hidden',
       }}
     >
       <SearchContainer>
@@ -46,7 +48,7 @@ export const Search = () => {
           <MdClear
             size={18}
             color="red"
-            onClick={() => dispatch(setSearch(""))}
+            onClick={() => dispatch(setSearch(''))}
           />
         )}
       </SearchContainer>
@@ -61,7 +63,7 @@ export const Search = () => {
             procedures?.filter((i) =>
               i.value?.toLowerCase().includes(search.toLowerCase())
             )?.length < 2
-              ? "50px"
+              ? '50px'
               : search?.length > 0 &&
                 procedures?.filter((i) =>
                   i.value?.toLowerCase().includes(search.toLowerCase())
@@ -69,13 +71,13 @@ export const Search = () => {
                 procedures?.filter((i) =>
                   i.value?.toLowerCase().includes(search.toLowerCase())
                 )?.length < 3
-              ? "100px"
+              ? '100px'
               : search?.length > 0 &&
                 procedures?.filter((i) =>
                   i.value?.toLowerCase().includes(search.toLowerCase())
                 )?.length > 3
-              ? "150px"
-              : "0",
+              ? '150px'
+              : '0',
         }}
       >
         {procedures
@@ -105,6 +107,7 @@ const SearchContainer = styled.div`
   display: flex;
   align-items: center;
   margin-bottom: 15px;
+  overflow: hidden;
 
   @media only screen and (max-width: 600px) {
     margin-bottom: 0px;
@@ -141,6 +144,7 @@ const AutoCompleteList = styled.div`
   height: ${(props) => props.height};
   max-height: 150px;
   overflow-y: scroll;
+  overflow-x: hidden;
   border-radius: 50px;
   padding: 0;
   border: none;

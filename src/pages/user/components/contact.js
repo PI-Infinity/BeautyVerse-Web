@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from "react";
-import styled from "styled-components";
-import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
-import { useOutletContext } from "react-router-dom";
-import { setLoading } from "../../../redux/user";
-import { BsFillTelephoneFill, BsBrowserChrome, BsTiktok } from "react-icons/bs";
-import { MdEmail } from "react-icons/md";
-import GoogleMapReact from "google-map-react";
-import { HiLocationMarker } from "react-icons/hi";
-import { BiLogoFacebook, BiLogoInstagramAlt } from "react-icons/bi";
+import React, { useEffect, useState } from 'react';
+import styled from 'styled-components';
+import { useDispatch, useSelector } from 'react-redux';
+import { useOutletContext } from 'react-router-dom';
+import { setLoading } from '../../../redux/user';
+import { BsFillTelephoneFill, BsBrowserChrome, BsTiktok } from 'react-icons/bs';
+import { MdEmail } from 'react-icons/md';
+import GoogleMapReact from 'google-map-react';
+import { HiLocationMarker } from 'react-icons/hi';
+import { BiLogoFacebook, BiLogoInstagramAlt } from 'react-icons/bi';
+import GoogleMap from './googleMap';
 
-export const Contact = () => {
+const Contact = () => {
   // redux dispatch
   const dispatch = useDispatch();
   // get outlet props context
@@ -46,32 +46,34 @@ export const Contact = () => {
   return (
     <Container>
       <Links>
-        <div>
-          <div style={{ width: "30px", height: "30px" }}>
-            <BsFillTelephoneFill color="#ccc" size={15} />
+        {targetUser?.phone?.phone?.length > 0 && (
+          <div>
+            <div style={{ width: '30px', height: '30px' }}>
+              <BsFillTelephoneFill color="#ccc" size={15} />
+            </div>
+            <a
+              style={{
+                textDecoration: 'none',
+                color: 'inherit',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+              }}
+              href={`tel:${targetUser?.phone?.phone}`}
+            >
+              {targetUser?.phone?.phone}
+            </a>
           </div>
-          <a
-            style={{
-              textDecoration: "none",
-              color: "inherit",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-            }}
-            href={`tel:${targetUser?.phone?.phone}`}
-          >
-            {targetUser?.phone?.phone}
-          </a>
-        </div>
+        )}
         <div>
-          <div style={{ width: "30px", height: "30px" }}>
+          <div style={{ width: '30px', height: '30px' }}>
             <MdEmail color="#ccc" size={18} />
           </div>
           <a
             style={{
-              textDecoration: "none",
-              color: "inherit",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
+              textDecoration: 'none',
+              color: 'inherit',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
             }}
             href={`mailto:${targetUser?.email}`}
           >
@@ -80,15 +82,15 @@ export const Contact = () => {
         </div>
         {targetUser?.media?.web && (
           <div>
-            <div style={{ width: "30px", height: "30px" }}>
+            <div style={{ width: '30px', height: '30px' }}>
               <BsBrowserChrome color="#ccc" size={16} />
             </div>
             <a
               style={{
-                textDecoration: "none",
-                color: "inherit",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
+                textDecoration: 'none',
+                color: 'inherit',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
               }}
               href={`https://${targetUser.media?.web}`}
             >
@@ -98,15 +100,15 @@ export const Contact = () => {
         )}
         {targetUser?.media?.facebook && (
           <div>
-            <div style={{ width: "30px", height: "30px" }}>
+            <div style={{ width: '30px', height: '30px' }}>
               <BiLogoFacebook color="#ccc" size={22} />
             </div>
             <a
               style={{
-                textDecoration: "none",
-                color: "inherit",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
+                textDecoration: 'none',
+                color: 'inherit',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
               }}
               href={`fb://profile/:${targetUser?.media?.email}`}
             >
@@ -116,15 +118,15 @@ export const Contact = () => {
         )}
         {targetUser?.media?.instagram && (
           <div>
-            <div style={{ width: "30px", height: "30px" }}>
+            <div style={{ width: '30px', height: '30px' }}>
               <BiLogoInstagramAlt color="#ccc" size={22} />
             </div>
             <a
               style={{
-                textDecoration: "none",
-                color: "inherit",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
+                textDecoration: 'none',
+                color: 'inherit',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
               }}
               href={`https://www.instagram.com/${targetUser?.media?.instagram}`}
             >
@@ -134,15 +136,15 @@ export const Contact = () => {
         )}
         {targetUser?.media?.tiktok && (
           <div>
-            <div style={{ width: "30px", height: "30px" }}>
+            <div style={{ width: '30px', height: '30px' }}>
               <BsTiktok color="#ccc" size={16} />
             </div>
             <a
               style={{
-                textDecoration: "none",
-                color: "inherit",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
+                textDecoration: 'none',
+                color: 'inherit',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
               }}
               href={`https://${targetUser.media?.web}`}
             >
@@ -151,49 +153,29 @@ export const Contact = () => {
           </div>
         )}
       </Links>
-      {/* <Address>
-        <h4 style={{ color: "#ccc" }}>
-          Address:{" "}
-          <span style={{ fontWeight: "normal" }}>
-            {address?.city.replace("'", "")} {address?.street && "-"}{" "}
-            {address?.street} {address?.streetNumber && "N"}
+      <Address>
+        <h4 style={{ color: '#ccc' }}>
+          Address:{' '}
+          <span style={{ fontWeight: 'normal' }}>
+            {address?.city.replace("'", '')} {address?.street && '-'}{' '}
+            {address?.street} {address?.streetNumber && 'N'}
             {address?.streetNumber}
           </span>
         </h4>
-        <div
-          style={{
-            borderRadius: "10px",
-            overflow: "hidden",
-            width: "100%",
-            height: "100%",
-          }}
-        >
-          <GoogleMapReact
-            bootstrapURLKeys={{
-              key: "AIzaSyA61_a1cztE7_ygTRUdET6qN62cnYrOMvY",
-            }}
-            defaultCenter={defaultProps.center}
-            defaultZoom={defaultProps.zoom}
-          >
-            <AnyReactComponent
-              lat={address?.latitude}
-              lng={address?.longitude}
-              text="My Marker"
-            />
-          </GoogleMapReact>
-        </div>
-      </Address> */}
+        <GoogleMap />
+      </Address>
     </Container>
   );
 };
 
+export default Contact;
+
 const Container = styled.div`
-  width: 100vw;
+  width: 90vw;
   min-height: 100%;
-  box-sizing: border-box;
   gap: 0.2vw;
-  padding: 15px 25px;
-  margin-bottom: 50px;
+  padding: 15px 0;
+  margin: 0 5vw 10vh 5vw;
 `;
 
 const Links = styled.div`

@@ -2,14 +2,18 @@ import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Styled from 'styled-components';
 import { setTargetUser } from '../../../redux/user';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import GetTimesAgo from '../../../functions/getTimesAgo';
 import { Language } from '../../../context/language';
 import { GiStarShuriken, GiEarthAmerica } from 'react-icons/gi';
 import { AnimationSkelton } from '../../../components/animationSkelton';
 import { VscVerifiedFilled } from 'react-icons/vsc';
+import { setBackPath } from '../../../redux/app';
+import { BounceLoader } from 'react-spinners';
+import { PiDotsThreeOutlineBold } from 'react-icons/pi';
+import { MdClose } from 'react-icons/md';
 
-export const TopSection = ({ item }) => {
+export const TopSection = ({ item, openOption, setOpenOption }) => {
   // dnavigation
   const navigate = useNavigate();
   // redux dispatch
@@ -18,6 +22,8 @@ export const TopSection = ({ item }) => {
   const location = useLocation();
   // language
   const language = Language();
+  // currentUser
+  const currentUser = useSelector((state) => state.storeUser.currentUser);
 
   const currentPostTime = GetTimesAgo(new Date(item?.createdAt).getTime());
 
@@ -45,8 +51,8 @@ export const TopSection = ({ item }) => {
       currentPostTime?.slice(0, -1) + language?.language.Main.feedCard.y;
   }
 
-  // image loading opacity
-  const [opacity, setOpacity] = useState(false);
+  // image loading
+  const [loading, setLoading] = useState(true);
 
   // capitalize first letters function
   function capitalizeFirstLetter(string) {
@@ -54,12 +60,12 @@ export const TopSection = ({ item }) => {
   }
 
   // capitalize and define user's type
-  const t = capitalizeFirstLetter(item?.owner.type);
+  const t = capitalizeFirstLetter(item?.owner?.type);
 
   let type;
-  if (item?.owner.type === 'specialist') {
+  if (item?.owner?.type === 'specialist') {
     type = t;
-  } else if (item?.owner.type === 'shop') {
+  } else if (item?.owner?.type === 'shop') {
     type = t;
   } else {
     type = 'Beauty Salon';
@@ -77,24 +83,46 @@ export const TopSection = ({ item }) => {
           } else {
             dispatch(setTargetUser(item?.owner));
             navigate(
-              `/feeds/user/${item?.owner._id}/${
-                item?.owner.type === 'shop' ? 'showroom' : 'feeds'
+              `/user/${item?.owner?._id}/${
+                item?.owner?.type === 'shop' ? 'showroom' : 'feeds'
               }`
+            );
+            dispatch(
+              setBackPath({
+                path: [location.pathname],
+                data: [],
+                activeLevel: 0,
+              })
             );
           }
         }}
       >
-        <AnimationSkelton height="45px" width="45px" borderRadius={50} />
+        {loading && (
+          <BounceLoader
+            // style={{ position: 'absolute', zIndex: 2 }}
+            size={40}
+            color="#f866b1"
+            loading={true}
+          />
+        )}
 
         <Image
           src={item?.owner?.cover}
-          style={{ opacity: opacity ? 1 : 0, transition: 'ease-in 500ms' }}
-          onLoad={() => setOpacity(true)}
+          onLoad={() => {
+            setLoading(false);
+          }}
         />
       </ImageContainer>
 
-      <div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+      <div style={{ width: '80%' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '15px',
+            width: '100%',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <h3
               onClick={() => {
@@ -106,9 +134,16 @@ export const TopSection = ({ item }) => {
                 } else {
                   dispatch(setTargetUser(item?.owner));
                   navigate(
-                    `/feeds/user/${item?.owner._id}/${
-                      item?.owner.type === 'shop' ? 'showroom' : 'feeds'
+                    `/user/${item?.owner?._id}/${
+                      item?.owner?.type === 'shop' ? 'showroom' : 'feeds'
                     }`
+                  );
+                  dispatch(
+                    setBackPath({
+                      path: [location.pathname],
+                      data: [],
+                      activeLevel: 0,
+                    })
                   );
                 }
               }}
@@ -120,9 +155,9 @@ export const TopSection = ({ item }) => {
                 fontSize: '16px',
               }}
             >
-              {item?.owner.name}
+              {item?.owner?.name}
             </h3>
-            {item?.owner.subscription.status === 'active' && (
+            {item?.owner?.subscription.status === 'active' && (
               <VscVerifiedFilled color="#f866b1" size={14} />
             )}
           </div>
@@ -142,6 +177,29 @@ export const TopSection = ({ item }) => {
             </div>
             <GiStarShuriken size={10} color="#ccc" />
           </div>
+          {item?.owner?._id === currentUser?._id &&
+            location.pathname?.includes('/profile') && (
+              <div
+                onClick={
+                  !openOption?.active
+                    ? () => setOpenOption({ active: true, data: item })
+                    : () => setOpenOption(null)
+                }
+                style={{
+                  margin: '0 0 0 auto',
+                  padding: '0 2px 0 8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {openOption?.active ? (
+                  <MdClose color="#f866b1" size={20} />
+                ) : (
+                  <PiDotsThreeOutlineBold color="#ccc" size={20} />
+                )}
+              </div>
+            )}
         </div>
         <span
           style={{ color: '#ccc', letterSpacing: '0.5px', fontSize: '14px' }}
@@ -167,7 +225,6 @@ const ImageContainer = Styled.div`
   width: 45px;
   height: 45px;
   border-radius: 50px;
-  background: rgba(255, 255, 255, 0.05);
   border: 1.5px solid #f866b1;
   display: flex;
   align-items: center;
@@ -179,5 +236,7 @@ const Image = Styled.img`
   height: 40px;
   border-radius: 50px;
   object-fit: cover;
-  opacity: ${(props) => (props.opacity ? '1' : '0')};
+  opacity: 1;
+  position: absolute;
+  z-index: 0;
 `;

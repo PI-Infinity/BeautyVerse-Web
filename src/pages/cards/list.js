@@ -1,20 +1,20 @@
-import axios from "axios";
-import React, { useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { Outlet } from "react-router-dom";
-import { BounceLoader } from "react-spinners";
-import styled from "styled-components";
-import { AddCards, setPage, setScrollYCards } from "../../redux/cards";
-import { Card } from "./components/card";
-import { Filter } from "./components/filter";
-import { Search } from "./components/search";
+import axios from 'axios';
+import React, { useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Outlet } from 'react-router-dom';
+import { BounceLoader } from 'react-spinners';
+import styled from 'styled-components';
+import { AddCards, setPage, setScrollYCards } from '../../redux/cards';
+import { Card } from './components/card';
+import { Filter } from './components/filter';
+import { Search } from './components/search';
 
 /**
  *
  * @returns Feeds list page component
  */
 
-export const Cards = () => {
+const Cards = () => {
   // loading state
   const loading = useSelector((state) => state.storeCards.loading);
   // redux dispatch
@@ -49,18 +49,18 @@ export const Cards = () => {
   const [filter, setFilter] = useState(false);
 
   // if filter active made body overflow hidden
-  document.body.style.overflow = !filter ? "visible" : "hidden";
+  document.body.style.overflow = !filter ? 'visible' : 'hidden';
 
   // Function to add users with cards from the API
   const AddUsersCards = async (currentPage) => {
     try {
       const response = await axios.get(
         `${backendUrl}/api/v1/cards?search=${search}&filter=${categoryFilter}&type=${
-          specialist ? "specialist" : ""
-        }${beautyCenter ? "beautycenter" : ""}${
-          shop ? "shop" : ""
+          specialist ? 'specialist' : ''
+        }${beautyCenter ? 'beautycenter' : ''}${
+          shop ? 'shop' : ''
         }&city=${city}&district=${district}&page=${currentPage}&limit=${
-          isDesktop ? "16" : "4"
+          isDesktop ? '16' : '4'
         }&country=Georgia`
       );
 
@@ -85,10 +85,10 @@ export const Cards = () => {
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener('scroll', handleScroll);
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener('scroll', handleScroll);
     };
   }, [page]);
 
@@ -101,7 +101,7 @@ export const Cards = () => {
       return;
     }
     // Perform some action when scrolltoTop is true
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     // other logic you want to perform when scrolltoTop changes
   }, [scrolltoTop]);
@@ -127,38 +127,39 @@ export const Cards = () => {
       {loading ? (
         <div
           style={{
-            position: "fixed",
-            top: "0px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "100%",
-            height: "100vh",
+            position: 'fixed',
+            top: '0px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            height: '100vh',
           }}
         >
-          <BounceLoader color={"#f866b1"} loading={loading} size={50} />
+          <BounceLoader color={'#f866b1'} loading={loading} size={50} />
         </div>
       ) : (
         <>
           <div
             style={{
-              height: refresh ? "60px" : 0,
+              height: refresh ? '60px' : 0,
               opacity: refresh ? 1 : 0,
-              width: "100%",
-              transition: "ease-in-out 300ms",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              position: "relative",
-              bottom: "10px",
+              width: '100%',
+              transition: 'ease-in-out 300ms',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative',
+              bottom: '10px',
             }}
           >
-            <BounceLoader color={"#f866b1"} loading={refresh} size={30} />
+            <BounceLoader color={'#f866b1'} loading={refresh} size={30} />
           </div>
           <div
             style={{
-              width: "100%",
-              display: "flex",
+              width: '100%',
+              display: 'flex',
+
               // justifyContent: "center",
             }}
           >
@@ -177,6 +178,8 @@ export const Cards = () => {
     </Container>
   );
 };
+
+export default Cards;
 
 const Container = styled.div`
   display: flex;

@@ -1,18 +1,18 @@
-import React from "react";
-import styled from "styled-components";
-import Gallery from "../product/components/gallery";
-import { useSelector } from "react-redux";
-import { Shop } from "../product/components/shop";
-import { Brand } from "../product/components/brand";
-import { Categories } from "../product/components/categories";
-import { Price } from "../product/components/price";
-import { InStock } from "../product/components/inStock";
-import { Type } from "../product/components/type";
-import { ShortDescription } from "../product/components/shortDescription";
-import { Variants } from "../product/components/variants";
-import { FullDescription } from "../product/components/fullDescription";
-import { HowToUse } from "../product/components/howToUse";
-import { Compositions } from "../product/components/compositions";
+import React from 'react';
+import styled from 'styled-components';
+import Gallery from '../product/components/gallery';
+import { useSelector } from 'react-redux';
+import { Shop } from '../product/components/shop';
+import { Brand } from '../product/components/brand';
+import { Categories } from '../product/components/categories';
+import { Price } from '../product/components/price';
+import { InStock } from '../product/components/inStock';
+import { Type } from '../product/components/type';
+import { ShortDescription } from '../product/components/shortDescription';
+import { Variants } from '../product/components/variants';
+import { FullDescription } from '../product/components/fullDescription';
+import { HowToUse } from '../product/components/howToUse';
+import { Compositions } from '../product/components/compositions';
 
 export const ProductItem = ({ item, to }) => {
   const product =
@@ -27,7 +27,7 @@ export const ProductItem = ({ item, to }) => {
         {product?.categories && <Categories product={product} />}
         {product?.price && <Price product={product} />}
         {product?.inStock && <InStock product={product} />}
-        {product?.type === "professionals" && <Type product={product} />}
+        {product?.type === 'professionals' && <Type product={product} />}
         {(product?.shortDescription?.en?.length > 0 ||
           product?.shortDescription?.ru?.length > 0 ||
           product?.shortDescription?.ka?.length > 0) && (
@@ -54,6 +54,7 @@ export const ProductItem = ({ item, to }) => {
 
 const Container = styled.div`
   padding-bottom: 30px;
+  oveflow: hidden;
 `;
 
 const Info = styled.div`

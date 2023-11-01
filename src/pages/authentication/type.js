@@ -1,11 +1,11 @@
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import styled from "styled-components";
-import { Language } from "../../context/language";
-import { useEffect, useState } from "react";
-import { setUserType } from "../../redux/auth";
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+import { Language } from '../../context/language';
+import { useEffect, useState } from 'react';
+import { setUserType } from '../../redux/auth';
 
-export const Type = () => {
+const Type = () => {
   // use redux toolkit dispatch
   const dispatch = useDispatch();
 
@@ -19,7 +19,7 @@ export const Type = () => {
   const currentUser = useSelector((state) => state.storeAuth.currentUser);
   useEffect(() => {
     if (!currentUser) {
-      navigate("/login");
+      navigate('/login');
     }
   }, []);
 
@@ -31,12 +31,12 @@ export const Type = () => {
   }, []);
 
   return (
-    <Container transition={transition ? "true" : "false"}>
+    <Container transition={transition ? 'true' : 'false'}>
       <Inputs>
         <Box
           onClick={() => {
-            dispatch(setUserType("user"));
-            navigate("/register/accept");
+            dispatch(setUserType('user'));
+            navigate('/register/accept');
           }}
         >
           <h3>{language?.language?.Auth?.auth?.user}</h3>
@@ -44,8 +44,8 @@ export const Type = () => {
         </Box>
         <Box
           onClick={() => {
-            dispatch(setUserType("specialist"));
-            navigate("/register/services");
+            dispatch(setUserType('specialist'));
+            navigate('/register/services');
           }}
         >
           <h3>{language?.language?.Auth?.auth?.specialist}</h3>
@@ -53,8 +53,8 @@ export const Type = () => {
         </Box>
         <Box
           onClick={() => {
-            dispatch(setUserType("beautycenter"));
-            navigate("/register/services");
+            dispatch(setUserType('beautycenter'));
+            navigate('/register/services');
           }}
         >
           <h3>{language?.language?.Auth?.auth?.beautySalon}</h3>
@@ -62,8 +62,8 @@ export const Type = () => {
         </Box>
         <Box
           onClick={() => {
-            dispatch(setUserType("shop"));
-            navigate("/register/accept");
+            dispatch(setUserType('shop'));
+            navigate('/register/accept');
           }}
         >
           <h3>{language?.language?.Auth?.auth?.shop}</h3>
@@ -74,6 +74,8 @@ export const Type = () => {
   );
 };
 
+export default Type;
+
 const Container = styled.div`
   height: 80vh;
   width: 100vw;
@@ -82,8 +84,8 @@ const Container = styled.div`
   align-items: center;
   justify-content: center;
   position: relative;
-  right: ${(props) => (props.transition === "true" ? 0 : "-100vw")};
-  opacity: ${(props) => (props.transition === "true" ? "1" : "0")};
+  right: ${(props) => (props.transition === 'true' ? 0 : '-100vw')};
+  opacity: ${(props) => (props.transition === 'true' ? '1' : '0')};
   transition: ease-in-out 200ms;
 `;
 const Inputs = styled.div`

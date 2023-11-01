@@ -1,13 +1,13 @@
-import React, { useEffect, useRef, useState } from "react";
-import { CoverSlider } from "./components/CoverSlider";
-import styled from "styled-components";
-import { useSelector, useDispatch } from "react-redux";
-import { PopularList } from "./components/popularList";
-import { setScrollYMarketplace } from "../../../../redux/marketplace";
-import { BounceLoader } from "react-spinners";
-import { Search } from "../../../marketplace/components/search";
+import React, { useEffect, useRef, useState } from 'react';
+import { CoverSlider } from './components/CoverSlider';
+import styled from 'styled-components';
+import { useSelector, useDispatch } from 'react-redux';
+import { PopularList } from './components/popularList';
+import { setScrollYMarketplace } from '../../../../redux/marketplace';
+import { BounceLoader } from 'react-spinners';
+import { Search } from '../../../marketplace/components/search';
 
-export const Main = () => {
+const Main = () => {
   const dispatch = useDispatch();
 
   // fo to saved scroll y position
@@ -26,10 +26,10 @@ export const Main = () => {
       dispatch(setScrollYMarketplace(scrollY));
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener('scroll', handleScroll);
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
@@ -42,7 +42,7 @@ export const Main = () => {
       return;
     }
     // Perform some action when scrollToTop is true
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     // other logic you want to perform when scrollToTop changes
   }, [scrollToTop]);
@@ -67,22 +67,22 @@ export const Main = () => {
     <Container>
       <div
         style={{
-          height: refresh ? "60px" : 0,
+          height: refresh ? '60px' : 0,
           opacity: refresh ? 1 : 0,
-          width: "100%",
-          transition: "ease-in-out 300ms",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          width: '100%',
+          transition: 'ease-in-out 300ms',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
-        <BounceLoader color={"#f866b1"} loading={refresh} size={30} />
+        <BounceLoader color={'#f866b1'} loading={refresh} size={30} />
       </div>
       <div
         style={{
-          margin: "16px 0",
-          width: "100%",
-          display: "flex",
+          margin: '16px 0',
+          width: '100%',
+          display: 'flex',
         }}
       >
         <Search />
@@ -92,6 +92,8 @@ export const Main = () => {
     </Container>
   );
 };
+
+export default Main;
 
 const Container = styled.div`
   display: flex;
