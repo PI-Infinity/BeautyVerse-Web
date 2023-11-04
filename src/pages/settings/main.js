@@ -20,6 +20,7 @@ import { HW } from './hw';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { setCurrentUser } from '../../redux/user';
+import { Procedures } from './procedures';
 
 const Settings = () => {
   // navigation
@@ -128,6 +129,13 @@ const Settings = () => {
       )}
       {activePage.active && activePage.page === 'addresses' && (
         <Addresses
+          activePage={activePage}
+          setActivePage={setActivePage}
+          currentUser={currentUser}
+        />
+      )}
+      {activePage.active && activePage.page === 'procedures' && (
+        <Procedures
           activePage={activePage}
           setActivePage={setActivePage}
           currentUser={currentUser}

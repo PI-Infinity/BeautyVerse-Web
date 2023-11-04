@@ -112,7 +112,6 @@ const Feeds = () => {
   };
 
   const machineId = useSelector((state) => state.storeApp.machineId);
-  console.log(machineId);
 
   // Callback function for the Intersection Observer
   const handleIntersect = useCallback(

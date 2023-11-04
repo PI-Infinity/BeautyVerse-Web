@@ -42,5 +42,4 @@ module.exports = {
       // Add other rules for various file types as needed
     ],
   },
-
-
+};

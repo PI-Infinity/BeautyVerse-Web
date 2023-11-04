@@ -42,6 +42,8 @@ export const BottomTabNavigator = () => {
     }
   }, [currentUser?.cover]);
 
+  const backPath = useSelector((state) => state.storeApp.backPath);
+
   return (
     <Container>
       <div
@@ -69,6 +71,7 @@ export const BottomTabNavigator = () => {
         onClick={() => {
           if (location.pathname === '/cards') {
             if (scrollYCards > 0) {
+              console.log('this run');
               dispatch(setScrollToTop());
               dispatch(setScrollYCards(0));
             } else {

@@ -23,12 +23,12 @@ const OpenedFeed = () => {
   useEffect(() => {
     // Disable body scroll when the component is open
     if (openFeed) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflowY = 'hidden';
     }
 
     return () => {
       // Re-enable body scroll when the component is closed
-      document.body.style.overflow = 'visible';
+      document.body.style.overflowY = 'visible';
     };
   }, [openFeed]);
 

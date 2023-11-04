@@ -1,27 +1,40 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Map, GoogleApiWrapper, Marker } from 'google-maps-react';
 
 const MapContainer = (props) => {
-  const mapStyles = {
-    width: '90%',
-    height: '40%',
-    borderRadius: '20px',
-    margin: '0 0 30px 0',
-  };
+  const mapRef = useRef(null);
+
+  useEffect(() => {
+    if (props.address && mapRef.current) {
+      const newCenter = new props.google.maps.LatLng(
+        props.address.latitude,
+        props.address.longitude
+      );
+      mapRef.current.map.setCenter(newCenter);
+    }
+  }, [props.address, props.google.maps.LatLng]);
 
   return (
-    <div style={{ width: '90vw', overflow: 'hidden' }}>
-      <Map
-        google={props.google}
-        zoom={14}
-        style={mapStyles}
-        initialCenter={{
-          lat: -1.2884,
-          lng: 36.8233,
-        }}
-      >
-        <Marker position={{ lat: -1.2884, lng: 36.8233 }} />
-      </Map>
+    <div style={{ width: '40vw', overflow: 'hidden' }}>
+      {props.address && (
+        <Map
+          google={props.google}
+          zoom={14}
+          style={props?.mapStyles}
+          initialCenter={{
+            lat: props.address.latitude,
+            lng: props.address.longitude,
+          }}
+          ref={mapRef}
+        >
+          <Marker
+            position={{
+              lat: props.address.latitude,
+              lng: props.address.longitude,
+            }}
+          />
+        </Map>
+      )}
     </div>
   );
 };

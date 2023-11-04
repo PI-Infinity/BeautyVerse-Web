@@ -3,11 +3,22 @@ import styled from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
 import { useOutletContext } from 'react-router-dom';
 import { setLoading } from '../../../redux/user';
-import { BsFillTelephoneFill, BsBrowserChrome, BsTiktok } from 'react-icons/bs';
+import {
+  BsFillTelephoneFill,
+  BsBrowserChrome,
+  BsTiktok,
+  BsArrowLeft,
+  BsArrowRight,
+} from 'react-icons/bs';
 import { MdEmail } from 'react-icons/md';
 import GoogleMapReact from 'google-map-react';
 import { HiLocationMarker } from 'react-icons/hi';
-import { BiLogoFacebook, BiLogoInstagramAlt } from 'react-icons/bi';
+import {
+  BiLogoFacebook,
+  BiLogoInstagramAlt,
+  BiSolidLeftArrow,
+  BiSolidRightArrow,
+} from 'react-icons/bi';
 import GoogleMap from './googleMap';
 
 const Contact = () => {
@@ -16,21 +27,9 @@ const Contact = () => {
   // get outlet props context
   const [targetUser] = useOutletContext();
 
-  const AnyReactComponent = ({ text }) => (
-    <HiLocationMarker size={35} color="#f866b1" />
-  );
-
   // active address
   const [activeAddress, setActiveAddress] = useState(0);
   const [address, setAddress] = useState(null);
-
-  const defaultProps = {
-    center: {
-      lat: 41.6938,
-      lng: 44.8015,
-    },
-    zoom: 15,
-  };
 
   useEffect(() => {
     targetUser?.address?.map((i, x) => {
@@ -154,15 +153,85 @@ const Contact = () => {
         )}
       </Links>
       <Address>
-        <h4 style={{ color: '#ccc' }}>
+        <h4
+          style={{
+            color: '#f866b1',
+            letterSpacing: '0.5px',
+            fontWeight: 'bold',
+            fontSize: '14px',
+          }}
+        >
           Address:{' '}
-          <span style={{ fontWeight: 'normal' }}>
-            {address?.city.replace("'", '')} {address?.street && '-'}{' '}
-            {address?.street} {address?.streetNumber && 'N'}
-            {address?.streetNumber}
-          </span>
+          {targetUser?.address?.length === 1 && (
+            <span
+              style={{ fontWeight: '500', color: '#ccc', fontSize: '14px' }}
+            >
+              {address?.city.replace("'", '')} {address?.street && '-'}{' '}
+              {address?.street} {address?.streetNumber && 'N'}
+              {address?.streetNumber}
+            </span>
+          )}
         </h4>
-        <GoogleMap />
+        {targetUser?.address?.length > 1 && (
+          <div
+            style={{
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              margin: '0 0 10px 0',
+              boxSizing: 'border-box',
+              padding: '0 10px',
+              fontSize: '14px',
+            }}
+          >
+            <div
+              style={{ padding: '2.5px' }}
+              onClick={
+                activeAddress === 0
+                  ? undefined
+                  : () => setActiveAddress(activeAddress - 1)
+              }
+            >
+              <BiSolidLeftArrow
+                size={20}
+                color={activeAddress === 0 ? '#888' : '#f866b1'}
+              />
+            </div>
+            <span
+              style={{
+                fontWeight: '500',
+                color: '#ccc',
+                letterSpacing: '0.5px',
+              }}
+            >
+              {address?.city.replace("'", '')} {address?.street && '-'}{' '}
+              {address?.street} {address?.streetNumber && 'N'}
+              {address?.streetNumber}
+            </span>
+            <div
+              style={{ padding: '2.5px' }}
+              onClick={
+                activeAddress === targetUser?.address?.length - 1
+                  ? undefined
+                  : () => setActiveAddress(activeAddress + 1)
+              }
+            >
+              <BiSolidRightArrow
+                size={20}
+                color={
+                  activeAddress === targetUser?.address?.length - 1
+                    ? '#888'
+                    : '#f866b1'
+                }
+              />
+            </div>
+          </div>
+        )}
+        <GoogleMap
+          address={address}
+          mapStyles={{ width: '90%', height: '40%', borderRadius: '20px' }}
+        />
       </Address>
     </Container>
   );
@@ -202,4 +271,5 @@ const Links = styled.div`
 const Address = styled.div`
   width: 100%;
   height: 300px;
+  padding-bottom: 50px;
 `;

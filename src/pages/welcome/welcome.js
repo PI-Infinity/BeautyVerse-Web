@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
-import styled from "styled-components";
-import { Cover } from "./components/cover";
-import { About } from "./components/about";
-import { Features } from "./components/features";
-import { FaArrowsAltV } from "react-icons/fa";
-import { Form } from "./components/form";
+import React, { useEffect, useRef, useState } from 'react';
+import styled from 'styled-components';
+import { Cover } from './components/cover';
+import { About } from './components/about';
+import { Features } from './components/features';
+import { FaArrowsAltV } from 'react-icons/fa';
+import { Form } from './components/form';
 
 const Welcome = () => {
   /**
@@ -43,7 +43,7 @@ const Welcome = () => {
           <div></div>
         </div>
       </SnapSection>
-      <SnapSection style={{ minHeight: "100vh" }}>
+      {/* <SnapSection style={{ minHeight: "100vh" }}>
         <About
           style={{
             position: "relative",
@@ -55,7 +55,7 @@ const Welcome = () => {
           <FaArrowsAltV color="rgba(255,255,255,0.3)" size="24px" />
           <div></div>
         </div>
-      </SnapSection>
+      </SnapSection> */}
       <SnapSection>
         <Form />
       </SnapSection>

@@ -1,21 +1,28 @@
-import { useRef, useState } from "react";
-import { useLoadScript, Autocomplete } from "@react-google-maps/api";
+import { useRef, useState } from 'react';
+import { useLoadScript, Autocomplete } from '@react-google-maps/api';
 
-import styled, { createGlobalStyle } from "styled-components";
-import { TextField } from "@mui/material";
+import styled, { createGlobalStyle } from 'styled-components';
+import { TextField } from '@mui/material';
 
-const apiKey = "AIzaSyBxx8CORlQQBBkbGc-F0yu95DMZaiJkMmo";
+const apiKey = 'AIzaSyBxx8CORlQQBBkbGc-F0yu95DMZaiJkMmo';
 
-const libraries = ["places"];
+const libraries = ['places'];
 
-export const MapAutoComplete = ({ address, setAddress }) => {
+export const MapAutoComplete = ({
+  address,
+  setAddress,
+  input,
+  setInput,
+  width,
+}) => {
   const autocompleteRef = useRef(null);
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: apiKey,
     libraries,
+    language: 'en',
   });
 
-  if (!isLoaded) return "Loading...";
+  if (!isLoaded) return 'Loading...';
 
   if (window.google === undefined) {
     return <div>Loading Google Maps API...</div>;
@@ -26,17 +33,17 @@ export const MapAutoComplete = ({ address, setAddress }) => {
     const components = {};
 
     for (const component of place.address_components) {
-      if (component.types.includes("country")) {
+      if (component.types.includes('country')) {
         components.country = component.long_name;
-      } else if (component.types.includes("administrative_area_level_1")) {
+      } else if (component.types.includes('administrative_area_level_1')) {
         components.region = component.long_name;
-      } else if (component.types.includes("locality")) {
+      } else if (component.types.includes('locality')) {
         components.city = component.long_name;
-      } else if (component.types.includes("sublocality_level_1")) {
+      } else if (component.types.includes('sublocality_level_1')) {
         components.district = component.long_name;
-      } else if (component.types.includes("route")) {
+      } else if (component.types.includes('route')) {
         components.street = component.long_name;
-      } else if (component.types.includes("street_number")) {
+      } else if (component.types.includes('street_number')) {
         components.streetNumber = component.long_name;
       }
     }
@@ -65,8 +72,8 @@ export const MapAutoComplete = ({ address, setAddress }) => {
           onLoad={(ref) => (autocompleteRef.current = ref)}
           onPlaceChanged={handlePlaceChanged}
           query={{
-            key: "AIzaSyBxx8CORlQQBBkbGc-F0yu95DMZaiJkMmo", // Consider storing sensitive keys in environment variables
-            language: "en",
+            key: 'AIzaSyBxx8CORlQQBBkbGc-F0yu95DMZaiJkMmo', // Consider storing sensitive keys in environment variables
+            language: 'en',
           }}
         >
           <TextField
@@ -74,33 +81,33 @@ export const MapAutoComplete = ({ address, setAddress }) => {
             label="Enter a location"
             variant="outlined"
             sx={{
-              width: "75vw",
-              "& .MuiOutlinedInput-root": {
-                height: "53px",
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "rgba(255,255,255,0.1)",
-                  borderRadius: "15px",
+              width: width,
+              '& .MuiOutlinedInput-root': {
+                height: '53px',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'rgba(255,255,255,0.1)',
+                  borderRadius: '15px',
                 },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#f866b1",
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#f866b1',
                 },
-                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#f866b1",
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#f866b1',
                 },
               },
-              "& .MuiOutlinedInput-input": {
-                borderRadius: "15px",
-                color: "#ccc",
+              '& .MuiOutlinedInput-input': {
+                borderRadius: '15px',
+                color: '#ccc',
               },
-              "& label": {
-                color: "#888",
-                fontSize: "14px",
-                letterSpacing: "0.5px",
+              '& label': {
+                color: '#888',
+                fontSize: '14px',
+                letterSpacing: '0.5px',
               },
-              "& label.Mui-focused": {
-                color: "#ccc",
-                fontSize: "14px",
-                letterSpacing: "0.5px",
+              '& label.Mui-focused': {
+                color: '#ccc',
+                fontSize: '14px',
+                letterSpacing: '0.5px',
               },
             }}
           />
@@ -154,6 +161,8 @@ const GlobalStyles = createGlobalStyle`
     background: rgba(1, 2, 12, 0.8);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    position: absolute;
+    z-index: 10000;
   }
 
   .pac-item {

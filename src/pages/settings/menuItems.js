@@ -38,7 +38,8 @@ export const MenuItems = ({
             <Item
               key={index}
               style={{
-                margin: item.value === 'darkMode' ? '25px 0 0 0' : '0 0 25px 0',
+                borderRadius: 50,
+                margin: item.value !== 'darkMode' ? '25px 0' : '0 0 25px 0',
               }}
             >
               {item.label}
@@ -96,6 +97,10 @@ const Items = [
     label: 'Addresses',
   },
   {
+    value: 'procedures',
+    label: 'Procedures',
+  },
+  {
     value: 'products',
     label: 'Products',
   },
@@ -119,10 +124,10 @@ const Items = [
     value: 'languages',
     label: 'Languages',
   },
-  {
-    value: 'darkMode',
-    label: 'Dark Mode',
-  },
+  // {
+  //   value: 'darkMode',
+  //   label: 'Dark Mode',
+  // },
   {
     value: 'activation',
     label: 'Activation',

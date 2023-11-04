@@ -3,7 +3,10 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
-import { setRerenderNotifications } from '../../../redux/notifications';
+import {
+  setRerenderNotifications,
+  setUnreadNotidications,
+} from '../../../redux/notifications';
 import { setNotifications } from '../../../redux/notifications';
 
 export const Configs = ({ openConfig, setOpenConfig, currentUser }) => {
@@ -15,6 +18,9 @@ export const Configs = ({ openConfig, setOpenConfig, currentUser }) => {
 
   // notifications
   const list = useSelector((state) => state.storeNotifications.notifications);
+  const unreadList = useSelector(
+    (state) => state.storeNotifications.unreadNotifications
+  );
 
   // redux dispatch
   const dispatch = useDispatch();
@@ -26,34 +32,17 @@ export const Configs = ({ openConfig, setOpenConfig, currentUser }) => {
     try {
       // Update local state list if it exists
       dispatch(setNotifications(list.filter((item) => item?._id !== id)));
-
-      // Check if the current user and the notifications list exist
-      if (currentUser && currentUser?.notifications) {
-        // Filter out the deleted notification
-        console.log(currentUser.notifications);
-        const updatedNotifications = currentUser?.notifications.filter(
-          (notification) => notification?._id !== id
-        );
-        console.log(updatedNotifications);
-        // Save the updated user back to local storage
-        localStorage.setItem(
-          'Beautyverse:currentUser',
-          JSON.stringify({
-            ...currentUser,
-            notifications: updatedNotifications,
-          })
-        );
-      }
-
-      // Send a request to the backend to delete the notification
-      await axios.delete(
-        `${backendUrl}/api/v1/users/${currentUser?._id}/notifications/${id}`
+      dispatch(
+        setUnreadNotidications(unreadList.filter((item) => item?._id !== id))
       );
       setTransition(true);
       setTimeout(() => {
         setOpenConfig({ active: false, id: null });
-        dispatch(setRerenderNotifications());
       }, 300);
+      // Send a request to the backend to delete the notification
+      await axios.delete(
+        `${backendUrl}/api/v1/users/${currentUser?._id}/notifications/${id}`
+      );
     } catch (error) {
       console.error(
         error?.response?.data?.message ||
@@ -80,7 +69,7 @@ export const Configs = ({ openConfig, setOpenConfig, currentUser }) => {
         position: 'fixed',
         top: '0',
         left: '0',
-        transition: 'ease-in-out 220ms',
+        transition: 'ease-in-out 200ms',
         width: '100%',
         height: '100%',
       }}
@@ -150,7 +139,7 @@ const Container = styled.div`
   bottom: ${(props) => (props.openConfig === 'false' ? 0 : '-20vh')};
   border-radius: 30px 30px 0 0;
   z-index: 1000;
-  transition: ease-in 300ms;
+  transition: ease-in 200ms;
   display: flex;
   flex-direction: column;
   align-items: center;

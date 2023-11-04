@@ -1,24 +1,26 @@
 import React, { lazy, Suspense } from 'react';
-import { useSelector } from 'react-redux';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { BounceLoader } from 'react-spinners';
 import OpenedFeed from '../pages/feeds/components/openedFeed';
 import OpenedProduct from '../pages/marketplace/components/openedProduct';
 import OpenedProductFromList from '../pages/marketplace/pages/listPage/openedProduct';
-import Showroom from '../pages/user/components/showroom';
-import OpenedUserProduct from '../pages/user/components/openedUserProduct';
-import OpenedUserFeed from '../pages/user/components/openedUserFeed';
-import UserFeeds from '../pages/user/components/feeds';
-import Contact from '../pages/user/components/contact';
-import Procedures from '../pages/user/components/procedures';
-import WorkingInfo from '../pages/user/components/workingInfo';
+import OpenedProductFromSearch from '../pages/marketplace/pages/search/openedProduct';
 import Audience from '../pages/user/components/audience';
+import Contact from '../pages/user/components/contact';
+import UserFeeds from '../pages/user/components/feeds';
+import OpenedUserFeed from '../pages/user/components/openedUserFeed';
+import OpenedUserProduct from '../pages/user/components/openedUserProduct';
+import Procedures from '../pages/user/components/procedures';
+import Showroom from '../pages/user/components/showroom';
+import WorkingInfo from '../pages/user/components/workingInfo';
 import OpenedUserFeedNotifications from '../pages/user/notifications/openedUserFeed';
 import OpenedUserProductNotifications from '../pages/user/notifications/openedUserProduct';
-import OpenedProductFromSearch from '../pages/marketplace/pages/search/openedProduct';
+
+const FeedsBundle = lazy(() => import('../bundles/feedsBundle'));
 
 const Welcome = lazy(() => import('../pages/welcome/welcome'));
 const Feeds = lazy(() => import('../pages/feeds/list'));
+
 const Cards = lazy(() => import('../pages/cards/list'));
 const Main = lazy(() => import('../pages/marketplace/pages/market/main'));
 
@@ -74,26 +76,35 @@ export const Routers = () => {
   return (
     <Suspense fallback={<LoadingFallback />}>
       <Routes>
+        {/**
+         * Welcome  routes
+         */}
         <Route path="/" element={<Welcome />} />
-
+        {/**
+         * Feeds routes
+         */}
         <Route path="/feeds" element={<Feeds />}>
           <Route path=":feedId" element={<OpenedFeed />} />
         </Route>
-
+        {/**
+         * Cards routes
+         */}
         <Route path="/cards" element={<Cards />} />
-
+        {/**
+         * Marketplace routes
+         */}
         <Route path="/marketplace" element={<Main />}>
           <Route path=":productId" element={<OpenedProduct />} />
         </Route>
-
         <Route path="/marketplace/search" element={<SearchList />}>
           <Route path=":productId" element={<OpenedProductFromSearch />} />
         </Route>
-
         <Route path="/marketplace/list" element={<List />}>
           <Route path=":productId" element={<OpenedProductFromList />} />
         </Route>
-
+        {/**
+         * User visit routes
+         */}
         <Route path="/user/:userId" element={<User />}>
           <Route path="showroom" element={<Showroom />}>
             <Route path=":productId" element={<OpenedUserProduct />} />
@@ -106,7 +117,9 @@ export const Routers = () => {
           <Route path="workinginfo" element={<WorkingInfo />} />
           <Route path="audience" element={<Audience />} />
         </Route>
-
+        {/**
+         * authentication routes
+         */}
         <Route
           path="/login"
           element={
@@ -163,7 +176,9 @@ export const Routers = () => {
             </RequireLogout>
           }
         />
-
+        {/**
+         * Profile routes
+         */}
         <Route
           path="/profile"
           element={currentUserLocal ? <UserProfile /> : <Login />}

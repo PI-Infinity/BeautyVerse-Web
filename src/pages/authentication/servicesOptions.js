@@ -1,61 +1,69 @@
-import { TextField } from "@mui/material";
-import React, { useState } from "react";
-import styled from "styled-components";
-import { ProceduresOptions } from "../../datas/registerDatas";
-import { MdClose, MdDone } from "react-icons/md";
-import { BsArrowDownUp } from "react-icons/bs";
+import { TextField } from '@mui/material';
+import React, { useState } from 'react';
+import styled from 'styled-components';
+import { ProceduresOptions } from '../../datas/registerDatas';
+import { MdClose, MdDone } from 'react-icons/md';
+import { BsArrowDownUp } from 'react-icons/bs';
 
-export const ServicesOptions = ({ value, setValue }) => {
-  const [input, setInput] = useState("");
-  const proceduresOptions = ProceduresOptions();
+export const ServicesOptions = ({ value, setValue, from }) => {
+  const [input, setInput] = useState('');
+  const optionList = ProceduresOptions();
+  const proceduresOptions = optionList?.filter(
+    (item) => item.value.split(' - ')?.length > 2
+  );
   const [listOpen, setListOpen] = useState(false);
 
   return (
     <Container>
-      {value?.length > 0 && (
+      {from !== 'settings' && value?.length > 0 && (
         <Choiced>
           {value?.map((item, index) => {
+            let label = proceduresOptions?.find(
+              (i) => i.value === item.value
+            ).label;
             return (
               <div
                 key={index}
                 style={{
-                  maxWidth: "26%",
-                  overflow: "hidden",
-                  whiteSpace: "nowrap",
-                  padding: "5px 8px",
-                  border: "1px solid #f866b1",
-                  borderRadius: "50px",
-                  fontSize: "14px",
-                  display: "flex",
-                  letterSpacing: "0.5px",
-                  alignItems: "center",
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap',
+                  padding: '5px 8px',
+                  border: '1px solid #f866b1',
+                  borderRadius: '50px',
+                  fontSize: '14px',
+                  display: 'flex',
+                  letterSpacing: '0.5px',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
                 }}
               >
                 <div
                   style={{
-                    overflow: "hidden",
-                    whiteSpace: "nowrap",
+                    overflow: 'hidden',
+                    whiteSpace: 'nowrap',
                   }}
                 >
-                  {item.label}
+                  {label}
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    background: "red",
-                    borderRadius: "50px",
-                    marginLeft: "5px",
-                  }}
-                  onClick={() =>
-                    setValue((prev) =>
-                      prev.filter((f) => f.value !== item.value)
-                    )
-                  }
-                >
-                  <MdClose color="#ccc" size={16} />
-                </div>
+                {value?.length > 1 && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'red',
+                      borderRadius: '50px',
+                      marginLeft: '5px',
+                    }}
+                    onClick={() =>
+                      setValue((prev) =>
+                        prev.filter((f) => f.value !== item.value)
+                      )
+                    }
+                  >
+                    <MdClose color="#ccc" size={16} />
+                  </div>
+                )}
               </div>
             );
           })}
@@ -73,33 +81,33 @@ export const ServicesOptions = ({ value, setValue }) => {
         }}
         onFocus={() => setListOpen(true)}
         sx={{
-          width: "100%",
-          "& .MuiOutlinedInput-root": {
-            height: "53px",
-            "& .MuiOutlinedInput-notchedOutline": {
-              borderColor: "rgba(255,255,255,0.1)",
-              borderRadius: "15px",
+          width: '100%',
+          '& .MuiOutlinedInput-root': {
+            height: '53px',
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: 'rgba(255,255,255,0.1)',
+              borderRadius: '15px',
             },
-            "&:hover .MuiOutlinedInput-notchedOutline": {
-              borderColor: "#f866b1",
+            '&:hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#f866b1',
             },
-            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-              borderColor: "#f866b1",
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#f866b1',
             },
           },
-          "& .MuiOutlinedInput-input": {
-            borderRadius: "15px",
-            color: "#ccc",
+          '& .MuiOutlinedInput-input': {
+            borderRadius: '15px',
+            color: '#ccc',
           },
-          "& label": {
-            color: "#888",
-            fontSize: "14px",
-            letterSpacing: "0.5px",
+          '& label': {
+            color: '#888',
+            fontSize: '14px',
+            letterSpacing: '0.5px',
           },
-          "& label.Mui-focused": {
-            color: "#ccc",
-            fontSize: "14px",
-            letterSpacing: "0.5px",
+          '& label.Mui-focused': {
+            color: '#ccc',
+            fontSize: '14px',
+            letterSpacing: '0.5px',
           },
         }}
       />
@@ -111,9 +119,9 @@ export const ServicesOptions = ({ value, setValue }) => {
             <div
               onClick={() => setListOpen(false)}
               style={{
-                width: "100%",
-                display: "flex",
-                justifyContent: "center",
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
               }}
             >
               <BsArrowDownUp size={16} color="red" />
@@ -127,8 +135,8 @@ export const ServicesOptions = ({ value, setValue }) => {
                   <ListItem
                     style={{
                       color: value.some((s) => s.value === item.value)
-                        ? "#f866b1"
-                        : "#ccc",
+                        ? '#f866b1'
+                        : '#ccc',
                     }}
                     key={index}
                     onClick={() => {
@@ -166,9 +174,10 @@ const Choiced = styled.div`
   color: #ccc;
   letter-spacing: 0.5px;
   display: flex;
+  flex-direction: column;
   flex-wrap: wrap;
   gap: 8px;
-  margin: 0 5px 10px 5px;
+  margin: 0 0 15px 0;
 `;
 
 const ListWrapper = styled.div`

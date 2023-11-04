@@ -49,7 +49,7 @@ const Cards = () => {
   const [filter, setFilter] = useState(false);
 
   // if filter active made body overflow hidden
-  document.body.style.overflow = !filter ? 'visible' : 'hidden';
+  document.body.style.overflowY = !filter ? 'visible' : 'hidden';
 
   // Function to add users with cards from the API
   const AddUsersCards = async (currentPage) => {
@@ -93,18 +93,19 @@ const Cards = () => {
   }, [page]);
 
   // scroll to top
-  const scrolltoTop = useSelector((state) => state.storeApp.scrolltoTop);
+  const scrollToTop = useSelector((state) => state.storeApp.scrollToTop);
   const firstLoadScroll = useRef(true);
   useEffect(() => {
     if (firstLoadScroll.current) {
       firstLoadScroll.current = false;
       return;
     }
+    console.log('scroll run');
     // Perform some action when scrolltoTop is true
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     // other logic you want to perform when scrolltoTop changes
-  }, [scrolltoTop]);
+  }, [scrollToTop]);
 
   // refresh indicator
   const [refresh, setRefresh] = useState(false);

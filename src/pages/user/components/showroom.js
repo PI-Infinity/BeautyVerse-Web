@@ -277,11 +277,7 @@ const Showroom = () => {
                   if (location.pathname?.startsWith('/profile')) {
                     navigate(`/profile/showroom/${item._id}`);
                   } else {
-                    navigate(
-                      `/${location.pathname.split('/')[1]}/user/${
-                        targetUser?._id
-                      }/showroom/${item._id}`
-                    );
+                    navigate(`/user/${targetUser?._id}/showroom/${item._id}`);
                   }
                 }}
               >

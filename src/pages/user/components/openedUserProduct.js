@@ -16,8 +16,10 @@ const OpenedUserProduct = () => {
   // product id
   let productId = parts[5];
   // back path
-  parts.splice(5, 1);
+  parts.splice(4, 1);
   let backPath = parts.join('/');
+
+  console.log(backPath);
 
   // define product context
   const activeProductObj = useSelector(
@@ -47,7 +49,6 @@ const OpenedUserProduct = () => {
 
   useEffect(() => {
     if (scrollRef.current) {
-      console.log('run');
       scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
     setOpenProduct(true);

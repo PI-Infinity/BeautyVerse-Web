@@ -21,6 +21,19 @@ export const PersonalInfo = ({ activePage, setActivePage, currentUser }) => {
   // dispatch
   const dispatch = useDispatch();
 
+  // with this state feeds open with scale and opacity
+  useEffect(() => {
+    // Disable body scroll when the component is open
+    if (activePage) {
+      document.body.style.overflowY = 'hidden';
+    }
+
+    return () => {
+      // Re-enable body scroll when the component is closed
+      document.body.style.overflowY = 'visible';
+    };
+  }, [activePage]);
+
   // transition
   const [transition, setTransition] = useState(true);
 

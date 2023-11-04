@@ -38,16 +38,29 @@ export const GetCurrentUser = () => {
           JSON.stringify(response.data.data.user)
         );
         dispatch(setCurrentUser(response.data.data.user));
-        const notifs = response.data.data.user?.notifications?.filter(
-          (item) => item
-        );
-        dispatch(setNotifications(notifs));
-        dispatch(
-          setUnreadNotidications(
-            notifs?.filter((item) => item?.status === 'unread')
-          )
-        );
+
+        GetNotifcations(response.data.data.user._id);
       }
+    } catch (error) {
+      console.log(error.response);
+    }
+  };
+
+  const GetNotifcations = async (userId) => {
+    try {
+      const response = await axios.get(
+        backendUrl +
+          '/api/v1/users/' +
+          userId +
+          '/notifications?page=1&limit=15'
+      );
+      dispatch(setNotifications(response.data.data.notifications));
+      dispatch(
+        setUnreadNotidications(
+          response.data.data.notifications?.filter((i) => i.status === 'unread')
+        )
+      );
+      dispatch(setPage(1));
     } catch (error) {
       console.log(error.response);
     }

@@ -273,7 +273,11 @@ const PersonalInfo = () => {
           />
         </div>
 
-        <MapAutoComplete address={address} setAddress={setAddress} />
+        <MapAutoComplete
+          address={address}
+          setAddress={setAddress}
+          width="75vw"
+        />
 
         <Button
           variant="contained"

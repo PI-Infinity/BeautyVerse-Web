@@ -26,8 +26,6 @@ import { setBackPath } from '../../../redux/app';
 import logo from '../../../assets/logo.png';
 
 export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
-  // sender user state
-  const [user, setUser] = useState(null);
   // navigator
   const navigate = useNavigate();
   // redux dispatch
@@ -38,74 +36,6 @@ export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
   const [loading, setLoading] = useState(true);
   // backend url
   const backendUrl = useSelector((state) => state.storeApp.backendUrl);
-
-  const GetUser = async () => {
-    try {
-      const response = await axios.get(
-        backendUrl + '/api/v1/users/' + item?.senderId
-      );
-      setUser(response.data.data.user);
-      setTimeout(() => {
-        setLoading(false);
-      }, 200);
-    } catch (error) {
-      console.log(error.response.data.message);
-    }
-  };
-
-  /**
-   * feed state
-   * */
-  const [feed, setFeed] = useState(null);
-
-  // get feed from DB
-  async function GetFeedObj() {
-    try {
-      if (item?.type !== 'welcome' && item?.type !== 'follow' && item.feed) {
-        let response = await axios.get(
-          backendUrl + `/api/v1/feeds/${item.feed}?check=${currentUser._id}`
-        );
-        if (response.data.data.feed) {
-          setFeed(response.data.data.feed);
-        }
-      }
-    } catch (error) {
-      console.log(error.response.data.message);
-    }
-  }
-
-  /**
-   * get product
-   */
-
-  const [product, setProduct] = useState(null);
-
-  // Get product from DB
-  async function GetProduct() {
-    try {
-      if (item?.type === 'saveProduct') {
-        let res = await axios.get(
-          backendUrl + `/api/v1/marketplace/${item?.product}`
-        );
-        setProduct(res.data.data.product);
-      }
-    } catch (error) {
-      console.log(error.response.data.message);
-    }
-  }
-
-  useEffect(() => {
-    if (item && item.senderId !== 'Beautyverse') {
-      GetUser();
-      if (item?.feed?.length > 0) {
-        GetFeedObj();
-      } else if (item?.product?.length > 0) {
-        GetProduct();
-      }
-    } else {
-      setLoading(false);
-    }
-  }, [item]);
 
   // define text
   const lang = useSelector((state) => state.storeApp.language);
@@ -183,7 +113,7 @@ export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
       );
 
       // Update the current user's notifications
-      const newnotifs = currentUser.notifications
+      const newnotifs = list
         .filter((i) => i)
         .map((notification) => {
           if (notification) {
@@ -210,21 +140,22 @@ export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
       // Update the current user in the Redux store
       dispatch(setCurrentUser(updatedUser));
 
-      // Trigger a re-render for notifications
-      dispatch(setNotifications(newnotifs));
-      dispatch(
-        setUnreadNotidications(newnotifs?.filter((i) => i.status === 'unread'))
-      );
-
       // Send a request to the backend to update the notification's status
-      await axios.patch(
+      const resp = await axios.patch(
         `${backendUrl}/api/v1/users/${currentUser?._id}/notifications/${id}`,
         { status: 'read' }
       );
+      console.log(resp);
     } catch (error) {
       console.error(error);
     }
   };
+
+  useEffect(() => {
+    setTimeout(() => {
+      setLoading(false);
+    }, 300);
+  }, []);
 
   return (
     <Container
@@ -239,17 +170,17 @@ export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <Img
           onClick={
-            !user
+            !item.sender
               ? undefined
               : () => {
-                  dispatch(setTargetUser(user));
+                  dispatch(setTargetUser(item.sender));
                   navigate(
                     '/user/' +
-                      user?._id +
+                      item.sender?._id +
                       `${
-                        user?.type === 'shop'
+                        item.sender?.type === 'shop'
                           ? '/showroom'
-                          : user?.type === 'user'
+                          : item.sender?.type === 'user'
                           ? '/contact'
                           : '/feeds'
                       }`
@@ -282,9 +213,9 @@ export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
                 />
               ) : (
                 <>
-                  {user?.cover?.length > 0 ? (
+                  {item?.sender?.cover?.length > 0 ? (
                     <img
-                      src={user?.cover}
+                      src={item?.sender.cover}
                       style={{
                         width: '40px',
                         height: '40px',
@@ -328,7 +259,7 @@ export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
             >
               <>
                 {item.senderId !== 'Beautyverse' ? (
-                  <>{user?.name ? user?.name : 'Removed User'}</>
+                  <>{item?.sender.name ? item?.sender.name : 'Removed User'}</>
                 ) : (
                   'BeautyVerse'
                 )}
@@ -367,8 +298,8 @@ export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
           item?.type === 'share') && (
           <FaImage
             onClick={() => {
-              navigate(`feed/${feed?._id}?review`);
-              dispatch(setOpenedFeed(feed));
+              navigate(`feed/${item?.feed?._id}?review`);
+              dispatch(setOpenedFeed(item?.feed));
             }}
             size={16}
             color={item?.status === 'unread' ? '#f1f1f1' : '#888'}
@@ -377,8 +308,8 @@ export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
         {item?.type === 'saveProduct' && (
           <FaShoppingBag
             onClick={() => {
-              navigate(`product/${product?._id}`);
-              dispatch(setOpenedProduct(product));
+              navigate(`product/${item?.product?._id}`);
+              dispatch(setOpenedProduct(item?.product));
             }}
             size={16}
             color={item?.status === 'unread' ? '#f1f1f1' : '#888'}

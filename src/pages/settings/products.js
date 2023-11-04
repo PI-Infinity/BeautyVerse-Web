@@ -20,8 +20,6 @@ export const Products = ({ activePage, setActivePage }) => {
     setTransition(false);
   }, []);
 
-  console.log('run');
-
   return (
     <div
       style={{
