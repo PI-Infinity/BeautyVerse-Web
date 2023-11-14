@@ -15,18 +15,26 @@ import Showroom from '../pages/user/components/showroom';
 import WorkingInfo from '../pages/user/components/workingInfo';
 import OpenedUserFeedNotifications from '../pages/user/notifications/openedUserFeed';
 import OpenedUserProductNotifications from '../pages/user/notifications/openedUserProduct';
+import Feeds from '../pages/feeds/list';
+import User from '../pages/user/user';
+import { Redirect } from '../pages/redirect';
+import OpenedUserFeedSaved from '../pages/settings/openedUserFeed';
+import OpenedUserProductSaved from '../pages/settings/openedUserProduct';
+import { Dashboard } from '../admin/dashboard/dashboard';
+import styled from 'styled-components';
+import { useDeviceType } from '../functions/device';
+import { Admin } from '../admin/admin';
 
 const FeedsBundle = lazy(() => import('../bundles/feedsBundle'));
 
 const Welcome = lazy(() => import('../pages/welcome/welcome'));
-const Feeds = lazy(() => import('../pages/feeds/list'));
 
 const Cards = lazy(() => import('../pages/cards/list'));
 const Main = lazy(() => import('../pages/marketplace/pages/market/main'));
 
 const SearchList = lazy(() => import('../pages/marketplace/pages/search/list'));
 const List = lazy(() => import('../pages/marketplace/pages/listPage/list'));
-const User = lazy(() => import('../pages/user/user'));
+
 const UserProfile = lazy(() => import('../pages/user/userProfile'));
 const AddFeed = lazy(() => import('../pages/feeds/addFeed/addFeed'));
 const Settings = lazy(() => import('../pages/settings/main'));
@@ -73,149 +81,188 @@ export const Routers = () => {
     </div>
   );
 
+  // device type
+  const device = useDeviceType();
+
   return (
-    <Suspense fallback={<LoadingFallback />}>
-      <Routes>
-        {/**
-         * Welcome  routes
-         */}
-        <Route path="/" element={<Welcome />} />
-        {/**
-         * Feeds routes
-         */}
-        <Route path="/feeds" element={<Feeds />}>
-          <Route path=":feedId" element={<OpenedFeed />} />
-        </Route>
-        {/**
-         * Cards routes
-         */}
-        <Route path="/cards" element={<Cards />} />
-        {/**
-         * Marketplace routes
-         */}
-        <Route path="/marketplace" element={<Main />}>
-          <Route path=":productId" element={<OpenedProduct />} />
-        </Route>
-        <Route path="/marketplace/search" element={<SearchList />}>
-          <Route path=":productId" element={<OpenedProductFromSearch />} />
-        </Route>
-        <Route path="/marketplace/list" element={<List />}>
-          <Route path=":productId" element={<OpenedProductFromList />} />
-        </Route>
-        {/**
-         * User visit routes
-         */}
-        <Route path="/user/:userId" element={<User />}>
-          <Route path="showroom" element={<Showroom />}>
-            <Route path=":productId" element={<OpenedUserProduct />} />
-          </Route>
-          <Route path="feeds" element={<UserFeeds />}>
-            <Route path=":feedId" element={<OpenedUserFeed />} />
-          </Route>
-          <Route path="contact" element={<Contact />} />
-          <Route path="procedures" element={<Procedures />} />
-          <Route path="workinginfo" element={<WorkingInfo />} />
-          <Route path="audience" element={<Audience />} />
-        </Route>
-        {/**
-         * authentication routes
-         */}
-        <Route
-          path="/login"
-          element={
-            <RequireLogout>
-              <Login />
-            </RequireLogout>
-          }
-        />
-        <Route
-          path="/resetPassword/:id"
-          element={
-            <RequireLogout>
-              <ChangePassword />
-            </RequireLogout>
-          }
-        />
-        <Route
-          path="/register/identify"
-          element={
-            <RequireLogout>
-              <Identify />
-            </RequireLogout>
-          }
-        />
-        <Route
-          path="/register/type"
-          element={
-            <RequireLogout>
-              <Type />
-            </RequireLogout>
-          }
-        />
-        <Route
-          path="/register/personalinfo"
-          element={
-            <RequireLogout>
-              <PersonalInfo />
-            </RequireLogout>
-          }
-        />
-        <Route
-          path="/register/services"
-          element={
-            <RequireLogout>
-              <Services />
-            </RequireLogout>
-          }
-        />
-        <Route
-          path="/register/accept"
-          element={
-            <RequireLogout>
-              <Accept />
-            </RequireLogout>
-          }
-        />
-        {/**
-         * Profile routes
-         */}
-        <Route
-          path="/profile"
-          element={currentUserLocal ? <UserProfile /> : <Login />}
-        >
-          <Route path="showroom" element={<Showroom />}>
-            <Route path=":productId" element={<OpenedUserProduct />} />
-          </Route>
-          <Route path="feeds" element={<UserFeeds />}>
-            <Route path=":feedId" element={<OpenedUserFeed />} />
-          </Route>
-          <Route path="contact" element={<Contact />} />
-          <Route path="procedures" element={<Procedures />} />
-          <Route path="workinginfo" element={<WorkingInfo />} />
-          <Route path="audience" element={<Audience />} />
-        </Route>
-        <Route
-          path="/profile/addfeed"
-          element={currentUserLocal ? <AddFeed /> : <Login />}
-        />
-        <Route
-          path="/profile/settings"
-          element={currentUserLocal ? <Settings /> : <Login />}
-        />
-        <Route
-          path="/profile/notifications"
-          element={currentUserLocal ? <Notifications /> : <Login />}
-        >
-          <Route
-            path="feed/:feedId"
-            element={<OpenedUserFeedNotifications />}
-          />
-          <Route
-            path="product/:productId"
-            element={<OpenedUserProductNotifications />}
-          />
-        </Route>
-      </Routes>
-    </Suspense>
+    <>
+      <Suspense fallback={<LoadingFallback />}>
+        {device === 'Mobile' && (
+          <Routes>
+            {/**
+             * Welcome  routes
+             */}
+            <Route path="/" element={<Welcome />} />
+            {/**
+             * Feeds routes
+             */}
+            <Route path="/feeds" element={<Feeds />}>
+              <Route path=":feedId" element={<OpenedFeed />} />
+            </Route>
+            {/**
+             * Cards routes
+             */}
+            <Route path="/cards" element={<Cards />} />
+            {/**
+             * Marketplace routes
+             */}
+            <Route path="/marketplace" element={<Main />}>
+              <Route path=":productId" element={<OpenedProduct />} />
+            </Route>
+            <Route path="/marketplace/search" element={<SearchList />}>
+              <Route path=":productId" element={<OpenedProductFromSearch />} />
+            </Route>
+            <Route path="/marketplace/list" element={<List />}>
+              <Route path=":productId" element={<OpenedProductFromList />} />
+            </Route>
+            {/**
+             * User visit routes
+             */}
+            <Route path="/user/:userId" element={<User />}>
+              <Route path="showroom" element={<Showroom />}>
+                <Route path=":productId" element={<OpenedUserProduct />} />
+              </Route>
+              <Route path="feeds" element={<UserFeeds />}>
+                <Route path=":feedId" element={<OpenedUserFeed />} />
+              </Route>
+              <Route path="contact" element={<Contact />} />
+              <Route path="procedures" element={<Procedures />} />
+              <Route path="workinginfo" element={<WorkingInfo />} />
+              <Route path="audience" element={<Audience />} />
+            </Route>
+            {/**
+             * authentication routes
+             */}
+            <Route
+              path="/login"
+              element={
+                <RequireLogout>
+                  <Login />
+                </RequireLogout>
+              }
+            />
+            <Route
+              path="/resetPassword/:id"
+              element={
+                <RequireLogout>
+                  <ChangePassword />
+                </RequireLogout>
+              }
+            />
+            <Route
+              path="/register/identify"
+              element={
+                <RequireLogout>
+                  <Identify />
+                </RequireLogout>
+              }
+            />
+            <Route
+              path="/register/type"
+              element={
+                <RequireLogout>
+                  <Type />
+                </RequireLogout>
+              }
+            />
+            <Route
+              path="/register/personalinfo"
+              element={
+                <RequireLogout>
+                  <PersonalInfo />
+                </RequireLogout>
+              }
+            />
+            <Route
+              path="/register/services"
+              element={
+                <RequireLogout>
+                  <Services />
+                </RequireLogout>
+              }
+            />
+            <Route
+              path="/register/accept"
+              element={
+                <RequireLogout>
+                  <Accept />
+                </RequireLogout>
+              }
+            />
+            {/**
+             * Profile routes
+             */}
+            <Route
+              path="/profile"
+              element={currentUserLocal ? <UserProfile /> : <Login />}
+            >
+              <Route path="showroom" element={<Showroom />}>
+                <Route path=":productId" element={<OpenedUserProduct />} />
+              </Route>
+              <Route path="feeds" element={<UserFeeds />}>
+                <Route path=":feedId" element={<OpenedUserFeed />} />
+              </Route>
+              <Route path="contact" element={<Contact />} />
+              <Route path="procedures" element={<Procedures />} />
+              <Route path="workinginfo" element={<WorkingInfo />} />
+              <Route path="audience" element={<Audience />} />
+            </Route>
+            <Route
+              path="/profile/addfeed"
+              element={currentUserLocal ? <AddFeed /> : <Login />}
+            />
+            <Route
+              path="/profile/settings"
+              element={currentUserLocal ? <Settings /> : <Login />}
+            >
+              <Route path="feed/:feedId" element={<OpenedUserFeedSaved />} />
+              <Route
+                path="product/:productId"
+                element={<OpenedUserProductSaved />}
+              />
+            </Route>
+            <Route
+              path="/profile/notifications"
+              element={currentUserLocal ? <Notifications /> : <Login />}
+            >
+              <Route
+                path="feed/:feedId"
+                element={<OpenedUserFeedNotifications />}
+              />
+              <Route
+                path="product/:productId"
+                element={<OpenedUserProductNotifications />}
+              />
+            </Route>
+          </Routes>
+        )}
+        {device === 'Desktop' && (
+          <Routes>
+            {/**
+             * Welcome  routes
+             */}
+            <Route path="/" element={<Welcome />} />
+            <Route path="/admin" element={<Admin />} />
+          </Routes>
+        )}
+      </Suspense>
+      {!location.pathname.includes('admin') && device === 'Desktop' && (
+        <DesktopText>
+          <h1 style={{ color: '#ccc' }}>
+            The App <span style={{ color: '#f866b1' }}>"Beauty</span>Verse" is
+            available only for Mobile Devices!
+          </h1>
+        </DesktopText>
+      )}
+    </>
   );
 };
+
+const DesktopText = styled.div`
+  position: absolute;
+  width: 100vw;
+  height: 90vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;

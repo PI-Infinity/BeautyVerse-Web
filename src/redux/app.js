@@ -17,6 +17,9 @@ export const App = createSlice({
     setLoading: (state, action) => {
       state.loading = action.payload;
     },
+    setLanguage: (state, action) => {
+      state.language = action.payload;
+    },
     setScrollToTop: (state, action) => {
       state.scrollToTop = !state.scrollToTop;
     },
@@ -29,6 +32,11 @@ export const App = createSlice({
   },
 });
 
-export const { setLanguage, setScrollToTop, setBackPath, setMachineId } =
-  App.actions;
+export const {
+  setLoading,
+  setLanguage,
+  setScrollToTop,
+  setBackPath,
+  setMachineId,
+} = App.actions;
 export default App.reducer;

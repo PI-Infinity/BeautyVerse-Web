@@ -37,7 +37,21 @@ export const PrivacyPolice = ({ activePage, setActivePage }) => {
     >
       <Container openpage={transition ? 'true' : 'false'}>
         <Header>
-          <div style={{ width: '30px' }}></div>
+          <div
+            onClick={() => {
+              setTransition(true);
+              setTimeout(() => {
+                setActivePage({ active: false, page: null, data: null });
+              }, 300);
+            }}
+            style={{
+              padding: '5px',
+
+              zIndex: 1000,
+            }}
+          >
+            <IoMdArrowDropleft size={30} color="#f866b1" />
+          </div>
           <div>
             <h3
               style={{
@@ -50,20 +64,7 @@ export const PrivacyPolice = ({ activePage, setActivePage }) => {
               Privacy Police
             </h3>
           </div>
-          <div
-            onClick={() => {
-              setTransition(true);
-              setTimeout(() => {
-                setActivePage({ active: false, page: null, data: null });
-              }, 300);
-            }}
-            style={{
-              padding: '5px',
-              zIndex: 1000,
-            }}
-          >
-            <IoMdArrowDropright size={30} color="#f866b1" />
-          </div>
+          <div style={{ width: '40px' }}></div>
         </Header>
         <div
           style={{

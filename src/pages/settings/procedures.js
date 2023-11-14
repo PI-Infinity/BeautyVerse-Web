@@ -1,6 +1,11 @@
 import { Button } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { IoMdArrowDropright, IoMdClock, IoMdClose } from 'react-icons/io';
+import {
+  IoMdArrowDropleft,
+  IoMdArrowDropright,
+  IoMdClock,
+  IoMdClose,
+} from 'react-icons/io';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { BounceLoader } from 'react-spinners';
@@ -113,7 +118,21 @@ export const Procedures = ({ activePage, setActivePage, currentUser }) => {
       <SimpleBackdrop open={sendingLoading} />
       <Container openpage={transition ? 'true' : 'false'}>
         <Header>
-          <div style={{ width: '30px' }}></div>
+          <div
+            onClick={() => {
+              setTransition(true);
+              setTimeout(() => {
+                setActivePage({ active: false, page: null, data: null });
+              }, 300);
+            }}
+            style={{
+              padding: '5px',
+
+              zIndex: 1000,
+            }}
+          >
+            <IoMdArrowDropleft size={30} color="#f866b1" />
+          </div>
           <div>
             <h3
               style={{
@@ -126,24 +145,7 @@ export const Procedures = ({ activePage, setActivePage, currentUser }) => {
               Procedures
             </h3>
           </div>
-          <div
-            onClick={() => {
-              if (!equals) {
-                UpdateUser('procedures', procedures);
-              }
-              setTransition(true);
-              setTimeout(() => {
-                setActivePage({ active: false, page: null, data: null });
-              }, 300);
-            }}
-            style={{
-              padding: '5px',
-
-              zIndex: 1000,
-            }}
-          >
-            <IoMdArrowDropright size={30} color="#f866b1" />
-          </div>
+          <div style={{ width: '40px' }}></div>
         </Header>
         <ContentList>
           <ServicesOptions

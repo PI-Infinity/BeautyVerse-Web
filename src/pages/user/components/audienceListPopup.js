@@ -164,7 +164,9 @@ export const AudienceListPopup = ({
             )
             ?.map((item, index) => {
               // capitalize and define user's type
-              const t = capitalizeFirstLetter(item?.type);
+              const t = item?.username
+                ? item?.username
+                : capitalizeFirstLetter(item?.type);
               return (
                 <div
                   key={index}

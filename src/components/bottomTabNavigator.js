@@ -18,7 +18,7 @@ import axios from 'axios';
 import { setRerenderNotifications } from '../redux/notifications';
 import { BounceLoader } from 'react-spinners';
 
-export const BottomTabNavigator = () => {
+const BottomTabNavigator = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
@@ -203,6 +203,8 @@ export const BottomTabNavigator = () => {
     </Container>
   );
 };
+
+export default BottomTabNavigator;
 
 const Container = styled.div`
   position: fixed;

@@ -170,17 +170,17 @@ export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <Img
           onClick={
-            !item.sender
+            !item?.sender
               ? undefined
               : () => {
-                  dispatch(setTargetUser(item.sender));
+                  dispatch(setTargetUser(item?.sender));
                   navigate(
                     '/user/' +
-                      item.sender?._id +
+                      item?.sender?._id +
                       `${
-                        item.sender?.type === 'shop'
+                        item?.sender?.type === 'shop'
                           ? '/showroom'
-                          : item.sender?.type === 'user'
+                          : item?.sender?.type === 'user'
                           ? '/contact'
                           : '/feeds'
                       }`
@@ -201,7 +201,7 @@ export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
             </div>
           ) : (
             <>
-              {item.senderId === 'Beautyverse' ? (
+              {item?.senderId === 'Beautyverse' ? (
                 <img
                   src={logo}
                   style={{
@@ -258,7 +258,7 @@ export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
               }}
             >
               <>
-                {item.senderId !== 'Beautyverse' ? (
+                {item?.senderId !== 'Beautyverse' ? (
                   <>{item?.sender.name ? item?.sender.name : 'Removed User'}</>
                 ) : (
                   'BeautyVerse'
@@ -299,7 +299,7 @@ export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
           <FaImage
             onClick={() => {
               navigate(`feed/${item?.feed?._id}?review`);
-              dispatch(setOpenedFeed(item?.feed));
+              dispatch(setOpenedFeed({ ...item?.feed, owner: currentUser }));
             }}
             size={16}
             color={item?.status === 'unread' ? '#f1f1f1' : '#888'}
@@ -309,7 +309,9 @@ export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
           <FaShoppingBag
             onClick={() => {
               navigate(`product/${item?.product?._id}`);
-              dispatch(setOpenedProduct(item?.product));
+              dispatch(
+                setOpenedProduct({ ...item?.product, owner: currentUser })
+              );
             }}
             size={16}
             color={item?.status === 'unread' ? '#f1f1f1' : '#888'}

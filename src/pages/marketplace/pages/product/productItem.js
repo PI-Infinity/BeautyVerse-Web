@@ -14,7 +14,7 @@ import { FullDescription } from '../product/components/fullDescription';
 import { HowToUse } from '../product/components/howToUse';
 import { Compositions } from '../product/components/compositions';
 
-export const ProductItem = ({ item, to }) => {
+export const ProductItem = ({ item, to, scrollRef }) => {
   const product =
     useSelector((state) => state.storeMarketplace.openedProduct) || item;
 
@@ -33,7 +33,9 @@ export const ProductItem = ({ item, to }) => {
           product?.shortDescription?.ka?.length > 0) && (
           <ShortDescription product={product} />
         )}
-        {product?.variants?.length > 0 && <Variants product={product} />}
+        {product?.variants?.length > 0 && (
+          <Variants product={product} scrollRef={scrollRef} />
+        )}
         {(product?.description?.en?.length > 0 ||
           product?.description?.ru?.length > 0 ||
           product?.description?.ka?.length > 0) && (

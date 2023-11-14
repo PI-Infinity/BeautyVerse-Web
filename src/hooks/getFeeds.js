@@ -24,7 +24,6 @@ export const GetFeeds = () => {
         currentUser ? '?check=' + currentUser._id + '&' : '?'
       }page=1&limit=3`;
       const response = await axios.get(url);
-      console.log(response.data.data.feedlist);
       dispatch(setFeeds(response.data.data.feedlist));
       dispatch(setLoading(false));
       dispatch(setPage(1));
@@ -32,20 +31,22 @@ export const GetFeeds = () => {
       console.log(error.response);
     }
   };
-  //   const GettingFollowingsFeeds = async () => {
-  //     try {
-  //       const response = await axios.get(
-  //         `${backendUrl}/api/v1/feeds/followings?page=1&limit=3`
-  //       );
-  //       console.log(response.data.data.feedlist);
-  //       dispatch(setFollowingsFeeds(response.data.data.feedlist));
-  //       dispatch(setLoading(false));
-  //     } catch (error) {
-  //       console.log(error.response);
-  //     }
-  //   };
+  const GettingFollowingsFeeds = async () => {
+    try {
+      const response = await axios.get(
+        `${backendUrl}/api/v1/feeds/followings?check=${currentUser._id}&page=1&limit=3`
+      );
+
+      dispatch(setFollowingsFeeds(response.data.data.feedlist));
+      dispatch(setLoading(false));
+    } catch (error) {
+      console.log(error.response);
+    }
+  };
   useEffect(() => {
     GettingFeeds();
-    // GettingFollowingsFeeds()
+    if (currentUser) {
+      GettingFollowingsFeeds();
+    }
   }, [rerenderFeeds, currentUser]);
 };

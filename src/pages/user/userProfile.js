@@ -22,13 +22,6 @@ const UserProfile = () => {
   // current user
   const currentUser = useSelector((state) => state.storeUser.currentUser);
 
-  // page animation transition
-  const [transition, setTransition] = useState(false);
-
-  useEffect(() => {
-    setTransition(true);
-  }, []);
-
   // scroll to top
   const scrollToTop = useSelector((state) => state.storeApp.scrollToTop);
   const firstLoadScroll = useRef(true);
@@ -81,7 +74,7 @@ const UserProfile = () => {
           <BounceLoader color={'#f866b1'} loading={loading} size={50} />
         </div>
       )}
-      <Container transition={transition ? 'true' : 'false'}>
+      <Container>
         <>
           <Headroom
             downTolerance={10}
@@ -122,8 +115,8 @@ const Container = styled.div`
   padding-bottom: 50px;
   overflow: hidden;
   position: relative;
-  right: ${(props) => (props.transition === 'true' ? 0 : '-100vw')};
-  opacity: ${(props) => (props.transition === 'true' ? '1' : '0')};
+  right: 0;
+  opacity: 1;
   transition: ease-in-out 200ms;
 
   ::-webkit-scrollbar {

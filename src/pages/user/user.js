@@ -82,6 +82,29 @@ const User = () => {
     targetUser = undefined;
   }
 
+  // Get visitor from global Redux state
+  const visitor = useSelector((state) => state.storeApp.machineId);
+
+  // useEffect to send user visit
+  useEffect(() => {
+    const SendUserVisit = async () => {
+      const resp = await axios.post(
+        backendUrl + `/api/v1/users/${targetUser?._id}/visitors`,
+        {
+          visitor: visitor,
+          user: currentUser ? currentUser?._id : null,
+        }
+      );
+    };
+    try {
+      if (targetUser?._id !== currentUser?._id && targetUser && visitor) {
+        SendUserVisit();
+      }
+    } catch (error) {
+      console.log(error.response.data.message);
+    }
+  }, [visitor, targetUser]);
+
   // page animation transition
   const [transition, setTransition] = useState(false);
 
@@ -119,8 +142,6 @@ const User = () => {
       setRefresh(false);
     }, 1500);
   }, [rerenderCurrentUser]);
-
-  console.log(targetUser);
 
   return (
     <>

@@ -108,7 +108,21 @@ export const WorkingInfo = ({ activePage, setActivePage, currentUser }) => {
       <SimpleBackdrop open={changeLoading} />
       <Container openpage={transition ? 'true' : 'false'}>
         <Header>
-          <div style={{ width: '30px' }}></div>
+          <div
+            onClick={() => {
+              setTransition(true);
+              setTimeout(() => {
+                setActivePage({ active: false, page: null, data: null });
+              }, 300);
+            }}
+            style={{
+              padding: '5px',
+
+              zIndex: 1000,
+            }}
+          >
+            <IoMdArrowDropleft size={30} color="#f866b1" />
+          </div>
           <div>
             <h3
               style={{
@@ -121,24 +135,7 @@ export const WorkingInfo = ({ activePage, setActivePage, currentUser }) => {
               Working Info
             </h3>
           </div>
-          <div
-            onClick={() => {
-              if (!equals) {
-                UpdateUser('workingDays', workingDays);
-              }
-              setTransition(true);
-              setTimeout(() => {
-                setActivePage({ active: false, page: null, data: null });
-              }, 300);
-            }}
-            style={{
-              padding: '5px',
-
-              zIndex: 1000,
-            }}
-          >
-            <IoMdArrowDropright size={30} color="#f866b1" />
-          </div>
+          <div style={{ width: '40px' }}></div>
         </Header>
         <ContentList>
           <h4 style={{ color: '#ccc', letterSpacing: '0.5px' }}>

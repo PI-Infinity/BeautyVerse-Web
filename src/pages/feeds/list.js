@@ -5,10 +5,16 @@ import styled from 'styled-components';
 import { FeedCard } from './components/feedCard';
 import { BounceLoader } from 'react-spinners';
 import { Outlet } from 'react-router-dom';
-import { setPage, AddFeeds, setScrollYFeeds } from '../../redux/feeds';
+import {
+  setPage,
+  AddFeeds,
+  setScrollYFeeds,
+  AddFollowingsFeeds,
+  setFollowingsPage,
+} from '../../redux/feeds';
 import { Options } from './components/options';
 
-const Feeds = () => {
+const Feeds = ({ list }) => {
   // redux dispatch
   const dispatch = useDispatch();
 
@@ -23,6 +29,9 @@ const Feeds = () => {
   useEffect(() => {
     window.scrollTo(0, scrollYPosition);
   }, []);
+
+  // navigation between for you and followings feeds state
+  const [activeList, setActiveList] = useState(true);
 
   // feeds
   const loading = useSelector((state) => state.storeFeeds.loading);
@@ -46,6 +55,30 @@ const Feeds = () => {
     }
   };
 
+  // feeds
+
+  const followingsPage = useSelector(
+    (state) => state.storeFeeds.followingsPage
+  );
+  const followingsFeeds = useSelector(
+    (state) => state.storeFeeds.followingsFeeds
+  );
+
+  // adding feeds
+  const AddUsersFollowingsFeeds = async (currentPage) => {
+    try {
+      const response = await axios.get(
+        `${backendUrl}/api/v1/feeds/followings?check=${currentUser._id}&page=1&limit=3`
+      );
+      const newFeeds = response.data.data.feedlist;
+
+      dispatch(AddFollowingsFeeds(newFeeds));
+      dispatch(setFollowingsPage(currentPage));
+    } catch (error) {
+      console.log(error.response.data.message);
+    }
+  };
+
   useEffect(() => {
     const handleScroll = async () => {
       const { scrollY, innerHeight } = window;
@@ -54,7 +87,11 @@ const Feeds = () => {
       dispatch(setScrollYFeeds(scrollY));
 
       if (scrollY + innerHeight >= scrollHeight - 200) {
-        await AddUsersFeeds(page + 1);
+        if (activeList) {
+          await AddUsersFeeds(page + 1);
+        } else {
+          await AddUsersFollowingsFeeds(followingsPage + 1);
+        }
       }
     };
 
@@ -94,9 +131,6 @@ const Feeds = () => {
     }, 1500);
   }, [rerenderFeeds]);
 
-  // navigation between for you and followings feeds state
-  const [activeList, setActiveList] = useState(false);
-
   /**
    * feed seen functionallity
    */
@@ -119,7 +153,6 @@ const Feeds = () => {
       entries.forEach((entry) => {
         if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
           const Seen = async (userId, itemId) => {
-            console.log(itemId);
             try {
               if (userId !== currentUser?._id) {
                 const response = await axios.patch(
@@ -128,7 +161,6 @@ const Feeds = () => {
                     view: machineId,
                   }
                 );
-                console.log(response);
               }
             } catch (error) {
               console.log(error);
@@ -196,52 +228,101 @@ const Feeds = () => {
           >
             <BounceLoader color={'#f866b1'} loading={refresh} size={30} />
           </div>
-          {/* <Navigator>
-            <div
-              onClick={() => setActiveList(true)}
-              style={{
-                color: activeList ? "#f866b1" : "#ccc",
-                borderBottom: `1.5px solid ${
-                  activeList ? "#f866b1" : "#050505"
-                }`,
-              }}
-            >
-              For You
+          <Navigator>
+            <div className="wrapper">
+              <div
+                onClick={() => setActiveList(true)}
+                style={{
+                  width: '50%',
+                  boxSizing: 'border-box',
+                  textAlign: 'center',
+                  padding: '10px 0',
+                  letterSpacing: '0.5px',
+                  fontWeight: 500,
+                  color: activeList ? '#f866b1' : '#ccc',
+                }}
+              >
+                For You
+              </div>
+              <div
+                onClick={() => setActiveList(false)}
+                style={{
+                  width: '50%',
+                  boxSizing: 'border-box',
+                  textAlign: 'center',
+                  padding: '10px 0',
+                  letterSpacing: '0.5px',
+                  fontWeight: 500,
+                  color: !activeList ? '#f866b1' : '#ccc',
+                }}
+              >
+                Followings
+              </div>
             </div>
-            <div
-              onClick={() => setActiveList(false)}
-              style={{
-                color: !activeList ? "#f866b1" : "#ccc",
-                borderBottom: `1.5px solid ${
-                  !activeList ? "#f866b1" : "#050505"
-                }`,
-              }}
-            >
-              Followings
+            <div className="line">
+              <div
+                style={{
+                  transition: 'ease-in 200ms',
+                  width: '50%',
+                  height: '1.5px',
+                  background: '#f866b1',
+                  position: 'relative',
+                  left: activeList ? '0' : '50%',
+                }}
+              ></div>
             </div>
-          </Navigator> */}
-          <div style={{ display: 'flex', width: '100vw' }}>
+          </Navigator>
+          <ContentContainer>
             <ListContainer activelist={activeList === true ? 'true' : 'false'}>
-              {feeds?.map((item, index) => {
-                return (
-                  <div
-                    ref={addToRefs}
-                    data-id={item._id}
-                    data-owner-id={item?.owner._id}
-                    key={index}
-                    style={{ width: '100%' }}
-                  >
-                    <FeedCard item={item} />
-                  </div>
-                );
-              })}
+              {feeds?.length > 0 ? (
+                feeds?.map((item, index) => {
+                  return (
+                    <FeedContainer
+                      ref={addToRefs}
+                      data-id={item._id}
+                      data-owner-id={item?.owner._id}
+                      key={index}
+                    >
+                      <FeedCard item={item} />
+                    </FeedContainer>
+                  );
+                })
+              ) : (
+                <div
+                  style={{
+                    width: '100%',
+                    height: '500px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#888',
+                  }}
+                >
+                  <p>No feeds found!</p>
+                </div>
+              )}
             </ListContainer>
-            {/* <ListContainer activelist={activeList === true ? "true" : "false"}>
-              {feeds?.map((item, index) => {
-                return <FeedCard key={index} item={item} />;
-              })}
-            </ListContainer> */}
-          </div>
+            <ListContainer activelist={activeList === true ? 'true' : 'false'}>
+              {followingsFeeds?.length > 0 ? (
+                followingsFeeds?.map((item, index) => {
+                  return <FeedCard key={index} item={item} />;
+                })
+              ) : (
+                <div
+                  style={{
+                    width: '100%',
+                    height: '500px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#888',
+                  }}
+                >
+                  <p>No followings feeds found!</p>
+                </div>
+              )}
+            </ListContainer>
+          </ContentContainer>
         </>
       )}
     </Container>
@@ -251,14 +332,16 @@ const Feeds = () => {
 export default Feeds;
 
 const Container = styled.div`
-  width: 100%;
+  width: 50vw;
   min-height: 100vh;
   padding-bottom: 8vh;
   overflow: hidden;
   box-sizing: border-box;
   background: rgba(0, 0, 0, 0.3);
+  margin-left: 25vw;
 
   @media only screen and (max-width: 600px) {
+    margin-left: 0;
     width: 100%;
     min-height: 100vh;
     padding-bottom: 8vh;
@@ -268,32 +351,63 @@ const Container = styled.div`
 `;
 
 const Navigator = styled.div`
-  display: flex;
-  height: 50px;
+  height: 45px;
   width: 100vw;
 
-  div {
+  .wrapper {
     width: 50%;
     display: flex;
-    justify-content: center;
     align-items: center;
-    font-weight: bold;
-    letter-spacing: 0.5px;
+    justify-content: center;
+
+    @media only screen and (max-width: 600px) {
+      width: 100%;
+    }
+  }
+
+  .line {
+    width: 50%;
+    height: 1.5px;
+    background: rgba(255, 255, 255, 0.1);
+
+    @media only screen and (max-width: 600px) {
+      width: 100%;
+    }
+  }
+`;
+
+const ContentContainer = styled.div`
+  display: flex;
+  width: 100vw;
+
+  @media only screen and (max-width: 600px) {
+    width: 200vw;
   }
 `;
 
 const ListContainer = styled.div`
   position: relative;
-  transition: ease-in 300ms;
-  width: 100%;
+  transition: ease-in 200ms;
   display: flex;
   flex-direction: column;
   align-items: center;
+  right: ${(props) => (props.activelist === 'false' ? '50vw' : '0')};
+  width: 50vw;
 
   @media only screen and (max-width: 600px) {
-    position: relative;
-    transition: ease-in 300ms;
+    width: 100%;
+    transition: ease-in 200ms;
     align-items: start;
-    right: ${(props) => (props.activelist === 'true' ? '100vw' : '0')};
+    right: ${(props) => (props.activelist === 'false' ? '100vw' : '0')};
+  }
+`;
+
+const FeedContainer = styled.div`
+  width: 50vw;
+  display: flex;
+  justify-content: center;
+
+  @media only screen and (max-width: 600px) {
+    width: 100%;
   }
 `;

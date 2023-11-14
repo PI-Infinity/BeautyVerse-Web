@@ -46,6 +46,7 @@ export const Feeds = createSlice({
         [...state.feeds]
       );
     },
+
     setFollowingsPage: (state, action) => {
       state.followingsPage = action.payload;
     },
@@ -92,6 +93,7 @@ export const {
   AddFeeds,
   setFollowingsFeeds,
   AddFollowingsFeeds,
+  setFollowingsPage,
   setScrollYFeeds,
   setRerenderFeeds,
   setRerenderUserFeeds,

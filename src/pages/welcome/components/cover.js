@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from "react";
-import styled, { keyframes, css } from "styled-components";
-import coverImg from "../../../assets/logo.png";
-import DownloadAppStore from "../../../assets/downloadAppStore.png";
-import DownloadPlayStore from "../../../assets/google.png";
-import Button from "@mui/material/Button";
-import { AiFillAppstore } from "react-icons/ai";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import styled, { keyframes, css } from 'styled-components';
+import coverImg from '../../../assets/logo.png';
+import DownloadAppStore from '../../../assets/downloadAppStore.png';
+import DownloadPlayStore from '../../../assets/google.png';
+import Button from '@mui/material/Button';
+import { AiFillAppstore } from 'react-icons/ai';
+import { useNavigate } from 'react-router-dom';
+import { useDeviceType } from '../../../functions/device';
 
 export const Cover = () => {
   const navigate = useNavigate();
+  const device = useDeviceType();
 
   return (
     <Container>
@@ -22,50 +24,55 @@ export const Cover = () => {
         <TextContainer>
           <h2>Your beauty hub everywhere & anytime!</h2>
         </TextContainer>
-        <GoButton variant="contained" onClick={() => navigate("/feeds")}>
-          Go to App{" "}
-          <AiFillAppstore
-            // color="#ccc"
-            size={24}
-            style={{ marginLeft: "8px" }}
-          />
-        </GoButton>
-        <StoreButtons>
-          <TextContainer>
-            <div>
-              <a
-                style={{ padding: "0", margin: "0" }}
-                href="https://apps.apple.com/app/6448795980"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <AppStoreImage
-                  src={DownloadAppStore}
-                  alt="Download on the App Store"
-                />
-              </a>
-            </div>
-          </TextContainer>
-          <TextContainer>
-            <div>
-              <a
-                onClick={() =>
-                  alert("Andorid not supported yet, we are working for it!")
-                }
-                style={{ padding: "0", margin: "0" }}
-                // href="https://apps.apple.com/app/6448795980"
-                // target="_blank"
-                // rel="noopener noreferrer"
-              >
-                <AppStoreImage
-                  style={{ height: "46px", width: "142px" }}
-                  src={DownloadPlayStore}
-                  alt="Download on the App Store"
-                />
-              </a>
-            </div>
-          </TextContainer>
-        </StoreButtons>
+
+        {device === 'Mobile' && (
+          <GoButton variant="contained" onClick={() => navigate('/feeds')}>
+            Go to App{' '}
+            <AiFillAppstore
+              // color="#ccc"
+              size={24}
+              style={{ marginLeft: '8px' }}
+            />
+          </GoButton>
+        )}
+        {device === 'Mobile' && (
+          <StoreButtons>
+            <TextContainer>
+              <div>
+                <a
+                  style={{ padding: '0', margin: '0' }}
+                  href="https://apps.apple.com/app/6448795980"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <AppStoreImage
+                    src={DownloadAppStore}
+                    alt="Download on the App Store"
+                  />
+                </a>
+              </div>
+            </TextContainer>
+            <TextContainer>
+              <div>
+                <a
+                  onClick={() =>
+                    alert('Andorid not supported yet, we are working for it!')
+                  }
+                  style={{ padding: '0', margin: '0' }}
+                  // href="https://apps.apple.com/app/6448795980"
+                  // target="_blank"
+                  // rel="noopener noreferrer"
+                >
+                  <AppStoreImage
+                    style={{ height: '46px', width: '142px' }}
+                    src={DownloadPlayStore}
+                    alt="Download on the App Store"
+                  />
+                </a>
+              </div>
+            </TextContainer>
+          </StoreButtons>
+        )}
       </AnimatedContainer>
     </Container>
   );
@@ -73,13 +80,14 @@ export const Cover = () => {
 
 const Container = styled.div`
   width: 100%;
-  height: 90%;
+  height: 80%;
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
 
   @media only screen and (max-width: 600px) {
+    height: 90%;
     flex-direction: column;
     justify-content: start;
   }
@@ -210,6 +218,7 @@ const StoreButtons = styled.div`
 
 const AppStoreImage = styled.img`
   width: 150px;
+
   @media only screen and (max-width: 600px) {
     width: 150px;
   }
@@ -221,10 +230,12 @@ const GoButton = styled(Button)`
     color: #fff;
     font-weight: bold;
     margin-top: 20px;
-    width: 50%;
+    width: 60%;
+    height: 45px;
     border-radius: 50px;
 
     @media only screen and (max-width: 600px) {
+      height: auto;
       width: 60%;
       margin-top: 30px;
     }

@@ -284,16 +284,18 @@ export const FeedCard = ({
           />
         )}
 
-        <BounceLoader
-          style={{
-            position: 'absolute',
-            left: (screenWidth - widthReduction - 20) / 2,
-            zIndex: -1,
-            marginBottom: '40px',
-          }}
-          size={40}
-          color="#f866b1"
-        />
+        {!opacity && (
+          <BounceLoader
+            style={{
+              position: 'absolute',
+              left: (screenWidth - widthReduction - 20) / 2,
+              zIndex: -1,
+              marginBottom: '40px',
+            }}
+            size={40}
+            color="#f866b1"
+          />
+        )}
         {item?.fileFormat === 'img' ? (
           <>
             {item?.images?.map((itm, index) => {
@@ -301,8 +303,15 @@ export const FeedCard = ({
                 <Image
                   onClick={() => {
                     if (!goToFeeds) {
-                      if (location.pathname === '/feeds') {
-                        navigate(`/feeds/${item?._id}`);
+                      if (
+                        location.pathname === '/feeds' ||
+                        location.pathname.includes('profile/settings')
+                      ) {
+                        navigate(
+                          location.pathname.includes('/profile')
+                            ? `feed/${item?._id}`
+                            : `/feeds/${item?._id}`
+                        );
                         dispatch(setOpenedFeed(item));
                       } else {
                         return undefined;
@@ -354,10 +363,7 @@ export const FeedCard = ({
 };
 
 const Container = styled.div`
-  width: 40%;
-  @media only screen and (max-width: 600px) {
-    width: 100%;
-  }
+  width: 100%;
 `;
 
 const FilesContainer = styled.div`
@@ -370,7 +376,8 @@ const FilesContainer = styled.div`
   overflow-x: scroll;
   margin-left: 10px;
   border-radius: 20px;
-  max-height: 640px;
+  max-height: 1080px;
+  max-width: 640px;
   box-sizing: border-box;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
@@ -383,15 +390,21 @@ const FilesContainer = styled.div`
     align-items: center;
     margin-left: 10px;
     border-radius: 20px;
+    max-width: auto;
+    max-height: 640px;
   }
 `;
 
 const Image = styled.img`
   width: ${(props) => props.width / 2.5}px;
   height: ${(props) => props.height / 2.5}px;
+  max-height: 1080px;
+  max-width: 640px;
 
   @media only screen and (max-width: 600px) {
     width: ${(props) => props.width}px;
     height: ${(props) => props.height}px;
+    max-width: auto;
+    max-height: 640px;
   }
 `;

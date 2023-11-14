@@ -104,7 +104,7 @@ export const Card = ({ item }) => {
         )}
       </ImageContainer>
       <h4 style={{ color: '#ccc', margin: 0, letterSpacing: '0.5px' }}>
-        {type}
+        {item?.username ? item.username : type}
       </h4>
       <div
         style={{

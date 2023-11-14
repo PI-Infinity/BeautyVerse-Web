@@ -36,6 +36,7 @@ const Container = styled.div`
 const LogoTitle = styled.h1`
   color: ${(props) => (props.part === 1 ? '#f866b1' : '#ccc')};
   letter-spacing: 1.2px;
+  font-size: 2.5vw;
 
   @media only screen and (max-width: 600px) {
     font-size: 7.5vw;

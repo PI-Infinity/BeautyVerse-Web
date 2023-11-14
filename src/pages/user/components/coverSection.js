@@ -146,13 +146,22 @@ export const CoverSection = ({ user }) => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 position: 'absolute',
-                background: 'rgba(1, 2, 12, 0.1)',
+                background: 'rgba(1, 2, 12, 0.2)',
                 backdropFilter: 'blur(10px)',
                 WebkitBackdropFilter: 'blur(10px)',
+                overflow: 'hidden',
               }}
             >
-              <div style={{ opacity: '0.6' }}>
-                <BounceLoader size="25vw" loading={loading} color="#f866b1" />
+              <div
+                style={{
+                  opacity: '1',
+                  width: '100%',
+                  height: '100%',
+                  background: 'rgba(255,255,255,0.1)',
+                  borderRadius: '50px',
+                }}
+              >
+                {/* <BounceLoader size="25vw" loading={loading} color="#f866b1" /> */}
               </div>
             </div>
           )}
@@ -173,7 +182,7 @@ export const CoverSection = ({ user }) => {
             <FaUser size={40} color="#aaa" />
           )}
 
-          {currentUser && (
+          {currentUser?._id === user?._id && (
             <input
               type="file"
               // value={file}
@@ -200,7 +209,7 @@ export const CoverSection = ({ user }) => {
         </CoverImageContainer>
         <InfoContainer>
           <h3 style={{ color: '#ccc', margin: 0, letterSpacing: '0.5px' }}>
-            {type}
+            {user?.username ? user?.username : type}
           </h3>
           <p style={{ color: '#ccc', margin: 0, letterSpacing: '0.5px' }}>
             {user?.about}

@@ -1,22 +1,22 @@
-import React, { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import styled from "styled-components";
-import axios from "axios";
-import { useLocation, useNavigate } from "react-router-dom";
-import { setOpenedProduct } from "../../../../../redux/marketplace";
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import styled from 'styled-components';
+import axios from 'axios';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { setOpenedProduct } from '../../../../../redux/marketplace';
 
-export const Variants = ({ product }) => {
+export const Variants = ({ product, scrollRef }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const location = useLocation();
-  const splited = location.pathname.split("/");
+  const splited = location.pathname.split('/');
   let newPath;
   if (splited?.length === 4) {
-    newPath = splited.slice(0, 3).join("/");
+    newPath = splited.slice(0, 3).join('/');
   } else if (splited?.length === 3) {
-    newPath = splited.slice(0, 2).join("/");
+    newPath = splited.slice(0, 2).join('/');
   } else {
-    newPath = splited.slice(0, 5).join("/");
+    newPath = splited.slice(0, 5).join('/');
   }
   const backendUrl = useSelector((state) => state.storeApp.backendUrl);
   const [variants, setVariants] = useState([]);
@@ -24,7 +24,7 @@ export const Variants = ({ product }) => {
     try {
       // Map through the variants and return an array of promises
       const lstPromises = product.variants?.map((i) => {
-        return axios.get(backendUrl + "/api/v1/marketplace/" + i._id);
+        return axios.get(backendUrl + '/api/v1/marketplace/' + i._id);
       });
 
       // Wait for all the promises to resolve
@@ -48,10 +48,10 @@ export const Variants = ({ product }) => {
       <div>Variants:</div>
       <div
         style={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          gap: "4px",
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: '4px',
         }}
       >
         {variants?.map((item, index) => {
@@ -59,28 +59,42 @@ export const Variants = ({ product }) => {
             <div
               onClick={() => {
                 dispatch(setOpenedProduct(item));
-                navigate(newPath + "/" + item._id);
-                console.log(newPath + "/" + item._id);
+
+                // Check if the scrollRef.current is available
+                if (scrollRef.current) {
+                  // Scroll to the top of the container smoothly
+                  scrollRef.current.scrollTo({
+                    top: 0,
+                    behavior: 'smooth',
+                  });
+                }
+
+                // Navigate based on the current pathname
+                if (location.pathname.includes('/settings')) {
+                  navigate('/profile/settings/product/' + item._id);
+                } else {
+                  navigate(newPath + '/' + item._id);
+                }
               }}
               key={index}
               style={{
-                flexDirection: "row",
-                alignItems: "center",
-                padding: "8px",
-                borderRadius: "50px",
+                flexDirection: 'row',
+                alignItems: 'center',
+                padding: '8px',
+                borderRadius: '50px',
               }}
             >
               <img
                 key={item.gallery[item.cover].url}
                 src={item.gallery[item.cover].url}
-                style={{ height: "35px", width: "35px", borderRadius: "50px" }}
+                style={{ height: '35px', width: '35px', borderRadius: '50px' }}
               />
               <p
                 style={{
-                  fontSize: "14px",
-                  margin: "0 15px",
-                  letterSpacing: "0.5px",
-                  color: "#ccc",
+                  fontSize: '14px',
+                  margin: '0 15px',
+                  letterSpacing: '0.5px',
+                  color: '#ccc',
                 }}
               >
                 {item.title}

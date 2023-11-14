@@ -54,69 +54,71 @@ const Procedures = () => {
                 >
                   <span>{label}</span>
                 </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    background: 'rgba(255,255,255,0.1)',
-                    borderRadius: '50px',
-                    margin: '8px 0 4px 0',
-                    boxSizing: 'border-box',
-                    padding: '5px 10px',
-                    gap: '25px',
-                  }}
-                >
+                {(item.duration || item.price) && (
                   <div
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: '5px',
+                      background: 'rgba(255,255,255,0.1)',
+                      borderRadius: '50px',
+                      margin: '8px 0 4px 0',
+                      boxSizing: 'border-box',
+                      padding: '5px 10px',
+                      gap: '25px',
                     }}
                   >
-                    {item?.duration && (
-                      <span>
-                        <span>Duration: </span>
-                        <span style={{ color: '#f866b1' }}>
-                          {item.duration < 60
-                            ? item.duration + ' min.'
-                            : item.duration >= 60
-                            ? Math.floor(item.duration / 60) +
-                              'h' +
-                              (item.duration % 60 > 0
-                                ? ' ' + (item.duration % 60) + ' min.'
-                                : '')
-                            : '0h'}
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                      }}
+                    >
+                      {item?.duration && (
+                        <span>
+                          <span>Duration: </span>
+                          <span style={{ color: '#f866b1' }}>
+                            {item.duration < 60
+                              ? item.duration + ' min.'
+                              : item.duration >= 60
+                              ? Math.floor(item.duration / 60) +
+                                'h' +
+                                (item.duration % 60 > 0
+                                  ? ' ' + (item.duration % 60) + ' min.'
+                                  : '')
+                              : '0h'}
+                          </span>
                         </span>
-                      </span>
-                    )}
-                  </div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                    }}
-                  >
-                    {item?.price && (
-                      <span>
-                        Price:{' '}
-                        <span style={{ color: '#f866b1' }}>
-                          {item.price}{' '}
-                          {targetUser?.currency && (
-                            <>
-                              {targetUser?.currency === 'Dollar'
-                                ? '$'
-                                : targetUser?.currency === 'Euro'
-                                ? '€'
-                                : '₾'}
-                            </>
-                          )}
+                      )}
+                    </div>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}
+                    >
+                      {item?.price && (
+                        <span>
+                          Price:{' '}
+                          <span style={{ color: '#f866b1' }}>
+                            {item.price}{' '}
+                            {targetUser?.currency && (
+                              <>
+                                {targetUser?.currency === 'Dollar'
+                                  ? '$'
+                                  : targetUser?.currency === 'Euro'
+                                  ? '€'
+                                  : '₾'}
+                              </>
+                            )}
+                          </span>
                         </span>
-                      </span>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             );
           })}

@@ -21,6 +21,24 @@ export const MenuItems = ({
   return (
     <Container>
       {Items?.map((item, index) => {
+        if (
+          currentUser?.type === 'user' &&
+          (item.value === 'procedures' ||
+            item.value === 'products' ||
+            item.value === 'workingInfo')
+        ) {
+          return;
+        }
+        if (
+          (currentUser?.type === 'specialist' ||
+            currentUser?.type === 'beautycenter') &&
+          item.value === 'products'
+        ) {
+          return;
+        }
+        if (currentUser?.type === 'shop' && item.value === 'procedures') {
+          return;
+        }
         if (item.value !== 'activation' && item.value !== 'darkMode') {
           return (
             <Item
@@ -33,7 +51,7 @@ export const MenuItems = ({
               <IoMdArrowDropright color="#f866b1" />
             </Item>
           );
-        } else {
+        } else if (currentUser?.type !== 'user') {
           return (
             <Item
               key={index}

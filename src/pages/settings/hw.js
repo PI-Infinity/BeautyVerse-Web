@@ -37,19 +37,6 @@ export const HW = ({ activePage, setActivePage }) => {
     >
       <Container openpage={transition ? 'true' : 'false'}>
         <Header>
-          <div style={{ width: '30px' }}></div>
-          <div>
-            <h3
-              style={{
-                color: '#ccc',
-                margin: 0,
-                padding: 0,
-                letterSpacing: '0.5px',
-              }}
-            >
-              How Works?
-            </h3>
-          </div>
           <div
             onClick={() => {
               setTransition(true);
@@ -59,11 +46,25 @@ export const HW = ({ activePage, setActivePage }) => {
             }}
             style={{
               padding: '5px',
+
               zIndex: 1000,
             }}
           >
-            <IoMdArrowDropright size={30} color="#f866b1" />
+            <IoMdArrowDropleft size={30} color="#f866b1" />
           </div>
+          <div>
+            <h3
+              style={{
+                color: '#ccc',
+                margin: 0,
+                padding: 0,
+                letterSpacing: '0.5px',
+              }}
+            >
+              How does BeautyVerse work?
+            </h3>
+          </div>
+          <div style={{ width: '40px' }}></div>
         </Header>
         <div
           style={{

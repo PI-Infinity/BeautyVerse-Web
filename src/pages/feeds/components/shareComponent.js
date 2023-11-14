@@ -55,7 +55,7 @@ const ShareComponent = (props) => {
   const [isTooltipOpen, setIsTooltipOpen] = useState(false);
 
   const handleCopyClick = () => {
-    const textToCopy = 'https://beautyverse.ge' + location.pathname;
+    const textToCopy = 'https://beautyverse.ge/feeds/' + feedId;
     const textArea = document.createElement('textarea');
     textArea.value = textToCopy;
 

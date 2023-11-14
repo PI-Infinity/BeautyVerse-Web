@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   page: 1,
@@ -7,21 +7,24 @@ const initialState = {
   categoriesList: [],
 
   // filter
-  search: "",
+  search: '',
   categories: [],
   brands: [],
-  minPrice: "",
-  maxPrice: "",
-  discounts: "",
-  sex: "all",
-  type: "everyone",
+  minPrice: '',
+  maxPrice: '',
+  discounts: '',
+  sex: 'all',
+  type: 'everyone',
 
   // opened product
   openedProduct: null,
+
+  // rerender products in settings after changes
+  rerenderProducts: false,
 };
 
 export const Showroom = createSlice({
-  name: "Showroom",
+  name: 'Showroom',
   initialState,
 
   reducers: {
@@ -73,6 +76,9 @@ export const Showroom = createSlice({
     setOpenedProduct: (state, action) => {
       state.openedProduct = action.payload;
     },
+    setRerenderProducts: (state, action) => {
+      state.rerenderProducts = !state.rerenderProducts;
+    },
   },
 });
 
@@ -92,5 +98,6 @@ export const {
   setSex,
   setType,
   setOpenedProduct,
+  setRerenderProducts,
 } = Showroom.actions;
 export default Showroom.reducer;

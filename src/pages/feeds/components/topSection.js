@@ -14,6 +14,7 @@ import { PiDotsThreeOutlineBold } from 'react-icons/pi';
 import { MdClose } from 'react-icons/md';
 
 export const TopSection = ({ item, openOption, setOpenOption }) => {
+  console.log(item);
   // dnavigation
   const navigate = useNavigate();
   // redux dispatch
@@ -98,12 +99,23 @@ export const TopSection = ({ item, openOption, setOpenOption }) => {
         }}
       >
         {loading && (
-          <BounceLoader
-            // style={{ position: 'absolute', zIndex: 2 }}
-            size={40}
-            color="#f866b1"
-            loading={true}
-          />
+          // <BounceLoader
+          //   // style={{ position: 'absolute', zIndex: 2 }}
+          //   size={40}
+          //   color="#f866b1"
+          //   loading={true}
+          // />
+          <div
+            style={{
+              opacity: '1',
+              width: '100%',
+              height: '100%',
+              background: 'rgba(255,255,255,0.2)',
+              borderRadius: '50px',
+            }}
+          >
+            {/* <BounceLoader size="25vw" loading={loading} color="#f866b1" /> */}
+          </div>
         )}
 
         <Image
@@ -157,7 +169,7 @@ export const TopSection = ({ item, openOption, setOpenOption }) => {
             >
               {item?.owner?.name}
             </h3>
-            {item?.owner?.subscription.status === 'active' && (
+            {item?.owner?.subscription?.status === 'active' && (
               <VscVerifiedFilled color="#f866b1" size={14} />
             )}
           </div>
@@ -204,7 +216,7 @@ export const TopSection = ({ item, openOption, setOpenOption }) => {
         <span
           style={{ color: '#ccc', letterSpacing: '0.5px', fontSize: '14px' }}
         >
-          {type}
+          {item?.owner?.username ? item.owner?.username : type}
         </span>
       </div>
     </Container>

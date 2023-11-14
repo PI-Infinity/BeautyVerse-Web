@@ -55,6 +55,7 @@ export const GetCurrentUser = () => {
           '/notifications?page=1&limit=15'
       );
       dispatch(setNotifications(response.data.data.notifications));
+
       dispatch(
         setUnreadNotidications(
           response.data.data.notifications?.filter((i) => i.status === 'unread')

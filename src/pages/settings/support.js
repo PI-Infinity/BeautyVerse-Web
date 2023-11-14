@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   IoMdArrowDropdown,
   IoMdArrowDropleft,
@@ -6,12 +7,24 @@ import {
 } from 'react-icons/io';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { Language } from '../../context/language';
+import { useSelector } from 'react-redux';
+import { darkTheme, lightTheme } from '../../context/theme';
+import { TextEditor } from '../feeds/addFeed/textEditor';
+import { Button } from '@mui/material';
+import { BounceLoader } from 'react-spinners';
+import Alert from '@mui/material/Alert';
 
 export const Support = ({ activePage, setActivePage }) => {
   // navigate
   const navigate = useNavigate();
   // location
   const location = useLocation();
+  // define language
+  const language = Language();
+  // define theme
+  const theme = useSelector((state) => state.storeApp.theme);
+  const currentTheme = theme ? darkTheme : lightTheme;
 
   // transition
   const [transition, setTransition] = useState(true);
@@ -20,7 +33,58 @@ export const Support = ({ activePage, setActivePage }) => {
     setTransition(false);
   }, []);
 
-  console.log('run');
+  const [email, setEmail] = useState('');
+  const [text, setText] = useState('');
+  const currentUser = useSelector((state) => state.storeUser.currentUser);
+  const backendUrl = useSelector((state) => state.storeApp.backendUrl);
+  // defines loading backdrop
+  const [loading, setLoading] = useState(false);
+  // alert message
+  const [alert, setAlert] = useState({ active: false, text: '', type: '' });
+
+  const inputRef = useRef();
+  const onSubmit = async () => {
+    // inputRef.current.blur();
+
+    try {
+      if (!currentUser && (email?.length < 3 || !email?.includes('@'))) {
+        return setAlert({
+          active: true,
+          text: 'Please write email address...',
+          type: 'error',
+        });
+      }
+      if (text?.length < 10) {
+        return setAlert({
+          active: true,
+          text: 'To send the message, the text must be more than 10 symbols...',
+          type: 'error',
+        });
+      }
+      setLoading(true);
+      let em = currentUser ? currentUser.email : email;
+      await axios.post(backendUrl + '/support/sendEmail', {
+        message: text + ' / Name: ' + currentUser.name + ' / User Email: ' + em,
+        email: em,
+      });
+      setEmail('');
+      setText('');
+      setAlert({
+        active: true,
+        text: 'The message has sent succesfully!',
+        type: 'success',
+      });
+      setLoading(false);
+    } catch (error) {
+      setAlert({
+        active: true,
+        text: error.response.data.message,
+        type: 'error',
+      });
+      console.log(error.response);
+      setLoading(false);
+    }
+  };
 
   return (
     <div
@@ -38,19 +102,6 @@ export const Support = ({ activePage, setActivePage }) => {
     >
       <Container openpage={transition ? 'true' : 'false'}>
         <Header>
-          <div style={{ width: '30px' }}></div>
-          <div>
-            <h3
-              style={{
-                color: '#ccc',
-                margin: 0,
-                padding: 0,
-                letterSpacing: '0.5px',
-              }}
-            >
-              Support
-            </h3>
-          </div>
           <div
             onClick={() => {
               setTransition(true);
@@ -64,9 +115,55 @@ export const Support = ({ activePage, setActivePage }) => {
               zIndex: 1000,
             }}
           >
-            <IoMdArrowDropright size={30} color="#f866b1" />
+            <IoMdArrowDropleft size={30} color="#f866b1" />
           </div>
+          <div>
+            <h3
+              style={{
+                color: '#ccc',
+                margin: 0,
+                padding: 0,
+                letterSpacing: '0.5px',
+              }}
+            >
+              Support
+            </h3>
+          </div>
+          <div style={{ width: '40px' }}></div>
         </Header>
+        <TextEditor text={text} setText={setText} />
+        <Button
+          variant="contained"
+          style={{
+            backgroundColor: loading ? '#ccc' : '#f866b1',
+            color: 'white',
+          }}
+          className="button"
+          sx={{
+            width: '40%',
+            borderRadius: '50px',
+            marginTop: '30px',
+            height: '40px',
+          }}
+          onClick={onSubmit}
+          //   {...props}
+        >
+          {loading ? (
+            <BounceLoader color={'#f866b1'} loading={loading} size={20} />
+          ) : (
+            'Send Message'
+          )}
+        </Button>
+        <div style={{ boxSizing: 'border-box', padding: '10vw' }}>
+          {alert?.active && (
+            <Alert
+              onClick={() => setAlert({ type: '', text: '', active: false })}
+              severity={alert?.type}
+            >
+              {alert?.text}
+            </Alert>
+          )}
+        </div>
       </Container>
     </div>
   );

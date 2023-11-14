@@ -1,7 +1,16 @@
 import { TextField } from '@mui/material';
 import React from 'react';
 
-export const Input = ({ type, label, value, onChange, multiline, minRows }) => {
+export const Input = ({
+  type,
+  label,
+  value,
+  onChange,
+  multiline,
+  minRows,
+  width,
+  borderColor,
+}) => {
   return (
     <TextField
       id="outlined-basic"
@@ -13,11 +22,11 @@ export const Input = ({ type, label, value, onChange, multiline, minRows }) => {
       minRows={minRows}
       onChange={(e) => onChange(e.target.value)}
       sx={{
-        width: '70%',
+        width: width ? width : '70%',
         '& .MuiOutlinedInput-root': {
           height: multiline ? 'auto' : '53px',
           '& .MuiOutlinedInput-notchedOutline': {
-            borderColor: 'rgba(255,255,255,0.1)',
+            borderColor: borderColor ? borderColor : 'rgba(255,255,255,0.1)',
             borderRadius: '15px',
           },
           '&:hover .MuiOutlinedInput-notchedOutline': {
