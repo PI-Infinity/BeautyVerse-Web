@@ -111,12 +111,15 @@ const Audience = () => {
         <Container>
           <AudienceSection>
             <AudienceLabel
-              onClick={() =>
-                setOpenList({
-                  type: 'followers',
-                  active: true,
-                  data: followers,
-                })
+              onClick={
+                followers?.length > 0
+                  ? () =>
+                      setOpenList({
+                        type: 'followers',
+                        active: true,
+                        data: followers,
+                      })
+                  : undefined
               }
             >
               Followers
@@ -161,12 +164,15 @@ const Audience = () => {
 
           <AudienceSection>
             <AudienceLabel
-              onClick={() =>
-                setOpenList({
-                  type: 'followings',
-                  active: true,
-                  data: followings,
-                })
+              onClick={
+                followings?.length > 0
+                  ? () =>
+                      setOpenList({
+                        type: 'followings',
+                        active: true,
+                        data: followings,
+                      })
+                  : undefined
               }
             >
               Followings

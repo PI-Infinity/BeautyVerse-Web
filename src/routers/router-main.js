@@ -246,14 +246,16 @@ export const Routers = () => {
           </Routes>
         )}
       </Suspense>
-      {!location.pathname.includes('admin') && device === 'Desktop' && (
-        <DesktopText>
-          <h1 style={{ color: '#ccc' }}>
-            The App <span style={{ color: '#f866b1' }}>"Beauty</span>Verse" is
-            available only for Mobile Devices!
-          </h1>
-        </DesktopText>
-      )}
+      {!location.pathname.includes('admin') &&
+        device &&
+        device === 'Desktop' && (
+          <DesktopText>
+            <h1 style={{ color: '#ccc' }}>
+              The App <span style={{ color: '#f866b1' }}>"Beauty</span>Verse" is
+              available only for Mobile Devices!
+            </h1>
+          </DesktopText>
+        )}
     </>
   );
 };

@@ -64,17 +64,18 @@ export const BottomSection = ({
         />
       )}
       <Container>
-        <div
-          style={{ color: '#ccc' }}
-          onClick={() => {
-            if (currentUser) {
-              stared ? RemoveStar() : SetStar();
-            } else {
-              navigate('/login');
-            }
-          }}
-        >
-          <FaRegStar size={22} color={stared ? '#f866b1' : '#ccc'} />
+        <div style={{ color: '#ccc' }}>
+          <FaRegStar
+            onClick={() => {
+              if (currentUser) {
+                stared ? RemoveStar() : SetStar();
+              } else {
+                navigate('/login');
+              }
+            }}
+            size={22}
+            color={stared ? '#f866b1' : '#ccc'}
+          />
           <span style={{ width: '20px' }}>({starsLength})</span>
         </div>
         <div

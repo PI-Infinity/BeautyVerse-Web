@@ -14,7 +14,6 @@ import { PiDotsThreeOutlineBold } from 'react-icons/pi';
 import { MdClose } from 'react-icons/md';
 
 export const TopSection = ({ item, openOption, setOpenOption }) => {
-  console.log(item);
   // dnavigation
   const navigate = useNavigate();
   // redux dispatch
@@ -190,7 +189,8 @@ export const TopSection = ({ item, openOption, setOpenOption }) => {
             <GiStarShuriken size={10} color="#ccc" />
           </div>
           {item?.owner?._id === currentUser?._id &&
-            location.pathname?.includes('/profile') && (
+            location.pathname?.includes('/profile') &&
+            !location.pathname?.includes('/profile/notifications') && (
               <div
                 onClick={
                   !openOption?.active

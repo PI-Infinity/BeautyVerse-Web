@@ -41,6 +41,10 @@ const UserFeeds = () => {
   // get backend url
   const backendUrl = useSelector((state) => state.storeApp.backendUrl);
 
+  const rerenderUserFeeds = useSelector(
+    (state) => state.storeFeeds.rerenderUserFeeds
+  );
+
   useEffect(() => {
     async function GetFeeds(id) {
       try {
@@ -64,7 +68,7 @@ const UserFeeds = () => {
     if (targetUser) {
       GetFeeds(targetUser?._id);
     }
-  }, [targetUser]);
+  }, [targetUser, rerenderUserFeeds]);
 
   // add feeds
   async function AddFeeds(p) {
@@ -156,17 +160,17 @@ const UserFeeds = () => {
           ) : (
             <div
               style={{
-                color: 'red',
                 width: '100vw',
-                height: '50vh',
+                height: '300px',
+                color: 'rgba(255,255,255,0.3)',
                 display: 'flex',
-                justifyContent: 'center',
                 alignItems: 'center',
-                color: 'rgba(255,255,255,0.5)',
-                fontSize: '14px',
+                justifyContent: 'center',
+                letterSpacing: '0.5px',
+                fontWeight: 500,
               }}
             >
-              No feeds found!
+              Feeds not found!
             </div>
           )}
         </>

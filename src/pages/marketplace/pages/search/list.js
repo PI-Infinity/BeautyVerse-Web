@@ -82,13 +82,13 @@ const SearchList = () => {
             type +
             '&from=search'
         );
-        if (response.data.data.products?.random) {
+        if (response.data.data.products?.random?.length > 0) {
           setList(response.data.data.products.random);
           setCategories(response.data.categories);
           setBrandsList(response.data.brands);
         }
       } catch (error) {
-        console.log('Error fetching products:', error.response.data.message);
+        console.log(error.response);
       }
     };
     GetProducts();
@@ -262,15 +262,30 @@ const SearchList = () => {
           </div>
         ) : (
           <ListContainer>
-            {list?.map((item, index) => {
-              return (
-                <ProductCard
-                  item={item}
-                  key={index}
-                  to={`/marketplace/search/${item._id}`}
-                />
-              );
-            })}
+            {list?.length > 0 ? (
+              list?.map((item, index) => {
+                return (
+                  <ProductCard
+                    item={item}
+                    key={index}
+                    to={`/marketplace/search/${item._id}`}
+                  />
+                );
+              })
+            ) : (
+              <div
+                style={{
+                  width: 'calc(100vw - 30px)',
+                  height: '200px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'rgba(255,255,255,0.3)',
+                }}
+              >
+                <p>Not found!</p>
+              </div>
+            )}
           </ListContainer>
         )}
         <Outlet />

@@ -37,7 +37,7 @@ export const Input = ({
           },
         },
         '& .MuiOutlinedInput-input': {
-          borderRadius: '15px',
+          // borderRadius: '15px',
           color: '#ccc',
           letterSpacing: '0.5px',
         },

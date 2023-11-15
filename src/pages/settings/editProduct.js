@@ -8,6 +8,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   MdContentCopy,
   MdDelete,
+  MdPriceChange,
+  MdRemove,
   MdVisibility,
   MdVisibilityOff,
 } from 'react-icons/md';
@@ -25,6 +27,13 @@ import { Configs } from './deleteConfirm';
 import { Language } from '../../context/language';
 import { v4 as uuidv4 } from 'uuid';
 import SimpleBackdrop from '../../components/backDrop';
+import { CategoriesOptions } from '../../datas/productCategories';
+import CategoryList from './categoryList';
+import { BiSolidImage } from 'react-icons/bi';
+import { GiFiles } from 'react-icons/gi';
+import ReactPlayer from 'react-player';
+import { v4 } from 'uuid';
+import Variants from './productVariants';
 
 export const EditProduct = ({
   openEditProduct,
@@ -168,13 +177,20 @@ export const EditProduct = ({
   };
 
   async function duplicateFolder() {
-    let folderId = openEditProduct?.product?.gallery[0].folder;
+    let folderId = openEditProduct?.product?.gallery[0]?.folder;
     const sourceFolder = `marketplace/${currentUser?._id}/products/images/${folderId}/`;
-    let newfolderId = currentUser?._id + title + brand + uuidv4();
+    let newfolderId = `${currentUser?._id}${title}${brand}${v4()}`;
     const destinationFolder = `marketplace/${currentUser?._id}/products/images/${newfolderId}/`;
 
     const sourceReference = ref(storage, sourceFolder);
-    const listResult = await listAll(sourceReference);
+    let listResult;
+
+    try {
+      listResult = await listAll(sourceReference);
+    } catch (error) {
+      console.error('Error listing source folder:', error);
+      throw error;
+    }
 
     const newGallery = [];
 
@@ -182,13 +198,19 @@ export const EditProduct = ({
       const sourcePath = `${sourceFolder}${item.name}`;
       const destinationPath = `${destinationFolder}${item.name}`;
 
-      const url = await getDownloadURL(ref(storage, sourcePath));
-      const response = await fetch(url);
-      const blob = await response.blob();
-      await uploadBytesResumable(ref(storage, destinationPath), blob);
-      const newObj = { url: url, imgId: item.name, folder: newfolderId };
-      newGallery.push(newObj); // Collect new URLs and meta-data.
-      return newObj;
+      try {
+        const url = await getDownloadURL(ref(storage, sourcePath));
+        const response = await fetch(url);
+        const blob = await response.blob();
+
+        await uploadBytesResumable(ref(storage, destinationPath), blob);
+        const newObj = { url: url, imgId: item.name, folder: newfolderId };
+        newGallery.push(newObj); // Collect new URLs and meta-data.
+        return newObj;
+      } catch (error) {
+        console.error(`Error copying file ${item.name}:`, error);
+        // Handle individual file errors here, if needed
+      }
     });
 
     try {
@@ -196,8 +218,8 @@ export const EditProduct = ({
       console.log('Folder duplicated successfully');
       return newGallery; // Return the new URLs and meta-data.
     } catch (error) {
-      console.error('Error duplicating folder:', error);
-      throw error; // Throwing the error to be caught in Dublicate.
+      console.error('Error during folder duplication:', error);
+      throw error; // Throwing the error for higher-level handling.
     }
   }
 
@@ -214,7 +236,7 @@ export const EditProduct = ({
     if (brand?.length < 1) {
       return alert('The product must have a brand!');
     }
-    if (!price) {
+    if (price?.length < 1) {
       return alert('The product must have a price!');
     }
     // if (!inStock) {
@@ -228,7 +250,6 @@ export const EditProduct = ({
       return alert('Short Description not defined!');
     }
     setLoading(true);
-    // convert file to blob
 
     try {
       const newGallery = await duplicateFolder(); // Await the new URLs from folder duplication.
@@ -294,6 +315,291 @@ export const EditProduct = ({
     }
   };
 
+  // open categories list
+  const [openCategories, setOpenCategories] = useState(false);
+
+  // categories list of app
+  const categoriesList = CategoriesOptions();
+
+  const handleFileUpload = async (e) => {
+    const uploadedFiles = e.target.files;
+    const processedFiles = [];
+    for (let i = 0; i < uploadedFiles.length; i++) {
+      const file = uploadedFiles[i];
+
+      if (file.type.startsWith('image/')) {
+        // If it's an image file, apply image-specific resizing
+        const resizedFile = await resizeImage(file, maxWidth, quality);
+        processedFiles.push(resizedFile);
+      } else if (file.type.startsWith('video/')) {
+        // If it's a video file, get its width and height
+        const video = document.createElement('video');
+        video.src = URL.createObjectURL(file);
+
+        const videoMetadataPromise = new Promise((resolve) => {
+          video.onloadedmetadata = () => {
+            const width = video.videoWidth;
+            const height = video.videoHeight;
+
+            // Create an object that includes the video file, height, and width
+            const resizedVideoFile = {
+              blob: file,
+              height,
+              width,
+              src: video.src,
+            };
+            resolve(resizedVideoFile);
+          };
+        });
+
+        const videoMetadata = await videoMetadataPromise;
+        console.log(videoMetadata);
+        processedFiles.push(videoMetadata);
+      }
+    }
+
+    setFiles([...files, ...processedFiles]);
+  };
+
+  // Example usage:
+  const maxWidth = 640; // Desired width
+  const quality = 0.8; // Image quality (0.0 to 1.0)
+
+  const resizeImage = (file, maxWidth, quality) =>
+    new Promise(async (resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (e) => {
+        const image = new Image();
+        image.src = e.target.result;
+        image.onload = () => {
+          const width = maxWidth;
+          const height = (width * image.height) / image.width;
+
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+
+          canvas.width = width;
+          canvas.height = height;
+
+          // Draw the image on the canvas
+          ctx.drawImage(image, 0, 0, width, height);
+
+          // Convert the canvas content to a blob with the specified quality
+          canvas.toBlob(
+            (blob) => {
+              // Create an object that includes the Blob, height, and width
+              const resizedFile = {
+                blob: blob,
+                height: height,
+                width: width,
+              };
+              resolve(resizedFile);
+            },
+            file.type,
+            quality
+          );
+        };
+      };
+    });
+
+  // if delete old files, this function checks and deletes from cloud.
+  const func = async () => {
+    const filePath = `marketplace/${currentUser?._id}/products/images/${openEditProduct.product.gallery[0].folder}`;
+    const fileRef = ref(storage, filePath);
+
+    listAll(fileRef)
+      .then((res) => {
+        res.items.forEach((itemRef) => {
+          let imgId =
+            itemRef._location.path_.split('/')[
+              itemRef._location.path_.split('/')?.length - 1
+            ];
+          console.log(imgId);
+          let imgDefined = files.find((i) => i.imgId === imgId);
+          if (!imgDefined) {
+            deleteObject(itemRef).then(async () => {
+              console.log('deleted');
+            });
+          }
+        });
+      })
+      .catch((error) => {
+        console.log('error : ' + error);
+      });
+  };
+
+  /**
+   * Add product function
+   */
+
+  const UploadProduct = async () => {
+    if (files?.length < 1) {
+      return alert('The product must have any image!');
+    }
+    if (title?.length < 3) {
+      return alert('Title must include min. 3 symbols!');
+    }
+    if (categories?.length < 1) {
+      return alert('The product must have a category!');
+    }
+    if (brand?.length < 1) {
+      return alert('The product must have a brand!');
+    }
+    if (!price) {
+      return alert('The product must have a price!');
+    }
+    // if (!inStock) {
+    //   return alert("Please add in stock quantity!");
+    // }
+    if (
+      shortDescription?.length < 1 &&
+      shortDescriptionKa?.length < 1 &&
+      shortDescriptionRu?.length < 1
+    ) {
+      return alert('Short Description not defined!');
+    }
+    setLoading(true);
+
+    await func();
+
+    const AddFileInCloud = async (index, folder, file) => {
+      let imgId = currentUser.name + v4();
+      let fileRef = ref(
+        storage,
+        `marketplace/${currentUser?._id}/products/images/${folder}/${imgId}/`
+      );
+
+      if (fileRef) {
+        // add desktop version
+        const snapshot = await uploadBytesResumable(fileRef, file);
+        const url = await getDownloadURL(snapshot.ref);
+        return { url: url };
+      }
+    };
+
+    // check file
+    if (files) {
+      let folderId = openEditProduct.product.gallery[0].folder;
+
+      const uploadPromises = files.map((file, index) => {
+        if (files[index].blob) {
+          return AddFileInCloud(index, folderId, files[index].blob);
+        } else {
+          return {
+            url: file.url,
+            imgId: file.imgId,
+            folder: file.folder,
+          };
+        }
+      });
+
+      let w = -1; // Initialize with a low value for width
+      let h = -1; // Initialize with a low value for height
+
+      // Assuming you have an array of files with 'height' and 'width' properties
+      for (const item of files) {
+        if (item.height > h) {
+          h = item.height;
+        }
+
+        if (item.width > w) {
+          w = item.width;
+        }
+      }
+
+      Promise.all(uploadPromises).then(async (uploadedUrls) => {
+        try {
+          const product = {
+            title: title,
+            categories: categories,
+            type: type,
+            brand: brand,
+            price: price,
+            currency: currency,
+            sale: sale,
+            inStock: inStock,
+            sex: sex,
+            active: true,
+            shortDescription: {
+              en: shortDescription,
+              ru: shortDescriptionRu,
+              ka: shortDescriptionKa,
+            },
+            description: {
+              en: fullDescription,
+              ru: fullDescriptionRu,
+              ka: fullDescriptionKa,
+            },
+            howToUse: {
+              en: howToUse,
+              ru: howToUseRu,
+              ka: howToUseKa,
+            },
+            compositions: {
+              en: compositons,
+              ru: compositonsRu,
+              ka: compositonsKa,
+            },
+            variants: variants?.map((i, x) => {
+              return i;
+            }),
+            cover: cover,
+            gallery: uploadedUrls,
+            totalOrders: 0,
+            owner: currentUser?._id,
+            lastOrderDate: new Date(),
+            reviews: [],
+          };
+          await axios.patch(
+            backendUrl + '/api/v1/marketplace/' + openEditProduct?.product._id,
+            product
+          );
+          setTimeout(() => {
+            setLoading(false);
+            dispatch(setRerenderProducts());
+            setTitle('');
+            setSex('all');
+            setCategories([]);
+            setBrand('');
+            setPrice(null);
+            setCurrency(null);
+            setSale(null);
+            setInStock(null);
+            setShortDescription('');
+            setShortDescriptionRu('');
+            setShortDescriptionKa('');
+            setFullDescription('');
+            setFullDescriptionRu('');
+            setFullDescriptionKa('');
+            setHowToUse('');
+            setHowToUseRu('');
+            setHowToUseKa('');
+            setCompositions('');
+            setCompositionsRu('');
+            setCompositionsKa('');
+            setVariants([]);
+            setFiles([]);
+            setCover(0);
+            setType('everyone');
+            setTransition(true);
+            setTimeout(() => {
+              setOpenEditProduct({ active: false, product: null });
+            }, 300);
+          }, 1000);
+        } catch (error) {
+          console.error(error.response.data.message);
+          setTimeout(async () => {
+            setLoading(false);
+          }, 1000);
+        }
+      });
+    }
+  };
+
+  // variants list modal opening state
+  const [isModalVisibleVariants, setIsModalVisibleVariants] = useState(false);
+
   return (
     <>
       {confirmPopup?.active && (
@@ -301,6 +607,21 @@ export const EditProduct = ({
           openConfig={confirmPopup}
           setOpenConfig={setConfirmPopup}
           Delete={DeleteProduct}
+        />
+      )}
+      {openCategories && (
+        <CategoryList
+          setOpenCategories={setOpenCategories}
+          categories={categories}
+          setCategories={setCategories}
+        />
+      )}
+      {isModalVisibleVariants && (
+        <Variants
+          isModalVisible={isModalVisibleVariants}
+          setIsModalVisible={setIsModalVisibleVariants}
+          setVariants={setVariants}
+          variants={variants}
         />
       )}
       <SimpleBackdrop open={loading} />
@@ -456,7 +777,172 @@ export const EditProduct = ({
           <Inputs>
             <InputContainer>
               <h4>Files</h4>
-              <div className="inputButton">Choice file</div>
+              <div
+                className="inputButton"
+                style={{
+                  justifyContent: 'start',
+                  border: `1.5px solid ${
+                    files?.length > 0 ? '#f866b1' : 'rgba(255,255,255,0.1)'
+                  }`,
+                }}
+              >
+                <label
+                  htmlFor="image-upload"
+                  style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    color: '#ccc',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    borderRadius: '50px',
+                    background: 'rgba(255,255,255,0.1)',
+                    padding: '8px 15px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <BiSolidImage size={18} color={'#ccc'} />
+                  Image
+                  <input
+                    type="file"
+                    id="image-upload"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={handleFileUpload}
+                    multiple
+                    max="10"
+                  />
+                </label>
+              </div>
+              {files.length > 0 && (
+                <div
+                  // ref={scrollRef}
+                  style={{
+                    width: '90vw',
+                    background: 'rgba(255,255,255,0.1)',
+                    borderRadius: '20px',
+                    margin: '15px 0 0 0',
+                    display: 'flex',
+                    boxSizing: 'border-box',
+                    overflowX: files?.length > 1 ? 'scroll' : 'hidden',
+                    overflowY: 'hidden',
+                  }}
+                >
+                  {files?.length > 1 && (
+                    <div>
+                      <GiFiles
+                        color="#ccc"
+                        size={24}
+                        style={{
+                          position: 'absolute',
+                          margin: '15px 0 0 15px',
+                          zIndex: '10000',
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {files.map((file, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
+                    >
+                      {index === cover && (
+                        <div
+                          style={{
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            letterSpacing: '0.5px',
+                            color: '#f866b1',
+                            zIndex: 1000,
+                            height: 0,
+                            position: 'relative',
+                            top: '15px',
+                          }}
+                        >
+                          Cover
+                        </div>
+                      )}
+                      <div
+                        style={{
+                          width: '100%',
+                          display: 'flex',
+                          justifyContent: 'flex-end',
+                          zIndex: 100,
+                          padding: '5px 15px',
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        <div
+                          onClick={() => {
+                            setCover(index > 0 ? index - 1 : 0);
+                            setFiles(files?.filter((i) => i !== file));
+                          }}
+                          style={{
+                            width: '25px',
+                            height: '25px',
+                            padding: '5px',
+                            background: 'rgba(255,255,255,0.1)',
+                            borderRadius: '50px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <MdDelete color="red" size={20} style={{}} />
+                        </div>
+                      </div>
+
+                      {file?.blob?.type.startsWith('image/') || file?.url ? ( // Check if it's an image
+                        <div>
+                          <img
+                            src={
+                              file?.blob
+                                ? URL.createObjectURL(file.blob)
+                                : file?.url
+                            }
+                            alt={`Image ${index}`}
+                            style={{
+                              width: '40vw',
+                              height: '40vw',
+                              borderRadius: '10px',
+                              border:
+                                index == cover
+                                  ? '3px solid #f866b1'
+                                  : '3px solid rgba(255,255,255,0.1)',
+                              objectFit: 'cover',
+                              margin: '0 2px 0 0',
+                            }}
+                            onClick={() => setCover(index)}
+                          />
+                        </div>
+                      ) : (
+                        // It's a video
+                        <ReactPlayer
+                          url={
+                            file?.blob
+                              ? URL.createObjectURL(file.blob)
+                              : file?.url
+                          }
+                          controls={true}
+                          loop={true}
+                          muted={true}
+                          playing={true}
+                          playsinline={true}
+                          width="90vw"
+                          height="auto"
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </InputContainer>
             <InputContainer>
               <h4>Product Title</h4>
@@ -557,7 +1043,58 @@ export const EditProduct = ({
             </InputContainer>
             <InputContainer>
               <h4>Categories</h4>
-              <div className="inputButton">Choice Categories</div>
+              <div
+                style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
+              >
+                {categories?.map((i, x) => {
+                  let lab = categoriesList?.find((it) => it.value === i)?.label;
+
+                  return (
+                    <div
+                      key={x}
+                      style={{
+                        padding: '4px 8px',
+                        borderRadius: '50px',
+                        border: '1.5px solid rgba(255,255,255,0.1)',
+                        boxSizing: 'border-box',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        fontSize: '14px',
+                        color: '#f866b1',
+                        fontWeight: 500,
+                      }}
+                    >
+                      {lab}
+                      <MdRemove
+                        color="red"
+                        size={22}
+                        onClick={
+                          categories?.length > 1
+                            ? () =>
+                                setCategories((prev) =>
+                                  prev.filter((itm) => itm !== i)
+                                )
+                            : () => alert("You can't delete last category!")
+                        }
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+              <div
+                className="inputButton"
+                onClick={() => setOpenCategories(true)}
+                style={{
+                  color: categories?.length > 0 ? '#f866b1' : '#ccc',
+                  border:
+                    categories?.length > 0
+                      ? '1.5px solid #f866b1'
+                      : '1.5px solid rgba(255,255,255,0.1)',
+                }}
+              >
+                Choice Categories
+              </div>
             </InputContainer>
             <InputContainer>
               <h4>Brand</h4>
@@ -571,7 +1108,46 @@ export const EditProduct = ({
               />
             </InputContainer>
             <InputContainer>
-              <h4>Price</h4>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <h4>
+                  Price (
+                  {currency === 'dollar' ? (
+                    '$'
+                  ) : currency === 'euro' ? (
+                    '€'
+                  ) : (
+                    <span
+                      style={{
+                        fontWeight: 'bold',
+                        fontSize: 14,
+                      }}
+                    >
+                      {'\u20BE'}
+                    </span>
+                  )}
+                  )
+                </h4>
+                <MdPriceChange
+                  color="#f866b1"
+                  size={22}
+                  style={{ margin: '0 10px 0 0' }}
+                  onClick={() =>
+                    setCurrency(
+                      currency === 'dollar'
+                        ? 'lari'
+                        : currency === 'euro'
+                        ? 'dollar'
+                        : 'euro'
+                    )
+                  }
+                />
+              </div>
               <Input
                 borderColor={price ? '#f866b1' : 'rgba(255,255,255,0.1)'}
                 type="number"
@@ -605,7 +1181,18 @@ export const EditProduct = ({
             </InputContainer>
             <InputContainer>
               <h4>Variants</h4>
-              <div className="inputButton">Choice Variants</div>
+              <div
+                onClick={() => setIsModalVisibleVariants(true)}
+                className="inputButton"
+                style={{
+                  border:
+                    variants?.length > 0
+                      ? '1.5px solid #f866b1'
+                      : '1.5px solid rgba(255,255,255,0.1)',
+                }}
+              >
+                Choice Variants
+              </div>
             </InputContainer>
             <InputContainer>
               <h4>Short Description</h4>
@@ -626,12 +1213,12 @@ export const EditProduct = ({
                     ? shortDescriptionRu
                     : shortDescriptionKa
                 }
-                onChangeText={
+                onChange={
                   inputLanguage === 'us'
-                    ? (val) => setShortDescription(val)
+                    ? setShortDescription
                     : inputLanguage === 'ru'
-                    ? (val) => setShortDescriptionRu(val)
-                    : (val) => setShortDescriptionKa(val)
+                    ? setShortDescriptionRu
+                    : setShortDescriptionKa
                 }
                 width="100%"
               />
@@ -655,12 +1242,12 @@ export const EditProduct = ({
                     ? fullDescriptionRu
                     : fullDescriptionKa
                 }
-                onChangeText={
+                onChange={
                   inputLanguage === 'us'
-                    ? (val) => setFullDescription(val)
+                    ? setFullDescription
                     : inputLanguage === 'ru'
-                    ? (val) => setFullDescriptionRu(val)
-                    : (val) => setFullDescriptionKa(val)
+                    ? setFullDescriptionRu
+                    : setFullDescriptionKa
                 }
                 width="100%"
               />
@@ -684,12 +1271,12 @@ export const EditProduct = ({
                     ? howToUseRu
                     : howToUseKa
                 }
-                onChangeText={
+                onChange={
                   inputLanguage === 'us'
-                    ? (val) => setHowToUse(val)
+                    ? setHowToUse
                     : inputLanguage === 'ru'
-                    ? (val) => setHowToUseRu(val)
-                    : (val) => setHowToUseKa(val)
+                    ? setHowToUseRu
+                    : setHowToUseKa
                 }
                 width="100%"
               />
@@ -713,12 +1300,12 @@ export const EditProduct = ({
                     ? compositonsRu
                     : compositonsKa
                 }
-                onChangeText={
+                onChange={
                   inputLanguage === 'us'
-                    ? (val) => setCompositions(val)
+                    ? setCompositions
                     : inputLanguage === 'ru'
-                    ? (val) => setCompositionsRu(val)
-                    : (val) => setCompositionsKa(val)
+                    ? setCompositionsRu
+                    : setCompositionsKa
                 }
                 width="100%"
               />
@@ -736,7 +1323,7 @@ export const EditProduct = ({
                 marginTop: '20px',
                 height: '40px',
               }}
-              //   onClick={Login}
+              onClick={UploadProduct}
               //   {...props}
             >
               {loading ? (

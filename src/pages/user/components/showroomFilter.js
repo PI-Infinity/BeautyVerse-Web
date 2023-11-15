@@ -17,6 +17,7 @@ import {
   setSex,
   setType,
 } from '../../../redux/showroom';
+import { CategoriesOptions } from '../../../datas/productCategories';
 
 export const Filter = ({
   openFilter,
@@ -42,7 +43,8 @@ export const Filter = ({
   // dispatch
   const dispatch = useDispatch();
   // categories
-  const categoriesList = ProceduresOptions();
+  const categoriesList = CategoriesOptions();
+
   // loading categories
   const [loading, setLoading] = useState(true);
 
@@ -207,8 +209,8 @@ export const Filter = ({
               {categories?.map((item, index) => {
                 let lab = categoriesList.find(
                   (i, x) =>
-                    i.value?.toLocaleLowerCase() === item?.toLocaleLowerCase()
-                ).label;
+                    i.value?.toLowerCase() === item?.value?.toLowerCase()
+                )?.label;
                 return (
                   <div
                     key={index}

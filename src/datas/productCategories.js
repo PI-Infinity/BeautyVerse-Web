@@ -1,4 +1,4 @@
-categories;
+import { useSelector } from 'react-redux';
 
 export const CategoriesOptions = () => {
   const language = useSelector((state) => state.storeApp.language);

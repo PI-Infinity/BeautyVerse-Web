@@ -58,7 +58,9 @@ export const GetCurrentUser = () => {
 
       dispatch(
         setUnreadNotidications(
-          response.data.data.notifications?.filter((i) => i.status === 'unread')
+          response.data.data.notifications?.filter(
+            (i) => i.status === 'unread' && i?.feed?._id
+          )
         )
       );
       dispatch(setPage(1));

@@ -297,22 +297,32 @@ export const NotificationItem = ({ item, currentUser, setOpenConfig }) => {
           item?.type === 'save' ||
           item?.type === 'share') && (
           <FaImage
-            onClick={() => {
-              navigate(`feed/${item?.feed?._id}?review`);
-              dispatch(setOpenedFeed({ ...item?.feed, owner: currentUser }));
-            }}
+            onClick={
+              item?.feed?._id
+                ? () => {
+                    navigate(`feed/${item?.feed?._id}?review`);
+                    dispatch(
+                      setOpenedFeed({ ...item?.feed, owner: currentUser })
+                    );
+                  }
+                : () => alert('Feed is deleted!')
+            }
             size={16}
             color={item?.status === 'unread' ? '#f1f1f1' : '#888'}
           />
         )}
         {item?.type === 'saveProduct' && (
           <FaShoppingBag
-            onClick={() => {
-              navigate(`product/${item?.product?._id}`);
-              dispatch(
-                setOpenedProduct({ ...item?.product, owner: currentUser })
-              );
-            }}
+            onClick={
+              item?.product?._id
+                ? () => {
+                    navigate(`product/${item?.product?._id}`);
+                    dispatch(
+                      setOpenedProduct({ ...item?.product, owner: currentUser })
+                    );
+                  }
+                : () => alert('Product is deleted!')
+            }
             size={16}
             color={item?.status === 'unread' ? '#f1f1f1' : '#888'}
           />

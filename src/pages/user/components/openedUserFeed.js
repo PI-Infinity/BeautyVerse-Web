@@ -62,13 +62,15 @@ const OpenedUserFeed = () => {
   return (
     <div
       style={{
-        background: !openFeed ? 'rgba(1, 2, 12, 0.2)' : 'rgba(1, 2, 12, 0)',
+        background: 'rgba(1, 2, 12, 0.6)',
         backdropFilter: 'blur(10px)',
         WebkitBackdropFilter: 'blur(10px)',
         zIndex: 1001,
         position: 'fixed',
         top: '0',
         left: '0',
+        width: '100%',
+        height: '100%',
         transition: 'ease-in-out 220ms',
       }}
     >
@@ -107,7 +109,16 @@ const OpenedUserFeed = () => {
             <IoMdArrowDropdown size={30} color="#f866b1" />
           </div>
         </Header>
-        <FeedCard item={feedObjs[0]} setOpenFeed={setOpenFeed} />
+        <FeedCard
+          item={feedObjs[0]}
+          setOpenFeed={setOpenFeed}
+          goToFeeds={() => {
+            setOpenFeed(false);
+            setTimeout(() => {
+              navigate('/profile/feeds');
+            }, 300);
+          }}
+        />
       </Container>
     </div>
   );

@@ -16,6 +16,7 @@ import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
 import { MdAdd } from 'react-icons/md';
 import { AddProduct } from './addProduct';
 import { EditProduct } from './editProduct';
+import { CategoriesOptions } from '../../datas/productCategories';
 
 export const Products = ({ activePage, setActivePage }) => {
   // navigate
@@ -62,8 +63,10 @@ export const Products = ({ activePage, setActivePage }) => {
   // get data page
   const [page, setPage] = useState(1);
 
+  console.log(page);
+
   // categories
-  const categoryList = ProceduresOptions();
+  const categoryList = CategoriesOptions();
 
   // rerender products list
   const rerenderProducts = useSelector(
@@ -114,7 +117,7 @@ export const Products = ({ activePage, setActivePage }) => {
           '&check=' +
           currentUser._id
       );
-      if (response.data.data.products) {
+      if (response.data.data.products?.length > 0) {
         const newProducts = response.data.data.products;
         setList((prev) => {
           return newProducts.reduce((acc, curr) => {
@@ -135,8 +138,8 @@ export const Products = ({ activePage, setActivePage }) => {
             }
           }, prev);
         });
-
-        setPage(p);
+      } else {
+        setPage(page);
       }
     } catch (error) {
       console.log('Error fetching user products:', error);
@@ -261,127 +264,151 @@ export const Products = ({ activePage, setActivePage }) => {
           </div>
         ) : (
           <ListContainer>
-            {list
-              .filter(
-                (i) =>
-                  i?.title
-                    .toLowerCase()
-                    .includes(search?.toLocaleLowerCase()) ||
-                  i?.brand
-                    .toLowerCase()
-                    .includes(search?.toLocaleLowerCase()) ||
-                  i?.categories?.some((it) =>
-                    it.toLowerCase().includes(search?.toLocaleLowerCase())
-                  )
-              )
-              .map((item, index) => {
-                let label = categoryList?.find(
-                  (i, x) =>
-                    i?.value?.toLowerCase() ===
-                    item?.categories[0]?.toLowerCase()
-                ).label;
-                return (
-                  <ProductItem
-                    key={index}
-                    onClick={() => {
-                      setOpenEditProduct({ active: true, product: item });
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: '32vw',
-                        aspectRatio: 1,
-                        borderRadius: '15px',
-                        objectFit: 'cover',
-                        background: 'rgba(255,255,255,0.05)',
-                        overflow: 'hidden',
+            {list.filter(
+              (i) =>
+                i?.title.toLowerCase().includes(search?.toLocaleLowerCase()) ||
+                i?.brand.toLowerCase().includes(search?.toLocaleLowerCase()) ||
+                i?.categories?.some((it) =>
+                  it.toLowerCase().includes(search?.toLocaleLowerCase())
+                )
+            ).length > 0 ? (
+              list
+                .filter(
+                  (i) =>
+                    i?.title
+                      .toLowerCase()
+                      .includes(search?.toLocaleLowerCase()) ||
+                    i?.brand
+                      .toLowerCase()
+                      .includes(search?.toLocaleLowerCase()) ||
+                    i?.categories?.some((it) =>
+                      it.toLowerCase().includes(search?.toLocaleLowerCase())
+                    )
+                )
+                .map((item, index) => {
+                  let label = categoryList?.find(
+                    (i, x) =>
+                      i?.value?.toLowerCase() ===
+                      item?.categories[0]?.toLowerCase()
+                  )?.label;
+                  return (
+                    <ProductItem
+                      key={index}
+                      onClick={() => {
+                        setOpenEditProduct({ active: true, product: item });
                       }}
                     >
-                      <img
-                        src={item?.gallery[0]?.url}
+                      <div
                         style={{
-                          width: '100%',
+                          width: '32vw',
                           aspectRatio: 1,
                           borderRadius: '15px',
                           objectFit: 'cover',
-                          opacity: 1,
-                          transition: 'ease-in 500ms',
-                        }}
-                        // onLoad={() => setOpacity(true)}
-                      />
-                    </div>
-                    <div
-                      style={{
-                        height: '100%',
-                        color: '#ccc',
-                        letterSpacing: '0.5px',
-                        width: '60vw',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: '100%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
+                          background: 'rgba(255,255,255,0.05)',
+                          overflow: 'hidden',
                         }}
                       >
-                        <h3 style={{ margin: '8px 0', fontSize: '16px' }}>
-                          {item?.title}
-                        </h3>
-                        {item?.active ? (
-                          <AiFillEye color="#f866b1" size={22} />
-                        ) : (
-                          <AiFillEyeInvisible color="#888" size={22} />
-                        )}
-                      </div>
-                      <p style={{ margin: '8px 0', fontSize: '14px' }}>
-                        {item.brand}
-                      </p>
-                      <p style={{ margin: '8px 0', fontSize: '14px' }}>
-                        {label}
-                      </p>
-                      <div
-                        style={{
-                          display: 'flex',
-                          gap: '10px',
-                          fontSize: '16px',
-                        }}
-                      >
-                        <p
+                        <img
+                          src={item?.gallery[item?.cover]?.url}
                           style={{
-                            margin: '8px 0',
-                            fontWeight: 'bold',
-                            color: '#f866b1',
+                            width: '100%',
+                            aspectRatio: 1,
+                            borderRadius: '15px',
+                            objectFit: 'cover',
+                            opacity: 1,
+                            transition: 'ease-in 500ms',
+                          }}
+                          // onLoad={() => setOpacity(true)}
+                        />
+                      </div>
+                      <div
+                        style={{
+                          height: '100%',
+                          color: '#ccc',
+                          letterSpacing: '0.5px',
+                          width: '60vw',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
                           }}
                         >
-                          {item?.sale
-                            ? (
-                                item?.price -
-                                (item.price / 100) * item.sale
-                              ).toFixed(2)
-                            : item.price}{' '}
-                          {item?.owner?.currency}
+                          <h3 style={{ margin: '8px 0', fontSize: '16px' }}>
+                            {item?.title}
+                          </h3>
+                          {item?.active ? (
+                            <AiFillEye color="#f866b1" size={22} />
+                          ) : (
+                            <AiFillEyeInvisible color="#888" size={22} />
+                          )}
+                        </div>
+                        <p style={{ margin: '8px 0', fontSize: '14px' }}>
+                          {item.brand}
                         </p>
-                        {item?.sale && (
+                        <p style={{ margin: '8px 0', fontSize: '14px' }}>
+                          {label}
+                        </p>
+                        <div
+                          style={{
+                            display: 'flex',
+                            gap: '10px',
+                            fontSize: '16px',
+                          }}
+                        >
                           <p
                             style={{
                               margin: '8px 0',
-                              textDecorationLine: 'line-through',
-                              color: '#888',
                               fontWeight: 'bold',
+                              color: '#f866b1',
                             }}
                           >
-                            {item?.price} {item?.owner.currency}
+                            {item?.sale
+                              ? (
+                                  item?.price -
+                                  (item.price / 100) * item.sale
+                                ).toFixed(2)
+                              : item.price}{' '}
+                            {item?.owner?.currency}
                           </p>
-                        )}
+                          {item?.sale && (
+                            <p
+                              style={{
+                                margin: '8px 0',
+                                textDecorationLine: 'line-through',
+                                color: '#888',
+                                fontWeight: 'bold',
+                              }}
+                            >
+                              {item?.price} {item?.owner.currency}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </ProductItem>
-                );
-              })}
+                    </ProductItem>
+                  );
+                })
+            ) : (
+              <div
+                style={{
+                  width: '100%',
+                  height: '300px',
+                  color: 'rgba(255,255,255,0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  letterSpacing: '0.5px',
+                  fontWeight: 500,
+                }}
+              >
+                Not found!
+              </div>
+            )}
             <Outlet />
           </ListContainer>
         )}

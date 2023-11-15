@@ -42,7 +42,7 @@ const List = () => {
             setList(response.data.data.products.random);
           }
         } catch (error) {
-          console.log('Error fetching products:', error.response.data.message);
+          console.log(error.response);
         }
       };
       GetProducts();

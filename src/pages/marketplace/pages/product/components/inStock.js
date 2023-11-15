@@ -1,27 +1,29 @@
-import React from "react";
-import styled from "styled-components";
+import React from 'react';
+import styled from 'styled-components';
 
 export const InStock = ({ product }) => {
+  console.log(product);
+
   return (
     <Container>
       <div>InStock:</div>
       <div
         style={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          gap: "4px",
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: '4px',
         }}
       >
         <h2
           style={{
-            letterSpacing: "0.5px",
+            letterSpacing: '0.5px',
             margin: 0,
-            fontSize: "14px",
-            color: "#f866b1",
+            fontSize: '14px',
+            color: '#f866b1',
           }}
         >
-          {product?.InStock} pcs.
+          {product?.inStock} pcs.
         </h2>
       </div>
     </Container>

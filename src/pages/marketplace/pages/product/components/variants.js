@@ -10,14 +10,8 @@ export const Variants = ({ product, scrollRef }) => {
   const dispatch = useDispatch();
   const location = useLocation();
   const splited = location.pathname.split('/');
-  let newPath;
-  if (splited?.length === 4) {
-    newPath = splited.slice(0, 3).join('/');
-  } else if (splited?.length === 3) {
-    newPath = splited.slice(0, 2).join('/');
-  } else {
-    newPath = splited.slice(0, 5).join('/');
-  }
+  let newPath = splited.slice(0, -1).join('/');
+
   const backendUrl = useSelector((state) => state.storeApp.backendUrl);
   const [variants, setVariants] = useState([]);
   const ProductVariants = async () => {
@@ -71,7 +65,7 @@ export const Variants = ({ product, scrollRef }) => {
 
                 // Navigate based on the current pathname
                 if (location.pathname.includes('/settings')) {
-                  navigate('/profile/settings/product/' + item._id);
+                  navigate(newPath + '/' + item._id);
                 } else {
                   navigate(newPath + '/' + item._id);
                 }

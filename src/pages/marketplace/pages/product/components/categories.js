@@ -1,17 +1,18 @@
-import React from "react";
-import styled from "styled-components";
-import { ProceduresOptions } from "../../../../../datas/registerDatas";
+import React from 'react';
+import styled from 'styled-components';
+import { ProceduresOptions } from '../../../../../datas/registerDatas';
+import { CategoriesOptions } from '../../../../../datas/productCategories';
 
 export const Categories = ({ product }) => {
-  const categoriesList = ProceduresOptions();
+  const categoriesList = CategoriesOptions();
   return (
     <Container>
       <div>Categories:</div>
       <div
         style={{
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
         {product.categories?.map((i, x) => {
@@ -20,10 +21,10 @@ export const Categories = ({ product }) => {
             <h2
               key={x}
               style={{
-                letterSpacing: "0.5px",
+                letterSpacing: '0.5px',
                 margin: 0,
-                fontSize: "14px",
-                color: "#f866b1",
+                fontSize: '14px',
+                color: '#f866b1',
               }}
             >
               - {lab}

@@ -88,20 +88,20 @@ const User = () => {
   // useEffect to send user visit
   useEffect(() => {
     const SendUserVisit = async () => {
-      const resp = await axios.post(
-        backendUrl + `/api/v1/users/${targetUser?._id}/visitors`,
-        {
-          visitor: visitor,
-          user: currentUser ? currentUser?._id : null,
-        }
-      );
-    };
-    try {
-      if (targetUser?._id !== currentUser?._id && targetUser && visitor) {
-        SendUserVisit();
+      try {
+        const resp = await axios.post(
+          backendUrl + `/api/v1/users/${targetUser?._id}/visitors`,
+          {
+            visitor: visitor,
+            user: currentUser ? currentUser?._id : null,
+          }
+        );
+      } catch (error) {
+        console.log(error.response);
       }
-    } catch (error) {
-      console.log(error.response.data.message);
+    };
+    if (visitor && targetUser?._id && targetUser?._id !== currentUser?._id) {
+      SendUserVisit();
     }
   }, [visitor, targetUser]);
 

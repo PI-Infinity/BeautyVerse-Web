@@ -24,6 +24,8 @@ export const AudienceListPopup = ({
   const navigate = useNavigate();
   // location
   const location = useLocation();
+  // dispatch
+  const dispatch = useDispatch();
 
   // add audience on scrolling
   // backend url
@@ -87,6 +89,8 @@ export const AudienceListPopup = ({
       window.removeEventListener('scroll', handleScroll);
     };
   }, [page]);
+
+  const back = useSelector((state) => state.storeApp.backPath);
 
   // capitalize first letters function
   function capitalizeFirstLetter(string) {
@@ -158,41 +162,84 @@ export const AudienceListPopup = ({
             boxSizing: 'border-box',
           }}
         >
-          {list
-            ?.filter((i) =>
-              i?.type?.toLowerCase().includes(filter?.toLowerCase())
-            )
-            ?.map((item, index) => {
-              // capitalize and define user's type
-              const t = item?.username
-                ? item?.username
-                : capitalizeFirstLetter(item?.type);
-              return (
-                <div
-                  key={index}
-                  style={{
-                    color: '#ccc',
-                    display: 'flex',
-                    alignItems: 'center',
-                    letterSpacing: '0.5px',
-                    gap: '10px',
-                  }}
-                >
-                  <ItemCover item={item} />
-                  <h4 style={{ whiteSpace: 'nowrap' }}>{item.name}</h4>
-                  <h4
+          {list?.filter((i) =>
+            i?.type?.toLowerCase().includes(filter?.toLowerCase())
+          )?.length > 0 ? (
+            list
+              ?.filter((i) =>
+                i?.type?.toLowerCase().includes(filter?.toLowerCase())
+              )
+              ?.map((item, index) => {
+                // capitalize and define user's type
+                const t = item?.username
+                  ? item?.username
+                  : capitalizeFirstLetter(item?.type);
+                return (
+                  <div
+                    key={index}
                     style={{
-                      color: '#888',
-                      fontWeight: '500',
-                      whiteSpace: 'nowrap',
-                      fontSize: '14px',
+                      color: '#ccc',
+                      display: 'flex',
+                      alignItems: 'center',
+                      letterSpacing: '0.5px',
+                      gap: '10px',
                     }}
                   >
-                    {t === 'Beautycenter' ? 'Beauty Salon' : t}
-                  </h4>
-                </div>
-              );
-            })}
+                    <ItemCover item={item} />
+                    <h4
+                      style={{ whiteSpace: 'nowrap' }}
+                      onClick={() => {
+                        dispatch(setTargetUser(item));
+                        navigate(
+                          `/user/${item._id}${
+                            item.type === 'shop'
+                              ? '/showroom'
+                              : item.type === 'user'
+                              ? '/contact'
+                              : '/feeds'
+                          }`
+                        );
+                        dispatch(
+                          setBackPath({
+                            path: [...back.path, location.pathname],
+                            data: [...back.data, user],
+                            activeLevel: back.activeLevel + 1,
+                            back: false,
+                          })
+                        );
+                      }}
+                    >
+                      {item.name}
+                    </h4>
+                    <h4
+                      style={{
+                        color: '#888',
+                        fontWeight: '500',
+                        whiteSpace: 'nowrap',
+                        fontSize: '14px',
+                      }}
+                    >
+                      {t === 'Beautycenter' ? 'Beauty Salon' : t}
+                    </h4>
+                  </div>
+                );
+              })
+          ) : (
+            <div
+              style={{
+                width: '100vw',
+                height: '300px',
+                color: 'rgba(255,255,255,0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                letterSpacing: '0.5px',
+                fontWeight: 500,
+              }}
+            >
+              Not found!
+            </div>
+          )}
         </div>
       </Container>
     </div>
@@ -226,29 +273,6 @@ const Header = styled.div`
   justify-content: space-between;
   align-items: center;
 `;
-
-//   height: 40px;
-//   width: 100vw;
-//   overflow-x: scroll;
-//   display: flex;
-//   align-items: center;
-//   gap: 10px;
-//   margin: 3vw 0 1vw 0;
-//   padding-left: 10px;
-//   padding-right: 20px;
-
-//   &::-webkit-scrollbar {
-//     display: none !important;
-//   }
-
-//   div {
-//     padding: 5px 10px;
-//     border-radius: 50vw;
-//     border: 1.5px solid #ccc;
-//     color: #ccc;
-//     font-size: 14px;
-//   }
-// `;
 
 const ItemCover = ({ item, user }) => {
   const [loading, setLoading] = useState(true);

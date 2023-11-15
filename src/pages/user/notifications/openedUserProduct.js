@@ -105,7 +105,7 @@ const OpenedUserProductNotifications = () => {
             <IoMdArrowDropdown size={30} color="#f866b1" />
           </div>
         </Header>
-        <ProductItem item={product} to="/feeds/user" />
+        <ProductItem scrollRef={scrollRef} item={product} to="/feeds/user" />
       </Container>
     </div>
   );

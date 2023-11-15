@@ -7,7 +7,7 @@ import { TextEditor } from '../addFeed/textEditor';
 import axios from 'axios';
 import { Button } from '@mui/material';
 import { BounceLoader } from 'react-spinners';
-import { setFeeds } from '../../../redux/feeds';
+import { setFeeds, setRerenderUserFeeds } from '../../../redux/feeds';
 import { storage } from '../../../firebase';
 import {
   deleteObject,
@@ -84,6 +84,7 @@ export const Options = ({
 
       // dispatch(setFeeds(updatedFeeds));
       setTransition(true);
+      dispatch(setRerenderUserFeeds());
       setTimeout(() => {
         setLoading(false);
         setOpenOption(null);
@@ -124,6 +125,7 @@ export const Options = ({
           deleteObject(fileRef).then(() => {
             setTransition(true);
             setOpenFeed(false);
+            dispatch(setRerenderUserFeeds());
             setTimeout(() => {
               setDeleteLoading(false);
               setOpenOption(null);
@@ -137,6 +139,7 @@ export const Options = ({
                 deleteObject(itemRef).then(() => {
                   setTransition(true);
                   setOpenFeed(false);
+                  dispatch(setRerenderUserFeeds());
                   setTimeout(() => {
                     setDeleteLoading(false);
                     setOpenOption(null);
@@ -181,7 +184,7 @@ export const Options = ({
           variant="contained"
           style={{
             backgroundColor: loading ? '#ccc' : 'rgba(255,255,255,0.1)',
-            color: 'white',
+            color: 'red',
             position: 'absolute',
             top: '10px',
             right: '10px',

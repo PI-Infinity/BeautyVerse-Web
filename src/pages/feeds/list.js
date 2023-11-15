@@ -295,7 +295,7 @@ const Feeds = ({ list }) => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: '#888',
+                    color: 'rgba(255,255,255,0.3)',
                   }}
                 >
                   <p>No feeds found!</p>
@@ -315,7 +315,7 @@ const Feeds = ({ list }) => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: '#888',
+                    color: 'rgba(255,255,255,0.3)',
                   }}
                 >
                   <p>No followings feeds found!</p>

@@ -21,6 +21,7 @@ import {
   setCategoriesList,
   setBrandsList,
 } from '../../../redux/showroom';
+import { CategoriesOptions } from '../../../datas/productCategories';
 
 const Showroom = () => {
   // get outlet props context
@@ -39,7 +40,7 @@ const Showroom = () => {
   const [productsLoading, setProductsLoading] = useState(true);
 
   // categories
-  const categoryList = ProceduresOptions();
+  const categoryList = CategoriesOptions();
 
   // get user products
   const backendUrl = useSelector((state) => state.storeApp.backendUrl);
@@ -264,98 +265,115 @@ const Showroom = () => {
         </div>
       ) : (
         <ListContainer>
-          {list.map((item, index) => {
-            let label = categoryList?.find(
-              (i, x) =>
-                i?.value?.toLowerCase() === item?.categories[0]?.toLowerCase()
-            ).label;
-            return (
-              <ProductItem
-                key={index}
-                onClick={() => {
-                  dispatch(setOpenedProduct(item));
-                  if (location.pathname?.startsWith('/profile')) {
-                    navigate(`/profile/showroom/${item._id}`);
-                  } else {
-                    navigate(`/user/${targetUser?._id}/showroom/${item._id}`);
-                  }
-                }}
-              >
-                <div
-                  style={{
-                    width: '32vw',
-                    aspectRatio: 1,
-                    borderRadius: '15px',
-                    objectFit: 'cover',
-                    background: 'rgba(255,255,255,0.05)',
-                    overflow: 'hidden',
+          {list?.length > 0 ? (
+            list.map((item, index) => {
+              let label = categoryList?.find(
+                (i, x) =>
+                  i?.value?.toLowerCase() === item?.categories[0]?.toLowerCase()
+              )?.label;
+              return (
+                <ProductItem
+                  key={index}
+                  onClick={() => {
+                    dispatch(setOpenedProduct(item));
+                    if (location.pathname?.startsWith('/profile')) {
+                      navigate(`/profile/showroom/${item._id}`);
+                    } else {
+                      navigate(`/user/${targetUser?._id}/showroom/${item._id}`);
+                    }
                   }}
                 >
-                  <img
-                    src={item?.gallery[0]?.url}
+                  <div
                     style={{
-                      width: '100%',
+                      width: '32vw',
                       aspectRatio: 1,
                       borderRadius: '15px',
                       objectFit: 'cover',
-                      opacity: opacity ? 1 : 0,
-                      transition: 'ease-in 500ms',
+                      background: 'rgba(255,255,255,0.05)',
+                      overflow: 'hidden',
                     }}
-                    onLoad={() => setOpacity(true)}
-                  />
-                </div>
-                <div
-                  style={{
-                    height: '100%',
-                    color: '#ccc',
-                    letterSpacing: '0.5px',
-                    width: '60vw',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                  }}
-                >
-                  <h3 style={{ margin: '8px 0', fontSize: '16px' }}>
-                    {item?.title}
-                  </h3>
-                  <p style={{ margin: '8px 0', fontSize: '14px' }}>
-                    {item.brand}
-                  </p>
-                  <p style={{ margin: '8px 0', fontSize: '14px' }}>{label}</p>
-                  <div
-                    style={{ display: 'flex', gap: '10px', fontSize: '16px' }}
                   >
-                    <p
+                    <img
+                      src={item?.gallery[0]?.url}
                       style={{
-                        margin: '8px 0',
-                        fontWeight: 'bold',
-                        color: '#f866b1',
+                        width: '100%',
+                        aspectRatio: 1,
+                        borderRadius: '15px',
+                        objectFit: 'cover',
+                        opacity: opacity ? 1 : 0,
+                        transition: 'ease-in 500ms',
                       }}
-                    >
-                      {item?.sale
-                        ? (
-                            item?.price -
-                            (item.price / 100) * item.sale
-                          ).toFixed(2)
-                        : item.price}{' '}
-                      {item?.owner?.currency}
+                      onLoad={() => setOpacity(true)}
+                    />
+                  </div>
+                  <div
+                    style={{
+                      height: '100%',
+                      color: '#ccc',
+                      letterSpacing: '0.5px',
+                      width: '60vw',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <h3 style={{ margin: '8px 0', fontSize: '16px' }}>
+                      {item?.title}
+                    </h3>
+                    <p style={{ margin: '8px 0', fontSize: '14px' }}>
+                      {item.brand}
                     </p>
-                    {item?.sale && (
+                    <p style={{ margin: '8px 0', fontSize: '14px' }}>{label}</p>
+                    <div
+                      style={{ display: 'flex', gap: '10px', fontSize: '16px' }}
+                    >
                       <p
                         style={{
                           margin: '8px 0',
-                          textDecorationLine: 'line-through',
-                          color: '#888',
                           fontWeight: 'bold',
+                          color: '#f866b1',
                         }}
                       >
-                        {item?.price} {item?.owner.currency}
+                        {item?.sale
+                          ? (
+                              item?.price -
+                              (item.price / 100) * item.sale
+                            ).toFixed(2)
+                          : item.price}{' '}
+                        {item?.owner?.currency}
                       </p>
-                    )}
+                      {item?.sale && (
+                        <p
+                          style={{
+                            margin: '8px 0',
+                            textDecorationLine: 'line-through',
+                            color: '#888',
+                            fontWeight: 'bold',
+                          }}
+                        >
+                          {item?.price} {item?.owner.currency}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </ProductItem>
-            );
-          })}
+                </ProductItem>
+              );
+            })
+          ) : (
+            <div
+              style={{
+                width: '100%',
+                height: '300px',
+                color: 'rgba(255,255,255,0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                letterSpacing: '0.5px',
+                fontWeight: 500,
+              }}
+            >
+              Products not found!
+            </div>
+          )}
         </ListContainer>
       )}
       <Outlet />

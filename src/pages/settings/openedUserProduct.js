@@ -41,7 +41,6 @@ const OpenedUserProdutSaved = () => {
 
   // scroll document when load
   const scrollRef = useRef();
-
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
@@ -58,8 +57,6 @@ const OpenedUserProdutSaved = () => {
   } else {
     product = productObj;
   }
-
-  console.log(product);
 
   return (
     <div

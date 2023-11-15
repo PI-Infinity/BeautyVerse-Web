@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 import styled from 'styled-components';
@@ -48,6 +48,8 @@ const OpenedProduct = () => {
     }
   }, []);
 
+  const scrollRef = useRef();
+
   return (
     <div
       style={{
@@ -62,7 +64,7 @@ const OpenedProduct = () => {
         left: '0',
       }}
     >
-      <Container openproduct={openProduct ? 'true' : 'false'}>
+      <Container openproduct={openProduct ? 'true' : 'false'} ref={scrollRef}>
         <Header>
           <div style={{ width: '30px' }}></div>
           <div>
@@ -93,7 +95,11 @@ const OpenedProduct = () => {
             <IoMdArrowDropdown size={30} color="#f866b1" />
           </div>
         </Header>
-        <ProductItem item={product} to="/marketplace/user" />
+        <ProductItem
+          item={product}
+          scrollRef={scrollRef}
+          to="/marketplace/user"
+        />
       </Container>
     </div>
   );

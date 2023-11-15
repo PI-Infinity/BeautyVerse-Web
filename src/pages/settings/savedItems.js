@@ -150,12 +150,11 @@ export const SavedItems = ({ activePage, setActivePage }) => {
         setProducts(response.data.data.products);
 
         setTimeout(() => {
-          setLoading(false);
           setProductsPage(1);
         }, 500);
       } catch (error) {
         console.log(error.response.data.message);
-
+        setLoading(false);
         setProductsPage(1);
       }
     };
@@ -342,122 +341,156 @@ export const SavedItems = ({ activePage, setActivePage }) => {
           <div style={{ margin: '15px 0 0 0' }}>
             {activeList ? (
               <ListContainer>
-                {feeds.map((item, index) => {
-                  return (
-                    <div
-                      data-id={item._id}
-                      data-owner-id={item?.owner._id}
-                      key={index}
-                      style={{ width: '100%' }}
-                    >
-                      <FeedCard item={item} />
-                    </div>
-                  );
-                })}
+                {feeds?.length > 0 ? (
+                  feeds.map((item, index) => {
+                    return (
+                      <div
+                        data-id={item._id}
+                        data-owner-id={item?.owner._id}
+                        key={index}
+                        style={{ width: '100%' }}
+                      >
+                        <FeedCard item={item} />
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div
+                    style={{
+                      width: '100%',
+                      height: '300px',
+                      color: 'rgba(255,255,255,0.3)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      letterSpacing: '0.5px',
+                      fontWeight: 500,
+                    }}
+                  >
+                    Saved feeds not found!
+                  </div>
+                )}
               </ListContainer>
             ) : (
               <ListContainer>
-                {products.map((item, index) => {
-                  let label = categoryList?.find(
-                    (i, x) =>
-                      i?.value?.toLowerCase() ===
-                      item?.categories[0]?.toLowerCase()
-                  ).label;
-                  return (
-                    <ProductItem
-                      key={index}
-                      onClick={() => {
-                        dispatch(setOpenedProduct(item));
-                        if (location.pathname?.startsWith('/profile')) {
-                          navigate(`product/${item._id}`);
-                        } else {
-                          navigate(
-                            `/user/${item?.owner?._id}/showroom/${item._id}`
-                          );
-                        }
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: '32vw',
-                          aspectRatio: 1,
-                          borderRadius: '15px',
-                          objectFit: 'cover',
-                          background: 'rgba(255,255,255,0.05)',
-                          overflow: 'hidden',
+                {products?.length > 0 ? (
+                  products.map((item, index) => {
+                    let label = categoryList?.find(
+                      (i, x) =>
+                        i?.value?.toLowerCase() ===
+                        item?.categories[0]?.toLowerCase()
+                    ).label;
+                    return (
+                      <ProductItem
+                        key={index}
+                        onClick={() => {
+                          dispatch(setOpenedProduct(item));
+                          if (location.pathname?.startsWith('/profile')) {
+                            navigate(`product/${item._id}`);
+                          } else {
+                            navigate(
+                              `/user/${item?.owner?._id}/showroom/${item._id}`
+                            );
+                          }
                         }}
                       >
-                        <img
-                          src={item?.gallery[0]?.url}
+                        <div
                           style={{
-                            width: '100%',
+                            width: '32vw',
                             aspectRatio: 1,
                             borderRadius: '15px',
                             objectFit: 'cover',
-                            opacity: 1,
-                            transition: 'ease-in 500ms',
-                          }}
-                          // onLoad={() => setOpacity(true)}
-                        />
-                      </div>
-                      <div
-                        style={{
-                          height: '100%',
-                          color: '#ccc',
-                          letterSpacing: '0.5px',
-                          width: '60vw',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        <h3 style={{ margin: '8px 0', fontSize: '16px' }}>
-                          {item?.title}
-                        </h3>
-                        <p style={{ margin: '8px 0', fontSize: '14px' }}>
-                          {item.brand}
-                        </p>
-                        <p style={{ margin: '8px 0', fontSize: '14px' }}>
-                          {label}
-                        </p>
-                        <div
-                          style={{
-                            display: 'flex',
-                            gap: '10px',
-                            fontSize: '16px',
+                            background: 'rgba(255,255,255,0.05)',
+                            overflow: 'hidden',
                           }}
                         >
-                          <p
+                          <img
+                            src={item?.gallery[0]?.url}
                             style={{
-                              margin: '8px 0',
-                              fontWeight: 'bold',
-                              color: '#f866b1',
+                              width: '100%',
+                              aspectRatio: 1,
+                              borderRadius: '15px',
+                              objectFit: 'cover',
+                              opacity: 1,
+                              transition: 'ease-in 500ms',
+                            }}
+                            // onLoad={() => setOpacity(true)}
+                          />
+                        </div>
+                        <div
+                          style={{
+                            height: '100%',
+                            color: '#ccc',
+                            letterSpacing: '0.5px',
+                            width: '60vw',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                          }}
+                        >
+                          <h3 style={{ margin: '8px 0', fontSize: '16px' }}>
+                            {item?.title}
+                          </h3>
+                          <p style={{ margin: '8px 0', fontSize: '14px' }}>
+                            {item.brand}
+                          </p>
+                          <p style={{ margin: '8px 0', fontSize: '14px' }}>
+                            {label}
+                          </p>
+                          <div
+                            style={{
+                              display: 'flex',
+                              gap: '10px',
+                              fontSize: '16px',
                             }}
                           >
-                            {item?.sale
-                              ? (
-                                  item?.price -
-                                  (item.price / 100) * item.sale
-                                ).toFixed(2)
-                              : item.price}{' '}
-                            {item?.owner?.currency}
-                          </p>
-                          {item?.sale && (
                             <p
                               style={{
                                 margin: '8px 0',
-                                textDecorationLine: 'line-through',
-                                color: '#888',
                                 fontWeight: 'bold',
+                                color: '#f866b1',
                               }}
                             >
-                              {item?.price} {item?.owner.currency}
+                              {item?.sale
+                                ? (
+                                    item?.price -
+                                    (item.price / 100) * item.sale
+                                  ).toFixed(2)
+                                : item.price}{' '}
+                              {item?.owner?.currency}
                             </p>
-                          )}
+                            {item?.sale && (
+                              <p
+                                style={{
+                                  margin: '8px 0',
+                                  textDecorationLine: 'line-through',
+                                  color: '#888',
+                                  fontWeight: 'bold',
+                                }}
+                              >
+                                {item?.price} {item?.owner.currency}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </ProductItem>
-                  );
-                })}
+                      </ProductItem>
+                    );
+                  })
+                ) : (
+                  <div
+                    style={{
+                      width: '100%',
+                      height: '300px',
+                      color: 'rgba(255,255,255,0.3)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      letterSpacing: '0.5px',
+                      fontWeight: 500,
+                    }}
+                  >
+                    Saved products not found!
+                  </div>
+                )}
                 <Outlet />
               </ListContainer>
             )}

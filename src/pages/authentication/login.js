@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { setCurrentUser } from '../../redux/user';
+import { setCurrentUser, setRerenderCurrentUser } from '../../redux/user';
 import { setCurrentUser as setCurrentUserAuth } from '../../redux/auth';
 import { TextField, Button, InputAdornment, IconButton } from '@mui/material';
 import styled from 'styled-components';
@@ -84,6 +84,7 @@ const Login = () => {
                 notifs?.filter((item) => item?.status === 'unread')
               )
             );
+            dispatch(setRerenderCurrentUser());
             navigate('/feeds');
           } else {
             dispatch(setCurrentUserAuth(data.data.filteredUser));

@@ -130,7 +130,20 @@ export const ProductCard = ({ item, to }) => {
         {item.sale > 0 ? (
           <span style={{}}>
             {item.price - item.price / item.sale}
-            {item.currency}
+            {item.currency === 'dollar' ? (
+              '$'
+            ) : item.currency === 'euro' ? (
+              '€'
+            ) : (
+              <span
+                style={{
+                  fontWeight: 'bold',
+                  fontSize: 14,
+                }}
+              >
+                {'\u20BE'}
+              </span>
+            )}
             <span
               style={{
                 textDecorationLine: 'line-through',
@@ -140,13 +153,39 @@ export const ProductCard = ({ item, to }) => {
               }}
             >
               {item.price}
-              {item.currency}
+              {item.currency === 'dollar' ? (
+                '$'
+              ) : item.currency === 'euro' ? (
+                '€'
+              ) : (
+                <span
+                  style={{
+                    fontWeight: 'bold',
+                    fontSize: 14,
+                  }}
+                >
+                  {'\u20BE'}
+                </span>
+              )}
             </span>
           </span>
         ) : (
           <span>
             {item.price}
-            {item.currency}
+            {item.currency === 'dollar' ? (
+              '$'
+            ) : item.currency === 'euro' ? (
+              '€'
+            ) : (
+              <span
+                style={{
+                  fontWeight: 'bold',
+                  fontSize: 14,
+                }}
+              >
+                {'\u20BE'}
+              </span>
+            )}
           </span>
         )}
       </div>

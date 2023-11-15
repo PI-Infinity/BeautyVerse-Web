@@ -6,8 +6,7 @@ import styled from 'styled-components';
 export const Navigator = ({ user }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const active =
-    location.pathname.split('/')[location.pathname.split('/')?.length - 1];
+  const active = location.pathname.split('/')[2];
 
   const scrollRef = useRef();
 

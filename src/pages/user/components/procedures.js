@@ -106,9 +106,9 @@ const Procedures = () => {
                             {item.price}{' '}
                             {targetUser?.currency && (
                               <>
-                                {targetUser?.currency === 'Dollar'
+                                {targetUser?.currency === 'dollar'
                                   ? '$'
-                                  : targetUser?.currency === 'Euro'
+                                  : targetUser?.currency === 'euro'
                                   ? '€'
                                   : '₾'}
                               </>
@@ -160,9 +160,10 @@ const Navigator = ({ procedures, setFilter, filter }) => {
       style={{
         display: 'flex',
         gap: '10px',
-        width: '100vw',
+        width: '90vw',
         overflowX: 'scroll',
         padding: '5px',
+        paddingRight: '30px',
       }}
     >
       {categories?.length > 1 && (
