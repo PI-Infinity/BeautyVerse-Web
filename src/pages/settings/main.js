@@ -21,6 +21,7 @@ import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { setCurrentUser } from '../../redux/user';
 import { Procedures } from './procedures';
+import { Language } from '../../context/language';
 
 const Settings = () => {
   // navigation
@@ -28,6 +29,9 @@ const Settings = () => {
 
   // dispatch
   const dispatch = useDispatch();
+
+  // language
+  const language = Language();
 
   // Initialize the currentUser state with the user data from localStorage
   const currentUser = useSelector((state) => state.storeUser.currentUser);
@@ -117,7 +121,7 @@ const Settings = () => {
           onClick={Logout}
           //   {...props}
         >
-          Logout
+          {language?.language?.User?.userPage?.logout}
         </Button>
       </Container>
       {activePage.active && activePage.page === 'personalInfo' && (

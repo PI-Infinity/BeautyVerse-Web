@@ -19,6 +19,7 @@ import { setRerenderUserFeeds } from '../../../redux/feeds';
 import { UploadFile } from '@mui/icons-material';
 import { UploaderPercentage } from './uploaderPercentage';
 import { Backdrop } from '@mui/material';
+import { Language } from '../../../context/language';
 
 const AddFeed = () => {
   // page animation transition
@@ -31,6 +32,9 @@ const AddFeed = () => {
 
   // loading
   const [loading, setLoading] = useState(false);
+
+  // language
+  const language = Language();
 
   // dispatch
   const dispatch = useDispatch();
@@ -315,7 +319,7 @@ const AddFeed = () => {
         <Header user={currentUser} />
       </Headroom>
       <Container transition={transition ? 'true' : 'false'}>
-        <TextEditor text={text} setText={setText} />
+        <TextEditor text={text} setText={setText} language={language} />
         <div
           style={{
             width: '90%',
@@ -355,7 +359,7 @@ const AddFeed = () => {
               }}
             >
               <BiSolidImage size={18} color={'#ccc'} />
-              Image
+              {language?.language?.User?.addFeed?.selectImage}
               <input
                 type="file"
                 id="image-upload"
@@ -397,7 +401,7 @@ const AddFeed = () => {
               }}
             >
               <BiSolidVideos size={18} color={'#ccc'} />
-              Video
+              {language?.language?.User?.addFeed?.selectVideo}
               <input
                 type="file"
                 id="video-upload"
@@ -515,7 +519,7 @@ const AddFeed = () => {
             }}
             onClick={FileUpload}
           >
-            Upload
+            {language?.language?.User?.addFeed?.upload}
           </div>
         )}
       </Container>

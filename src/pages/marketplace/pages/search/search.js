@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from "react";
-import styled from "styled-components";
-import { BsFillSearchHeartFill } from "react-icons/bs";
-import { MdClear } from "react-icons/md";
-import { ProceduresOptions } from "../../../../datas/registerDatas";
-import { useDispatch, useSelector } from "react-redux";
-import { useLocation } from "react-router-dom";
-import { BsListUl } from "react-icons/bs";
+import React, { useEffect, useState } from 'react';
+import styled from 'styled-components';
+import { BsFillSearchHeartFill } from 'react-icons/bs';
+import { MdClear } from 'react-icons/md';
+import { ProceduresOptions } from '../../../../datas/registerDatas';
+import { useDispatch, useSelector } from 'react-redux';
+import { useLocation } from 'react-router-dom';
+import { BsListUl } from 'react-icons/bs';
+import { Language } from '../../../../context/language';
 
 export const Search = ({
   search,
@@ -15,6 +16,7 @@ export const Search = ({
   total,
 }) => {
   const location = useLocation();
+  const language = Language();
   const source = location.state;
   const [animation, setAnimation] = useState(false);
 
@@ -24,12 +26,12 @@ export const Search = ({
   return (
     <div
       style={{
-        width: animation ? "100%" : "30px",
-        transition: "ease-in 200ms",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: "10px",
+        width: animation ? '100%' : '30px',
+        transition: 'ease-in 200ms',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '10px',
         opacity: animation ? 1 : 0,
       }}
     >
@@ -37,33 +39,33 @@ export const Search = ({
         <BsFillSearchHeartFill size={18} color="#ccc" />
         <Input
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search..."
-          autoFocus={source === "search" ? true : false}
+          placeholder={language?.language?.Marketplace?.marketplace?.search}
+          autoFocus={source === 'search' ? true : false}
           value={search}
         />
         {!openFilter && (
-          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <BsListUl
               color="#ccc"
               size={20}
               style={{
                 opacity: animation ? 1 : 0,
-                transition: "ease-in 500ms",
+                transition: 'ease-in 500ms',
               }}
               onClick={() => setOpenFilter(!openFilter)}
             />
             {total > 0 && (
               <div
                 style={{
-                  color: "#ccc",
-                  background: "red",
-                  borderRadius: "50px",
-                  width: "15px",
-                  height: "15px",
-                  fontSize: "12px",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
+                  color: '#ccc',
+                  background: 'red',
+                  borderRadius: '50px',
+                  width: '15px',
+                  height: '15px',
+                  fontSize: '12px',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
                 }}
               >
                 {total}

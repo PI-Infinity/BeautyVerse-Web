@@ -5,10 +5,14 @@ import { MdClear } from 'react-icons/md';
 import { ProceduresOptions } from '../../../datas/registerDatas';
 import { setSearch } from '../../../redux/cards';
 import { useDispatch, useSelector } from 'react-redux';
+import { Language } from '../../../context/language';
 
 export const Search = () => {
   // redux dispatch
   const dispatch = useDispatch();
+
+  // language
+  const language = Language();
 
   // category filter
   const search = useSelector((state) => state.storeCards.search);
@@ -39,7 +43,7 @@ export const Search = () => {
       <SearchContainer>
         <BsFillSearchHeartFill size={18} color="#ccc" />
         <Input
-          placeholder="Search..."
+          placeholder={language?.language?.Main?.filter?.search}
           value={search}
           onChange={(e) => dispatch(setSearch(e.target.value))}
         />

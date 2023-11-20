@@ -3,6 +3,7 @@ import { styled } from '@mui/styles';
 import React from 'react';
 import { IoMdArrowDropright } from 'react-icons/io';
 import mainStyled from 'styled-components';
+import { Language } from '../../context/language';
 
 export const MenuItems = ({
   activePage,
@@ -18,6 +19,72 @@ export const MenuItems = ({
       backgroundColor: '#f866b1',
     },
   }));
+
+  const language = Language();
+
+  const Items = [
+    {
+      value: 'personalInfo',
+      label: language?.language?.User?.userPage?.personalInfo,
+    },
+    {
+      value: 'addresses',
+      label: language?.language?.User?.userPage?.addresses,
+    },
+    {
+      value: 'procedures',
+      label: language?.language?.User?.userPage?.procedures,
+    },
+    {
+      value: 'products',
+      label: language?.language?.User?.userPage?.products,
+    },
+    {
+      value: 'workingInfo',
+      label: language?.language?.User?.userPage?.workingInfo,
+    },
+    {
+      value: 'savedItems',
+      label: language?.language?.User?.userPage?.savedItems,
+    },
+    {
+      value: 'support',
+      label: language?.language?.User?.userPage?.support,
+    },
+    {
+      value: 'security',
+      label: language?.language?.User?.userPage?.security,
+    },
+    {
+      value: 'languages',
+      label: language?.language?.User?.userPage?.languages,
+    },
+    // {
+    //   value: 'darkMode',
+    //   label: 'Dark Mode',
+    // },
+    {
+      value: 'activation',
+      label: language?.language?.User?.userPage?.activation,
+    },
+    {
+      value: 'terms&rules',
+      label: language?.language?.Pages?.pages?.terms,
+    },
+    {
+      value: 'q&a',
+      label: language?.language?.Pages?.pages?.qa,
+    },
+    {
+      value: 'pp',
+      label: language?.language?.Pages?.pages?.privacy,
+    },
+    {
+      value: 'hw',
+      label: language?.language?.Pages?.pages?.usage,
+    },
+  ];
+
   return (
     <Container>
       {Items?.map((item, index) => {
@@ -104,66 +171,3 @@ const Item = mainStyled.div`
   font-weight: 500;
 
 `;
-
-const Items = [
-  {
-    value: 'personalInfo',
-    label: 'Personal Info',
-  },
-  {
-    value: 'addresses',
-    label: 'Addresses',
-  },
-  {
-    value: 'procedures',
-    label: 'Procedures',
-  },
-  {
-    value: 'products',
-    label: 'Products',
-  },
-  {
-    value: 'workingInfo',
-    label: 'Working Info',
-  },
-  {
-    value: 'savedItems',
-    label: 'Saved Items',
-  },
-  {
-    value: 'support',
-    label: 'Support',
-  },
-  {
-    value: 'security',
-    label: 'Security',
-  },
-  {
-    value: 'languages',
-    label: 'Languages',
-  },
-  // {
-  //   value: 'darkMode',
-  //   label: 'Dark Mode',
-  // },
-  {
-    value: 'activation',
-    label: 'Activation',
-  },
-  {
-    value: 'terms&rules',
-    label: 'Terms & Rules',
-  },
-  {
-    value: 'q&a',
-    label: 'Questions & Answers',
-  },
-  {
-    value: 'pp',
-    label: 'Privacy Policy',
-  },
-  {
-    value: 'hw',
-    label: 'How does BeautyVerse work?',
-  },
-];

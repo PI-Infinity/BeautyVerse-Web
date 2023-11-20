@@ -2,15 +2,16 @@ import React from 'react';
 import { useOutletContext } from 'react-router-dom';
 import styled from 'styled-components';
 import { workingDaysOptions } from '../../../datas/registerDatas';
+import { useSelector } from 'react-redux';
 
 const WorkingInfo = () => {
   // get outlet props context
   const [targetUser] = useOutletContext();
-  let lang = 'en';
+  let lang = useSelector((state) => state.storeApp.language);
   return (
     <Container>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {targetUser.workingDays?.length > 0 ? (
+        {targetUser?.workingDays?.length > 0 ? (
           targetUser.workingDays?.map((item, index) => {
             let label = workingDaysOptions.find(
               (i) => i.value.toLowerCase() === item.value.toLowerCase()

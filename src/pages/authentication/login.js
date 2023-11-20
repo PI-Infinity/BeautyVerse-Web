@@ -18,6 +18,10 @@ import {
 } from '../../redux/notifications';
 
 const Login = () => {
+  useEffect(() => {
+    // Scroll to the top of the window
+    window.scrollTo(0, 0);
+  }, []);
   //language context
   const language = Language();
   // login email and password states

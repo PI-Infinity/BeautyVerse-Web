@@ -7,10 +7,14 @@ import Button from '@mui/material/Button';
 import { AiFillAppstore } from 'react-icons/ai';
 import { useNavigate } from 'react-router-dom';
 import { useDeviceType } from '../../../functions/device';
+import { Language } from '../../../context/language';
+import { LanguageComponent } from './language';
+import { MdDoubleArrow } from 'react-icons/md';
 
 export const Cover = () => {
   const navigate = useNavigate();
   const device = useDeviceType();
+  const language = Language();
 
   return (
     <Container>
@@ -19,16 +23,16 @@ export const Cover = () => {
       </LogoContainer>
       <AnimatedContainer>
         <TextContainer>
-          <h1>Where Beauty Meets Diversity</h1>
+          <h1>{language?.language?.Auth?.auth?.slogan}</h1>
         </TextContainer>
         <TextContainer>
-          <h2>Your beauty hub everywhere & anytime!</h2>
+          <h2>{language?.language?.Auth?.auth?.subSlogan}</h2>
         </TextContainer>
 
         {device === 'Mobile' && (
           <GoButton variant="contained" onClick={() => navigate('/feeds')}>
-            Go to App{' '}
-            <AiFillAppstore
+            {language?.language?.Auth?.auth?.goToApp}
+            <MdDoubleArrow
               // color="#ccc"
               size={24}
               style={{ marginLeft: '8px' }}
@@ -73,6 +77,11 @@ export const Cover = () => {
             </TextContainer>
           </StoreButtons>
         )}
+        {device === 'Desktop' && (
+          <div style={{ marginTop: '20px' }}>
+            <LanguageComponent />
+          </div>
+        )}
       </AnimatedContainer>
     </Container>
   );
@@ -80,16 +89,18 @@ export const Cover = () => {
 
 const Container = styled.div`
   width: 100%;
-  height: 80%;
+  height: 70vh;
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
+  padding: 0 0 3vh 0;
 
   @media only screen and (max-width: 600px) {
-    height: 90%;
     flex-direction: column;
+    height: 90%;
     justify-content: start;
+    padding: 0 0 1vh 0;
   }
 `;
 
@@ -105,41 +116,47 @@ to {
 }
 `;
 
-// title for mobile screens
-const slideInMobile = keyframes`
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
-`;
-
-// title
 const slideIn = keyframes`
   from {
     transform: translateX(100%);
+    opacity: 0;
+   
   }
   to {
     transform: translateX(0);
+    opacity: 1;
+   
+  }
+`;
+const slideInMobile = keyframes`
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+   
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+   
   }
 `;
 
 const LogoContainer = styled.div`
-  height: 400px;
+  height: 450px;
   display: flex;
   align-items: center;
   justify-content: center;
 
   @media only screen and (max-width: 600px) {
-    width: 100%;
+    width: 90%;
+    height: 370px;
   }
 `;
 
 const AnimatedImage = styled.img`
-  width: 600px;
+  width: 650px;
   position: relative;
-  right: 40px;
+  // right: 40px;
 
   animation: ${fadeIn} 0.75s ease-in-out;
 
@@ -153,19 +170,15 @@ const AnimatedImage = styled.img`
 const AnimatedContainer = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   justify-content: center;
-
   animation: ${slideIn} 0.75s ease-in-out;
-
-  position: relative;
-  right: 100px;
+  min-width: 600px;
 
   @media only screen and (max-width: 600px) {
-    right: 0px;
+    min-width: auto;
+    position: relative;
     align-items: center;
     bottom: 40px;
-
     animation: ${slideInMobile} 0.75s ease-in-out;
   }
 `;
@@ -230,13 +243,13 @@ const GoButton = styled(Button)`
     color: #fff;
     font-weight: bold;
     margin-top: 20px;
-    width: 60%;
+    min-width: 60%;
     height: 45px;
     border-radius: 50px;
+    padding: 5px 20px;
 
     @media only screen and (max-width: 600px) {
       height: auto;
-      width: 60%;
       margin-top: 30px;
     }
 

@@ -8,6 +8,7 @@ import { setTargetUser } from '../../../redux/user';
 import { useDispatch } from 'react-redux';
 import { VscVerifiedFilled } from 'react-icons/vsc';
 import { setBackPath } from '../../../redux/app';
+import { Language } from '../../../context/language';
 
 export const Card = ({ item }) => {
   // capitalize first letters function
@@ -19,13 +20,15 @@ export const Card = ({ item }) => {
   const t = capitalizeFirstLetter(item?.type);
   const name = capitalizeFirstLetter(item?.name);
 
+  const language = Language();
+
   let type;
-  if (item.type === 'specialist') {
-    type = t;
-  } else if (item.type === 'shop') {
-    type = t;
+  if (item?.type === 'specialist') {
+    type = language?.language?.Main?.feedCard?.specialist;
+  } else if (item?.type === 'shop') {
+    type = language?.language?.Marketplace?.marketplace?.shop;
   } else {
-    type = 'Beauty Salon';
+    type = language?.language?.Auth?.auth?.beautySalon;
   }
 
   // navigate

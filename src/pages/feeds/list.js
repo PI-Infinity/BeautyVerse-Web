@@ -13,10 +13,14 @@ import {
   setFollowingsPage,
 } from '../../redux/feeds';
 import { Options } from './components/options';
+import { Language } from '../../context/language';
 
 const Feeds = ({ list }) => {
   // redux dispatch
   const dispatch = useDispatch();
+
+  // language
+  const language = Language();
 
   // current user state
   const currentUser = useSelector((state) => state.storeUser.currentUser);
@@ -242,7 +246,7 @@ const Feeds = ({ list }) => {
                   color: activeList ? '#f866b1' : '#ccc',
                 }}
               >
-                For You
+                {language.language.Main.feedCard.forYou}
               </div>
               <div
                 onClick={() => setActiveList(false)}
@@ -256,7 +260,7 @@ const Feeds = ({ list }) => {
                   color: !activeList ? '#f866b1' : '#ccc',
                 }}
               >
-                Followings
+                {language.language.User.userPage.followings}
               </div>
             </div>
             <div className="line">

@@ -126,12 +126,12 @@ export const Support = ({ activePage, setActivePage }) => {
                 letterSpacing: '0.5px',
               }}
             >
-              Support
+              {language?.language?.User.userPage.support}
             </h3>
           </div>
           <div style={{ width: '40px' }}></div>
         </Header>
-        <TextEditor text={text} setText={setText} />
+        <TextEditor text={text} setText={setText} language={language} />
         <Button
           variant="contained"
           style={{

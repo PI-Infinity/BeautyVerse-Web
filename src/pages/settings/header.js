@@ -1,10 +1,8 @@
 import React from 'react';
-import { IoMdAddCircleOutline, IoMdNotifications } from 'react-icons/io';
-import styled from 'styled-components';
 import { IoMdArrowRoundBack } from 'react-icons/io';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { BiImageAdd } from 'react-icons/bi';
-import { MdCircleNotifications, MdSettings } from 'react-icons/md';
+import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+import { Language } from '../../context/language';
 
 /**
  *
@@ -14,6 +12,7 @@ import { MdCircleNotifications, MdSettings } from 'react-icons/md';
 
 export const Header = ({ back }) => {
   const navigate = useNavigate();
+  const language = Language();
 
   return (
     <Container>
@@ -32,7 +31,7 @@ export const Header = ({ back }) => {
       )}
 
       <LogoTitle style={{ position: 'relative', left: back ? 0 : '15px' }}>
-        Settings
+        {language?.language?.User?.userPage?.settings}
       </LogoTitle>
 
       <div style={{ width: '30px' }}></div>

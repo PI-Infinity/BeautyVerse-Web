@@ -64,11 +64,11 @@ export const TopSection = ({ item, openOption, setOpenOption }) => {
 
   let type;
   if (item?.owner?.type === 'specialist') {
-    type = t;
+    type = language?.language?.Main?.feedCard?.specialist;
   } else if (item?.owner?.type === 'shop') {
-    type = t;
+    type = language?.language?.Marketplace?.marketplace?.shop;
   } else {
-    type = 'Beauty Salon';
+    type = language?.language?.Auth?.auth?.beautySalon;
   }
 
   return (

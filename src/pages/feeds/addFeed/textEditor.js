@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import TextField from '@mui/material/TextField';
 import { BiSolidImage, BiSolidVideos } from 'react-icons/bi';
 
-export const TextEditor = ({ text, setText }) => {
+export const TextEditor = ({ text, setText, language }) => {
   const [addCounter, setAddCounter] = useState(false);
   const maxLength = 600;
 
@@ -27,9 +27,9 @@ export const TextEditor = ({ text, setText }) => {
     >
       <TextField
         id="outlined-multiline-static"
-        label={`Type something ${addCounter ? text.length : ''}${
-          addCounter ? '/' : ''
-        }${addCounter ? maxLength : ''} ...`}
+        label={`${language?.language?.Main?.filter?.typeHere} ${
+          addCounter ? text.length : ''
+        }${addCounter ? '/' : ''}${addCounter ? maxLength : ''} `}
         multiline
         minRows={5}
         variant="outlined"

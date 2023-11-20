@@ -1,42 +1,45 @@
-import React from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { ProductCard } from "./productCard";
-import styled from "styled-components";
-import { Outlet, useNavigate } from "react-router-dom";
-import { setActiveList } from "../../../../../redux/marketplace";
+import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { ProductCard } from './productCard';
+import styled from 'styled-components';
+import { Outlet, useNavigate } from 'react-router-dom';
+import { setActiveList } from '../../../../../redux/marketplace';
+import { Language } from '../../../../../context/language';
 
 export const PopularList = () => {
   const randomProductsList = useSelector(
     (state) => state.storeMarketplace.randomProductsList
   );
+  console.log(randomProductsList);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const language = Language();
   return (
     <Container>
       <div
         style={{
-          width: "100%",
-          color: "#ccc",
-          fontWeight: "bold",
-          letterSpacing: "0.5px",
-          display: "flex",
-          justifyContent: "space-evenly",
-          alignItems: "center",
+          width: '100%',
+          color: '#ccc',
+          fontWeight: 'bold',
+          letterSpacing: '0.5px',
+          display: 'flex',
+          justifyContent: 'space-evenly',
+          alignItems: 'center',
         }}
       >
         <div
           style={{
-            height: "1.5px",
-            width: "25vw",
-            background: "rgba(255,255,255,0.1)",
+            height: '1.5px',
+            width: '25vw',
+            background: 'rgba(255,255,255,0.1)',
           }}
         ></div>
-        Popular Products
+        {language?.language?.Marketplace?.marketplace?.popularProducts}
         <div
           style={{
-            height: "1.5px",
-            width: "25vw",
-            background: "rgba(255,255,255,0.1)",
+            height: '1.5px',
+            width: '25vw',
+            background: 'rgba(255,255,255,0.1)',
           }}
         ></div>
       </div>
@@ -53,32 +56,32 @@ export const PopularList = () => {
       </List>
       <div
         onClick={() => {
-          navigate("/marketplace/list");
+          navigate('/marketplace/list');
           dispatch(setActiveList(randomProductsList));
         }}
         style={{
-          width: "100%",
-          color: "#ccc",
-          fontWeight: "bold",
-          letterSpacing: "0.5px",
-          display: "flex",
-          justifyContent: "space-evenly",
-          alignItems: "center",
+          width: '100%',
+          color: '#ccc',
+          fontWeight: 'bold',
+          letterSpacing: '0.5px',
+          display: 'flex',
+          justifyContent: 'space-evenly',
+          alignItems: 'center',
         }}
       >
         <div
           style={{
-            height: "1.5px",
-            width: "30vw",
-            background: "rgba(255,255,255,0.1)",
+            height: '1.5px',
+            width: '30vw',
+            background: 'rgba(255,255,255,0.1)',
           }}
         ></div>
-        See All
+        {language?.language?.Marketplace?.marketplace?.all}
         <div
           style={{
-            height: "1.5px",
-            width: "30vw",
-            background: "rgba(255,255,255,0.1)",
+            height: '1.5px',
+            width: '30vw',
+            background: 'rgba(255,255,255,0.1)',
           }}
         ></div>
       </div>

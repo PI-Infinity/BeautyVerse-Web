@@ -17,6 +17,7 @@ import { MdDelete } from 'react-icons/md';
 import { FaMapMarkedAlt } from 'react-icons/fa';
 import SimpleBackdrop from '../../components/backDrop';
 import { WDOptions } from './wdOptions';
+import { Language } from '../../context/language';
 
 export const WorkingInfo = ({ activePage, setActivePage, currentUser }) => {
   // navigate
@@ -25,6 +26,8 @@ export const WorkingInfo = ({ activePage, setActivePage, currentUser }) => {
   const location = useLocation();
   // dispatch
   const dispatch = useDispatch();
+  // language
+  const language = Language();
 
   // with this state feeds open with scale and opacity
   useEffect(() => {
@@ -132,14 +135,14 @@ export const WorkingInfo = ({ activePage, setActivePage, currentUser }) => {
                 letterSpacing: '0.5px',
               }}
             >
-              Working Info
+              {language.language.User.userPage.workingInfo}
             </h3>
           </div>
           <div style={{ width: '40px' }}></div>
         </Header>
         <ContentList>
           <h4 style={{ color: '#ccc', letterSpacing: '0.5px' }}>
-            Working Days & Hours
+            {language.language.User.userPage.workingDays}
           </h4>
           <WDOptions value={workingDays} setValue={setWorkingDays} />
 
@@ -162,11 +165,13 @@ export const WorkingInfo = ({ activePage, setActivePage, currentUser }) => {
               }}
               onClick={() => UpdateUser('workingDays', workingDays)}
             >
-              Save
+              {language?.language?.Main.filter.save}
             </Button>
           )}
 
-          <h4 style={{ color: '#ccc', letterSpacing: '0.5px' }}>Currency</h4>
+          <h4 style={{ color: '#ccc', letterSpacing: '0.5px' }}>
+            {language?.language?.User.userPage.currency}
+          </h4>
           <Currency>
             <div
               style={{

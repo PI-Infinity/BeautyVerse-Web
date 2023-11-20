@@ -2,11 +2,11 @@ import React, { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { Location, useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { Language } from '../../../context/language';
 
 export const Navigator = ({ user }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const active = location.pathname.split('/')[2];
 
   const scrollRef = useRef();
 
@@ -23,33 +23,75 @@ export const Navigator = ({ user }) => {
     }
   }, [back]);
 
+  // language
+  const language = Language();
+
+  const NavigatorItems = [
+    {
+      title: language?.language?.User?.userPage.showroom,
+      icon: '',
+      path: 'showroom',
+    },
+    {
+      title: language?.language?.User?.userPage.feeds,
+      icon: '',
+      path: 'feeds',
+    },
+    {
+      title: language?.language?.User?.userPage.contact,
+      icon: '',
+      path: 'contact',
+    },
+    {
+      title: language?.language?.User?.userPage.procedures,
+      icon: '',
+      path: 'procedures',
+    },
+    {
+      title: language?.language?.User?.userPage.workingInfo,
+      icon: '',
+      path: 'workinginfo',
+    },
+    {
+      title: language?.language?.User?.userPage.audience,
+      icon: '',
+      path: 'audience',
+    },
+  ];
+
+  const activeValue =
+    location.pathname.split('/')?.length === 3
+      ? location.pathname.split('/')[2]
+      : location.pathname.split('/')[3];
+  const active = NavigatorItems?.find((i) => i.path === activeValue)?.title;
+
   return (
     <Container ref={scrollRef}>
       {NavigatorItems?.map((item, index) => {
-        if (item.title === 'Showroom' && user?.type !== 'shop') {
+        if (item.path === 'showroom' && user?.type !== 'shop') {
           return;
         }
-        if (item.title === 'Procedures' && user?.type === 'shop') {
+        if (item.path === 'procedures' && user?.type === 'shop') {
           return;
         }
 
         if (
-          (item.title === 'Feeds' ||
-            item.title === 'Procedures' ||
-            item.title === 'Products' ||
-            item.title === 'Statistics' ||
-            item.title === 'Working Info') &&
+          (item.path === 'feeds' ||
+            item.path === 'procedures' ||
+            item.path === 'products' ||
+            item.path === 'statistics' ||
+            item.path === 'workinginfo') &&
           user?.type === 'user'
         ) {
           return;
         }
         return (
           <Item
-            active={active}
+            active={activeValue}
             path={item.path}
             key={index}
             onClick={
-              active === item.path ? undefined : () => navigate(item.path)
+              active === item.title ? undefined : () => navigate(item.path)
             }
           >
             {item.title}
@@ -83,11 +125,12 @@ const Item = styled.div`
   font-weight: 500;
   border: 1.5px solid
     ${(props) =>
-      props.active === props.path ? '#f866b1' : 'rgba(255,255,255,0.01)'};
+      props.active === props.path ? '#f866b1' : 'rgba(255,255,255,0.05)'};
   border-radius: 50px;
-  padding: 4px 10px;
+  padding: 4px 16px;
   white-space: nowrap;
-  min-width: 100px;
+  // min-width: 120px;
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -97,36 +140,3 @@ const Item = styled.div`
     opacity: 0.8;
   }
 `;
-
-const NavigatorItems = [
-  {
-    title: 'Showroom',
-    icon: '',
-    path: 'showroom',
-  },
-  {
-    title: 'Feeds',
-    icon: '',
-    path: 'feeds',
-  },
-  {
-    title: 'Contact',
-    icon: '',
-    path: 'contact',
-  },
-  {
-    title: 'Procedures',
-    icon: '',
-    path: 'procedures',
-  },
-  {
-    title: 'Working Info',
-    icon: '',
-    path: 'workinginfo',
-  },
-  {
-    title: 'Audience',
-    icon: '',
-    path: 'audience',
-  },
-];

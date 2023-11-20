@@ -27,10 +27,15 @@ import {
 } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { Language } from '../../../context/language';
 
 export const Filter = ({ setFilter, filter }) => {
   // redux dispatch
   const dispatch = useDispatch();
+
+  // language
+  const language = Language();
+  const lang = useSelector((state) => state.storeApp.language);
 
   // category filter
   const categoryFilter = useSelector(
@@ -262,7 +267,7 @@ export const Filter = ({ setFilter, filter }) => {
                 padding: '5px 10px',
               }}
             >
-              Clear
+              {language?.language?.Main?.filter?.clear}
             </div>
           )}
           <div
@@ -293,7 +298,7 @@ export const Filter = ({ setFilter, filter }) => {
                   letterSpacing: '0.5px',
                 }}
               >
-                Type:
+                {language?.language?.Marketplace?.marketplace?.type}:
               </h4>
             </div>
 
@@ -315,7 +320,7 @@ export const Filter = ({ setFilter, filter }) => {
                     }}
                   />
                 }
-                label="Specialists"
+                label={language?.language?.Main?.filter?.specialist}
                 sx={{
                   color: '#ccc',
                   letterSpacing: '0.5px',
@@ -342,7 +347,7 @@ export const Filter = ({ setFilter, filter }) => {
                     }}
                   />
                 }
-                label="Beauty Salons"
+                label={language?.language?.Main?.filter?.beautySalon}
                 sx={{
                   color: '#ccc',
                   '&.Mui-checked': {
@@ -367,7 +372,7 @@ export const Filter = ({ setFilter, filter }) => {
                     }}
                   />
                 }
-                label="Shops"
+                label={language?.language?.Main?.filter?.shop}
                 sx={{
                   color: '#ccc',
                   '&.Mui-checked': {
@@ -394,7 +399,7 @@ export const Filter = ({ setFilter, filter }) => {
                 letterSpacing: '0.5px',
               }}
             >
-              Categories:
+              {language?.language?.Marketplace?.marketplace?.categories}:
             </h4>
           </div>
           {VerseCategories?.map((item, index) => {
@@ -414,7 +419,11 @@ export const Filter = ({ setFilter, filter }) => {
                   fontSize: '14px',
                 }}
               >
-                {item?.eng}
+                {lang === 'en'
+                  ? item?.eng
+                  : lang === 'ru'
+                  ? item?.rus
+                  : item?.geo}
                 {item.value === categoryFilter && (
                   <MdDone
                     size={16}
@@ -467,7 +476,7 @@ export const Filter = ({ setFilter, filter }) => {
                         letterSpacing: '0.5px',
                       }}
                     >
-                      Districts:
+                      {language?.language?.Main?.filter?.district}:
                     </h4>
                   </div>
                   <div style={{ marginTop: '15px' }}>
@@ -527,7 +536,7 @@ export const Filter = ({ setFilter, filter }) => {
                   letterSpacing: '0.5px',
                 }}
               >
-                City:
+                {language?.language?.Main?.filter?.city}:
               </h4>
             </div>
             <div style={{ marginTop: '15px' }}>

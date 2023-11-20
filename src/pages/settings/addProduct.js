@@ -39,7 +39,7 @@ export const AddProduct = ({ openAddProduct, setOpenAddProduct }) => {
   const lang = useSelector((state) => state.storeApp.language);
   // language activator
   const [inputLanguage, setInputLanguage] = useState(
-    lang === 'en' ? 'us' : lang === 'ka' ? 'ge' : 'ru'
+    lang === 'en' ? 'en' : lang === 'ka' ? 'ge' : 'ru'
   );
 
   // loading when adding product

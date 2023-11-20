@@ -9,6 +9,7 @@ import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import { CategoriesOptions } from '../../../../datas/productCategories';
+import { Language } from '../../../../context/language';
 
 export const Filter = ({
   openFilter,
@@ -37,6 +38,8 @@ export const Filter = ({
   const categoriesList = CategoriesOptions();
   // loading categories
   const [loading, setLoading] = useState(true);
+  // language
+  const language = Language();
 
   useEffect(() => {
     setTimeout(() => {
@@ -82,6 +85,7 @@ export const Filter = ({
           overflowY: 'scroll',
           border: '1.5px solid rgba(255,255,255,0.05)',
           padding: openFilter ? '15px 8px' : '0',
+          opacity: openFilter ? 1 : 0,
           boxShadow:
             'inset 0 30px 30px -10px rgba(0,0,0,0.4), inset 0 -30px 30px -10px rgba(0,0,0,0.4)',
         }}
@@ -115,7 +119,7 @@ export const Filter = ({
                 setType('everyone');
               }}
             >
-              Clear
+              {language?.language?.Marketplace?.marketplace?.clear}
             </div>
           )}
           {total > 0 && (
@@ -153,92 +157,95 @@ export const Filter = ({
             color="#ccc"
           />
         </div>
-        <div
-          style={{
-            width: '100%',
-            padding: '15px',
-            borderRadius: '10px',
-          }}
-        >
+        {categories?.length > 0 && (
           <div
             style={{
-              alignItems: 'center',
               width: '100%',
+              padding: '15px',
+              borderRadius: '10px',
             }}
           >
-            <span
-              style={{
-                color: '#f866b1',
-                letterSpacing: '0.5px',
-                fontSize: '16px',
-              }}
-            >
-              Categories:
-            </span>
-          </div>
-          {loading ? (
             <div
               style={{
+                alignItems: 'center',
                 width: '100%',
-                display: 'flex',
-                padding: '15px 15px 0 15px',
               }}
             >
-              <BounceLoader color={'#f866b1'} loading={loading} size={25} />
+              <span
+                style={{
+                  color: '#f866b1',
+                  letterSpacing: '0.5px',
+                  fontSize: '16px',
+                  fontWeight: 500,
+                }}
+              >
+                {language?.language?.Marketplace?.marketplace?.categories}
+              </span>
             </div>
-          ) : (
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '4px',
-                margin: '10px 0 0 0',
-              }}
-            >
-              {categories?.map((item, index) => {
-                let lab = categoriesList.find(
-                  (i, x) =>
-                    i.value?.toLocaleLowerCase() === item?.toLocaleLowerCase()
-                ).label;
-                return (
-                  <div
-                    key={index}
-                    onClick={
-                      categoryFilter?.includes(item)
-                        ? () =>
-                            setCategoryFilter(
-                              categoryFilter.filter((i, x) => i !== item)
-                            )
-                        : () => setCategoryFilter([...categoryFilter, item])
-                    }
-                    style={{
-                      padding: '6px 10px',
-
-                      borderRadius: '50px',
-                      border: `1px solid  ${
-                        categoryFilter.includes(item)
-                          ? '#f866b1'
-                          : 'rgba(255,255,255,0.1)'
-                      }`,
-                      width: '85%',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <span
+            {loading ? (
+              <div
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  padding: '15px 15px 0 15px',
+                }}
+              >
+                <BounceLoader color={'#f866b1'} loading={loading} size={25} />
+              </div>
+            ) : (
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px',
+                  margin: '10px 0 0 0',
+                }}
+              >
+                {categories?.map((item, index) => {
+                  let lab = categoriesList.find(
+                    (i, x) =>
+                      i.value?.toLocaleLowerCase() === item?.toLocaleLowerCase()
+                  ).label;
+                  return (
+                    <div
+                      key={index}
+                      onClick={
+                        categoryFilter?.includes(item)
+                          ? () =>
+                              setCategoryFilter(
+                                categoryFilter.filter((i, x) => i !== item)
+                              )
+                          : () => setCategoryFilter([...categoryFilter, item])
+                      }
                       style={{
-                        letterSpacing: '0.3px',
-                        color: '#ccc',
-                        fontSize: '14px',
+                        padding: '6px 10px',
+
+                        borderRadius: '50px',
+                        border: `1px solid  ${
+                          categoryFilter.includes(item)
+                            ? '#f866b1'
+                            : 'rgba(255,255,255,0.1)'
+                        }`,
+                        width: '85%',
+                        alignItems: 'center',
                       }}
                     >
-                      {lab}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                      <span
+                        style={{
+                          letterSpacing: '0.3px',
+                          color: '#ccc',
+                          fontSize: '14px',
+                        }}
+                      >
+                        {lab}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
         <div
           style={{
             width: '100%',
@@ -257,9 +264,10 @@ export const Filter = ({
                 color: '#f866b1',
                 letterSpacing: '0.5px',
                 fontSize: '16px',
+                fontWeight: 500,
               }}
             >
-              Type:
+              {language?.language?.Marketplace?.marketplace?.type}:
             </span>
           </div>
 
@@ -288,7 +296,9 @@ export const Filter = ({
                     }}
                   />
                 }
-                label="For Everyone"
+                label={
+                  language?.language?.Marketplace?.marketplace?.forEveryone
+                }
               />
               <FormControlLabel
                 value="professionals"
@@ -308,78 +318,84 @@ export const Filter = ({
                     }}
                   />
                 }
-                label="For Professionals"
+                label={
+                  language?.language?.Marketplace?.marketplace?.forProfessionals
+                }
               />
             </RadioGroup>
           </FormControl>
         </div>
-        <div
-          style={{
-            width: '100%',
-            padding: '15px',
-            borderRadius: '10px',
-          }}
-        >
+        {brands?.length > 0 && (
           <div
             style={{
-              alignItems: 'center',
               width: '100%',
+              padding: '15px',
+              borderRadius: '10px',
             }}
           >
-            <span
+            <div
               style={{
-                color: '#f866b1',
-                letterSpacing: '0.5px',
-                fontSize: '16px',
+                alignItems: 'center',
+                width: '100%',
               }}
             >
-              Brands:
-            </span>
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '4px',
-              margin: '10px 0 0 0',
-            }}
-          >
-            {brands?.map((item, index) => {
-              return (
-                <div
-                  key={index}
-                  onClick={
-                    brand?.includes(item) && brands?.length > 1
-                      ? () => setBrands(brand.filter((i, x) => i !== item))
-                      : brands?.length > 1
-                      ? () => setBrands([...brand, item])
-                      : undefined
-                  }
-                  style={{
-                    padding: '4px 8px',
-                    paddingHorizontal: '15px',
-                    borderRadius: '50px',
-                    border: `1px solid  ${
-                      brand.includes(item) ? '#f866b1' : 'rgba(0,0,0,0)'
-                    }`,
-                    width: '85%',
-                    alignItems: 'center',
-                  }}
-                >
-                  <span
+              <span
+                style={{
+                  color: '#f866b1',
+                  letterSpacing: '0.5px',
+                  fontSize: '16px',
+                  fontWeight: 500,
+                }}
+              >
+                {language?.language?.Marketplace?.marketplace?.brands}:
+              </span>
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px',
+                margin: '10px 0 0 0',
+              }}
+            >
+              {brands?.map((item, index) => {
+                return (
+                  <div
+                    key={index}
+                    onClick={
+                      brand?.includes(item) && brands?.length > 1
+                        ? () => setBrands(brand.filter((i, x) => i !== item))
+                        : brands?.length > 1
+                        ? () => setBrands([...brand, item])
+                        : undefined
+                    }
                     style={{
-                      letterSpacing: '0.3px',
-                      color: brands?.length > 1 ? '#ccc' : '#888',
-                      fontSize: '14px',
+                      padding: '4px 8px',
+                      paddingHorizontal: '15px',
+                      borderRadius: '50px',
+                      border: `1px solid  ${
+                        brand.includes(item) ? '#f866b1' : 'rgba(0,0,0,0)'
+                      }`,
+                      width: '85%',
+                      alignItems: 'center',
                     }}
                   >
-                    {item}
-                  </span>
-                </div>
-              );
-            })}
+                    <span
+                      style={{
+                        letterSpacing: '0.3px',
+                        color: brands?.length > 1 ? '#ccc' : '#888',
+                        fontSize: '14px',
+                      }}
+                    >
+                      {item}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
+
         <div
           style={{
             width: '100%',
@@ -398,9 +414,10 @@ export const Filter = ({
                 color: '#f866b1',
                 letterSpacing: '0.5px',
                 fontSize: '16px',
+                fontWeight: 500,
               }}
             >
-              Price Range:
+              {language?.language?.Marketplace?.marketplace?.priceRange}:
             </span>
           </div>
 
@@ -414,7 +431,7 @@ export const Filter = ({
           >
             <TextField
               id="outlined-basic"
-              label="Min price"
+              label={language?.language?.Marketplace?.marketplace?.minPrice}
               variant="outlined"
               value={minPrice}
               type="number"
@@ -451,7 +468,7 @@ export const Filter = ({
             />
             <TextField
               id="outlined-basic"
-              label="Max price"
+              label={language?.language?.Marketplace?.marketplace?.maxPrice}
               variant="outlined"
               type="number"
               value={maxPrice}
@@ -507,9 +524,10 @@ export const Filter = ({
                 color: '#f866b1',
                 letterSpacing: '0.5px',
                 fontSize: '16px',
+                fontWeight: 500,
               }}
             >
-              Discounts:
+              {language?.language?.Marketplace?.marketplace?.discounts}:
             </span>
           </div>
 
@@ -527,7 +545,7 @@ export const Filter = ({
                   }}
                 />
               }
-              label="Only With"
+              label={language?.language?.Marketplace?.marketplace?.onlyWith}
               sx={{
                 color: '#ccc',
                 '&.Mui-checked': {
@@ -548,7 +566,7 @@ export const Filter = ({
                   }}
                 />
               }
-              label="Only Without"
+              label={language?.language?.Marketplace?.marketplace?.onlyWithout}
               sx={{
                 color: '#ccc',
                 '&.Mui-checked': {
@@ -576,9 +594,10 @@ export const Filter = ({
                 color: '#f866b1',
                 letterSpacing: '0.5px',
                 fontSize: '16px',
+                fontWeight: 500,
               }}
             >
-              Sex:
+              {language?.language?.Marketplace?.marketplace?.sex}:
             </span>
           </div>
 
@@ -596,7 +615,7 @@ export const Filter = ({
                   }}
                 />
               }
-              label="Women"
+              label={language?.language?.Marketplace?.marketplace?.women}
               sx={{
                 color: '#ccc',
                 '&.Mui-checked': {
@@ -617,7 +636,7 @@ export const Filter = ({
                   }}
                 />
               }
-              label="Men"
+              label={language?.language?.Marketplace?.marketplace?.men}
               sx={{
                 color: '#ccc',
                 '&.Mui-checked': {

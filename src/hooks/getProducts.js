@@ -26,11 +26,25 @@ export const GetProducts = () => {
     const GetProducts = async () => {
       try {
         const response = await axios.get(
-          backendUrl + '/api/v1/marketplace' + '?check=' + currentUser
-            ? currentUser?._id
-            : ''
+          backendUrl +
+            '/api/v1/marketplace?limit=8&search=' +
+            '' +
+            '&categories=' +
+            '' +
+            '&brand=' +
+            '' +
+            '&discounts=' +
+            '' +
+            '&minPrice=' +
+            '' +
+            '&maxPrice=' +
+            '' +
+            '&sex=' +
+            '' +
+            '&type=' +
+            '' +
+            '&from=search'
         );
-        console.log(response.data.data.products);
         if (response.data.data.products?.random) {
           dispatch(setRandomProductsList(response.data.data.products.random));
         }

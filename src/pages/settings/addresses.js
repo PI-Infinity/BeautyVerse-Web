@@ -16,6 +16,7 @@ import { setCurrentUser } from '../../redux/user';
 import { MdDelete } from 'react-icons/md';
 import { FaMapMarkedAlt } from 'react-icons/fa';
 import SimpleBackdrop from '../../components/backDrop';
+import { Language } from '../../context/language';
 
 export const Addresses = ({ activePage, setActivePage, currentUser }) => {
   // navigate
@@ -24,6 +25,8 @@ export const Addresses = ({ activePage, setActivePage, currentUser }) => {
   const location = useLocation();
   // dispatch
   const dispatch = useDispatch();
+  // language
+  const language = Language();
 
   // with this state feeds open with scale and opacity
   useEffect(() => {
@@ -186,7 +189,7 @@ export const Addresses = ({ activePage, setActivePage, currentUser }) => {
                 letterSpacing: '0.5px',
               }}
             >
-              Addresses
+              {language?.language?.User?.userPage?.addresses}
             </h3>
           </div>
           <div style={{ width: '40px' }}></div>

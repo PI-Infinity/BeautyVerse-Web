@@ -13,12 +13,15 @@ import { ProceduresOptions } from '../../datas/registerDatas';
 import { setOpenedProduct } from '../../redux/marketplace';
 import { BounceLoader } from 'react-spinners';
 import { FeedCard } from '../feeds/components/feedCard';
+import { Language } from '../../context/language';
 
 export const SavedItems = ({ activePage, setActivePage }) => {
   // navigate
   const navigate = useNavigate();
   // location
   const location = useLocation();
+  // language
+  const language = Language();
 
   useEffect(() => {
     // Disable body scroll when the component is open
@@ -268,7 +271,7 @@ export const SavedItems = ({ activePage, setActivePage }) => {
                 letterSpacing: '0.5px',
               }}
             >
-              Saved Items
+              {language?.language?.User.userPage.savedItems}
             </h3>
           </div>
           <div style={{ width: '40px' }}></div>
@@ -305,7 +308,7 @@ export const SavedItems = ({ activePage, setActivePage }) => {
               setActiveList(true);
             }}
           >
-            Feeds
+            {language?.language?.User.userPage.feeds}
           </div>
           <div
             style={{
@@ -328,7 +331,7 @@ export const SavedItems = ({ activePage, setActivePage }) => {
               setActiveList(false);
             }}
           >
-            Products
+            {language?.language?.User.userPage.products}
           </div>
         </div>
         {loading ? (

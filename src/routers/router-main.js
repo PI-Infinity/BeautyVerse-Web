@@ -24,6 +24,7 @@ import { Dashboard } from '../admin/dashboard/dashboard';
 import styled from 'styled-components';
 import { useDeviceType } from '../functions/device';
 import { Admin } from '../admin/admin';
+import NotFoundPage from '../pages/404';
 
 const FeedsBundle = lazy(() => import('../bundles/feedsBundle'));
 
@@ -234,6 +235,7 @@ export const Routers = () => {
                 element={<OpenedUserProductNotifications />}
               />
             </Route>
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         )}
         {device === 'Desktop' && (
@@ -243,10 +245,12 @@ export const Routers = () => {
              */}
             <Route path="/" element={<Welcome />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         )}
       </Suspense>
       {!location.pathname.includes('admin') &&
+        location.pathname !== '/' &&
         device &&
         device === 'Desktop' && (
           <DesktopText>

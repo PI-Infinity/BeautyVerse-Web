@@ -1,18 +1,21 @@
-import React, { useEffect, useState } from "react";
-import styled from "styled-components";
-import { BsFillSearchHeartFill } from "react-icons/bs";
-import { MdClear } from "react-icons/md";
-import { ProceduresOptions } from "../../../datas/registerDatas";
-import { setSearch } from "../../../redux/cards";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { BsListUl } from "react-icons/bs";
+import React, { useEffect, useState } from 'react';
+import styled from 'styled-components';
+import { BsFillSearchHeartFill } from 'react-icons/bs';
+import { MdClear } from 'react-icons/md';
+import { ProceduresOptions } from '../../../datas/registerDatas';
+import { setSearch } from '../../../redux/cards';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { BsListUl } from 'react-icons/bs';
+import { Language } from '../../../context/language';
 
 export const Search = () => {
   // redux dispatch
   const dispatch = useDispatch();
   // navigate
   const navigate = useNavigate();
+  // language
+  const language = Language();
 
   const [animation, setAnimation] = useState(false);
 
@@ -23,26 +26,26 @@ export const Search = () => {
   return (
     <div
       style={{
-        width: animation ? "100%" : "30px",
-        transition: "ease-in 200ms",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: "10px",
+        width: animation ? '100%' : '30px',
+        transition: 'ease-in 200ms',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '10px',
         opacity: animation ? 1 : 0,
       }}
     >
       <SearchContainer>
         <BsFillSearchHeartFill size={18} color="#ccc" />
         <Input
-          placeholder="Search..."
-          onFocus={() => navigate("/marketplace/search", { state: "search" })}
+          placeholder={language?.language?.Main?.filter?.search}
+          onFocus={() => navigate('/marketplace/search', { state: 'search' })}
         />
         <BsListUl
           color="#ccc"
           size={20}
-          style={{ opacity: animation ? 1 : 0, transition: "ease-in 500ms" }}
-          onClick={() => navigate("/marketplace/search", { state: "filter" })}
+          style={{ opacity: animation ? 1 : 0, transition: 'ease-in 500ms' }}
+          onClick={() => navigate('/marketplace/search', { state: 'filter' })}
         />
       </SearchContainer>
     </div>

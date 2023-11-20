@@ -70,7 +70,7 @@ export const Languages = ({ activePage, setActivePage }) => {
                 letterSpacing: '0.5px',
               }}
             >
-              Languages
+              {language?.language?.User.userPage.languages}
             </h3>
           </div>
           <div style={{ width: '40px' }}></div>

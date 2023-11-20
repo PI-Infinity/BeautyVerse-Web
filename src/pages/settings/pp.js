@@ -7,12 +7,15 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { terms, privacy, qa, usage } from '../../datas/pageTexts';
+import { Language } from '../../context/language';
 
 export const PrivacyPolice = ({ activePage, setActivePage }) => {
   // navigate
   const navigate = useNavigate();
   // location
   const location = useLocation();
+  // language
+  const language = Language();
 
   // transition
   const [transition, setTransition] = useState(true);
@@ -61,7 +64,7 @@ export const PrivacyPolice = ({ activePage, setActivePage }) => {
                 letterSpacing: '0.5px',
               }}
             >
-              Privacy Police
+              {language?.language?.Pages?.pages?.privacy}
             </h3>
           </div>
           <div style={{ width: '40px' }}></div>

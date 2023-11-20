@@ -1,13 +1,13 @@
-import React from "react";
-import styled, { keyframes } from "styled-components";
-import App1Image from "../../../assets/app1.png";
-import App2Image from "../../../assets/app2.png";
-import App3Image from "../../../assets/app3.png";
+import React from 'react';
+import styled, { keyframes } from 'styled-components';
+import App1Image from '../../../assets/app1.png';
+import App2Image from '../../../assets/app2.png';
+import App3Image from '../../../assets/app3.png';
 
 export const About = () => {
   return (
     <Container>
-      <h2>The social media app, designed for Beauty industry!</h2>
+      <h2>Key Features!</h2>
       <div>
         <AppImage src={App1Image} />
         <AppImage src={App2Image} />

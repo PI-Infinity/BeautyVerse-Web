@@ -7,6 +7,7 @@ import { VscVerifiedFilled } from 'react-icons/vsc';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { Language } from '../../../context/language';
 
 /**
  *
@@ -15,6 +16,7 @@ import styled from 'styled-components';
 
 export const Header = ({ user }) => {
   const navigate = useNavigate();
+  const language = Language();
 
   const unreadNotifications = useSelector(
     (state) => state.storeNotifications.unreadNotifications
@@ -40,7 +42,7 @@ export const Header = ({ user }) => {
           }}
         />
         <LogoTitle style={{ position: 'relative', left: '15px' }}>
-          Add Feed
+          {language?.language?.User?.userPage?.addFeed}
         </LogoTitle>
         <div style={{ width: '30px' }}></div>
       </div>

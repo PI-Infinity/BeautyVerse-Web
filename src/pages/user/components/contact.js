@@ -20,8 +20,11 @@ import {
   BiSolidRightArrow,
 } from 'react-icons/bi';
 import GoogleMap from './googleMap';
+import { Language } from '../../../context/language';
 
 const Contact = () => {
+  // language
+  const language = Language();
   // redux dispatch
   const dispatch = useDispatch();
   // get outlet props context
@@ -161,7 +164,7 @@ const Contact = () => {
             fontSize: '14px',
           }}
         >
-          Address:{' '}
+          {language?.language?.User?.userPage?.address}:
           {targetUser?.address?.length === 1 && (
             <span
               style={{ fontWeight: '500', color: '#ccc', fontSize: '14px' }}

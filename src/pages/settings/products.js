@@ -17,6 +17,7 @@ import { MdAdd } from 'react-icons/md';
 import { AddProduct } from './addProduct';
 import { EditProduct } from './editProduct';
 import { CategoriesOptions } from '../../datas/productCategories';
+import { Language } from '../../context/language';
 
 export const Products = ({ activePage, setActivePage }) => {
   // navigate
@@ -25,6 +26,8 @@ export const Products = ({ activePage, setActivePage }) => {
   const location = useLocation();
   // dispatch
   const dispatch = useDispatch();
+  // language
+  const language = Language();
 
   useEffect(() => {
     // Disable body scroll when the component is open
@@ -62,8 +65,6 @@ export const Products = ({ activePage, setActivePage }) => {
 
   // get data page
   const [page, setPage] = useState(1);
-
-  console.log(page);
 
   // categories
   const categoryList = CategoriesOptions();
@@ -236,7 +237,7 @@ export const Products = ({ activePage, setActivePage }) => {
                 letterSpacing: '0.5px',
               }}
             >
-              Products
+              {language?.language?.User?.userPage?.products}
             </h3>
           </div>
           <div
@@ -422,7 +423,7 @@ const Container = styled.div`
   height: 100%;
   padding: 0 0 50px 0;
   z-index: 1000;
-  background: rgba(1, 2, 12, 0.9);
+  background: rgba(1, 2, 12, 0.3);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   transition: ease-in 200ms;

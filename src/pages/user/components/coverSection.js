@@ -11,6 +11,7 @@ import { storage } from '../../../firebase';
 import { BounceLoader } from 'react-spinners';
 import { setCurrentUser } from '../../../redux/user';
 import logo from '../../../assets/logo.png';
+import { Language } from '../../../context/language';
 
 export const CoverSection = ({ user }) => {
   // redux dispatch
@@ -18,6 +19,9 @@ export const CoverSection = ({ user }) => {
 
   // location
   const location = useLocation();
+
+  // language
+  const language = Language();
 
   const [loading, setLoading] = useState(false);
   const [loadingUploader, setLoadingUploader] = useState(false);
@@ -38,15 +42,26 @@ export const CoverSection = ({ user }) => {
   // capitalize and define user's type
   const t = capitalizeFirstLetter(user?.type);
 
+  // let type;
+  // if (user?.type === 'specialist') {
+  //   type = t;
+  // } else if (user?.type === 'shop') {
+  //   type = t;
+  // } else if (user?.type === 'beautycenter') {
+  //   type = 'Beauty Salon';
+  // } else if (user?.type === 'user') {
+  //   type = 'User';
+  // }
+
   let type;
   if (user?.type === 'specialist') {
-    type = t;
+    type = language?.language?.Main?.feedCard?.specialist;
   } else if (user?.type === 'shop') {
-    type = t;
+    type = language?.language?.Marketplace?.marketplace?.shop;
   } else if (user?.type === 'beautycenter') {
-    type = 'Beauty Salon';
-  } else if (user?.type === 'user') {
-    type = 'User';
+    type = language?.language?.Auth?.auth?.beautySalon;
+  } else {
+    type = language?.language?.Auth?.auth?.user;
   }
 
   // image loading opacity

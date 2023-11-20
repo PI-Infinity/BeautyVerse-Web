@@ -197,7 +197,7 @@ export const Security = ({ activePage, setActivePage }) => {
                   letterSpacing: '0.5px',
                 }}
               >
-                Security
+                {language?.language?.User.userPage.security}
               </h3>
             </div>
             <div style={{ width: '40px' }}></div>

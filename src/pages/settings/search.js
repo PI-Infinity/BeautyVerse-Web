@@ -3,10 +3,13 @@ import { BsFillSearchHeartFill } from 'react-icons/bs';
 import { MdClear } from 'react-icons/md';
 import styled from 'styled-components';
 import { ProceduresOptions } from '../../datas/registerDatas';
+import { Language } from '../../context/language';
 
 export const Search = ({ search, setSearch }) => {
   // procedures list
   const procedures = ProceduresOptions();
+  // language
+  const language = Language();
 
   const [animation, setAnimation] = useState(false);
 
@@ -31,7 +34,7 @@ export const Search = ({ search, setSearch }) => {
       <SearchContainer>
         <BsFillSearchHeartFill size={18} color="#ccc" />
         <Input
-          placeholder="Search..."
+          placeholder={language.language.Marketplace.marketplace.search}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />

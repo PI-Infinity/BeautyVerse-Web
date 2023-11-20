@@ -7,12 +7,15 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { terms, privacy, qa, usage } from '../../datas/pageTexts';
+import { Language } from '../../context/language';
 
 export const TermsRules = ({ activePage, setActivePage }) => {
   // navigate
   const navigate = useNavigate();
   // location
   const location = useLocation();
+  // language
+  const language = Language();
 
   // transition
   const [transition, setTransition] = useState(true);
@@ -52,6 +55,7 @@ export const TermsRules = ({ activePage, setActivePage }) => {
           >
             <IoMdArrowDropleft size={30} color="#f866b1" />
           </div>
+
           <div>
             <h3
               style={{
@@ -61,7 +65,7 @@ export const TermsRules = ({ activePage, setActivePage }) => {
                 letterSpacing: '0.5px',
               }}
             >
-              Terms and Rules
+              {language?.language?.Pages?.pages?.terms}
             </h3>
           </div>
           <div style={{ width: '40px' }}></div>

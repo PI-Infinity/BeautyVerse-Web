@@ -122,7 +122,7 @@ const Audience = () => {
                   : undefined
               }
             >
-              Followers
+              {language?.language?.User?.userPage.followers}
             </AudienceLabel>
             {followersLength > 0 ? (
               <StyledAvatarGroup
@@ -175,7 +175,7 @@ const Audience = () => {
                   : undefined
               }
             >
-              Followings
+              {language?.language?.User?.userPage.followings}
             </AudienceLabel>
             {followingsLength > 0 ? (
               <StyledAvatarGroup
@@ -251,7 +251,7 @@ const AudienceSection = styled.div`
 `;
 
 const AudienceLabel = styled.div`
-  width: 100px;
+  min-width: 120px;
   font-size: 14px;
   color: #f866b1;
   letter-spacing: 0.5px;

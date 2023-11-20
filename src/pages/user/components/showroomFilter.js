@@ -18,6 +18,7 @@ import {
   setType,
 } from '../../../redux/showroom';
 import { CategoriesOptions } from '../../../datas/productCategories';
+import { Language } from '../../../context/language';
 
 export const Filter = ({
   openFilter,
@@ -44,6 +45,8 @@ export const Filter = ({
   const dispatch = useDispatch();
   // categories
   const categoriesList = CategoriesOptions();
+  // language
+  const language = Language();
 
   // loading categories
   const [loading, setLoading] = useState(true);
@@ -89,6 +92,7 @@ export const Filter = ({
           overflow: 'hidden',
           height: openFilter ? '60vh' : '0',
           width: openFilter ? '100%' : '0',
+          opacity: openFilter ? 1 : 0,
           overflowY: 'scroll',
           border: '1.5px solid rgba(255,255,255,0.05)',
           padding: openFilter ? '15px 8px' : '0',
@@ -125,7 +129,7 @@ export const Filter = ({
                 dispatch(setType('everyone'));
               }}
             >
-              Clear
+              {language?.language?.Marketplace?.marketplace?.clear}
             </div>
           )}
           {total > 0 && (
@@ -183,7 +187,7 @@ export const Filter = ({
                 fontSize: '16px',
               }}
             >
-              Categories:
+              {language?.language?.Marketplace?.marketplace?.categories}:
             </span>
           </div>
           {loading ? (
@@ -273,7 +277,7 @@ export const Filter = ({
                 fontSize: '16px',
               }}
             >
-              Type:
+              {language?.language?.Marketplace?.marketplace?.type}:
             </span>
           </div>
           <FormControl>
@@ -301,7 +305,9 @@ export const Filter = ({
                     }}
                   />
                 }
-                label="For Everyone"
+                label={
+                  language?.language?.Marketplace?.marketplace?.forEveryone
+                }
               />
               <FormControlLabel
                 value="professionals"
@@ -321,7 +327,9 @@ export const Filter = ({
                     }}
                   />
                 }
-                label="For Professionals"
+                label={
+                  language?.language?.Marketplace?.marketplace?.forProfessionals
+                }
               />
             </RadioGroup>
           </FormControl>
@@ -346,7 +354,7 @@ export const Filter = ({
                 fontSize: '16px',
               }}
             >
-              Brands:
+              {language?.language?.Marketplace?.marketplace?.brands}:
             </span>
           </div>
           <div
@@ -416,7 +424,7 @@ export const Filter = ({
                 fontSize: '16px',
               }}
             >
-              Price Range:
+              {language?.language?.Marketplace?.marketplace?.priceRange}:
             </span>
           </div>
 
@@ -430,7 +438,7 @@ export const Filter = ({
           >
             <TextField
               id="outlined-basic"
-              label="Min price"
+              label={language?.language?.Marketplace?.marketplace?.minPrice}
               variant="outlined"
               type="number"
               inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
@@ -466,7 +474,7 @@ export const Filter = ({
             />
             <TextField
               id="outlined-basic"
-              label="Max price"
+              label={language?.language?.Marketplace?.marketplace?.maxPrice}
               variant="outlined"
               type="number"
               inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
@@ -523,7 +531,7 @@ export const Filter = ({
                 fontSize: '16px',
               }}
             >
-              Discounts:
+              {language?.language?.Marketplace?.marketplace?.discounts}:
             </span>
           </div>
 
@@ -542,7 +550,7 @@ export const Filter = ({
                   }}
                 />
               }
-              label="Only With"
+              label={language?.language?.Marketplace?.marketplace?.onlyWith}
               sx={{
                 fontSize: '14px',
                 color: '#ccc',
@@ -564,7 +572,7 @@ export const Filter = ({
                   }}
                 />
               }
-              label="Only Without"
+              label={language?.language?.Marketplace?.marketplace?.onlyWithout}
               sx={{
                 color: '#ccc',
                 '&.Mui-checked': {
@@ -594,7 +602,7 @@ export const Filter = ({
                 fontSize: '16px',
               }}
             >
-              Sex:
+              {language?.language?.Marketplace?.marketplace?.sex}:
             </span>
           </div>
 
@@ -612,7 +620,7 @@ export const Filter = ({
                   }}
                 />
               }
-              label="Women"
+              label={language?.language?.Marketplace?.marketplace?.women}
               sx={{
                 color: '#ccc',
                 '&.Mui-checked': {
@@ -634,7 +642,7 @@ export const Filter = ({
                   }}
                 />
               }
-              label="Men"
+              label={language?.language?.Marketplace?.marketplace?.men}
               sx={{
                 color: '#ccc',
                 '&.Mui-checked': {

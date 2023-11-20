@@ -1,17 +1,14 @@
+import { Button, TextField } from '@mui/material';
+import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import {
-  IoMdArrowDropdown,
-  IoMdArrowDropleft,
-  IoMdArrowDropright,
-} from 'react-icons/io';
+import { IoMdArrowDropleft } from 'react-icons/io';
+import PhoneInput from 'react-phone-input-2';
+import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { Input } from './input';
-import { Button, TextField } from '@mui/material';
-import { useDispatch, useSelector } from 'react-redux';
-import axios from 'axios';
-import PhoneInput from 'react-phone-input-2';
+import { Language } from '../../context/language';
 import { setCurrentUser, setRerenderCurrentUser } from '../../redux/user';
+import { Input } from './input';
 
 export const PersonalInfo = ({ activePage, setActivePage, currentUser }) => {
   // navigate
@@ -20,6 +17,8 @@ export const PersonalInfo = ({ activePage, setActivePage, currentUser }) => {
   const location = useLocation();
   // dispatch
   const dispatch = useDispatch();
+  // language
+  const language = Language();
 
   // with this state feeds open with scale and opacity
   useEffect(() => {
@@ -193,26 +192,30 @@ export const PersonalInfo = ({ activePage, setActivePage, currentUser }) => {
                 letterSpacing: '0.5px',
               }}
             >
-              Personal Info
+              {language?.language?.User.userPage.personalInfo}
             </h3>
           </div>
           <div style={{ width: '40px' }}></div>
         </Header>
         <ContentList edit={edit ? 'true' : 'false'}>
           <ItemContainer edit={edit ? 'true' : 'false'}>
-            <span className="title">User Type:</span>{' '}
+            <span className="title">
+              {language?.language?.User.userPage.userType}:
+            </span>{' '}
             <span className="value" onClick={() => setEdit(!edit)}>
               {Type}
             </span>
           </ItemContainer>
           <ItemContainer edit={edit ? 'true' : 'false'}>
-            <span className="title">Email:</span>{' '}
+            <span className="title">
+              {language?.language?.Auth.auth.email}:
+            </span>{' '}
             <span className="value" onClick={() => setEdit(!edit)}>
               {currentUser?.email}
             </span>
           </ItemContainer>
           <ItemContainer edit={edit ? 'true' : 'false'}>
-            <span className="title">Name:</span>{' '}
+            <span className="title">{language?.language?.Auth.auth.name}:</span>{' '}
             {edit ? (
               <Input
                 value={editableUser?.name}
@@ -231,7 +234,9 @@ export const PersonalInfo = ({ activePage, setActivePage, currentUser }) => {
             )}
           </ItemContainer>
           <ItemContainer edit={edit ? 'true' : 'false'}>
-            <span className="title">Username:</span>{' '}
+            <span className="title">
+              {language?.language?.User.userPage.username}:
+            </span>{' '}
             {edit ? (
               <Input
                 value={editableUser?.username}
@@ -255,7 +260,9 @@ export const PersonalInfo = ({ activePage, setActivePage, currentUser }) => {
           </ItemContainer>
 
           <ItemContainer edit={edit ? 'true' : 'false'}>
-            <span className="title">Phone:</span>{' '}
+            <span className="title">
+              {language?.language?.Auth.auth.phone}:
+            </span>{' '}
             {edit ? (
               <div
                 style={{ display: 'flex', alignItems: 'center', gap: '10%' }}
@@ -337,7 +344,9 @@ export const PersonalInfo = ({ activePage, setActivePage, currentUser }) => {
             )}
           </ItemContainer>
           <ItemContainer edit={edit ? 'true' : 'false'} multiline="true">
-            <span className="title">About:</span>{' '}
+            <span className="title">
+              {language?.language?.User.userPage.about}:
+            </span>{' '}
             {edit ? (
               <Input
                 multiline
@@ -461,7 +470,9 @@ export const PersonalInfo = ({ activePage, setActivePage, currentUser }) => {
               : () => setEdit(!edit)
           }
         >
-          {edit ? 'Save' : 'Edit'}
+          {edit
+            ? language?.language?.Main.filter.save
+            : language?.language?.Main.filter.edit}
         </Button>
       </Container>
     </div>
@@ -524,11 +535,12 @@ const ItemContainer = styled.div`
   box-sizing: border-box;
 
   .title {
-    width: 25%;
+    min-width: 25%;
+    white-space: nowrap;
   }
 
   .value {
-    width: 75%;
+    max-width: 75%;
     color: #f866b1;
     height: ${(props) =>
       props.multiline === 'true' && props.edit === 'true' ? 'auto' : '53px'};
